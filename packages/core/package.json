@@ -12,6 +12,16 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./serialization": {
+      "types": "./dist/serialization.d.ts",
+      "import": "./dist/serialization.js",
+      "require": "./dist/serialization.cjs"
+    },
+    "./media": {
+      "types": "./dist/media.d.ts",
+      "import": "./dist/media.js",
+      "require": "./dist/media.cjs"
+    },
     "./internal": {
       "types": "./dist/internal.d.ts",
       "import": "./dist/internal.js",
@@ -20,8 +30,8 @@
   },
   "files": ["dist", "README.md", "CHANGELOG.md"],
   "scripts": {
-    "build": "tsup src/index.ts src/internal.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts src/internal.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts src/serialization.ts src/media.ts src/internal.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts src/serialization.ts src/media.ts src/internal.ts --format cjs,esm --dts --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -32,10 +42,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/manas-timeline/timeline",
+    "url": "https://github.com/webpacked/timeline",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/manas-timeline/timeline/tree/main/packages/core#readme",
+  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/core/README.md",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
     "@types/node": "^24.10.11",

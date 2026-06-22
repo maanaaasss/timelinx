@@ -4,7 +4,7 @@
  * Reads frame from engine via hook, ppf from context.
  * Rendered as an absolute-positioned overlay.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { usePlayheadFrame } from '@webpacked-timeline/react';
 import { useTimelineContext } from '../../context/timeline-context';
 
@@ -15,15 +15,18 @@ export interface DaVinciPlayheadProps {
   topOffset?: number;
 }
 
-export function DaVinciPlayhead({ totalHeight, topOffset = 0 }: DaVinciPlayheadProps) {
+export const DaVinciPlayhead = React.memo(function DaVinciPlayhead({ totalHeight, topOffset = 0 }: DaVinciPlayheadProps) {
   const { engine, ppf } = useTimelineContext();
   const frame = usePlayheadFrame(engine);
 
+  const left = (frame as number) * ppf;
+
   return (
     <div
+      aria-hidden="true"
       style={{
         position: 'absolute',
-        left: (frame as number) * ppf,
+        left,
         top: 0,
         width: 1,
         height: totalHeight + topOffset,
@@ -34,4 +37,4 @@ export function DaVinciPlayhead({ totalHeight, topOffset = 0 }: DaVinciPlayheadP
       }}
     />
   );
-}
+});

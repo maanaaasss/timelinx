@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @webpacked-timeline/ui build && pnpm --filter @webpacked-timeline/demo build",
+  "outputDirectory": "apps/demo/dist",
+  "installCommand": "pnpm install",
+  "framework": null
+}

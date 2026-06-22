@@ -3,10 +3,16 @@
  *
  * Import from public API and verify key exports exist at runtime.
  * Prevents accidental omissions from public-api.ts.
+ *
+ * Non-MVP features are in sub-paths:
+ *   - @webpacked-timeline/core/serialization (serialize, export formats)
+ *   - @webpacked-timeline/core/media (subtitles, markers, thumbnails)
  */
 
 import { describe, it, expect } from 'vitest';
 import * as Core from '../public-api';
+import * as Serialization from '../serialization';
+import * as Media from '../media';
 
 describe('Phase 7 — Public API surface', () => {
   it('all key exports are defined', () => {
@@ -28,26 +34,10 @@ describe('Phase 7 — Public API surface', () => {
     expect(typeof Core.createTrackGroup).toBe('function');
     expect(typeof Core.createLinkGroup).toBe('function');
 
-    // Phase 3
-    expect(typeof Core.parseSRT).toBe('function');
-    expect(typeof Core.parseVTT).toBe('function');
-    expect(typeof Core.subtitleImportToOps).toBe('function');
-    expect(typeof Core.findMarkersByColor).toBe('function');
-    expect(typeof Core.findMarkersByLabel).toBe('function');
-
     // Phase 4
     expect(typeof Core.DEFAULT_CLIP_TRANSFORM).toBe('object');
     expect(typeof Core.DEFAULT_AUDIO_PROPERTIES).toBe('object');
     expect(typeof Core.LINEAR_EASING).toBe('object');
-
-    // Phase 5
-    expect(typeof Core.serializeTimeline).toBe('function');
-    expect(typeof Core.deserializeTimeline).toBe('function');
-    expect(typeof Core.exportToOTIO).toBe('function');
-    expect(typeof Core.importFromOTIO).toBe('function');
-    expect(typeof Core.exportToEDL).toBe('function');
-    expect(typeof Core.exportToAAF).toBe('function');
-    expect(typeof Core.exportToFCPXML).toBe('function');
 
     // Phase 6
     expect(typeof Core.PlayheadController).toBe('function');
@@ -59,10 +49,28 @@ describe('Phase 7 — Public API surface', () => {
     // Phase 7
     expect(typeof Core.IntervalTree).toBe('function');
     expect(typeof Core.TrackIndex).toBe('function');
-    expect(typeof Core.ThumbnailCache).toBe('function');
-    expect(typeof Core.ThumbnailQueue).toBe('function');
     expect(typeof Core.SnapIndexManager).toBe('function');
     expect(typeof Core.getVisibleClips).toBe('function');
     expect(typeof Core.diffStates).toBe('function');
+  });
+
+  it('serialization sub-path exports are defined', () => {
+    expect(typeof Serialization.serializeTimeline).toBe('function');
+    expect(typeof Serialization.deserializeTimeline).toBe('function');
+    expect(typeof Serialization.exportToOTIO).toBe('function');
+    expect(typeof Serialization.importFromOTIO).toBe('function');
+    expect(typeof Serialization.exportToEDL).toBe('function');
+    expect(typeof Serialization.exportToAAF).toBe('function');
+    expect(typeof Serialization.exportToFCPXML).toBe('function');
+  });
+
+  it('media sub-path exports are defined', () => {
+    expect(typeof Media.parseSRT).toBe('function');
+    expect(typeof Media.parseVTT).toBe('function');
+    expect(typeof Media.subtitleImportToOps).toBe('function');
+    expect(typeof Media.findMarkersByColor).toBe('function');
+    expect(typeof Media.findMarkersByLabel).toBe('function');
+    expect(typeof Media.ThumbnailCache).toBe('function');
+    expect(typeof Media.ThumbnailQueue).toBe('function');
   });
 });

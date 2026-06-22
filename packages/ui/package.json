@@ -12,12 +12,13 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
+    "./styles/studio": "./dist/studio.css",
     "./styles/davinci": "./dist/davinci.css",
     "./styles/tokens": "./dist/tokens.css"
   },
   "files": ["dist", "README.md", "CHANGELOG.md"],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly --outDir dist && cp src/tokens.css src/davinci.css dist/",
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist && cp src/tokens.css src/davinci.css src/studio.css dist/",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
@@ -44,8 +45,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/manas-timeline/timeline",
+    "url": "https://github.com/webpacked/timeline",
     "directory": "packages/ui"
   },
-  "homepage": "https://github.com/manas-timeline/timeline/tree/main/packages/ui#readme"
+  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/ui/README.md"
 }

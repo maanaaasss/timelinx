@@ -14,6 +14,11 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData',
       ],
+      thresholds: {
+        lines: 80,
+        branches: 75,
+        functions: 80,
+      },
     },
   },
 });

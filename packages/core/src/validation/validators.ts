@@ -14,6 +14,7 @@ import type { TimelineState } from '../types/state';
 import type { OperationPrimitive, RejectionReason } from '../types/operations';
 import type { Clip } from '../types/clip';
 import type { Effect, EffectId } from '../types/effect';
+import { findClipById } from '../systems/queries';
 
 type Rejection = { reason: RejectionReason; message: string };
 
@@ -86,7 +87,7 @@ function validateMoveClip(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'MOVE_CLIP' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
 
   const targetTrackId = op.targetTrackId ?? clip.trackId;
@@ -101,13 +102,10 @@ function validateMoveClip(
     return { reason: 'OUT_OF_BOUNDS', message: `MOVE_CLIP would place clip '${op.clipId}' outside timeline bounds.` };
   }
 
-  // Overlap check against target track
-  for (const existing of track.clips) {
-    if (existing.id === op.clipId) continue; // skip self
-    const overlaps = op.newTimelineStart < existing.timelineEnd && newEnd > existing.timelineStart;
-    if (overlaps) {
-      return { reason: 'OVERLAP', message: `Clip '${op.clipId}' would overlap '${existing.id}' on track '${targetTrackId}'.` };
-    }
+  // Overlap check against target track (binary search on sorted clips)
+  const overlap = hasOverlapInSortedClips(track.clips, op.newTimelineStart, newEnd, op.clipId);
+  if (overlap) {
+    return { reason: 'OVERLAP', message: `Clip '${op.clipId}' would overlap '${overlap.id}' on track '${targetTrackId}'.` };
   }
   return null;
 }
@@ -116,7 +114,7 @@ function validateResizeClip(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'RESIZE_CLIP' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
   if (op.edge === 'start' && op.newFrame >= clip.timelineEnd) {
     return { reason: 'OUT_OF_BOUNDS', message: `RESIZE_CLIP start edge must be < timelineEnd.` };
@@ -131,7 +129,7 @@ function validateSliceClip(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SLICE_CLIP' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
   if (op.atFrame <= clip.timelineStart || op.atFrame >= clip.timelineEnd) {
     return { reason: 'OUT_OF_BOUNDS', message: `SLICE_CLIP atFrame must be strictly inside the clip bounds.` };
@@ -143,7 +141,7 @@ function validateDeleteClip(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'DELETE_CLIP' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
   const track = state.timeline.tracks.find((t) => t.id === clip.trackId);
   if (track?.locked) return { reason: 'LOCKED_TRACK', message: `Track '${clip.trackId}' is locked.` };
@@ -162,11 +160,13 @@ function validateInsertClip(
   if (!asset) return { reason: 'ASSET_MISSING', message: `Asset '${op.clip.assetId}' not in registry.` };
   if (asset.mediaType !== track.type) return { reason: 'TYPE_MISMATCH', message: `Asset mediaType '${asset.mediaType}' ≠ track type '${track.type}'.` };
 
-  for (const existing of track.clips) {
-    const overlaps = op.clip.timelineStart < existing.timelineEnd && op.clip.timelineEnd > existing.timelineStart;
-    if (overlaps) {
-      return { reason: 'OVERLAP', message: `INSERT_CLIP would overlap '${existing.id}'.` };
-    }
+  const overlap = hasOverlapInSortedClips(
+    track.clips,
+    op.clip.timelineStart,
+    op.clip.timelineEnd,
+  );
+  if (overlap) {
+    return { reason: 'OVERLAP', message: `INSERT_CLIP would overlap '${overlap.id}'.` };
   }
   return null;
 }
@@ -175,7 +175,7 @@ function validateSetMediaBounds(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_MEDIA_BOUNDS' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
   const asset = state.assetRegistry.get(clip.assetId);
   if (!asset) return { reason: 'ASSET_MISSING', message: `Asset '${clip.assetId}' not found.` };
@@ -249,7 +249,7 @@ function validateAddMarker(
     return { reason: 'OUT_OF_BOUNDS', message: `Marker '${marker.id}' already exists.` };
   }
   if (marker.clipId != null) {
-    const clip = findClip(state, marker.clipId);
+    const clip = findClipById(state, marker.clipId);
     if (!clip) {
       return { reason: 'NOT_FOUND', message: `Clip '${marker.clipId}' not found.` };
     }
@@ -375,10 +375,9 @@ function validateInsertGenerator(
   if (op.atFrame < 0 || op.atFrame + op.generator.duration > dur) {
     return { reason: 'OUT_OF_BOUNDS', message: `INSERT_GENERATOR would place clip outside timeline.` };
   }
-  for (const c of track.clips) {
-    const overlaps = op.atFrame < c.timelineEnd && op.atFrame + op.generator.duration > c.timelineStart;
-    if (overlaps) return { reason: 'OVERLAP', message: `INSERT_GENERATOR would overlap clip '${c.id}'.` };
-  }
+  const genEnd = op.atFrame + op.generator.duration;
+  const overlap = hasOverlapInSortedClips(track.clips, op.atFrame, genEnd);
+  if (overlap) return { reason: 'OVERLAP', message: `INSERT_GENERATOR would overlap clip '${overlap.id}'.` };
   return null;
 }
 
@@ -452,7 +451,7 @@ function validateAddEffect(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'ADD_EFFECT' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effects = clip.effects ?? [];
   if (effects.some((e) => e.id === op.effect.id)) {
@@ -465,7 +464,7 @@ function validateRemoveEffect(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'REMOVE_EFFECT' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -476,7 +475,7 @@ function validateReorderEffect(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'REORDER_EFFECT' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -491,7 +490,7 @@ function validateSetEffectEnabled(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_EFFECT_ENABLED' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -502,7 +501,7 @@ function validateSetEffectParam(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_EFFECT_PARAM' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -513,7 +512,7 @@ function validateAddKeyframe(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'ADD_KEYFRAME' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -530,7 +529,7 @@ function validateMoveKeyframe(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'MOVE_KEYFRAME' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -546,7 +545,7 @@ function validateDeleteKeyframe(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'DELETE_KEYFRAME' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -559,7 +558,7 @@ function validateSetKeyframeEasing(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_KEYFRAME_EASING' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const effect = findEffect(clip, op.effectId);
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
@@ -576,7 +575,7 @@ function validateSetClipTransform(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_CLIP_TRANSFORM' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   return null;
 }
@@ -585,7 +584,7 @@ function validateSetAudioProperties(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_AUDIO_PROPERTIES' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   const p = op.properties;
   if (p.pan !== undefined && typeof p.pan === 'object' && p.pan !== null && 'value' in p.pan) {
@@ -604,7 +603,7 @@ function validateAddTransition(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'ADD_TRANSITION' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   if (op.transition.durationFrames <= 0) {
     return { reason: 'INVALID_RANGE', message: `transition.durationFrames must be > 0.` };
@@ -616,7 +615,7 @@ function validateDeleteTransition(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'DELETE_TRANSITION' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   if (!clip.transition) {
     return { reason: 'TRANSITION_NOT_FOUND', message: `Clip '${op.clipId}' has no transition to delete.` };
@@ -628,7 +627,7 @@ function validateSetTransitionDuration(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_TRANSITION_DURATION' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   if (!clip.transition) {
     return { reason: 'TRANSITION_NOT_FOUND', message: `Clip '${op.clipId}' has no transition.` };
@@ -643,7 +642,7 @@ function validateSetTransitionAlignment(
   state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_TRANSITION_ALIGNMENT' }>,
 ): Rejection | null {
-  const clip = findClip(state, op.clipId);
+  const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
   if (!clip.transition) {
     return { reason: 'TRANSITION_NOT_FOUND', message: `Clip '${op.clipId}' has no transition.` };
@@ -660,7 +659,7 @@ function validateLinkClips(
     return { reason: 'INVALID_RANGE', message: `linkGroup.clipIds must have length >= 2.` };
   }
   for (const cid of linkGroup.clipIds) {
-    if (!findClip(state, cid)) {
+    if (!findClipById(state, cid)) {
       return { reason: 'CLIP_NOT_FOUND', message: `Clip '${cid}' not found.` };
     }
   }
@@ -734,17 +733,43 @@ function validateSetTrackOpacity(
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Check if a new clip would overlap any existing clip in a sorted clips array.
+ * Uses binary search to find the potential overlap region — O(log n) instead of O(n).
+ * Clips must be sorted by timelineStart (invariant).
+ */
+function hasOverlapInSortedClips(
+  clips: readonly Clip[],
+  newStart: number,
+  newEnd: number,
+  excludeId?: string,
+): Clip | null {
+  // Binary search: find the rightmost clip whose timelineStart < newEnd
+  let lo = 0;
+  let hi = clips.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (clips[mid]!.timelineStart < newEnd) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  // lo is now the first clip with timelineStart >= newEnd
+  // Check the clip just before it (could overlap) and the clip at lo (could overlap)
+  for (let i = Math.max(0, lo - 1); i < Math.min(clips.length, lo + 1); i++) {
+    const existing = clips[i]!;
+    if (excludeId && existing.id === excludeId) continue;
+    if (newStart < existing.timelineEnd && newEnd > existing.timelineStart) {
+      return existing;
+    }
+  }
+  return null;
+}
+
 function findEffect(clip: Clip, effectId: EffectId): Effect | undefined {
   const effects = clip.effects ?? [];
   return effects.find((e) => e.id === effectId);
-}
-
-function findClip(state: TimelineState, clipId: string) {
-  for (const track of state.timeline.tracks) {
-    const clip = track.clips.find((c) => c.id === clipId);
-    if (clip) return clip;
-  }
-  return undefined;
 }
 
 function findMarker(state: TimelineState, markerId: string) {

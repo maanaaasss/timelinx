@@ -85,17 +85,11 @@ function findRollTarget(
   return { leftClip, rightClip };
 }
 
+import { findClipById } from '../systems/queries';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find(c => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
 
 function findTrack(state: TimelineState, trackId: string) {
   return state.timeline.tracks.find(t => t.id === trackId) ?? null;
@@ -249,7 +243,7 @@ export class RollTrimTool implements ITool {
 
     // STEP 3: Read origBoundary from ctx.state (committed — not yet changed)
     // Option B: avoids a 6th instance variable; ctx.state is safe here.
-    const liveLeft     = findClip(ctx.state, leftId);
+    const liveLeft     = findClipById(ctx.state, leftId);
     const origBoundary = liveLeft?.timelineEnd ?? null;
     if (origBoundary === null) return null;
 
@@ -290,8 +284,8 @@ export class RollTrimTool implements ITool {
   private _buildGhost(boundaryFrame: TimelineFrame, state: TimelineState): ProvisionalState | null {
     if (!this.leftClipId || !this.rightClipId) return null;
 
-    const liveLeft  = findClip(state, this.leftClipId);
-    const liveRight = findClip(state, this.rightClipId);
+    const liveLeft  = findClipById(state, this.leftClipId);
+    const liveRight = findClipById(state, this.rightClipId);
     if (!liveLeft || !liveRight) return null;
 
     const ghostLeft:  Clip = { ...liveLeft,  timelineEnd:   boundaryFrame };

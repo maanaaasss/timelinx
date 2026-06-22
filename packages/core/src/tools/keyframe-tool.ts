@@ -29,17 +29,10 @@ import { toKeyframeId } from '../types/keyframe';
 import { LINEAR_EASING } from '../types/easing';
 import { applyOperation } from '../engine/apply';
 import { nearest } from '../snap-index';
+import { findClipById } from '../systems/queries';
 
 const KEYFRAME_HIT_RADIUS_PX = 6;
 const SNAP_RADIUS_FRAMES = 5;
-
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find((c) => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
 
 function findKeyframeAt(
   clip: Clip,
@@ -93,7 +86,7 @@ export class KeyframeTool implements ITool {
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
     if (event.clipId === null) return;
 
-    const clip = findClip(ctx.state, event.clipId);
+    const clip = findClipById(ctx.state, event.clipId);
     if (!clip) return;
 
     const effects = clip.effects ?? [];
@@ -135,7 +128,7 @@ export class KeyframeTool implements ITool {
   onPointerMove(event: TimelinePointerEvent, ctx: ToolContext): ProvisionalState | null {
     if (this.draggingKeyframe === null) return null;
 
-    const clip = findClip(ctx.state, this.draggingKeyframe.clipId);
+    const clip = findClipById(ctx.state, this.draggingKeyframe.clipId);
     if (!clip) return null;
 
     const dragDeltaX = event.x - this.draggingKeyframe.startX;

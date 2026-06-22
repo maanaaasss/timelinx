@@ -1,0 +1,37 @@
+---
+title: Getting Started
+description: Install and set up Webpacked Timeline in your project.
+---
+
+## Installation
+
+```bash
+npm install @webpacked-timeline/core @webpacked-timeline/react @webpacked-timeline/ui
+```
+
+## Quick Start
+
+```tsx
+import { TimelineProvider } from '@webpacked-timeline/react';
+import { DaVinciEditor } from '@webpacked-timeline/ui';
+import { createEngine } from '@webpacked-timeline/core';
+import '@webpacked-timeline/ui/styles/davinci';
+
+const engine = createEngine({
+  tracks: [],
+  duration: 60000,
+});
+
+export default function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <DaVinciEditor />
+    </TimelineProvider>
+  );
+}
+```
+
+## Next Steps
+
+- Browse the [API Reference](/docs/api) for core types and hooks.
+- See [Presets](/docs/preset) for pre-configured timeline setups.

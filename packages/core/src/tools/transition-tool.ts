@@ -25,16 +25,9 @@ import type { TimelineFrame } from '../types/frame';
 import { createTransition, toTransitionId } from '../types/transition';
 import { LINEAR_EASING } from '../types/easing';
 import { applyOperation } from '../engine/apply';
+import { findClipById } from '../systems/queries';
 
 const TRANSITION_EDGE_THRESHOLD_PX = 8;
-
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find((c) => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
 
 function findClipAtRightEdge(
   state: TimelineState,
@@ -111,7 +104,7 @@ export class TransitionTool implements ITool {
   onPointerMove(event: TimelinePointerEvent, ctx: ToolContext): ProvisionalState | null {
     if (this.pendingClipId === null) return null;
 
-    const clip = findClip(ctx.state, this.pendingClipId);
+    const clip = findClipById(ctx.state, this.pendingClipId);
     if (!clip) return null;
 
     const dragDeltaX = event.x - this.dragStartX;
@@ -172,7 +165,7 @@ export class TransitionTool implements ITool {
 
     if (pendingClipId === null) return null;
 
-    const clip = findClip(ctx.state, pendingClipId);
+    const clip = findClipById(ctx.state, pendingClipId);
     if (!clip) return null;
 
     const dragDeltaX = event.x - dragStartX;

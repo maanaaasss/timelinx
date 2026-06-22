@@ -1,16 +1,39 @@
 /**
  * @webpacked-timeline/ui — Public API
  *
- * DaVinci Resolve–style timeline editor components.
+ * Timeline editor components with multiple preset themes.
  *
- * Quick start:
+ * Quick start (Studio preset):
+ *   import { StudioEditor } from '@webpacked-timeline/ui';
+ *   import '@webpacked-timeline/ui/styles/studio';
+ *
+ *   <StudioEditor engine={engine} style={{ height: '100vh' }} />
+ *
+ * Quick start (DaVinci preset):
  *   import { DaVinciEditor } from '@webpacked-timeline/ui';
  *   import '@webpacked-timeline/ui/styles/davinci';
  *
  *   <DaVinciEditor engine={engine} style={{ height: '100vh' }} />
  */
 
-// ── DaVinci Preset (the main thing most users want) ────────────────────────
+// ── Studio Preset (clean, professional dark theme) ─────────────────────────
+export {
+  StudioEditor,
+  StudioToolbar,
+  StudioRuler,
+  StudioTrack,
+  StudioClip,
+  StudioPlayhead,
+} from './presets/studio';
+export type {
+  StudioEditorProps,
+  StudioRulerProps,
+  StudioTrackProps,
+  StudioClipProps,
+  StudioPlayheadProps,
+} from './presets/studio';
+
+// ── DaVinci Preset (classic DaVinci Resolve style) ─────────────────────────
 export {
   DaVinciEditor,
   DaVinciToolbar,

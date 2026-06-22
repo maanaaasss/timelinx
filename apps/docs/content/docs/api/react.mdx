@@ -1,0 +1,32 @@
+---
+title: React Hooks
+description: React hooks for timeline state and actions.
+---
+
+The `@webpacked-timeline/react` package provides hooks for integrating with React.
+
+## useTimeline
+
+Returns the timeline context (must be inside `<TimelineProvider>`).
+
+```tsx
+import { useTimeline } from '@webpacked-timeline/react';
+
+function Toolbar() {
+  const { state, dispatch, undo, redo } = useTimeline();
+  // ...
+}
+```
+
+## useTimelineWithEngine
+
+Engine-first hook for when you have direct access to the engine.
+
+```tsx
+import { useTimelineWithEngine } from '@webpacked-timeline/react';
+
+function Editor({ engine }) {
+  const { state, dispatch } = useTimelineWithEngine(engine);
+  // ...
+}
+```

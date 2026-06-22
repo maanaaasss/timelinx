@@ -39,18 +39,7 @@ import type { ClipId, Clip } from '../types/clip';
 import type { TimelineFrame }  from '../types/frame';
 import type { Transaction }    from '../types/operations';
 import type { TimelineState }  from '../types/state';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find(c => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
+import { findClipById } from '../systems/queries';
 
 let _txSeq = 0;
 function txId(): string { return `slip-tx-${++_txSeq}`; }
@@ -104,7 +93,7 @@ export class SlipTool implements ITool {
     // Not mid-drag
     if (this.dragClipId === null || this.dragStartFrame === null) return null;
 
-    const liveClip = findClip(ctx.state, this.dragClipId);
+    const liveClip = findClipById(ctx.state, this.dragClipId);
     if (!liveClip) return null;
 
     const asset = ctx.state.assetRegistry.get(liveClip.assetId);
@@ -142,7 +131,7 @@ export class SlipTool implements ITool {
     const clipId = this.dragClipId;
     this._resetDragState();
 
-    const liveClip = findClip(ctx.state, clipId);
+    const liveClip = findClipById(ctx.state, clipId);
     if (!liveClip) return null;
 
     const asset = ctx.state.assetRegistry.get(liveClip.assetId);

@@ -7,6 +7,7 @@
  */
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import type { Clip, ProvisionalState } from '@webpacked-timeline/core';
+import { IconMusic, IconFilm } from './icons';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -51,7 +52,7 @@ function ClipWaveform({ clipId, width, height }: { clipId: string; width: number
     const mid = h / 2;
 
     // Subtle center line
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; // Canvas 2D doesn't support CSS vars
     ctx.lineWidth = 0.5;
     ctx.beginPath();
     ctx.moveTo(0, mid);
@@ -59,7 +60,7 @@ function ClipWaveform({ clipId, width, height }: { clipId: string; width: number
     ctx.stroke();
 
     // Continuous waveform line
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; // Canvas 2D doesn't support CSS vars
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let x = 0; x < w; x++) {
@@ -106,7 +107,7 @@ export interface DaVinciClipProps {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function DaVinciClip({
+export const DaVinciClip = React.memo(function DaVinciClip({
   clip,
   provisional,
   trackId,
@@ -142,6 +143,7 @@ export function DaVinciClip({
     <div
       data-clip-id={clip.id}
       data-track-id={trackId}
+      className={`tl-clip ${isAudio ? 'tl-clip-audio' : 'tl-clip-video'}${isSelected ? ' is-selected' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
@@ -168,7 +170,7 @@ export function DaVinciClip({
               ? 'grab'
               : 'pointer',
         userSelect: 'none',
-        filter: isSelected ? 'brightness(1.3)' : isHovered ? 'brightness(1.1)' : undefined,
+        filter: isSelected ? 'brightness(1.14)' : isHovered ? 'brightness(1.06)' : undefined,
       }}
     >
       {!isThin && (
@@ -209,7 +211,7 @@ export function DaVinciClip({
                 textShadow: '0 1px 2px rgba(0,0,0,0.3)',
               }}
             >
-              🔗 {clip.name ?? clip.id}
+              {clip.name ?? clip.id}
             </span>
           )}
 
@@ -220,12 +222,13 @@ export function DaVinciClip({
                 position: 'absolute',
                 bottom: 2,
                 left: 4,
-                fontSize: 9,
+                display: 'flex',
+                alignItems: 'center',
                 pointerEvents: 'none',
                 color: 'var(--tl-clip-text-dim)',
               }}
             >
-              {isAudio ? '♪' : '▶'}
+              {isAudio ? <IconMusic size={9} /> : <IconFilm size={9} />}
             </span>
           )}
 
@@ -261,7 +264,7 @@ export function DaVinciClip({
                   top: 0,
                   width: 4,
                   height: '100%',
-                  background: 'hsl(0 0% 100% / 0.15)',
+                  background: 'var(--tl-clip-trim)',
                   cursor: 'ew-resize',
                   pointerEvents: 'none',
                 }}
@@ -273,7 +276,7 @@ export function DaVinciClip({
                   top: 0,
                   width: 4,
                   height: '100%',
-                  background: 'hsl(0 0% 100% / 0.15)',
+                  background: 'var(--tl-clip-trim)',
                   cursor: 'ew-resize',
                   pointerEvents: 'none',
                 }}
@@ -284,4 +287,4 @@ export function DaVinciClip({
       )}
     </div>
   );
-}
+});

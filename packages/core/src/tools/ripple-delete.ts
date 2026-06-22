@@ -41,18 +41,7 @@ import type { ClipId, Clip }       from '../types/clip';
 import type { TimelineFrame }       from '../types/frame';
 import type { OperationPrimitive, Transaction } from '../types/operations';
 import type { TimelineState }       from '../types/state';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find(c => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
+import { findClipById } from '../systems/queries';
 
 let _txSeq = 0;
 function txId(): string { return `ripple-delete-tx-${++_txSeq}`; }
@@ -148,7 +137,7 @@ export class RippleDeleteTool implements ITool {
     if (!clipId) return null;  // empty-space click
 
     // Read clip from ctx.state (committed, current)
-    const liveClip = findClip(ctx.state, clipId);
+    const liveClip = findClipById(ctx.state, clipId);
     if (!liveClip) return null;  // defensive: clip may have already been removed
 
     const operations = computeRippleDeleteOps(liveClip, ctx.state);

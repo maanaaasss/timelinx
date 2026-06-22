@@ -7,10 +7,10 @@
 
 :root {
   /* ── App chrome ── */
-  --tl-app-bg:          hsl(220 13% 9%);
-  --tl-panel-bg:        hsl(220 13% 11%);
-  --tl-toolbar-bg:      hsl(220 13% 11%);
-  --tl-toolbar-border:  hsl(220 13% 18%);
+  --tl-app-bg:          #111315;
+  --tl-panel-bg:        #17191c;
+  --tl-toolbar-bg:      #1b1d20;
+  --tl-toolbar-border:  #303338;
   --tl-toolbar-height:  40px;
 
   /* ── Ruler ── */
@@ -26,32 +26,32 @@
 
   /* ── Track ── */
   --tl-track-bg:        hsl(220 13% 13%);
-  --tl-track-bg-video:  #28282E;
-  --tl-track-bg-audio:  #28282E;
+  --tl-track-bg-video:  #202328;
+  --tl-track-bg-audio:  #1d2422;
   --tl-track-border:    hsl(220 13% 19%);
   --tl-track-height:    80px;
   --tl-track-height-audio: 80px;
 
   /* ── Label ── */
   --tl-label-width:     200px;
-  --tl-label-bg:        hsl(220 13% 10%);
+  --tl-label-bg:        #181a1d;
   --tl-label-text:      hsl(220 10% 62%);
   --tl-label-text-dim:  hsl(220 10% 45%);
   --tl-label-border:    hsl(220 13% 19%);
 
   /* ── Clips ── */
-  --tl-clip-video-bg:   #2E77A5;
-  --tl-clip-video-top:  #2E77A5;
-  --tl-clip-audio-bg:   #179160;
-  --tl-clip-audio-top:  #179160;
+  --tl-clip-video-bg:   #285f7b;
+  --tl-clip-video-top:  #337b9d;
+  --tl-clip-audio-bg:   #287256;
+  --tl-clip-audio-top:  #348f6c;
   --tl-clip-selected:   #3da2ff;
   --tl-clip-provisional:rgba(46,119,165,0.5);
   --tl-clip-border:     rgba(255,255,255,0.15);
-  --tl-clip-border-sel: #6fbfff;
+  --tl-clip-border-sel: #f3be62;
   --tl-clip-text:       hsl(0 0% 92%);
   --tl-clip-text-dim:   hsl(0 0% 65%);
-  --tl-clip-video-text: hsl(195 85% 15%);
-  --tl-clip-audio-text: hsl(142 70% 12%);
+  --tl-clip-video-text: #eef8fc;
+  --tl-clip-audio-text: #effaf5;
   --tl-clip-radius:     2px;
   --tl-clip-video-accent: hsl(195 85% 72%);
   --tl-clip-audio-accent:#179160;
@@ -81,6 +81,31 @@
   /* ── Solo / Mute ── */
   --tl-solo-active:     #ffd54f;
   --tl-mute-active:     #ff5252;
+
+  /* ── Track label controls ── */
+  --tl-track-badge-bg:  hsl(220 13% 16%);
+  --tl-track-toggle-active-bg: hsl(220 13% 20%);
+  --tl-track-vis-inactive: hsl(0 0% 40%);
+  --tl-track-delete-hover: hsl(0 60% 40%);
+  --tl-track-add-text:  hsl(220 10% 55%);
+  --tl-track-add-hover: hsl(213 70% 55%);
+  --tl-track-solo-active-text: hsl(0 0% 10%);
+  --tl-track-mute-active-text: hsl(0 0% 100%);
+
+  /* ── Separators / borders ── */
+  --tl-separator:       hsl(220 13% 22%);
+  --tl-add-track-border: hsl(220 13% 25%);
+
+  /* ── Text ── */
+  --tl-text:            hsl(220 10% 85%);
+  --tl-play-btn:        hsl(0 0% 85%);
+
+  /* ── Waveform ── */
+  --tl-waveform-center: rgba(255,255,255,0.15);
+  --tl-waveform-line:   rgba(255,255,255,0.7);
+
+  /* ── Clip trim handles ── */
+  --tl-clip-trim:       rgba(255,255,255,0.15);
 
   /* ── Resize ── */
   --tl-resize-handle:   hsl(220 13% 26%);

@@ -42,3 +42,9 @@ coverage/
 # Misc
 *.local
 .cache/
+
+# Next.js
+.next/
+
+# Agent config
+.agents/

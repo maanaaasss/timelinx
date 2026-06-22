@@ -1,0 +1,39 @@
+---
+title: Core
+description: Core engine API reference.
+---
+
+The `@webpacked-timeline/core` package provides the headless timeline engine.
+
+## createEngine
+
+Creates a new timeline engine instance.
+
+```ts
+import { createEngine } from '@webpacked-timeline/core';
+
+const engine = createEngine({
+  tracks: [],
+  duration: 60000,
+  fps: 30,
+});
+```
+
+## Engine Methods
+
+| Method | Description |
+|--------|-------------|
+| `getState()` | Returns the current timeline state |
+| `dispatch(operation)` | Applies an operation to the timeline |
+| `undo()` | Reverts the last operation |
+| `redo()` | Re-applies the last undone operation |
+
+## Operations
+
+| Operation | Description |
+|-----------|-------------|
+| `INSERT_CLIP` | Adds a clip to a track |
+| `DELETE_CLIP` | Removes a clip |
+| `SLICE_CLIP` | Splits a clip at a time offset |
+| `RESIZE_CLIP` | Trims a clip's in/out points |
+| `MOVE_CLIP` | Moves a clip to a different time or track |

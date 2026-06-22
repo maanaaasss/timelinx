@@ -46,6 +46,7 @@ import type { TrackId }      from '../types/track';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction }   from '../types/operations';
 import type { TimelineState } from '../types/state';
+import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -169,7 +170,7 @@ export class RippleTrimTool implements ITool {
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
     if (event.clipId === null) return;
 
-    const clip = findClip(ctx.state, event.clipId);
+    const clip = findClipById(ctx.state, event.clipId);
     if (!clip) return;
 
     // Determine which edge was grabbed (8px hit zone, converted to frames)
@@ -209,7 +210,7 @@ export class RippleTrimTool implements ITool {
     // Update getCursor() state
     this.lastHoveredClipId = event.clipId;
     if (event.clipId !== null) {
-      const c = findClip(ctx.state, event.clipId);
+      const c = findClipById(ctx.state, event.clipId);
       if (c) {
         const hitZoneFrames = (EDGE_HIT_ZONE_PX / ctx.pixelsPerFrame) as TimelineFrame;
         const distToStart   = Math.abs(event.frame - c.timelineStart) as TimelineFrame;
@@ -392,7 +393,7 @@ export class RippleTrimTool implements ITool {
     if (this.dragClipId === null || this.dragEdge === null || this.dragOrigEnd === null ||
         this.dragOrigStart === null) return null;
 
-    const liveClip = findClip(state, this.dragClipId);
+    const liveClip = findClipById(state, this.dragClipId);
     if (!liveClip) return null;
 
     // Delta from the original edge position
@@ -408,7 +409,7 @@ export class RippleTrimTool implements ITool {
     // Downstream ghosts — all shifted by uniform delta
     const downstreamGhosts: Clip[] = [];
     for (const [dcId, orig] of this.originalDownstream) {
-      const liveDc = findClip(state, dcId);
+      const liveDc = findClipById(state, dcId);
       if (!liveDc) continue;
       downstreamGhosts.push({
         ...liveDc,

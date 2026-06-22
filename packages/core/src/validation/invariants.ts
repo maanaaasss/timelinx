@@ -12,8 +12,8 @@ import type { TimelineState } from '../types/state';
 import { CURRENT_SCHEMA_VERSION } from '../types/state';
 import type { Track } from '../types/track';
 import type { Clip } from '../types/clip';
-import { clipsOverlap } from '../types/clip';
 import type { InvariantViolation } from '../types/operations';
+import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // checkInvariants — the 9 checks from the spec, in order
@@ -76,19 +76,19 @@ function checkTrack(
   }
 
   // —— Check 1: No two clips share any frame (OVERLAP) ————————————————————
-  for (let i = 0; i < clips.length; i++) {
-    for (let j = i + 1; j < clips.length; j++) {
-      const a = clips[i]!;
-      const b = clips[j]!;
-      if (clipsOverlap(a, b)) {
-        violations.push({
-          type: 'OVERLAP',
-          entityId: a.id,
-          message:
-            `Track '${track.id}': clips '${a.id}' [${a.timelineStart}-${a.timelineEnd}) ` +
-            `and '${b.id}' [${b.timelineStart}-${b.timelineEnd}) overlap.`,
-        });
-      }
+  // Clips are sorted by timelineStart (verified by check 8 above).
+  // For sorted clips, overlap only exists between adjacent pairs.
+  for (let i = 0; i < clips.length - 1; i++) {
+    const curr = clips[i]!;
+    const next = clips[i + 1]!;
+    if (curr.timelineEnd > next.timelineStart) {
+      violations.push({
+        type: 'OVERLAP',
+        entityId: curr.id,
+        message:
+          `Track '${track.id}': clips '${curr.id}' [${curr.timelineStart}-${curr.timelineEnd}) ` +
+          `and '${next.id}' [${next.timelineStart}-${next.timelineEnd}) overlap.`,
+      });
     }
   }
 
@@ -427,7 +427,7 @@ function checkLinkGroups(state: TimelineState, violations: InvariantViolation[])
       });
     }
     for (const cid of g.clipIds) {
-      const clip = findClipInState(state, cid);
+      const clip = findClipById(state, cid);
       if (!clip) {
         violations.push({
           type: 'LINK_GROUP_NOT_FOUND',
@@ -480,10 +480,4 @@ function checkTrackGroups(state: TimelineState, violations: InvariantViolation[]
   }
 }
 
-function findClipInState(state: TimelineState, clipId: string): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const clip = track.clips.find((c) => c.id === clipId);
-    if (clip) return clip;
-  }
-  return undefined;
-}
+

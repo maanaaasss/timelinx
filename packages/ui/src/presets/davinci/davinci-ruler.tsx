@@ -28,7 +28,7 @@ export interface DaVinciRulerProps {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
+export const DaVinciRuler = React.memo(function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
   const { engine, ppf, scrollLeft, vpWidth, labelWidth, rulerHeight } = useTimelineContext();
   const frame = usePlayheadFrame(engine);
   const timeline = useTimelineWithEngine(engine);
@@ -81,7 +81,7 @@ export function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
                 id: toMarkerId(`marker-${Date.now()}`),
                 frame: toFrame(f),
                 label: `M ${f}`,
-                color: 'hsl(45 90% 60%)',
+                color: 'var(--tl-snap-color)',
                 scope: 'global',
                 linkedClipId: null,
               },
@@ -115,7 +115,7 @@ export function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
           alignItems: 'center',
           paddingLeft: 12,
           background: 'var(--tl-label-bg)',
-          borderRight: '1px solid hsl(220 13% 22%)',
+          borderRight: '1px solid var(--tl-separator)',
           borderBottom: '1px solid var(--tl-track-border)',
         }}
       >
@@ -135,6 +135,12 @@ export function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
       {/* ── Ruler ticks (right, flex:1, overflow hidden) ── */}
       <div
         ref={contentRef as React.RefObject<HTMLDivElement>}
+        role="slider"
+        aria-label="Timeline ruler — click to seek, Alt+click to add marker"
+        aria-valuemin={0}
+        aria-valuemax={durationFrames}
+        aria-valuenow={frame as number}
+        tabIndex={0}
         style={{
           flex: 1,
           position: 'relative',
@@ -229,4 +235,4 @@ export function DaVinciRuler({ contentRef }: DaVinciRulerProps) {
       </div>
     </div>
   );
-}
+});

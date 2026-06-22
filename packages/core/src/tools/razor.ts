@@ -32,6 +32,7 @@ import type { ClipId, Clip } from '../types/clip';
 import type { TrackId }      from '../types/track';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction }   from '../types/operations';
+import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // ID generator (replaceable in tests — see _setIdGenerator below)
@@ -174,7 +175,7 @@ export class RazorTool implements ITool {
     // ── Single clip slice ──────────────────────────────────────────────────
     if (clipId === null) return null;   // clicked empty space, no shift
 
-    const clip = this._findClip(clipId, ctx);
+    const clip = findClipById(ctx.state, clipId);
     if (!clip) return null;
 
     const sliced = computeSlice(clip, atFrame);
@@ -211,14 +212,6 @@ export class RazorTool implements ITool {
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
-
-  private _findClip(clipId: ClipId, ctx: ToolContext): Clip | undefined {
-    for (const track of ctx.state.timeline.tracks) {
-      const clip = track.clips.find(c => c.id === clipId);
-      if (clip) return clip;
-    }
-    return undefined;
-  }
 
   /**
    * Slice every clip that contains `atFrame` across all tracks.

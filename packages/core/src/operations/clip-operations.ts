@@ -234,10 +234,14 @@ export function updateClip(
       ...updates,
     } as Clip;
     
-    return sortTrackClips({
-      ...track,
-      clips: newClips,
-    });
+    // Only re-sort if position-affecting fields changed
+    const positionChanged =
+      updates.timelineStart !== undefined ||
+      updates.timelineEnd !== undefined;
+    if (!positionChanged) {
+      return { ...track, clips: newClips };
+    }
+    return sortTrackClips({ ...track, clips: newClips });
   });
   
   return {

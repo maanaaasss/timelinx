@@ -1,0 +1,546 @@
+/* ═══════════════════════════════════════════════════
+   Demo Shell — Broadcast Noir Application Chrome
+
+   Sharp geometry, warm amber accents, monospace precision.
+   Timeline component styles come from @webpacked-timeline/ui.
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── Layout ─────────────────────────────────────── */
+
+.demo-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: #0a0a0c;
+  color: #c8c4bc;
+  font-family: 'DM Sans', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.demo-upper {
+  display: flex;
+  flex-shrink: 0;
+  min-height: 160px;
+  overflow: hidden;
+}
+
+.demo-timeline {
+  flex: 1;
+  min-height: 280px;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────── */
+
+.demo-header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #0e0e10;
+  border-bottom: 1px solid #1a1a1e;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.demo-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-header-logo {
+  color: #d4a84a;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.demo-header-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e8e0d4;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.demo-header-context {
+  font-size: 10px;
+  color: #48484f;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+.demo-header-center {
+  display: flex;
+  align-items: center;
+}
+
+.demo-header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #48484f;
+}
+
+.demo-header-status i {
+  width: 5px;
+  height: 5px;
+  background: #2a8a5a;
+  display: inline-block;
+  transform: rotate(45deg);
+}
+
+.demo-version-badge {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: #48484f;
+  background: #151518;
+  padding: 2px 6px;
+  letter-spacing: 0.04em;
+}
+
+.demo-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.demo-header-link {
+  font-size: 11px;
+  color: #5a5a62;
+  text-decoration: none;
+  transition: color 0.08s ease-out;
+  white-space: nowrap;
+}
+
+.demo-header-link:hover {
+  color: #c8c4bc;
+}
+
+.demo-header-sep {
+  width: 1px;
+  height: 12px;
+  background: #1a1a1e;
+}
+
+/* ── Media Pool ─────────────────────────────────── */
+
+.demo-media-pool {
+  width: 272px;
+  flex-shrink: 0;
+  background: #0e0e10;
+  border-right: 1px solid #1a1a1e;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demo-media-pool-header {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.demo-media-pool-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: #48484f;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.demo-media-pool-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #151518;
+  border: 1px solid #252528;
+  color: #707078;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: all 0.08s ease-out;
+}
+
+.demo-media-pool-add-btn:hover {
+  border-color: #38383d;
+  color: #c8c4bc;
+}
+
+.demo-media-pool-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 3px 6px;
+}
+
+.demo-media-pool-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.demo-media-pool-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.demo-media-pool-list::-webkit-scrollbar-thumb {
+  background: #1a1a1e;
+}
+
+.demo-media-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.06s ease-out;
+  position: relative;
+  user-select: none;
+}
+
+.demo-media-item:hover {
+  background: #121215;
+  border-color: #1c1c20;
+}
+
+.demo-media-item-thumb {
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: rgba(255,255,255,.5);
+  font: 600 9px 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.demo-media-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.demo-media-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.demo-media-item-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a8a4a0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.demo-media-item-duration {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: #48484f;
+  letter-spacing: 0.02em;
+}
+
+.demo-media-item-add {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: #1e2228;
+  border: 1px solid #2a3040;
+  color: #707078;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.06s ease-out;
+  flex-shrink: 0;
+}
+
+.demo-media-item:hover .demo-media-item-add {
+  display: flex;
+}
+
+.demo-media-item-add:hover {
+  background: #222830;
+  color: #c8c4bc;
+}
+
+.demo-media-pool-hint {
+  padding: 8px 12px 10px;
+  font-size: 9px;
+  color: #333338;
+  text-align: center;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+/* ── Viewer ─────────────────────────────────────── */
+
+.demo-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0c;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.demo-viewer-preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-viewer-media { width: 100%; height: 100%; object-fit: contain; display: block; background: #060608; }
+
+.demo-viewer-audio { display: flex; flex-direction: column; align-items: center; gap: 18px; width: min(520px, 76%); }
+.demo-audio-meter { height: 72px; width: 100%; display: flex; align-items: center; gap: 2px; }
+.demo-audio-meter i { flex: 1; min-width: 2px; background: #d4a84a; opacity: .35; border-radius: 0; }
+
+.demo-viewer-readout {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: #0e0e10;
+  border-top: 1px solid #1a1a1e;
+  color: #48484f;
+  font-size: 10px;
+}
+.demo-viewer-readout strong {
+  color: #e8e0d4;
+  font: 500 11px 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+.demo-viewer-empty {
+  color: #151518;
+}
+
+.demo-viewer-clip-icon {
+  color: #252528;
+}
+
+.demo-viewer-clip-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e8e0d4;
+  letter-spacing: -0.01em;
+}
+
+.demo-viewer-clip-tc {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  color: #48484f;
+  letter-spacing: 0.04em;
+}
+
+.demo-viewer-transport {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  background: #0e0e10;
+  border-top: 1px solid #1a1a1e;
+  flex-shrink: 0;
+}
+
+.demo-transport-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: #5a5a62;
+  cursor: pointer;
+  transition: color 0.06s ease-out, background 0.06s ease-out;
+}
+
+.demo-transport-btn:hover {
+  color: #c8c4bc;
+  background: #151518;
+}
+
+.demo-transport-btn.is-active {
+  color: #d4a84a;
+}
+
+/* ── Resize Handle ──────────────────────────────── */
+
+.demo-resize-handle {
+  height: 4px;
+  cursor: row-resize;
+  background: transparent;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.demo-resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1px;
+  height: 2px;
+  background: #151518;
+  transition: background 0.1s ease-out;
+}
+
+.demo-resize-handle:hover::after,
+.demo-resize-handle.is-dragging::after {
+  background: #d4a84a;
+}
+
+/* ── Status Bar ─────────────────────────────────── */
+
+.demo-status-bar {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: #0a0a0c;
+  border-top: 1px solid #121215;
+  flex-shrink: 0;
+}
+
+.demo-status-left {
+  font-size: 10px;
+  color: #333338;
+}
+
+.demo-status-center {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: #2a2a2e;
+  letter-spacing: 0.02em;
+}
+
+.demo-status-right {
+  font-size: 9px;
+  color: #2a2a2e;
+  cursor: pointer;
+  transition: color 0.08s ease-out;
+  user-select: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.demo-status-right:hover {
+  color: #5a5a62;
+}
+
+/* ── Keyboard Shortcuts Overlay ─────────────────── */
+
+.demo-shortcuts-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  animation: demo-fade-in 0.1s ease-out;
+}
+
+@keyframes demo-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.demo-shortcuts-card {
+  background: #0e0e10;
+  border: 1px solid #1a1a1e;
+  padding: 24px;
+  width: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: demo-scale-in 0.1s ease-out;
+}
+
+@keyframes demo-scale-in {
+  from { transform: scale(0.98); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.demo-shortcuts-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.demo-shortcuts-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.demo-shortcuts-card::-webkit-scrollbar-thumb {
+  background: #1a1a1e;
+}
+
+.demo-shortcuts-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8e0d4;
+  margin: 0 0 20px 0;
+}
+
+.demo-shortcuts-section {
+  margin-bottom: 16px;
+}
+
+.demo-shortcuts-section-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: #48484f;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.demo-shortcuts-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 6px 16px;
+  align-items: center;
+}
+
+.demo-shortcut-key {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: #a8a4a0;
+  background: #151518;
+  padding: 2px 6px;
+  display: inline-block;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.demo-shortcut-desc {
+  font-size: 11px;
+  color: #5a5a62;
+}

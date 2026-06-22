@@ -15,6 +15,7 @@ import type { ResolvedCompositeRequest, ResolvedLayer } from '../types/pipeline'
 import type { Marker } from '../types/marker';
 import { DEFAULT_CLIP_TRANSFORM } from '../types/clip-transform';
 import type { TrackIndex } from './track-index';
+import { findClipWithTrack } from '../systems/queries';
 
 /** Anchor frame for seek: point → frame, range → frameStart. */
 export function getMarkerAnchor(marker: Marker): TimelineFrame {
@@ -187,11 +188,5 @@ export function findClipById(
   state: TimelineState,
   clipId: ClipId,
 ): { clip: Clip; track: Track; trackIndex: number } | null {
-  const tracks = state.timeline.tracks;
-  for (let i = 0; i < tracks.length; i++) {
-    const track = tracks[i]!;
-    const clip = track.clips.find((c) => c.id === clipId);
-    if (clip) return { clip, track, trackIndex: i };
-  }
-  return null;
+  return findClipWithTrack(state, clipId);
 }

@@ -10,6 +10,7 @@ export default defineConfig({
   plugins: [tailwind(), react()],
   resolve: {
     alias: {
+      '@webpacked-timeline/ui/styles/studio': path.resolve(__dirname, '../../packages/ui/src/studio.css'),
       '@webpacked-timeline/ui/styles/davinci': path.resolve(__dirname, '../../packages/ui/src/davinci.css'),
       '@webpacked-timeline/ui/styles/tokens': path.resolve(__dirname, '../../packages/ui/src/tokens.css'),
       '@webpacked-timeline/ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),

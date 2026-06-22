@@ -47,8 +47,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/manas-timeline/timeline",
+    "url": "https://github.com/webpacked/timeline",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/manas-timeline/timeline/tree/main/packages/react#readme"
+  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/react/README.md"
 }

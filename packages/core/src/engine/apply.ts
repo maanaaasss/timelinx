@@ -547,6 +547,13 @@ function shiftLinkedMarkers(
   clipId: string,
   delta: number,
 ): Marker[] {
+  if (markers.length === 0) return markers as Marker[];
+  let hasLinked = false;
+  for (let i = 0; i < markers.length; i++) {
+    if (markers[i]!.clipId === clipId) { hasLinked = true; break; }
+  }
+  if (!hasLinked) return markers as Marker[];
+
   const shifted = markers.map((m) => {
     if (m.clipId !== clipId) return m;
     if (m.type === 'point') {
@@ -626,11 +633,17 @@ function updateClip(
       ...state.timeline,
       tracks: state.timeline.tracks.map((track) => {
         if (!track.clips.some((c) => c.id === clipId)) return track;
-        const updatedTrack = {
-          ...track,
-          clips: track.clips.map((c) => (c.id === clipId ? fn(c) : c)),
-        };
-        return sortTrackClips(updatedTrack);
+        const updatedClips = track.clips.map((c) => (c.id === clipId ? fn(c) : c));
+        // Only re-sort if position-affecting fields changed
+        const oldClip = track.clips.find((c) => c.id === clipId)!;
+        const newClip = updatedClips.find((c) => c.id === clipId)!;
+        const positionChanged =
+          oldClip.timelineStart !== newClip.timelineStart ||
+          oldClip.timelineEnd !== newClip.timelineEnd;
+        if (!positionChanged) {
+          return { ...track, clips: updatedClips };
+        }
+        return sortTrackClips({ ...track, clips: updatedClips });
       }),
     },
   };

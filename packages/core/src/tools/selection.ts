@@ -98,6 +98,43 @@ function collectClips(state: TimelineState, ids: ReadonlySet<ClipId>): Clip[] {
   return result;
 }
 
+/** Keep a dragged clip inside the timeline and out of occupied ranges. */
+function validSingleClipStart(
+  state: TimelineState,
+  clip: Clip,
+  requestedStart: TimelineFrame,
+): TimelineFrame {
+  const duration = clip.timelineEnd - clip.timelineStart;
+  const maxStart = Math.max(0, state.timeline.duration - duration);
+  const requested = Math.max(0, Math.min(requestedStart, maxStart));
+  const track = state.timeline.tracks.find((candidate) => candidate.id === clip.trackId);
+  if (!track) return requested as TimelineFrame;
+
+  const occupied = track.clips
+    .filter((candidate) => candidate.id !== clip.id)
+    .sort((a, b) => a.timelineStart - b.timelineStart);
+  const candidates = new Set<number>([requested, 0, maxStart]);
+  for (const candidate of occupied) {
+    candidates.add(Math.max(0, Math.min(candidate.timelineStart - duration, maxStart)));
+    candidates.add(Math.max(0, Math.min(candidate.timelineEnd, maxStart)));
+  }
+
+  let best = clip.timelineStart as number;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const candidate of candidates) {
+    const end = candidate + duration;
+    const overlaps = occupied.some(
+      (existing) => candidate < existing.timelineEnd && end > existing.timelineStart,
+    );
+    const distance = Math.abs(candidate - requested);
+    if (!overlaps && distance < bestDistance) {
+      best = candidate;
+      bestDistance = distance;
+    }
+  }
+  return best as TimelineFrame;
+}
+
 /** Make a unique transaction id. */
 let _txSeq = 0;
 function txId(): string { return `selection-tx-${++_txSeq}`; }
@@ -259,7 +296,11 @@ export class SelectionTool implements ITool {
       if (!orig) return null;
 
       const rawTarget     = (orig.timelineStart + frameDelta) as TimelineFrame;
-      const snappedStart  = ctx.snap(rawTarget, [this.dragClipId]);
+      const snappedStart  = validSingleClipStart(
+        ctx.state,
+        clip,
+        ctx.snap(rawTarget, [this.dragClipId]),
+      );
       const duration      = (clip.timelineEnd - clip.timelineStart) as TimelineFrame;
 
       return {
@@ -375,7 +416,13 @@ export class SelectionTool implements ITool {
 
       const frameDelta = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
       const rawTarget  = (orig.timelineStart + frameDelta) as TimelineFrame;
-      const snapped    = ctx.snap(rawTarget, [savedDragClipId]);
+      const clip = liveClip(ctx.state, savedDragClipId);
+      if (!clip) return null;
+      const snapped = validSingleClipStart(
+        ctx.state,
+        clip,
+        ctx.snap(rawTarget, [savedDragClipId]),
+      );
 
       if (snapped === orig.timelineStart) return null;   // no-op
 

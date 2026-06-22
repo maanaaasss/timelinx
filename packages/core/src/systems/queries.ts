@@ -157,3 +157,23 @@ export function getAllTracks(state: TimelineState): readonly Track[] {
 export function findTrackIndex(state: TimelineState, trackId: string): number {
   return state.timeline.tracks.findIndex(t => t.id === trackId);
 }
+
+/**
+ * Find a clip with its parent track and track index.
+ *
+ * @param state - Current timeline state
+ * @param clipId - ID of the clip to find
+ * @returns The clip + track + trackIndex, or null if not found
+ */
+export function findClipWithTrack(
+  state: TimelineState,
+  clipId: string,
+): { clip: Clip; track: Track; trackIndex: number } | null {
+  const tracks = state.timeline.tracks;
+  for (let i = 0; i < tracks.length; i++) {
+    const track = tracks[i]!;
+    const clip = track.clips.find((c) => c.id === clipId);
+    if (clip) return { clip, track, trackIndex: i };
+  }
+  return null;
+}

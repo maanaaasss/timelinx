@@ -8,6 +8,32 @@
 import React, { useState } from 'react';
 import { useTrackWithEngine } from '@webpacked-timeline/react';
 import { useTimelineContext } from '../../context/timeline-context';
+import {
+  IconLock,
+  IconLockOpen,
+  IconEye,
+  IconEyeOff,
+  IconX,
+  IconPlus,
+  IconHeadphones,
+  IconVolumeOff,
+} from './icons';
+
+// ── Shared button style ────────────────────────────────────────────────────
+
+const iconBtnBase: React.CSSProperties = {
+  width: 16,
+  height: 16,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 2,
+  cursor: 'pointer',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  lineHeight: 1,
+};
 
 // ── Props ──────────────────────────────────────────────────────────────────
 
@@ -22,7 +48,7 @@ export interface DaVinciTrackProps {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function DaVinciTrack({
+export const DaVinciTrack = React.memo(function DaVinciTrack({
   trackId,
   shortId,
   height,
@@ -36,6 +62,8 @@ export function DaVinciTrack({
   const [muteActive, setMuteActive] = useState(false);
   const [lockActive, setLockActive] = useState(false);
   const [visActive, setVisActive] = useState(true);
+  const [deleteHovered, setDeleteHovered] = useState(false);
+  const [addHovered, setAddHovered] = useState(false);
 
   if (!track) return null;
 
@@ -76,7 +104,7 @@ export function DaVinciTrack({
             fontFamily: 'monospace',
             fontWeight: 700,
             color: typeVar,
-            background: 'hsl(220 13% 16%)',
+            background: 'var(--tl-track-badge-bg)',
             padding: '1px 4px',
             borderRadius: 2,
             flexShrink: 0,
@@ -98,149 +126,117 @@ export function DaVinciTrack({
           {track.name ?? shortId}
         </span>
         <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-          <div
+          <button
             onClick={() => setLockActive(!lockActive)}
+            aria-pressed={lockActive}
+            aria-label={lockActive ? 'Unlock track' : 'Lock track'}
             style={{
-              width: 16,
-              height: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 9,
+              ...iconBtnBase,
               color: lockActive ? 'var(--tl-btn-text-active)' : 'var(--tl-label-text)',
-              background: lockActive ? 'hsl(220 13% 20%)' : 'transparent',
-              borderRadius: 2,
-              cursor: 'pointer',
+              background: lockActive ? 'var(--tl-track-toggle-active-bg)' : 'transparent',
             }}
           >
-            🔒
-          </div>
-          <div
+            {lockActive ? <IconLock size={12} /> : <IconLockOpen size={12} />}
+          </button>
+          <button
             onClick={() => setVisActive(!visActive)}
+            aria-pressed={visActive}
+            aria-label={visActive ? 'Hide track' : 'Show track'}
             style={{
-              width: 16,
-              height: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 9,
-              color: visActive ? 'var(--tl-label-text)' : 'hsl(0 0% 40%)',
-              background: !visActive ? 'hsl(220 13% 20%)' : 'transparent',
-              borderRadius: 2,
-              cursor: 'pointer',
+              ...iconBtnBase,
+              color: visActive ? 'var(--tl-label-text)' : 'var(--tl-track-vis-inactive)',
+              background: !visActive ? 'var(--tl-track-toggle-active-bg)' : 'transparent',
             }}
           >
-            👁
-          </div>
+            {visActive ? <IconEye size={12} /> : <IconEyeOff size={12} />}
+          </button>
         </div>
       </div>
 
       {/* Delete track button — top-right */}
-      <div
+      <button
         onClick={(ev) => {
           ev.stopPropagation();
           onDelete(trackId);
         }}
+        onMouseEnter={() => setDeleteHovered(true)}
+        onMouseLeave={() => setDeleteHovered(false)}
+        aria-label="Delete track"
         style={{
+          ...iconBtnBase,
           position: 'absolute',
           top: 2,
           right: 6,
-          width: 16,
-          height: 16,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 11,
-          color: 'var(--tl-label-text-dim)',
-          cursor: 'pointer',
-          borderRadius: 2,
-          background: 'transparent',
+          color: deleteHovered ? '#fff' : 'var(--tl-label-text-dim)',
+          background: deleteHovered ? 'var(--tl-track-delete-hover)' : 'transparent',
         }}
-        onMouseEnter={(ev) => {
-          (ev.currentTarget as HTMLElement).style.background = 'hsl(0 60% 40%)';
-          (ev.currentTarget as HTMLElement).style.color = '#fff';
-        }}
-        onMouseLeave={(ev) => {
-          (ev.currentTarget as HTMLElement).style.background = 'transparent';
-          (ev.currentTarget as HTMLElement).style.color = 'var(--tl-label-text-dim)';
-        }}
-        title="Delete track"
       >
-        ×
-      </div>
+        <IconX size={12} />
+      </button>
 
       {/* Row 2: clip count + add clip + S/M buttons for audio */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '1px 6px 0 10px', gap: 4 }}>
         <span style={{ fontSize: 10, color: 'var(--tl-label-text-dim)' }}>
           {clipCount} Clip{clipCount !== 1 ? 's' : ''}
         </span>
-        <div
+        <button
           onClick={(ev) => {
             ev.stopPropagation();
             onAddClip(trackId);
           }}
+          onMouseEnter={() => setAddHovered(true)}
+          onMouseLeave={() => setAddHovered(false)}
+          aria-label="Add clip to this track"
           style={{
+            ...iconBtnBase,
+            width: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
             fontSize: 9,
-            color: 'hsl(220 10% 55%)',
-            cursor: 'pointer',
+            color: addHovered ? 'var(--tl-track-add-hover)' : 'var(--tl-track-add-text)',
             padding: '0 3px',
-            borderRadius: 2,
-            background: 'transparent',
           }}
-          onMouseEnter={(ev) => {
-            (ev.currentTarget as HTMLElement).style.color = 'hsl(213 70% 55%)';
-          }}
-          onMouseLeave={(ev) => {
-            (ev.currentTarget as HTMLElement).style.color = 'hsl(220 10% 55%)';
-          }}
-          title="Add clip to this track"
         >
-          + Clip
-        </div>
+          <IconPlus size={10} />
+          <span>Clip</span>
+        </button>
         <div style={{ flex: 1 }} />
         {isAudio && (
           <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-            <div
+            <button
               onClick={() => setSoloActive(!soloActive)}
+              aria-pressed={soloActive}
+              aria-label="Solo"
               style={{
+                ...iconBtnBase,
                 width: 20,
                 height: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 9,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                color: soloActive ? 'hsl(0 0% 10%)' : 'var(--tl-label-text)',
-                background: soloActive ? 'var(--tl-solo-active)' : 'hsl(220 13% 16%)',
+                color: soloActive ? 'var(--tl-track-solo-active-text)' : 'var(--tl-label-text)',
+                background: soloActive ? 'var(--tl-solo-active)' : 'var(--tl-track-badge-bg)',
                 borderRadius: 8,
-                cursor: 'pointer',
               }}
             >
-              S
-            </div>
-            <div
+              <IconHeadphones size={10} />
+            </button>
+            <button
               onClick={() => setMuteActive(!muteActive)}
+              aria-pressed={muteActive}
+              aria-label="Mute"
               style={{
+                ...iconBtnBase,
                 width: 20,
                 height: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 9,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                color: muteActive ? 'hsl(0 0% 100%)' : 'var(--tl-label-text)',
-                background: muteActive ? 'var(--tl-mute-active)' : 'hsl(220 13% 16%)',
+                color: muteActive ? 'var(--tl-track-mute-active-text)' : 'var(--tl-label-text)',
+                background: muteActive ? 'var(--tl-mute-active)' : 'var(--tl-track-badge-bg)',
                 borderRadius: 8,
-                cursor: 'pointer',
               }}
             >
-              M
-            </div>
+              <IconVolumeOff size={10} />
+            </button>
           </div>
         )}
       </div>
     </div>
   );
-}
+});

@@ -127,18 +127,6 @@ export {
 } from './tools/provisional';
 export type { ProvisionalManager } from './tools/provisional';
 
-// Marker search (Phase 3)
-export { findMarkersByColor, findMarkersByLabel } from './engine/marker-search';
-
-// Subtitle import (Phase 3 Step 3)
-export {
-  parseSRT,
-  parseVTT,
-  defaultCaptionStyle,
-  subtitleImportToOps,
-} from './engine/subtitle-import';
-export type { SRTParseOptions, VTTParseOptions } from './engine/subtitle-import';
-
 // ── Phase 4: Easing, Keyframes, Effects, Transform, Audio, Transitions, Groups ─
 
 export type { EasingCurve } from './types/easing';
@@ -199,58 +187,7 @@ export { SlideTool } from './tools/slide-tool';
 export { ZoomTool, createZoomTool } from './tools/zoom-tool';
 export type { ZoomToolOptions } from './tools/zoom-tool';
 
-// Phase 5 Step 1: Serialization
-export {
-  SerializationError,
-  serializeTimeline,
-  deserializeTimeline,
-  remapAssetPaths,
-  findOfflineAssets,
-} from './engine/serializer';
-export type { AssetRemapCallback, OfflineAsset } from './engine/serializer';
-
-// Phase 5 Step 2: OTIO interchange
-export { exportToOTIO } from './engine/otio-export';
-export { importFromOTIO } from './engine/otio-import';
-export type { OTIODocument } from './engine/otio-export';
-export type { OTIOImportOptions } from './engine/otio-import';
-
-// Phase 5 Step 3: EDL export
-export { exportToEDL, frameToTimecode, reelName } from './engine/edl-export';
-export type { EDLExportOptions } from './engine/edl-export';
-
-// Phase 5 Step 4: AAF and FCP XML export
-export { exportToAAF } from './engine/aaf-export';
-export type { AAFExportOptions } from './engine/aaf-export';
-export { exportToFCPXML, toFCPTime } from './engine/fcpxml-export';
-export type { FCPXMLExportOptions } from './engine/fcpxml-export';
-
-// Phase 5 Step 5: Project model + bins
-export type {
-  ProjectId,
-  BinId,
-  BinItem,
-  Bin,
-  Project,
-} from './types/project';
-export {
-  toProjectId,
-  toBinId,
-  createBin,
-  createProject,
-} from './types/project';
-export {
-  addTimeline,
-  removeTimeline,
-  addBin,
-  removeBin,
-  addItemToBin,
-  removeItemFromBin,
-  moveItemBetweenBins,
-} from './engine/project-ops';
-export { serializeProject, deserializeProject } from './engine/project-serializer';
-
-// Phase 6 Step 1: Playhead
+// ── Phase 6 Step 1: Playhead
 export { PlayheadController } from './engine/playhead-controller';
 export type {
   PlayheadState,
@@ -301,21 +238,6 @@ export { getVisibleClips, getVisibleFrameRange } from './engine/virtual-window';
 export type { VirtualWindow, VirtualClipEntry } from './engine/virtual-window';
 export { diffStates, EMPTY_STATE_CHANGE } from './types/state-change';
 export type { StateChange } from './types/state-change';
-
-// Phase 7 Step 4: Worker contracts, thumbnail cache/queue
-export type {
-  WaveformRequest,
-  WaveformPeak,
-  WaveformResult,
-  WaveformWorkerMessage,
-  WaveformWorkerResponse,
-  ThumbnailPriority,
-  ThumbnailQueueEntry,
-  ThumbnailWorkerMessage,
-  ThumbnailWorkerResponse,
-} from './types/worker-contracts';
-export { ThumbnailCache } from './engine/thumbnail-cache';
-export { ThumbnailQueue } from './engine/thumbnail-queue';
 
 // Phase 6 Step 4: Keyboard (J/K/L jog-shuttle)
 export type {

@@ -4,7 +4,7 @@
  * Provides engine, zoom/scroll state, and layout constants to all
  * child components via React context. No prop drilling needed.
  */
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
 import type { TimelineEngine } from '@webpacked-timeline/react';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -45,9 +45,9 @@ export function TimelineProvider({
   children,
   initialPpf = 4,
   onPpfChange,
-  labelWidth = 200,
-  rulerHeight = 32,
-  toolbarHeight = 40,
+  labelWidth = 176,
+  rulerHeight = 28,
+  toolbarHeight = 42,
 }: TimelineProviderProps) {
   // ── PPF (pixels per frame) ──
   const [ppf, setPpfState] = useState(initialPpf);
@@ -76,20 +76,23 @@ export function TimelineProvider({
   // ── Viewport width ──
   const [vpWidth, setVpWidth] = useState(1200);
 
-  const value: TimelineContextValue = {
-    engine,
-    ppf,
-    ppfRef,
-    setPpf,
-    scrollLeft,
-    scrollRef,
-    setScrollLeft,
-    vpWidth,
-    setVpWidth,
-    labelWidth,
-    rulerHeight,
-    toolbarHeight,
-  };
+  const value: TimelineContextValue = useMemo(
+    () => ({
+      engine,
+      ppf,
+      ppfRef,
+      setPpf,
+      scrollLeft,
+      scrollRef,
+      setScrollLeft,
+      vpWidth,
+      setVpWidth,
+      labelWidth,
+      rulerHeight,
+      toolbarHeight,
+    }),
+    [engine, ppf, scrollLeft, vpWidth, setPpf, setScrollLeft, setVpWidth, labelWidth, rulerHeight, toolbarHeight],
+  );
 
   return <TimelineCtx.Provider value={value}>{children}</TimelineCtx.Provider>;
 }

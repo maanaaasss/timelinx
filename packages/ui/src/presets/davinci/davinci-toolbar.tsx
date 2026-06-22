@@ -13,13 +13,13 @@ import {
 } from '@webpacked-timeline/react';
 import { useTimelineContext } from '../../context/timeline-context';
 import {
-  TOOL_ICONS,
-  IconZoomOut,
   IconZoomIn,
+  IconZoomOut,
   IconUndo,
   IconRedo,
   IconPlayerPlay,
   IconPlayerPause,
+  TOOL_ICONS,
 } from './icons';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ const zoomBtnStyle: React.CSSProperties = {
 
 // ── Component ──────────────────────────────────────────────────────────────
 
-export function DaVinciToolbar() {
+export const DaVinciToolbar = React.memo(function DaVinciToolbar() {
   const { engine, ppf, setPpf, toolbarHeight } = useTimelineContext();
   const toolId = useActiveToolId(engine);
   const isPlaying = useIsPlaying(engine);
@@ -60,20 +60,23 @@ export function DaVinciToolbar() {
 
   return (
     <div
+      className="tl-toolbar"
+      role="toolbar"
+      aria-label="Timeline tools"
       style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 12px',
+        padding: '0 8px',
         background: 'var(--tl-toolbar-bg)',
         borderBottom: '1px solid var(--tl-toolbar-border)',
         height: toolbarHeight,
         flexShrink: 0,
-        gap: 12,
+        gap: 8,
       }}
     >
       {/* ── Left group: tool buttons ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div className="tl-toolbar-group tl-toolbar-tools" role="radiogroup" aria-label="Editing tools">
         {TOOLS.map((tool) => {
           const Icon = TOOL_ICONS[tool.id];
           const isActive = toolId === tool.id;
@@ -83,19 +86,19 @@ export function DaVinciToolbar() {
               className="tl-btn"
               onClick={() => engine.activateTool(tool.id)}
               title={`${tool.label} (${tool.key})`}
+              aria-label={`${tool.label} tool (${tool.key})`}
+              role="radio"
+              aria-checked={isActive}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 28,
-                height: 26,
+                width: 30,
+                height: 28,
                 background: isActive ? 'var(--tl-btn-bg-active)' : 'transparent',
                 color: isActive ? 'var(--tl-btn-text-active)' : 'var(--tl-btn-text)',
-                border: 'none',
-                borderBottom: isActive
-                  ? '2px solid var(--tl-btn-border-active)'
-                  : '2px solid transparent',
-                borderRadius: 3,
+                border: isActive ? '1px solid var(--tl-btn-border-active)' : '1px solid transparent',
+                borderRadius: 4,
                 cursor: 'pointer',
                 padding: 0,
               }}
@@ -107,8 +110,8 @@ export function DaVinciToolbar() {
       </div>
 
       {/* ── Center group: zoom ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <button className="tl-btn" onClick={() => setPpf(ppf * 0.8)} style={zoomBtnStyle} title="Zoom Out">
+      <div className="tl-toolbar-group tl-toolbar-zoom">
+        <button className="tl-btn" onClick={() => setPpf(ppf * 0.8)} style={zoomBtnStyle} aria-label="Zoom Out" title="Zoom Out">
           <IconZoomOut size={14} />
         </button>
         <input
@@ -118,23 +121,25 @@ export function DaVinciToolbar() {
           step={0.01}
           value={Math.log(ppf)}
           onChange={(e) => setPpf(Math.exp(parseFloat(e.target.value)))}
-          style={{ width: 80, cursor: 'pointer' }}
+          aria-label="Zoom level"
+          style={{ width: 92, cursor: 'pointer' }}
         />
-        <button className="tl-btn" onClick={() => setPpf(ppf * 1.25)} style={zoomBtnStyle} title="Zoom In">
+        <button className="tl-btn" onClick={() => setPpf(ppf * 1.25)} style={zoomBtnStyle} aria-label="Zoom In" title="Zoom In">
           <IconZoomIn size={14} />
         </button>
         <span style={{ fontFamily: 'monospace', fontSize: 10, color: 'var(--tl-ruler-text)', minWidth: 46 }}>
-          {ppf.toFixed(1)}px/f
+          {Math.round(ppf * 100) / 100} px/f
         </span>
       </div>
 
       {/* ── Right group: undo/redo + play ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div className="tl-toolbar-group tl-toolbar-history">
         <button
           className="tl-btn"
           onClick={() => engine.undo()}
           disabled={!history.canUndo}
           style={{ ...zoomBtnStyle, opacity: history.canUndo ? 1 : 0.3 }}
+          aria-label="Undo (Cmd+Z)"
           title="Undo (Cmd+Z)"
         >
           <IconUndo size={14} />
@@ -144,18 +149,20 @@ export function DaVinciToolbar() {
           onClick={() => engine.redo()}
           disabled={!history.canRedo}
           style={{ ...zoomBtnStyle, opacity: history.canRedo ? 1 : 0.3 }}
+          aria-label="Redo (Cmd+Shift+Z)"
           title="Redo (Cmd+Shift+Z)"
         >
           <IconRedo size={14} />
         </button>
 
         {/* Separator */}
-        <div style={{ width: 1, height: 20, background: 'hsl(220 13% 22%)', margin: '0 4px' }} />
+        <div style={{ width: 1, height: 20, background: 'var(--tl-separator)', margin: '0 4px' }} />
 
         <button
           className="tl-btn"
           onClick={() => (isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play())}
-          style={{ ...zoomBtnStyle, color: isPlaying ? 'var(--tl-playhead-color)' : 'hsl(0 0% 85%)' }}
+          style={{ ...zoomBtnStyle, color: isPlaying ? 'var(--tl-playhead-color)' : 'var(--tl-play-btn)' }}
+          aria-label={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
           title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
         >
           {isPlaying ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
@@ -176,4 +183,4 @@ export function DaVinciToolbar() {
       </div>
     </div>
   );
-}
+});

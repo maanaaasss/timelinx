@@ -48,11 +48,12 @@ import { DaVinciRuler } from './davinci-ruler';
 import { DaVinciTrack } from './davinci-track';
 import { DaVinciClip } from './davinci-clip';
 import { DaVinciPlayhead } from './davinci-playhead';
+import { IconPlus, IconFilm, IconHeadphones } from './icons';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const DEFAULT_TRACK_HEIGHT_VIDEO = 80;
-const DEFAULT_TRACK_HEIGHT_AUDIO = 80;
+const DEFAULT_TRACK_HEIGHT_VIDEO = 68;
+const DEFAULT_TRACK_HEIGHT_AUDIO = 58;
 const MIN_TRACK_HEIGHT = 32;
 const MAX_TRACK_HEIGHT = 125;
 
@@ -82,7 +83,7 @@ function getShortTrackId(
 
 // ── ClipRow (internal) ─────────────────────────────────────────────────────
 
-function ClipRow({
+const ClipRow = React.memo(function ClipRow({
   trackId,
   ppf,
   provisional,
@@ -133,7 +134,7 @@ function ClipRow({
               left: 0,
               right: 0,
               top: '50%',
-              borderTop: '1px dashed hsl(220 13% 22%)',
+              borderTop: '1px dashed var(--tl-separator)',
               pointerEvents: 'none',
             }}
           />
@@ -145,7 +146,7 @@ function ClipRow({
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
                 fontSize: 11,
-                color: 'hsl(220 10% 35%)',
+                color: 'var(--tl-label-text-dim)',
                 pointerEvents: 'none',
                 whiteSpace: 'nowrap',
               }}
@@ -174,7 +175,7 @@ function ClipRow({
       ))}
     </div>
   );
-}
+});
 
 // ── Public Props ───────────────────────────────────────────────────────────
 
@@ -185,6 +186,8 @@ export interface DaVinciEditorProps {
   onPpfChange?: (ppf: number) => void;
   /** Editor calls this on mount with its setPpf function (for engine → editor zoom) */
   registerZoomHandler?: (handler: (ppf: number) => void) => void;
+  /** Receives assets dragged from a host application's media browser. */
+  onAssetDrop?: (drop: { assetId: string; trackId: string; frame: number }) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -196,6 +199,7 @@ export function DaVinciEditor({
   initialPpf = 4,
   onPpfChange,
   registerZoomHandler,
+  onAssetDrop,
   className,
   style,
 }: DaVinciEditorProps) {
@@ -203,6 +207,7 @@ export function DaVinciEditor({
     <TimelineProvider engine={engine} initialPpf={initialPpf} onPpfChange={onPpfChange}>
       <EditorInner
         registerZoomHandler={registerZoomHandler}
+        onAssetDrop={onAssetDrop}
         className={className}
         style={style}
       />
@@ -214,10 +219,12 @@ export function DaVinciEditor({
 
 function EditorInner({
   registerZoomHandler,
+  onAssetDrop,
   className,
   style,
 }: {
   registerZoomHandler?: (handler: (ppf: number) => void) => void;
+  onAssetDrop?: (drop: { assetId: string; trackId: string; frame: number }) => void;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -250,6 +257,7 @@ function EditorInner({
 
   // ── Track height state ──
   const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
+  const [dropTarget, setDropTarget] = useState<{ trackId: string; frame: number } | null>(null);
 
   // ── Engine data ──
   const trackIds = useTrackIdsWithEngine(engine);
@@ -429,9 +437,8 @@ function EditorInner({
     registerZoomHandler?.(setPpf);
   }, [registerZoomHandler, setPpf]);
 
-  // ── Playhead auto-scroll during playback ──
+  // ── Keep seeks, drops, and playback inside the visible timeline window ──
   useEffect(() => {
-    if (!isPlaying) return;
     const playheadX = (frame as number) * ppfRef.current;
     const viewStart = scrollRef.current;
     const viewEnd = viewStart + vpWidth;
@@ -442,7 +449,7 @@ function EditorInner({
       }
       setScrollLeft(newScroll);
     }
-  }, [frame, isPlaying, vpWidth, setScrollLeft, ppfRef, scrollRef]);
+  }, [frame, vpWidth, setScrollLeft, ppfRef, scrollRef]);
 
   // ── Track resize: document-level listeners ──
   useEffect(() => {
@@ -703,6 +710,42 @@ function EditorInner({
     [setScrollLeft],
   );
 
+  const getDropTarget = useCallback((e: React.DragEvent) => {
+    const area = trackAreaRef.current;
+    if (!area) return null;
+    let el = e.target as HTMLElement | null;
+    let trackId: string | null = null;
+    while (el && el !== area) {
+      if (el.dataset.trackId) {
+        trackId = el.dataset.trackId;
+        break;
+      }
+      el = el.parentElement;
+    }
+    if (!trackId) return null;
+    const rect = area.getBoundingClientRect();
+    return {
+      trackId,
+      frame: Math.max(0, Math.min(durationFrames - 1, Math.round((e.clientX - rect.left) / ppfRef.current))),
+    };
+  }, [durationFrames, ppfRef]);
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    if (!onAssetDrop) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setDropTarget(getDropTarget(e));
+  }, [getDropTarget, onAssetDrop]);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    if (!onAssetDrop) return;
+    e.preventDefault();
+    const target = getDropTarget(e);
+    const assetId = e.dataTransfer.getData('application/x-timeline-asset');
+    setDropTarget(null);
+    if (target && assetId) onAssetDrop({ assetId, ...target });
+  }, [getDropTarget, onAssetDrop]);
+
   // ── Computed ──
   const timelineWidth = durationFrames * ppf;
   const firstAudioIdx = trackIds.findIndex((tid) => trackTypesMap.get(tid) === 'audio');
@@ -711,14 +754,16 @@ function EditorInner({
 
   return (
     <div
-      className={className}
+      className={`tl-editor${className ? ` ${className}` : ''}`}
+      role="application"
+      aria-label="Timeline editor"
       style={{
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         background: 'var(--tl-app-bg)',
-        color: 'hsl(220 10% 85%)',
-        fontFamily: 'system-ui, sans-serif',
+        color: 'var(--tl-text)',
+        fontFamily: 'var(--tl-font-ui)',
         ...style,
       }}
       onKeyDown={onKeyDown}
@@ -761,37 +806,47 @@ function EditorInner({
               onClick={() => addTrack('video')}
               style={{
                 flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
                 padding: '1px 0',
                 fontSize: 9,
                 fontFamily: 'system-ui, sans-serif',
                 background: 'transparent',
                 color: 'var(--tl-label-text-dim)',
-                border: '1px solid hsl(220 13% 25%)',
+                border: '1px solid var(--tl-add-track-border)',
                 borderRadius: 3,
                 cursor: 'pointer',
                 fontWeight: 400,
                 height: 18,
               }}
             >
-              + Video
+              <IconPlus size={10} />
+              <IconFilm size={10} />
             </button>
             <button
               onClick={() => addTrack('audio')}
               style={{
                 flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 3,
                 padding: '1px 0',
                 fontSize: 9,
                 fontFamily: 'system-ui, sans-serif',
                 background: 'transparent',
                 color: 'var(--tl-label-text-dim)',
-                border: '1px solid hsl(220 13% 25%)',
+                border: '1px solid var(--tl-add-track-border)',
                 borderRadius: 3,
                 cursor: 'pointer',
                 fontWeight: 400,
                 height: 18,
               }}
             >
-              + Audio
+              <IconPlus size={10} />
+              <IconHeadphones size={10} />
             </button>
           </div>
           {trackIds.map((tid, i) => {
@@ -801,7 +856,7 @@ function EditorInner({
             const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
             return (
               <div key={tid} style={{ position: 'relative' }}>
-                {isSep && <div style={{ height: 2, background: 'hsl(220 13% 22%)' }} />}
+                {isSep && <div style={{ height: 2, background: 'var(--tl-separator)' }} />}
                 <DaVinciTrack
                   trackId={tid}
                   shortId={shortId}
@@ -812,6 +867,10 @@ function EditorInner({
                 />
                 {/* Resize handle */}
                 <div
+                  role="separator"
+                  aria-orientation="horizontal"
+                  aria-label={`Resize ${tid}`}
+                  tabIndex={0}
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -824,12 +883,6 @@ function EditorInner({
                   onPointerDown={(e) => {
                     e.stopPropagation();
                     resizeDragRef.current = { trackId: tid, startY: e.clientY, startHeight: h };
-                  }}
-                  onMouseEnter={(ev) => {
-                    (ev.currentTarget as HTMLElement).style.background = 'var(--tl-resize-handle)';
-                  }}
-                  onMouseLeave={(ev) => {
-                    (ev.currentTarget as HTMLElement).style.background = 'transparent';
                   }}
                 />
               </div>
@@ -868,13 +921,18 @@ function EditorInner({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerLeave}
+            onDragOver={onDragOver}
+            onDragLeave={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget(null);
+            }}
+            onDrop={onDrop}
           >
             {/* Track clip rows */}
             {trackIds.map((tid, i) => {
               const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
               return (
                 <React.Fragment key={tid}>
-                  {isSep && <div style={{ height: 2, background: 'hsl(220 13% 22%)' }} />}
+                  {isSep && <div style={{ height: 2, background: 'var(--tl-separator)' }} />}
                   <ClipRow
                     trackId={tid}
                     ppf={ppf}
@@ -906,6 +964,15 @@ function EditorInner({
                 }}
               />
             ))}
+
+            {dropTarget && (
+              <div
+                className="tl-drop-indicator"
+                style={{ left: dropTarget.frame * ppf, height: totalTrackHeight, top: 24 }}
+              >
+                <span>{dropTarget.frame}</span>
+              </div>
+            )}
 
             {/* Playhead */}
             <DaVinciPlayhead totalHeight={totalTrackHeight} topOffset={24} />
