@@ -40,6 +40,76 @@ function formatTimecode(frame: number, fps: number): string {
   return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
 }
 
+/**
+ * Generate a deterministic pseudo-random number from a string seed.
+ * Used for generating consistent thumbnail patterns per clip.
+ */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Generate thumbnail strip background for video clips.
+ * Creates a pattern of vertical "frames" with varying brightness.
+ */
+function generateThumbnailStyle(clipId: string, width: number, height: number): React.CSSProperties {
+  const seed = hashString(clipId as string);
+  const frameCount = Math.max(3, Math.floor(width / 40));
+
+  // Generate frame brightness values
+  const frames: string[] = [];
+  for (let i = 0; i < frameCount; i++) {
+    const hue = ((seed + i * 37) % 60) + 200; // Blue-ish hue range
+    const lightness = 25 + ((seed + i * 13) % 15); // 25-40% lightness
+    frames.push(`hsl(${hue}, 40%, ${lightness}%)`);
+  }
+
+  // Create a repeating gradient that simulates thumbnail frames
+  const frameWidth = 100 / frameCount;
+  const gradientStops = frames.map((color, i) => {
+    const start = i * frameWidth;
+    const end = (i + 1) * frameWidth;
+    return `${color} ${start}%, ${color} ${end}%`;
+  }).join(', ');
+
+  return {
+    background: `linear-gradient(90deg, ${gradientStops})`,
+  };
+}
+
+/**
+ * Generate waveform-like pattern for audio clips.
+ */
+function generateWaveformStyle(clipId: string, width: number, height: number): React.CSSProperties {
+  const seed = hashString(clipId as string);
+  const barCount = Math.max(5, Math.floor(width / 6));
+
+  // Create a repeating gradient that simulates waveform bars
+  const bars: string[] = [];
+  for (let i = 0; i < barCount; i++) {
+    const amplitude = 30 + ((seed + i * 17) % 40); // 30-70% amplitude
+    const barWidth = 100 / barCount;
+    const center = 50;
+    const barTop = center - amplitude / 2;
+    const barBottom = center + amplitude / 2;
+
+    bars.push(`transparent ${barTop}%`);
+    bars.push(`rgba(255,255,255,0.15) ${barTop}%`);
+    bars.push(`rgba(255,255,255,0.15) ${barBottom}%`);
+    bars.push(`transparent ${barBottom}%`);
+  }
+
+  return {
+    background: `linear-gradient(180deg, ${bars.join(', ')})`,
+  };
+}
+
 export const TimelineClip = React.memo(function TimelineClip({
   clip,
   trackId,
@@ -62,6 +132,12 @@ export const TimelineClip = React.memo(function TimelineClip({
   const showName = width > 40;
   const showMeta = width > 140;
   const showIcon = width > 50;
+  const showThumbnails = trackType === 'video' && width > 60;
+  const showWaveform = isAudio && width > 40;
+
+  // Generate thumbnail/waveform styles
+  const thumbnailStyle = showThumbnails ? generateThumbnailStyle(clip.id as string, width, height) : {};
+  const waveformStyle = showWaveform ? generateWaveformStyle(clip.id as string, width, height) : {};
 
   return (
     <div
@@ -77,16 +153,51 @@ export const TimelineClip = React.memo(function TimelineClip({
         ...style,
       }}
     >
-      {/* Inner highlight */}
+      {/* Thumbnail strip for video clips */}
+      {showThumbnails && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            ...thumbnailStyle,
+            opacity: 0.6,
+            borderRadius: 'var(--tl-clip-radius)',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Waveform for audio clips */}
+      {showWaveform && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            ...waveformStyle,
+            borderRadius: 'var(--tl-clip-radius)',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
+      {/* Dark overlay for readability */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '50%',
-          background: 'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, transparent 100%)',
-          borderRadius: 'var(--tl-clip-radius) var(--tl-clip-radius) 0 0',
+          bottom: 0,
+          background: showThumbnails
+            ? 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)'
+            : 'linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 100%)',
+          borderRadius: 'var(--tl-clip-radius)',
           pointerEvents: 'none',
         }}
       />
@@ -113,11 +224,11 @@ export const TimelineClip = React.memo(function TimelineClip({
               width: 20,
               height: 20,
               borderRadius: 5,
-              background: 'rgba(255,255,255,0.1)',
+              background: showThumbnails ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.1)',
               flexShrink: 0,
             }}
           >
-            <IconComponent size={11} style={{ color: 'rgba(255,255,255,0.8)' }} />
+            <IconComponent size={11} style={{ color: 'rgba(255,255,255,0.9)' }} />
           </div>
         )}
 
@@ -141,6 +252,7 @@ export const TimelineClip = React.memo(function TimelineClip({
                 color: 'var(--tl-clip-text)',
                 lineHeight: '1.2',
                 letterSpacing: '-0.01em',
+                textShadow: showThumbnails ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
               }}
             >
               {clipName}
@@ -150,9 +262,10 @@ export const TimelineClip = React.memo(function TimelineClip({
                 style={{
                   fontSize: 10,
                   fontFamily: 'var(--tl-font-mono)',
-                  color: 'rgba(255,255,255,0.35)',
+                  color: 'rgba(255,255,255,0.4)',
                   lineHeight: '1.2',
                   letterSpacing: '0.02em',
+                  textShadow: showThumbnails ? '0 1px 2px rgba(0,0,0,0.5)' : 'none',
                 }}
               >
                 {formatTimecode(clip.timelineStart as number, 30)}
