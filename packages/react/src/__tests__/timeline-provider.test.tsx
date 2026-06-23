@@ -10,7 +10,7 @@ import {
   createTimelineState,
   toFrame,
   frameRate,
-} from '@webpacked-timeline/core';
+} from '@timelinx/core';
 import {
   TimelineEngine,         // Phase 1 engine from @webpacked-timeline/react
   TimelineProvider,

@@ -27,8 +27,8 @@ import {
   toTrackId,
   toClipId,
   toAssetId,
-} from '@webpacked-timeline/core';
-import type { ClipId, TrackId, Transaction } from '@webpacked-timeline/core';
+} from '@timelinx/core';
+import type { ClipId, TrackId, Transaction } from '@timelinx/core';
 
 import { TimelineProvider, TimelineEngine } from '../index';
 import {

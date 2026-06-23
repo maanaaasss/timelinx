@@ -8,9 +8,9 @@
 import { useSyncExternalStore } from 'react';
 import type { TimelineEngine } from '../engine';
 import type { EngineSnapshot } from '../types/engine-snapshot';
-import type { Timeline, Track, Clip } from '@webpacked-timeline/core';
-import type { TrackId, ClipId } from '@webpacked-timeline/core';
-import type { TimelineFrame, ProvisionalState, StateChange } from '@webpacked-timeline/core';
+import type { Timeline, Track, Clip } from '@timelinx/core';
+import type { TrackId, ClipId } from '@timelinx/core';
+import type { TimelineFrame, ProvisionalState, StateChange } from '@timelinx/core';
 
 type Marker = Timeline['markers'][number];
 
@@ -225,7 +225,7 @@ export function useChange(engine: TimelineEngine): StateChange {
 // usePlaybackEngine
 // ---------------------------------------------------------------------------
 
-import type { PlaybackEngine } from '@webpacked-timeline/core';
+import type { PlaybackEngine } from '@timelinx/core';
 
 export function usePlaybackEngine(engine: TimelineEngine): PlaybackEngine | null {
   return engine.playbackEngine;

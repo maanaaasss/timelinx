@@ -8,8 +8,8 @@
 
 import { useMemo, useSyncExternalStore, useRef } from 'react';
 import type { TimelineEngine } from '../engine';
-import type { VirtualWindow, VirtualClipEntry, TimelineState } from '@webpacked-timeline/core';
-import { getVisibleFrameRange, getVisibleClips } from '@webpacked-timeline/core';
+import type { VirtualWindow, VirtualClipEntry, TimelineState } from '@timelinx/core';
+import { getVisibleFrameRange, getVisibleClips } from '@timelinx/core';
 
 export function useVirtualWindow(
   _engine: TimelineEngine,

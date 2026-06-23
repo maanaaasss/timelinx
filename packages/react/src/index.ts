@@ -1,12 +1,12 @@
 /**
  * @webpacked-timeline/react
  *
- * React adapter for @webpacked-timeline/core. Provides the TimelineProvider context
+ * React adapter for @timelinx/core. Provides the TimelineProvider context
  * and all Phase 1 hooks for subscribing to engine state.
  *
  * @example
  * ```tsx
- * import { TimelineEngine, createTimeline, createTimelineState, toFrame, frameRate } from '@webpacked-timeline/core';
+ * import { TimelineEngine, createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
  * import { TimelineProvider, useTimeline, useTrackIds } from '@webpacked-timeline/react';
  *
  * const engine = new TimelineEngine(createTimelineState({

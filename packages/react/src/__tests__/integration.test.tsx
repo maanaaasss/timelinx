@@ -21,9 +21,9 @@ import {
   toClipId,
   toAssetId,
   createTestClock,
-} from '@webpacked-timeline/core';
-import type { PipelineConfig } from '@webpacked-timeline/core';
-import type { VirtualWindow } from '@webpacked-timeline/core';
+} from '@timelinx/core';
+import type { PipelineConfig } from '@timelinx/core';
+import type { VirtualWindow } from '@timelinx/core';
 import { TimelineEngine } from '../engine';
 import {
   useTrackIds,

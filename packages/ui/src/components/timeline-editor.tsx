@@ -301,7 +301,7 @@ function EditorInner({
   const addClip = useCallback(
     (trackId: string) => {
       const state = engine.getState();
-      const track = state.timeline.tracks.find((t) => (t.id as string) === trackId);
+      const track = state.timeline.tracks.find((t: any) => (t.id as string) === trackId);
       const lastClip = track?.clips.reduce(
         (latest: any, c: any) =>
           (c.timelineEnd as number) > ((latest?.timelineEnd as number) ?? 0) ? c : latest,
@@ -559,7 +559,7 @@ function EditorInner({
           const ops: Array<{ type: 'DELETE_CLIP'; clipId: ClipId; trackId: TrackId }> = [];
           for (const cid of sel) {
             for (const trk of engine.getState().timeline.tracks) {
-              const c = trk.clips.find((cl) => cl.id === cid);
+              const c = trk.clips.find((cl: any) => cl.id === cid);
               if (c) {
                 ops.push({ type: 'DELETE_CLIP', clipId: c.id, trackId: trk.id });
                 break;

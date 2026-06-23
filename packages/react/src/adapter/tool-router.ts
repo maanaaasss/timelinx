@@ -8,8 +8,8 @@
 
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { TimelineEngine } from '../engine';
-import type { TimelinePointerEvent, TimelineKeyEvent, Modifiers, ClipId, TrackId } from '@webpacked-timeline/core';
-import type { TimelineFrame } from '@webpacked-timeline/core';
+import type { TimelinePointerEvent, TimelineKeyEvent, Modifiers, ClipId, TrackId } from '@timelinx/core';
+import type { TimelineFrame } from '@timelinx/core';
 
 export type ToolRouterOptions = {
   engine: TimelineEngine;

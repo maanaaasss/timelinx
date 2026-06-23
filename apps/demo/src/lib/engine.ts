@@ -6,9 +6,9 @@ import {
   createAsset,
   toFrame,
   frameRate,
-} from '@webpacked-timeline/core';
-import type { TimelineState, Asset, Track, Timecode, AssetId, PipelineConfig, VideoFrameResult, CompositeResult } from '@webpacked-timeline/core';
-import { TimelineEngine } from '@webpacked-timeline/react';
+} from '@timelinx/core';
+import type { TimelineState, Asset, Track, Timecode, AssetId, PipelineConfig, VideoFrameResult, CompositeResult } from '@timelinx/core';
+import { TimelineEngine } from '@timelinx/react';
 
 let engine: TimelineEngine | null = null;
 

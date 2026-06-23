@@ -15,8 +15,8 @@ import type {
   CompressionPolicy,
   ITool,
   TimelineFrame,
-} from '@webpacked-timeline/core';
-import { toFrame } from '@webpacked-timeline/core';
+} from '@timelinx/core';
+import { toFrame } from '@timelinx/core';
 
 export type TimelineEngineOptions = {
   initialState: TimelineState;

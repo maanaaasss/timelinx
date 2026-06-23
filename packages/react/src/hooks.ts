@@ -10,7 +10,7 @@
 import { useContext } from 'react';
 import { TimelineContext } from './TimelineProvider';
 import type { TimelineEngine } from './engine';
-import type { TrackId, ClipId, ProvisionalState } from '@webpacked-timeline/core';
+import type { TrackId, ClipId, ProvisionalState } from '@timelinx/core';
 
 // Re-export all engine-as-first-arg hooks from hooks/index
 export {

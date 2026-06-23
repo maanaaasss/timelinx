@@ -14,8 +14,8 @@ export default defineConfig({
         'react',
         'react-dom',
         'react/jsx-runtime',
-        '@webpacked-timeline/core',
-        '@webpacked-timeline/react',
+        '@timelinx/core',
+        '@timelinx/react',
       ],
       output: {
         globals: {
