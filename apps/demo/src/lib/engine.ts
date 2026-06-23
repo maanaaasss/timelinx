@@ -239,6 +239,57 @@ export function getEngine(): TimelineEngine {
   return engine;
 }
 
+export interface AddAssetDrop {
+  assetId: string;
+  trackId: string;
+  frame: number;
+}
+
+export function addAssetToTimeline(drop: AddAssetDrop): void {
+  if (!engine) return;
+
+  const state = engine.getState();
+  const asset = state.assetRegistry.get(drop.assetId as AssetId);
+
+  if (!asset) {
+    console.warn(`Asset not found: ${drop.assetId}`);
+    return;
+  }
+
+  const track = state.timeline.tracks.find((t) => (t.id as string) === drop.trackId);
+  if (!track) {
+    console.warn(`Track not found: ${drop.trackId}`);
+    return;
+  }
+
+  // Calculate clip duration (use a portion of the asset's intrinsic duration)
+  const maxClipDuration = Math.min(
+    (asset.intrinsicDuration as number),
+    300 // Max 10 seconds at 30fps
+  );
+  const clipDuration = Math.min(maxClipDuration, 150); // Default 5 seconds
+
+  const clipId = `clip-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+  const clip = createClip({
+    id: clipId,
+    assetId: drop.assetId,
+    trackId: drop.trackId,
+    timelineStart: toFrame(drop.frame),
+    timelineEnd: toFrame(drop.frame + clipDuration),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(clipDuration),
+    name: asset.name as string,
+  });
+
+  engine.dispatch({
+    id: `insert-clip-${clipId}`,
+    label: `Insert ${asset.name}`,
+    timestamp: Date.now(),
+    operations: [{ type: 'INSERT_CLIP', clip, trackId: drop.trackId }] as any,
+  });
+}
+
 export function resetEngine(): void {
   engine = null;
 }

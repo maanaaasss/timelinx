@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
-import { getEngine, resetEngine } from './lib/engine';
+import { getEngine, resetEngine, addAssetToTimeline } from './lib/engine';
 import { IconBar, PanelId } from './components/IconBar';
 import { PanelContainer } from './components/PanelContainer';
 import { Viewer } from './components/Viewer';
@@ -12,6 +12,10 @@ export default function App() {
   const [engine] = useState(() => getEngine());
   const [activePanel, setActivePanel] = useState<PanelId | null>('media');
   const { currentTheme, setTheme } = useThemeManager('dark-pro');
+
+  const handleAssetDrop = useCallback((drop: { assetId: string; trackId: string; frame: number }) => {
+    addAssetToTimeline(drop);
+  }, []);
 
   return (
     <div style={{
@@ -53,6 +57,7 @@ export default function App() {
                 engine={engine}
                 style={{ height: '100%' }}
                 showToolbar={true}
+                onAssetDrop={handleAssetDrop}
               />
             </div>
           </div>

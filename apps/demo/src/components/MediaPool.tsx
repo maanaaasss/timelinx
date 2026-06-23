@@ -1,16 +1,19 @@
 import React, { useState, useCallback, useRef } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
-import { Upload, Film, Music, Image, FileVideo } from 'lucide-react';
+import { createAsset, toFrame, frameRate } from '@timelinx/core';
+import type { AssetId } from '@timelinx/core';
+import { Upload, Film, Music, Image, FileVideo, GripVertical } from 'lucide-react';
 
 interface MediaPoolProps {
   engine: TimelineEngine;
 }
 
-interface MediaItem {
+export interface MediaItem {
   id: string;
+  assetId: string;
   name: string;
   type: 'video' | 'audio' | 'image';
-  duration?: number;
+  duration: number;
   objectUrl?: string;
 }
 
@@ -20,7 +23,9 @@ export function MediaPool({ engine }: MediaPoolProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = useCallback((files: FileList | File[]) => {
+    const fps = frameRate(30);
     const newItems: MediaItem[] = [];
+
     for (const file of Array.from(files)) {
       const isVideo = file.type.startsWith('video/');
       const isAudio = file.type.startsWith('audio/');
@@ -29,17 +34,43 @@ export function MediaPool({ engine }: MediaPoolProps) {
       if (!isVideo && !isAudio && !isImage) continue;
 
       const id = `media-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const assetId = `asset-${id}`;
       const objectUrl = URL.createObjectURL(file);
+
+      // Estimate duration based on file size (rough approximation)
+      // In a real app, you'd probe the file for actual duration
+      const estimatedDuration = isVideo ? 300 : isAudio ? 300 : 150;
+
+      const asset = createAsset({
+        id: assetId,
+        name: file.name,
+        mediaType: isImage ? 'video' : (isVideo ? 'video' : 'audio'),
+        intrinsicDuration: toFrame(estimatedDuration),
+        nativeFps: fps,
+        filePath: objectUrl,
+        sourceTimecodeOffset: toFrame(0),
+      });
+
+      // Register the asset with the engine
+      engine.dispatch({
+        id: `add-asset-${id}`,
+        label: `Add asset: ${file.name}`,
+        timestamp: Date.now(),
+        operations: [{ type: 'ADD_ASSET', asset }] as any,
+      });
 
       newItems.push({
         id,
+        assetId,
         name: file.name,
         type: isVideo ? 'video' : isAudio ? 'audio' : 'image',
+        duration: estimatedDuration,
         objectUrl,
       });
     }
+
     setItems((prev) => [...prev, ...newItems]);
-  }, []);
+  }, [engine]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -68,6 +99,16 @@ export function MediaPool({ engine }: MediaPoolProps) {
       e.target.value = '';
     }
   }, [handleFiles]);
+
+  const handleItemDragStart = useCallback((e: React.DragEvent, item: MediaItem) => {
+    e.dataTransfer.setData('application/x-timelinx-asset', JSON.stringify({
+      assetId: item.assetId,
+      name: item.name,
+      type: item.type,
+      duration: item.duration,
+    }));
+    e.dataTransfer.effectAllowed = 'copy';
+  }, []);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -129,12 +170,24 @@ export function MediaPool({ engine }: MediaPoolProps) {
       />
 
       {items.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.3)',
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: 4,
+          }}>
+            Imported ({items.length})
+          </div>
           {items.map((item) => {
             const Icon = getIcon(item.type);
             return (
               <div
                 key={item.id}
+                draggable
+                onDragStart={(e) => handleItemDragStart(e, item)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -145,38 +198,59 @@ export function MediaPool({ engine }: MediaPoolProps) {
                   fontSize: 12,
                   border: '1px solid rgba(255,255,255,0.04)',
                   transition: 'all 150ms ease',
+                  cursor: 'grab',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)';
                 }}
               >
+                <GripVertical size={12} style={{ color: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
                 <div style={{
                   width: 32,
                   height: 32,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.04)',
+                  background: item.type === 'video'
+                    ? 'rgba(59,130,246,0.15)'
+                    : item.type === 'audio'
+                      ? 'rgba(16,185,129,0.15)'
+                      : 'rgba(245,158,11,0.15)',
                   borderRadius: 6,
-                  color: 'rgba(255,255,255,0.4)',
+                  color: item.type === 'video'
+                    ? '#60a5fa'
+                    : item.type === 'audio'
+                      ? '#34d399'
+                      : '#fbbf24',
+                  flexShrink: 0,
                 }}>
                   <Icon size={14} />
                 </div>
-                <span style={{
-                  flex: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontWeight: 500,
-                }}>
-                  {item.name}
-                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: 'rgba(255,255,255,0.7)',
+                    fontWeight: 500,
+                    fontSize: 12,
+                  }}>
+                    {item.name}
+                  </div>
+                  <div style={{
+                    fontSize: 10,
+                    color: 'rgba(255,255,255,0.25)',
+                    fontFamily: '"SF Mono", "JetBrains Mono", monospace',
+                    marginTop: 2,
+                  }}>
+                    {Math.floor(item.duration / 30)}s
+                  </div>
+                </div>
               </div>
             );
           })}
