@@ -101,12 +101,7 @@ export function MediaPool({ engine }: MediaPoolProps) {
   }, [handleFiles]);
 
   const handleItemDragStart = useCallback((e: React.DragEvent, item: MediaItem) => {
-    e.dataTransfer.setData('application/x-timelinx-asset', JSON.stringify({
-      assetId: item.assetId,
-      name: item.name,
-      type: item.type,
-      duration: item.duration,
-    }));
+    e.dataTransfer.setData('application/x-timeline-asset', item.assetId);
     e.dataTransfer.effectAllowed = 'copy';
   }, []);
 
