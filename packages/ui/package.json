@@ -1,7 +1,7 @@
 {
-  "name": "@webpacked-timeline/ui",
+  "name": "@timelinx/ui",
   "version": "1.0.0-beta.1",
-  "description": "DaVinci-style React timeline UI. Drop-in components built on @webpacked-timeline/core and @webpacked-timeline/react.",
+  "description": "Modern browser-native React timeline UI. Drop-in components built on @timelinx/core and @timelinx/react.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,8 +30,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@webpacked-timeline/core": ">=1.0.0-beta.1",
-    "@webpacked-timeline/react": ">=1.0.0-beta.1",
+    "@timelinx/core": ">=1.0.0-beta.1",
+    "@timelinx/react": ">=1.0.0-beta.1",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
@@ -39,8 +39,8 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@webpacked-timeline/core": "workspace:*",
-    "@webpacked-timeline/react": "workspace:*",
+    "@timelinx/core": "workspace:*",
+    "@timelinx/react": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.0.0",
@@ -60,10 +60,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/webpacked/timeline",
+    "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/ui"
   },
-  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/ui/README.md",
+  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/ui/README.md",
   "dependencies": {
     "lucide-react": "^1.21.0"
   }

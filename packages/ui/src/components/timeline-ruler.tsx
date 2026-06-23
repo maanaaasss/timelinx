@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { useTimelineWithEngine } from '@webpacked-timeline/react';
+import { useTimelineWithEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { rulerTickInterval } from '../shared/time';
-import { toFrame } from '@webpacked-timeline/core';
+import { toFrame } from '@timelinx/core';
 
 function resolveCssVar(varName: string, fallback: string): string {
   try {

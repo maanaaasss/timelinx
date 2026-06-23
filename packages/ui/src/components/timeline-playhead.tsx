@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlayheadFrame } from '@webpacked-timeline/react';
+import { usePlayheadFrame } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 
 export interface TimelinePlayheadProps {

@@ -1,7 +1,7 @@
 {
-  "name": "@webpacked-timeline/react",
+  "name": "@timelinx/react",
   "version": "1.0.0-beta.1",
-  "description": "React adapter for @webpacked-timeline/core. Hooks, context, and tool routing for building timeline editors.",
+  "description": "React adapter for @timelinx/core. Hooks, context, and tool routing for building timeline editors.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,11 +23,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "@webpacked-timeline/core": ">=1.0.0-beta.1",
+    "@timelinx/core": ">=1.0.0-beta.1",
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@webpacked-timeline/core": "workspace:*"
+    "@timelinx/core": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -47,8 +47,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/webpacked/timeline",
+    "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/react/README.md"
+  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/react/README.md"
 }

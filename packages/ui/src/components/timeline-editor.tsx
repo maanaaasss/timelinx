@@ -11,8 +11,8 @@ import {
   useVirtualWindow,
   useTrackWithEngine,
   useClips,
-} from '@webpacked-timeline/react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
+} from '@timelinx/react';
+import type { TimelineEngine } from '@timelinx/react';
 import type {
   TimelinePointerEvent,
   TimelineKeyEvent,
@@ -20,8 +20,8 @@ import type {
   ClipId,
   TrackId,
   ProvisionalState,
-} from '@webpacked-timeline/core';
-import { toFrame, createTrack, createClip, toAssetId, createAsset, frameRate } from '@webpacked-timeline/core';
+} from '@timelinx/core';
+import { toFrame, createTrack, createClip, toAssetId, createAsset, frameRate } from '@timelinx/core';
 import { TimelineProvider, useTimelineContext, TimelineCtx } from '../context/timeline-context';
 import { TimelineToolbar } from './timeline-toolbar';
 import { TimelineRuler } from './timeline-ruler';

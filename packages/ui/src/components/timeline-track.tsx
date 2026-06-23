@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTimelineContext } from '../context/timeline-context';
-import { useTrackWithEngine } from '@webpacked-timeline/react';
+import { useTrackWithEngine } from '@timelinx/react';
 import { IconVideo, IconMusic, IconSubtitle } from './icons';
 
 export interface TimelineTrackProps {

@@ -6,8 +6,8 @@ import {
   useSelectedClipIds,
   useTimelineWithEngine,
   usePlayheadFrame,
-} from '@webpacked-timeline/react';
-import { useTimelineContext, useEngine } from '@webpacked-timeline/ui';
+} from '@timelinx/react';
+import { useTimelineContext, useEngine } from '@timelinx/ui';
 import {
   IconZoomIn,
   IconZoomOut,
@@ -16,7 +16,7 @@ import {
   IconPlayerPlay,
   IconPlayerPause,
   TOOL_ICONS,
-} from '@webpacked-timeline/ui';
+} from '@timelinx/ui';
 
 const TOOLS = [
   { id: 'selection', label: 'Select', key: 'V' },

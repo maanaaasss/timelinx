@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
+import type { TimelineEngine } from '@timelinx/react';
 import { Upload, Film, Music, Image, FileVideo } from 'lucide-react';
 
 interface MediaPoolProps {

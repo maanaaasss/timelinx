@@ -1,5 +1,5 @@
 {
-  "name": "@webpacked-timeline/docs",
+  "name": "@timelinx/docs",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@webpacked-timeline/core": "workspace:*",
-    "@webpacked-timeline/react": "workspace:*",
-    "@webpacked-timeline/ui": "workspace:*",
+    "@timelinx/core": "workspace:*",
+    "@timelinx/react": "workspace:*",
+    "@timelinx/ui": "workspace:*",
     "fumadocs-core": "^15.0.0",
     "fumadocs-mdx": "^11.0.0",
     "fumadocs-ui": "^15.0.0",

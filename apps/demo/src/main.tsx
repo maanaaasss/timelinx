@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import '@webpacked-timeline/ui/styles/tokens';
-import '@webpacked-timeline/ui/styles/structure';
+import '@timelinx/ui/styles/tokens';
+import '@timelinx/ui/styles/structure';
 import './styles.css';
 import App from './App';
 

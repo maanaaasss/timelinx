@@ -1,5 +1,5 @@
 {
-  "name": "@webpacked-timeline/demo",
+  "name": "@timelinx/demo",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,9 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@webpacked-timeline/core": "workspace:*",
-    "@webpacked-timeline/react": "workspace:*",
-    "@webpacked-timeline/ui": "workspace:*",
+    "@timelinx/core": "workspace:*",
+    "@timelinx/react": "workspace:*",
+    "@timelinx/ui": "workspace:*",
     "lucide-react": "^1.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

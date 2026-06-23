@@ -6,7 +6,7 @@ import {
   useSelectedClipIds,
   usePlayheadFrame,
   useTimelineWithEngine,
-} from '@webpacked-timeline/react';
+} from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import {
   IconZoomIn,

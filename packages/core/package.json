@@ -1,5 +1,5 @@
 {
-  "name": "@webpacked-timeline/core",
+  "name": "@timelinx/core",
   "version": "1.0.0-beta.1",
   "description": "Headless TypeScript engine for professional NLE timeline editing. Framework-agnostic, fully tested.",
   "type": "module",
@@ -42,10 +42,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/webpacked/timeline",
+    "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/webpacked/timeline/blob/main/packages/core/README.md",
+  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/core/README.md",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
     "@types/node": "^24.10.11",

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
-import { useSelectedClipIds, useClipWithEngine, useTimelineWithEngine, usePlayheadFrame } from '@webpacked-timeline/react';
+import type { TimelineEngine } from '@timelinx/react';
+import { useSelectedClipIds, useClipWithEngine, useTimelineWithEngine, usePlayheadFrame } from '@timelinx/react';
 import { Search } from 'lucide-react';
 
 interface InspectorProps {

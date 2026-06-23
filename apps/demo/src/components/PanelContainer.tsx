@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
+import type { TimelineEngine } from '@timelinx/react';
 import { X } from 'lucide-react';
 import { PanelId } from './IconBar';
 import { MediaPool } from './MediaPool';

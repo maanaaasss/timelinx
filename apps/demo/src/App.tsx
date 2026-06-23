@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
-import { TimelineEditor, TimelineProvider } from '@webpacked-timeline/ui';
+import type { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
 import { getEngine, resetEngine } from './lib/engine';
 import { IconBar, PanelId } from './components/IconBar';
 import { PanelContainer } from './components/PanelContainer';

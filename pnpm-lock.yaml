@@ -17,13 +17,13 @@ importers:
 
   apps/demo:
     dependencies:
-      '@webpacked-timeline/core':
+      '@timelinx/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@webpacked-timeline/react':
+      '@timelinx/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@webpacked-timeline/ui':
+      '@timelinx/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       lucide-react:
@@ -54,13 +54,13 @@ importers:
 
   apps/docs:
     dependencies:
-      '@webpacked-timeline/core':
+      '@timelinx/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@webpacked-timeline/react':
+      '@timelinx/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@webpacked-timeline/ui':
+      '@timelinx/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       fumadocs-core:
@@ -121,7 +121,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@webpacked-timeline/core':
+      '@timelinx/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -165,6 +165,12 @@ importers:
         specifier: ^1.21.0
         version: 1.21.0(react@18.3.1)
     devDependencies:
+      '@timelinx/core':
+        specifier: workspace:*
+        version: link:../core
+      '@timelinx/react':
+        specifier: workspace:*
+        version: link:../react
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.35
@@ -174,12 +180,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.0.0
         version: 18.3.7(@types/react@18.3.28)
-      '@webpacked-timeline/core':
-        specifier: workspace:*
-        version: link:../core
-      '@webpacked-timeline/react':
-        specifier: workspace:*
-        version: link:../react
       react:
         specifier: ^18.3.1
         version: 18.3.1

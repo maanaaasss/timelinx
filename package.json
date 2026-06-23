@@ -1,7 +1,7 @@
 {
-  "name": "timeline",
+  "name": "timelinx",
   "version": "1.0.0",
-  "description": "Timeline monorepo",
+  "description": "Browser-native timeline editor engine and UI",
   "private": true,
   "scripts": {
     "build": "turbo run build",

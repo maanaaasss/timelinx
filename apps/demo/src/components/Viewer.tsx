@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { TimelineEngine } from '@webpacked-timeline/react';
-import { usePlayheadFrame, useIsPlaying, useTimelineWithEngine } from '@webpacked-timeline/react';
+import type { TimelineEngine } from '@timelinx/react';
+import { usePlayheadFrame, useIsPlaying, useTimelineWithEngine } from '@timelinx/react';
 import { Film, Play, Pause, SkipBack, SkipForward, Maximize2, Volume2 } from 'lucide-react';
-import { toFrame } from '@webpacked-timeline/core';
+import { toFrame } from '@timelinx/core';
 
 interface ViewerProps {
   engine: TimelineEngine;

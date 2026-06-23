@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Clip } from '@webpacked-timeline/core';
+import type { Clip } from '@timelinx/core';
 import { IconVideo, IconMusic, IconSubtitle } from './icons';
 
 export interface TimelineClipProps {
