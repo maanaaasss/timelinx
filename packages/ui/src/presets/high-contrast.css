@@ -1,0 +1,122 @@
+/* ═══════════════════════════════════════════════════════════
+   @webpacked-timeline/ui — High Contrast Theme
+   
+   WCAG AAA accessible theme with bold colors.
+   ═══════════════════════════════════════════════════════════ */
+
+@import '../tokens.css';
+
+:root {
+  /* ── App chrome ── */
+  --tl-app-bg:          #000000;
+  --tl-panel-bg:        #0a0a0a;
+  --tl-toolbar-bg:      #111111;
+  --tl-toolbar-border:  rgba(255,255,255,0.15);
+  --tl-toolbar-height:  52px;
+
+  /* ── Ruler ── */
+  --tl-ruler-bg:        #080808;
+  --tl-ruler-tick:      rgba(255,255,255,0.2);
+  --tl-ruler-tick-maj:  rgba(255,255,255,0.4);
+  --tl-ruler-text:      rgba(255,255,255,0.6);
+  --tl-ruler-height:    40px;
+
+  /* ── Timecode ── */
+  --tl-timecode-color:  #ffffff;
+
+  /* ── Track ── */
+  --tl-track-bg:        rgba(255,255,255,0.03);
+  --tl-track-bg-video:  rgba(255,255,255,0.04);
+  --tl-track-bg-audio:  rgba(255,255,255,0.03);
+  --tl-track-border:    rgba(255,255,255,0.12);
+  --tl-track-height:    80px;
+  --tl-track-height-audio: 72px;
+
+  /* ── Label ── */
+  --tl-label-width:     200px;
+  --tl-label-bg:        #080808;
+  --tl-label-text:      rgba(255,255,255,0.8);
+  --tl-label-text-dim:  rgba(255,255,255,0.45);
+  --tl-label-border:    rgba(255,255,255,0.12);
+
+  /* ── Clips ── */
+  --tl-clip-video-bg:   linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --tl-clip-video-top:  #60a5fa;
+  --tl-clip-audio-bg:   linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --tl-clip-audio-top:  #4ade80;
+  --tl-clip-selected:   #f59e0b;
+  --tl-clip-provisional: rgba(245,158,11,0.4);
+  --tl-clip-border:     rgba(255,255,255,0.2);
+  --tl-clip-border-sel: #f59e0b;
+  --tl-clip-text:       #ffffff;
+  --tl-clip-text-dim:   rgba(255,255,255,0.7);
+  --tl-clip-video-text: #ffffff;
+  --tl-clip-audio-text: #ffffff;
+  --tl-clip-radius:     8px;
+  --tl-clip-video-accent: rgba(255,255,255,0.3);
+  --tl-clip-audio-accent: rgba(255,255,255,0.25);
+
+  /* ── Playhead ── */
+  --tl-playhead-color:  #ef4444;
+  --tl-playhead-width:  2px;
+
+  /* ── Snap ── */
+  --tl-snap-color:      #f59e0b;
+
+  /* ── Toolbar buttons ── */
+  --tl-btn-bg:          transparent;
+  --tl-btn-bg-hover:    rgba(255,255,255,0.1);
+  --tl-btn-bg-active:   rgba(245,158,11,0.2);
+  --tl-btn-border:      rgba(255,255,255,0.12);
+  --tl-btn-border-active: #f59e0b;
+  --tl-btn-text:        rgba(255,255,255,0.7);
+  --tl-btn-text-active: #ffffff;
+
+  /* ── Type colors ── */
+  --tl-type-video:      #3b82f6;
+  --tl-type-audio:      #22c55e;
+  --tl-type-subtitle:   #f59e0b;
+  --tl-type-title:      #a78bfa;
+
+  /* ── Solo / Mute ── */
+  --tl-solo-active:     #f59e0b;
+  --tl-mute-active:     #ef4444;
+
+  /* ── Track label controls ── */
+  --tl-track-badge-bg:  rgba(255,255,255,0.06);
+  --tl-track-toggle-active-bg: rgba(255,255,255,0.1);
+  --tl-track-vis-inactive: rgba(255,255,255,0.25);
+  --tl-track-delete-hover: #ef4444;
+  --tl-track-add-text:  rgba(255,255,255,0.5);
+  --tl-track-add-hover: #f59e0b;
+  --tl-track-solo-active-text: #000000;
+  --tl-track-mute-active-text: #ffffff;
+
+  /* ── Separators / borders ── */
+  --tl-separator:       rgba(255,255,255,0.1);
+  --tl-add-track-border: rgba(255,255,255,0.15);
+
+  /* ── Text ── */
+  --tl-text:            #ffffff;
+  --tl-play-btn:        #ffffff;
+
+  /* ── Waveform ── */
+  --tl-waveform-center: rgba(255,255,255,0.15);
+  --tl-waveform-line:   rgba(255,255,255,0.7);
+
+  /* ── Clip trim handles ── */
+  --tl-clip-trim:       rgba(255,255,255,0.25);
+
+  /* ── Resize ── */
+  --tl-resize-handle:   rgba(255,255,255,0.2);
+
+  /* ── Scrollbar ── */
+  --tl-scrollbar-track: transparent;
+  --tl-scrollbar-thumb: rgba(255,255,255,0.15);
+  --tl-scrollbar-thumb-hover: rgba(255,255,255,0.25);
+
+  /* ── Shadows ── */
+  --tl-shadow-sm:       0 1px 2px rgba(0,0,0,0.5);
+  --tl-shadow-md:       0 4px 12px rgba(0,0,0,0.6);
+  --tl-shadow-lg:       0 8px 24px rgba(0,0,0,0.7);
+}

@@ -1,103 +1,161 @@
-/**
- * Demo Application Shell — WebPacked Timeline
- *
- * A professional timeline editor demo built on @webpacked-timeline/ui.
- * Uses the Studio preset for a clean, modern dark theme.
- */
-import { useState, useEffect, useCallback } from 'react';
-import { StudioEditor } from '@webpacked-timeline/ui';
-import '@webpacked-timeline/ui/styles/studio';
-import { engine, setEnginePixelsPerFrame, setOnZoomChange } from './engine';
+import React, { useState, useCallback } from 'react';
+import type { TimelineEngine } from '@webpacked-timeline/react';
+import { TimelineEditor, TimelineProvider } from '@webpacked-timeline/ui';
+import { getEngine, resetEngine } from './lib/engine';
+import { IconBar, PanelId } from './components/IconBar';
+import { PanelContainer } from './components/PanelContainer';
+import { Viewer } from './components/Viewer';
+import { PresetSwitcher } from './components/PresetSwitcher';
+import { useThemeManager } from './lib/useThemeManager';
 
-import { Header } from './shell/header';
-import { MediaPool, addAssetToTimeline } from './shell/media-pool';
-import { Viewer } from './shell/viewer';
-import { StatusBar } from './shell/status-bar';
-import { KeyboardShortcuts } from './shell/keyboard-shortcuts';
-import { ResizeHandle } from './shell/resize-handle';
-import { ErrorBoundary } from './shell/error-boundary';
+export default function App() {
+  const [engine] = useState(() => getEngine());
+  const [activePanel, setActivePanel] = useState<PanelId | null>('media');
+  const { currentTheme, setTheme } = useThemeManager('dark-pro');
 
-import './styles/demo.css';
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      width: '100vw',
+      background: 'var(--tl-app-bg, #0f0f12)',
+      color: 'var(--tl-text, rgba(255,255,255,0.9))',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
+      overflow: 'hidden',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      <Header
+        currentTheme={currentTheme}
+        onThemeChange={setTheme}
+        engine={engine}
+      />
 
-const STORAGE_KEY = 'tl-upper-height';
-const DEFAULT_UPPER_PCT = 35;
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <IconBar
+          activePanel={activePanel}
+          onPanelToggle={(id) => setActivePanel(activePanel === id ? null : id)}
+        />
 
-function getInitialUpperHeight(): number {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const pct = parseInt(stored, 10);
-      if (pct > 10 && pct < 80) {
-        return (pct / 100) * window.innerHeight;
-      }
-    }
-  } catch {
-    // localStorage may not be available
-  }
-  return (DEFAULT_UPPER_PCT / 100) * window.innerHeight;
+        {activePanel && (
+          <PanelContainer
+            activePanel={activePanel}
+            engine={engine}
+            onClose={() => setActivePanel(null)}
+          />
+        )}
+
+        <TimelineProvider engine={engine}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Viewer engine={engine} />
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <TimelineEditor
+                engine={engine}
+                style={{ height: '100%' }}
+                showToolbar={true}
+              />
+            </div>
+          </div>
+        </TimelineProvider>
+      </div>
+    </div>
+  );
 }
 
-export function App() {
-  const [showShortcuts, setShowShortcuts] = useState(false);
-  const [upperHeight, setUpperHeight] = useState(getInitialUpperHeight);
-
-  // ? key opens keyboard shortcuts
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      // Don't trigger when typing in inputs
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-      }
-    };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, []);
-
-  const handleResize = useCallback((h: number) => {
-    setUpperHeight(h);
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        String(Math.round((h / window.innerHeight) * 100)),
-      );
-    } catch {
-      // ignore
-    }
+function Header({
+  currentTheme,
+  onThemeChange,
+  engine,
+}: {
+  currentTheme: string;
+  onThemeChange: (theme: string) => void;
+  engine: TimelineEngine;
+}) {
+  const handleReset = useCallback(() => {
+    resetEngine();
+    window.location.reload();
   }, []);
 
   return (
-    <div className="demo-shell">
-      <Header />
-
-      <div className="demo-upper" style={{ height: upperHeight }}>
-        <MediaPool engine={engine} />
-        <Viewer engine={engine} />
+    <header style={{
+      height: 52,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 20px',
+      background: '#141418',
+      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      flexShrink: 0,
+      gap: 16,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{
+          width: 28,
+          height: 28,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+          borderRadius: 8,
+          fontWeight: 700,
+          fontSize: 13,
+          color: '#fff',
+          letterSpacing: '-0.02em',
+        }}>
+          T
+        </div>
+        <div style={{
+          fontWeight: 600,
+          fontSize: 14,
+          letterSpacing: '-0.01em',
+          color: 'rgba(255,255,255,0.9)',
+        }}>
+          timeline
+        </div>
+        <span style={{
+          fontSize: 10,
+          color: 'rgba(255,255,255,0.3)',
+          padding: '3px 8px',
+          background: 'rgba(255,255,255,0.04)',
+          borderRadius: 6,
+          fontWeight: 500,
+          letterSpacing: '0.03em',
+        }}>
+          demo
+        </span>
       </div>
 
-      <ResizeHandle onResize={handleResize} />
-
-      <div className="demo-timeline">
-        <ErrorBoundary>
-          <StudioEditor
-            engine={engine}
-            onPpfChange={setEnginePixelsPerFrame}
-            registerZoomHandler={setOnZoomChange}
-            onAssetDrop={({ assetId, trackId, frame }) => addAssetToTimeline(engine, assetId, trackId, frame)}
-            style={{ height: '100%' }}
-          />
-        </ErrorBoundary>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <PresetSwitcher
+          currentTheme={currentTheme}
+          onThemeChange={onThemeChange}
+        />
+        <button
+          onClick={handleReset}
+          style={{
+            height: 32,
+            padding: '0 14px',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: 'rgba(255,255,255,0.5)',
+            cursor: 'pointer',
+            fontSize: 12,
+            fontFamily: 'inherit',
+            borderRadius: 8,
+            transition: 'all 150ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.5)';
+          }}
+        >
+          Reset
+        </button>
       </div>
-
-      <StatusBar
-        engine={engine}
-        onShowShortcuts={() => setShowShortcuts(true)}
-      />
-
-      {showShortcuts && (
-        <KeyboardShortcuts onClose={() => setShowShortcuts(false)} />
-      )}
-    </div>
+    </header>
   );
 }

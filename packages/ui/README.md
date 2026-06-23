@@ -1,6 +1,6 @@
 # @webpacked-timeline/ui
 
-DaVinci-style React timeline editor. One import. Full professional timeline.
+Professional React timeline editor. Drop-in components built on `@webpacked-timeline/core` and `@webpacked-timeline/react`.
 
 ## Install
 
@@ -8,11 +8,12 @@ DaVinci-style React timeline editor. One import. Full professional timeline.
 npm install @webpacked-timeline/ui @webpacked-timeline/react @webpacked-timeline/core
 ```
 
-## Quick Start (30 seconds)
+## Quick Start
 
 ```tsx
-import { DaVinciEditor } from '@webpacked-timeline/ui';
-import '@webpacked-timeline/ui/styles/davinci';
+import { TimelineEditor } from '@webpacked-timeline/ui';
+import '@webpacked-timeline/ui/styles/tokens';
+import '@webpacked-timeline/ui/styles/structure';
 import { TimelineEngine } from '@webpacked-timeline/react';
 import { createTimelineState, createTimeline, toFrame, frameRate } from '@webpacked-timeline/core';
 
@@ -28,33 +29,31 @@ const engine = new TimelineEngine({
 });
 
 export default function App() {
-  return <DaVinciEditor engine={engine} style={{ height: '100vh' }} />;
+  return <TimelineEditor engine={engine} style={{ height: '100vh' }} />;
 }
 ```
 
-That's it — a full DaVinci Resolve-style timeline editor with toolbar, ruler, tracks, clips, playhead, undo/redo, and keyboard shortcuts.
-
 ## Components
-
-All components are exported from the package root:
 
 | Component | Description |
 |-----------|-------------|
-| `DaVinciEditor` | Full-layout editor (toolbar + ruler + tracks + playhead) |
-| `DaVinciToolbar` | Tool buttons, zoom controls, transport (undo/redo/play) |
-| `DaVinciRuler` | Timecode ruler with major/minor ticks |
-| `DaVinciTrack` | Track label row (name, type badge, lock, solo/mute) |
-| `DaVinciClip` | Clip block with waveform, label, trim handles |
-| `DaVinciPlayhead` | Red playhead line |
+| `TimelineEditor` | Full-layout editor (toolbar + ruler + tracks + playhead) |
+| `TimelineToolbar` | Tool buttons, zoom controls, transport (undo/redo/play) |
+| `TimelineRuler` | Timecode ruler with major/minor ticks |
+| `TimelineTrack` | Track label row (name, type badge, lock, solo/mute) |
+| `TimelineClip` | Clip block with label, trim handles |
+| `TimelinePlayhead` | Red playhead line |
 
-### DaVinciEditor Props
+### TimelineEditor Props
 
 ```typescript
-interface DaVinciEditorProps {
+interface TimelineEditorProps {
   engine: TimelineEngine;      // from @webpacked-timeline/react
   initialPpf?: number;         // initial pixels per frame (default: 4)
   onPpfChange?: (ppf: number) => void;
   registerZoomHandler?: (handler: (ppf: number) => void) => void;
+  onAssetDrop?: (drop: { assetId: string; trackId: string; frame: number }) => void;
+  showToolbar?: boolean;       // show/hide built-in toolbar (default: true)
   className?: string;
   style?: React.CSSProperties;
 }
@@ -71,11 +70,22 @@ import { frameToPx, pxToFrame, frameToTimecode } from '@webpacked-timeline/ui';
 
 ## Theming
 
-All visual properties are controlled by CSS custom properties. Import the DaVinci theme:
+All visual properties are controlled by ~50 CSS custom properties.
 
-```css
-@import '@webpacked-timeline/ui/styles/davinci';
+### Theme Presets
+
+```tsx
+// Dark Pro (default — DaVinci-inspired)
+import '@webpacked-timeline/ui/styles/presets/dark-pro';
+
+// Light (Final Cut Pro-inspired)
+import '@webpacked-timeline/ui/styles/presets/light';
+
+// High Contrast (WCAG AAA accessible)
+import '@webpacked-timeline/ui/styles/presets/high-contrast';
 ```
+
+### Custom Theme
 
 Override any token in your CSS:
 
@@ -91,16 +101,16 @@ Override any token in your CSS:
 
 | Token | Default | Description |
 |-------|---------|-------------|
-| `--tl-app-bg` | `hsl(220 13% 9%)` | App background |
-| `--tl-panel-bg` | `hsl(220 13% 11%)` | Panel background |
-| `--tl-toolbar-bg` | `hsl(220 13% 11%)` | Toolbar background |
+| `--tl-app-bg` | `#111315` | App background |
+| `--tl-panel-bg` | `#17191c` | Panel background |
+| `--tl-toolbar-bg` | `#1b1d20` | Toolbar background |
 | `--tl-toolbar-height` | `40px` | Toolbar height |
 | `--tl-ruler-height` | `32px` | Ruler height |
 | `--tl-track-height` | `80px` | Track row height |
-| `--tl-track-bg-video` | `#28282E` | Video track background |
-| `--tl-track-bg-audio` | `#28282E` | Audio track background |
-| `--tl-clip-video-bg` | `#2E77A5` | Video clip fill |
-| `--tl-clip-audio-bg` | `#179160` | Audio clip fill |
+| `--tl-track-bg-video` | `#202328` | Video track background |
+| `--tl-track-bg-audio` | `#1d2422` | Audio track background |
+| `--tl-clip-video-bg` | `#285f7b` | Video clip fill |
+| `--tl-clip-audio-bg` | `#287256` | Audio clip fill |
 | `--tl-clip-radius` | `2px` | Clip border radius |
 | `--tl-clip-text` | `hsl(0 0% 92%)` | Clip label color |
 | `--tl-playhead-color` | `#ff3b30` | Playhead line color |
@@ -108,7 +118,7 @@ Override any token in your CSS:
 | `--tl-label-width` | `200px` | Track label column width |
 | `--tl-snap-color` | `hsl(45 90% 60%)` | Snap indicator color |
 
-See [tokens.css](src/tokens.css) for the full list of ~50 tokens. All colors controlled by CSS variables — no hardcoded colors in components.
+See [tokens.css](src/tokens.css) for the full list. All colors controlled by CSS variables — no hardcoded colors in components.
 
 ## Keyboard Shortcuts
 
@@ -129,10 +139,6 @@ See [tokens.css](src/tokens.css) for the full list of ~50 tokens. All colors con
 | `Delete` | Delete selected clips |
 | `Cmd+A` | Select all |
 | `Escape` | Clear selection |
-
-## Presets
-
-The DaVinci preset ships with `@webpacked-timeline/ui`. More presets are planned.
 
 ## License
 

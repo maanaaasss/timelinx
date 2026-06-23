@@ -36,7 +36,7 @@ export interface TimelineProviderProps {
 
 // ── Context ────────────────────────────────────────────────────────────────
 
-const TimelineCtx = createContext<TimelineContextValue | null>(null);
+export const TimelineCtx = createContext<TimelineContextValue | null>(null);
 
 // ── Provider ───────────────────────────────────────────────────────────────
 

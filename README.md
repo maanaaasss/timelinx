@@ -17,8 +17,9 @@ npm install @webpacked-timeline/ui @webpacked-timeline/react @webpacked-timeline
 ```
 
 ```tsx
-import { DaVinciEditor } from '@webpacked-timeline/ui';
-import '@webpacked-timeline/ui/styles/davinci';
+import { TimelineEditor } from '@webpacked-timeline/ui';
+import '@webpacked-timeline/ui/styles/tokens';
+import '@webpacked-timeline/ui/styles/structure';
 import { TimelineEngine } from '@webpacked-timeline/react';
 import { createTimelineState, createTimeline, toFrame, frameRate } from '@webpacked-timeline/core';
 
@@ -34,7 +35,7 @@ const engine = new TimelineEngine({
 });
 
 export default function App() {
-  return <DaVinciEditor engine={engine} style={{ height: '100vh' }} />;
+  return <TimelineEditor engine={engine} style={{ height: '100vh' }} />;
 }
 ```
 
@@ -49,7 +50,7 @@ Your App
 
 - **@webpacked-timeline/core** is framework-agnostic. Runs in browser, Node.js, Web Workers, Electron.
 - **@webpacked-timeline/react** provides `TimelineEngine` (wires core's dispatcher, history, tools, playback) and 20+ hooks.
-- **@webpacked-timeline/ui** provides drop-in `DaVinciEditor` with toolbar, ruler, tracks, clips, playhead, and full keyboard shortcuts.
+- **@webpacked-timeline/ui** provides drop-in `TimelineEditor` with toolbar, ruler, tracks, clips, playhead, and full keyboard shortcuts.
 
 ## Features
 

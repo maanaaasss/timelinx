@@ -1,117 +1,148 @@
 /* ═══════════════════════════════════════════════════════════
-   @webpacked-timeline/ui — Base CSS Variable Tokens
+   @webpacked-timeline/ui — Design Tokens
    
-   Every color, size, and spacing used by components references
-   these variables. Override any variable to create a custom theme.
+   Modern browser-native design system.
+   Layered surfaces, spacious, approachable.
+   Inspired by CapCut, Figma, Linear, Framer.
    ═══════════════════════════════════════════════════════════ */
 
 :root {
+  /* ── Surface hierarchy (darkest → lightest) ── */
+  --tl-surface-base:       #0a0a0f;
+  --tl-surface-raised:     #12121a;
+  --tl-surface-overlay:    #1a1a24;
+  --tl-surface-elevated:   #22222e;
+  --tl-surface-hover:      rgba(255,255,255,0.04);
+  --tl-surface-active:     rgba(255,255,255,0.06);
+
   /* ── App chrome ── */
-  --tl-app-bg:          #111315;
-  --tl-panel-bg:        #17191c;
-  --tl-toolbar-bg:      #1b1d20;
-  --tl-toolbar-border:  #303338;
-  --tl-toolbar-height:  40px;
+  --tl-app-bg:             var(--tl-surface-base);
+  --tl-panel-bg:           var(--tl-surface-raised);
+  --tl-toolbar-bg:         var(--tl-surface-overlay);
+  --tl-toolbar-border:     rgba(255,255,255,0.04);
+  --tl-toolbar-height:     52px;
 
   /* ── Ruler ── */
-  --tl-ruler-bg:        hsl(220 13% 8%);
-  --tl-ruler-height:    32px;
-  --tl-ruler-tick:      hsl(220 13% 30%);
-  --tl-ruler-tick-maj:  hsl(220 13% 48%);
-  --tl-ruler-text:      hsl(220 10% 52%);
+  --tl-ruler-bg:           var(--tl-surface-raised);
+  --tl-ruler-height:       40px;
+  --tl-ruler-tick:         rgba(255,255,255,0.08);
+  --tl-ruler-tick-maj:     rgba(255,255,255,0.18);
+  --tl-ruler-text:         rgba(255,255,255,0.35);
 
   /* ── Timecode ── */
-  --tl-timecode-color:  hsl(0 0% 88%);
-  --tl-timecode-size:   15px;
+  --tl-timecode-color:     rgba(255,255,255,0.85);
+  --tl-timecode-size:      13px;
 
   /* ── Track ── */
-  --tl-track-bg:        hsl(220 13% 13%);
-  --tl-track-bg-video:  #202328;
-  --tl-track-bg-audio:  #1d2422;
-  --tl-track-border:    hsl(220 13% 19%);
-  --tl-track-height:    80px;
-  --tl-track-height-audio: 80px;
+  --tl-track-bg:           transparent;
+  --tl-track-bg-video:     rgba(255,255,255,0.015);
+  --tl-track-bg-audio:     rgba(255,255,255,0.01);
+  --tl-track-border:       rgba(255,255,255,0.04);
+  --tl-track-height:       80px;
+  --tl-track-height-audio: 68px;
 
   /* ── Label ── */
-  --tl-label-width:     200px;
-  --tl-label-bg:        #181a1d;
-  --tl-label-text:      hsl(220 10% 62%);
-  --tl-label-text-dim:  hsl(220 10% 45%);
-  --tl-label-border:    hsl(220 13% 19%);
+  --tl-label-width:        160px;
+  --tl-label-bg:           var(--tl-surface-raised);
+  --tl-label-text:         rgba(255,255,255,0.7);
+  --tl-label-text-dim:     rgba(255,255,255,0.3);
+  --tl-label-border:       rgba(255,255,255,0.04);
 
   /* ── Clips ── */
-  --tl-clip-video-bg:   #285f7b;
-  --tl-clip-video-top:  #337b9d;
-  --tl-clip-audio-bg:   #287256;
-  --tl-clip-audio-top:  #348f6c;
-  --tl-clip-selected:   #3da2ff;
-  --tl-clip-provisional:rgba(46,119,165,0.5);
-  --tl-clip-border:     rgba(255,255,255,0.15);
-  --tl-clip-border-sel: #f3be62;
-  --tl-clip-text:       hsl(0 0% 92%);
-  --tl-clip-text-dim:   hsl(0 0% 65%);
-  --tl-clip-video-text: #eef8fc;
-  --tl-clip-audio-text: #effaf5;
-  --tl-clip-radius:     2px;
-  --tl-clip-video-accent: hsl(195 85% 72%);
-  --tl-clip-audio-accent:#179160;
+  --tl-clip-video-bg:      linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --tl-clip-video-top:     #60a5fa;
+  --tl-clip-audio-bg:      linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --tl-clip-audio-top:     #34d399;
+  --tl-clip-subtitle-bg:   linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --tl-clip-selected:      #6366f1;
+  --tl-clip-provisional:   rgba(99,102,241,0.35);
+  --tl-clip-border:        rgba(255,255,255,0.06);
+  --tl-clip-border-sel:    #818cf8;
+  --tl-clip-text:          #ffffff;
+  --tl-clip-text-dim:      rgba(255,255,255,0.55);
+  --tl-clip-video-text:    #ffffff;
+  --tl-clip-audio-text:    #ffffff;
+  --tl-clip-radius:        10px;
+  --tl-clip-video-accent:  rgba(255,255,255,0.2);
+  --tl-clip-audio-accent:  rgba(255,255,255,0.15);
 
   /* ── Playhead ── */
-  --tl-playhead-color:  #ff3b30;
-  --tl-playhead-width:  1px;
+  --tl-playhead-color:     #6366f1;
+  --tl-playhead-width:     1.5px;
 
   /* ── Snap ── */
-  --tl-snap-color:      hsl(45 90% 60%);
+  --tl-snap-color:         #f59e0b;
 
-  /* ── Toolbar buttons ── */
-  --tl-btn-bg:          transparent;
-  --tl-btn-bg-hover:    hsl(220 13% 20%);
-  --tl-btn-bg-active:   hsl(213 45% 32%);
-  --tl-btn-border:      hsl(220 13% 22%);
-  --tl-btn-border-active:#3da2ff;
-  --tl-btn-text:        hsl(220 10% 68%);
-  --tl-btn-text-active: #ffffff;
+  /* ── Toolbar buttons (ghost-style) ── */
+  --tl-btn-bg:             transparent;
+  --tl-btn-bg-hover:       rgba(255,255,255,0.06);
+  --tl-btn-bg-active:      rgba(99,102,241,0.15);
+  --tl-btn-border:         transparent;
+  --tl-btn-border-active:  #6366f1;
+  --tl-btn-text:           rgba(255,255,255,0.5);
+  --tl-btn-text-active:    #ffffff;
+  --tl-btn-radius:         8px;
 
   /* ── Type colors ── */
-  --tl-type-video:      #2E77A5;
-  --tl-type-audio:      #179160;
-  --tl-type-subtitle:   #d4a62a;
-  --tl-type-title:      #9a58d4;
+  --tl-type-video:         #3b82f6;
+  --tl-type-audio:         #10b981;
+  --tl-type-subtitle:      #f59e0b;
+  --tl-type-title:         #a78bfa;
 
   /* ── Solo / Mute ── */
-  --tl-solo-active:     #ffd54f;
-  --tl-mute-active:     #ff5252;
+  --tl-solo-active:        #f59e0b;
+  --tl-mute-active:        #ef4444;
 
   /* ── Track label controls ── */
-  --tl-track-badge-bg:  hsl(220 13% 16%);
-  --tl-track-toggle-active-bg: hsl(220 13% 20%);
-  --tl-track-vis-inactive: hsl(0 0% 40%);
-  --tl-track-delete-hover: hsl(0 60% 40%);
-  --tl-track-add-text:  hsl(220 10% 55%);
-  --tl-track-add-hover: hsl(213 70% 55%);
-  --tl-track-solo-active-text: hsl(0 0% 10%);
-  --tl-track-mute-active-text: hsl(0 0% 100%);
+  --tl-track-badge-bg:     rgba(255,255,255,0.04);
+  --tl-track-toggle-active-bg: rgba(255,255,255,0.08);
+  --tl-track-vis-inactive: rgba(255,255,255,0.15);
+  --tl-track-delete-hover: #ef4444;
+  --tl-track-add-text:     rgba(255,255,255,0.4);
+  --tl-track-add-hover:    #6366f1;
+  --tl-track-solo-active-text: #000000;
+  --tl-track-mute-active-text: #ffffff;
 
   /* ── Separators / borders ── */
-  --tl-separator:       hsl(220 13% 22%);
-  --tl-add-track-border: hsl(220 13% 25%);
+  --tl-separator:          rgba(255,255,255,0.04);
+  --tl-add-track-border:   rgba(255,255,255,0.06);
 
   /* ── Text ── */
-  --tl-text:            hsl(220 10% 85%);
-  --tl-play-btn:        hsl(0 0% 85%);
+  --tl-text:               rgba(255,255,255,0.88);
+  --tl-play-btn:           rgba(255,255,255,0.88);
 
   /* ── Waveform ── */
-  --tl-waveform-center: rgba(255,255,255,0.15);
-  --tl-waveform-line:   rgba(255,255,255,0.7);
+  --tl-waveform-center:    rgba(255,255,255,0.08);
+  --tl-waveform-line:      rgba(255,255,255,0.4);
 
   /* ── Clip trim handles ── */
-  --tl-clip-trim:       rgba(255,255,255,0.15);
+  --tl-clip-trim:          rgba(255,255,255,0.15);
 
   /* ── Resize ── */
-  --tl-resize-handle:   hsl(220 13% 26%);
+  --tl-resize-handle:      rgba(255,255,255,0.1);
 
   /* ── Scrollbar ── */
-  --tl-scrollbar-track: hsl(220 13% 9%);
-  --tl-scrollbar-thumb: hsl(220 13% 24%);
-  --tl-scrollbar-thumb-hover: hsl(220 13% 32%);
+  --tl-scrollbar-track:    transparent;
+  --tl-scrollbar-thumb:    rgba(255,255,255,0.08);
+  --tl-scrollbar-thumb-hover: rgba(255,255,255,0.15);
+
+  /* ── Shadows ── */
+  --tl-shadow-sm:          0 1px 2px rgba(0,0,0,0.25);
+  --tl-shadow-md:          0 4px 12px rgba(0,0,0,0.35);
+  --tl-shadow-lg:          0 8px 24px rgba(0,0,0,0.45);
+  --tl-shadow-clip:        0 2px 8px rgba(0,0,0,0.25);
+  --tl-shadow-clip-hover:  0 4px 16px rgba(0,0,0,0.35);
+  --tl-shadow-clip-selected: 0 0 0 2px var(--tl-clip-border-sel), 0 4px 16px rgba(99,102,241,0.25);
+
+  /* ── Radius ── */
+  --tl-radius-xs:          4px;
+  --tl-radius-sm:          6px;
+  --tl-radius-md:          10px;
+  --tl-radius-lg:          14px;
+  --tl-radius-xl:          18px;
+
+  /* ── Transitions ── */
+  --tl-transition-fast:    80ms ease;
+  --tl-transition-base:    120ms ease;
+  --tl-transition-slow:    200ms ease;
 }

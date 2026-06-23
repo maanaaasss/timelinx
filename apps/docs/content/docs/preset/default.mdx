@@ -8,10 +8,12 @@ The default preset provides a standard editing timeline layout out of the box.
 ## Usage
 
 ```tsx
-import { DaVinciEditor } from '@webpacked-timeline/ui';
+import { TimelineEditor } from '@webpacked-timeline/ui';
+import '@webpacked-timeline/ui/styles/tokens';
+import '@webpacked-timeline/ui/styles/structure';
 
 function App() {
-  return <DaVinciEditor />;
+  return <TimelineEditor engine={engine} />;
 }
 ```
 
@@ -20,3 +22,27 @@ This renders a multi-track timeline with:
 - Playback controls
 - Playhead scrubbing
 - Clip selection and manipulation
+
+## Theme Presets
+
+Three theme presets are available:
+
+```tsx
+// Dark Pro (default — DaVinci-inspired)
+import '@webpacked-timeline/ui/styles/presets/dark-pro';
+
+// Light (Final Cut Pro-inspired)
+import '@webpacked-timeline/ui/styles/presets/light';
+
+// High Contrast (WCAG AAA accessible)
+import '@webpacked-timeline/ui/styles/presets/high-contrast';
+```
+
+Override any CSS variable to create your own theme:
+
+```css
+:root {
+  --tl-clip-video-bg: hsl(142 71% 45%);
+  --tl-playhead-color: #00ff00;
+}
+```

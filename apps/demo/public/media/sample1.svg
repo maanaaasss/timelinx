@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 16 9">
-  <rect width="16" height="9" fill="#1e90ff" />
-  <circle cx="4" cy="4.5" r="2" fill="#ffd166" />
-  <rect x="9" y="2" width="5" height="4" fill="#06d6a0" rx="0.4" />
-  <text x="1" y="8" font-size="1" fill="#ffffff">Sample Image 1</text>
-</svg>
