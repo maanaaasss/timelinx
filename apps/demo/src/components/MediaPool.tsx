@@ -56,7 +56,7 @@ export function MediaPool({ engine }: MediaPoolProps) {
         id: `add-asset-${id}`,
         label: `Add asset: ${file.name}`,
         timestamp: Date.now(),
-        operations: [{ type: 'ADD_ASSET', asset }] as any,
+        operations: [{ type: 'REGISTER_ASSET', asset }] as any,
       });
 
       newItems.push({
