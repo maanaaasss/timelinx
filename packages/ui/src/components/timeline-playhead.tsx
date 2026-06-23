@@ -34,12 +34,13 @@ export const TimelinePlayhead = React.memo(function TimelinePlayhead({
         ...style,
       }}
     >
-      {/* Thin vertical line */}
+      {/* Thin vertical line with subtle glow */}
       <div
         className="tl-playhead-line"
         style={{
           height: '100%',
           width: 'var(--tl-playhead-width, 1.5px)',
+          boxShadow: '0 0 6px rgba(129,140,248,0.15)',
         }}
       />
       {/* Rounded head at top */}

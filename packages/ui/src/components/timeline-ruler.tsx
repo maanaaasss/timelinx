@@ -39,7 +39,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 
     const dpr = window.devicePixelRatio || 1;
     const width = totalWidth;
-    const height = rulerHeight || 36;
+    const height = rulerHeight || 32;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
@@ -49,7 +49,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 
     ctx.clearRect(0, 0, width, height);
 
-    const bgColor = resolveCssVar('--tl-ruler-bg', '#12121a');
+    const bgColor = resolveCssVar('--tl-ruler-bg', '#111113');
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
 
@@ -58,11 +58,12 @@ export const TimelineRuler = React.memo(function TimelineRuler({
     const startFrame = Math.max(0, Math.floor(scrollLeft / ppf));
     const endFrame = Math.min(duration, Math.ceil((scrollLeft + vpWidth) / ppf));
 
-    const textColor = resolveCssVar('--tl-ruler-text', 'rgba(255,255,255,0.35)');
-    const tickColor = resolveCssVar('--tl-ruler-tick', 'rgba(255,255,255,0.08)');
-    const tickMajColor = resolveCssVar('--tl-ruler-tick-maj', 'rgba(255,255,255,0.18)');
+    const textColor = resolveCssVar('--tl-ruler-text', 'rgba(255,255,255,0.2)');
+    const tickColor = resolveCssVar('--tl-ruler-tick', 'rgba(255,255,255,0.04)');
+    const tickMajColor = resolveCssVar('--tl-ruler-tick-maj', 'rgba(255,255,255,0.1)');
 
-    ctx.font = '10px "JetBrains Mono", "SF Mono", monospace';
+    // Elegant font: medium weight, clean
+    ctx.font = '500 10px "Inter", "SF Pro Display", -apple-system, sans-serif';
     ctx.textBaseline = 'alphabetic';
 
     for (let f = startFrame; f <= endFrame; f++) {
@@ -73,47 +74,55 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 
       const x = f * ppf;
 
-      ctx.beginPath();
       if (isMajor) {
+        // Major tick
+        ctx.beginPath();
         ctx.moveTo(x, height);
-        ctx.lineTo(x, height - 12);
+        ctx.lineTo(x, height - 10);
         ctx.strokeStyle = tickMajColor;
         ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Adaptive label format based on zoom level
+        // Label — elegant, simple
         ctx.fillStyle = textColor;
-        let label: string;
         const totalSeconds = f / fps;
-        
-        if (ppf > 30) {
+        let label: string;
+
+        // Clean format: "0s", "5s", "10s", "1:00", "2:30"
+        if (ppf > 20) {
           // Very zoomed in: show frames
           label = `${f}`;
-        } else if (ppf > 10) {
-          // Zoomed in: show seconds + frames
+        } else if (ppf > 5) {
+          // Zoomed in: "0s", "1s", "2s"
           const sec = Math.floor(totalSeconds);
-          const frame = f % Math.round(fps);
-          label = `${sec}s ${frame}f`;
-        } else if (ppf > 3) {
-          // Medium zoom: show seconds
+          label = `${sec}s`;
+        } else if (ppf > 1.5) {
+          // Medium: "0:05", "0:10", "0:30"
           const sec = Math.floor(totalSeconds);
           const min = Math.floor(sec / 60);
-          label = min > 0 ? `${min}:${String(sec % 60).padStart(2, '0')}` : `${sec}s`;
+          const s = sec % 60;
+          label = min > 0
+            ? `${min}:${String(s).padStart(2, '0')}`
+            : `${sec}s`;
         } else {
-          // Zoomed out: show minutes
+          // Zoomed out: "1:00", "2:30"
           const sec = Math.floor(totalSeconds);
           const min = Math.floor(sec / 60);
+          const s = sec % 60;
           const hr = Math.floor(min / 60);
-          label = hr > 0
-            ? `${hr}:${String(min % 60).padStart(2, '0')}`
-            : min > 0
-              ? `${min}:${String(sec % 60).padStart(2, '0')}`
-              : `${sec}s`;
+          if (hr > 0) {
+            label = `${hr}:${String(min % 60).padStart(2, '0')}`;
+          } else {
+            label = `${min}:${String(s).padStart(2, '0')}`;
+          }
         }
-        ctx.fillText(label, x + 4, height - 14);
+
+        ctx.fillText(label, x + 5, height - 12);
       } else {
+        // Minor tick — very subtle
+        ctx.beginPath();
         ctx.moveTo(x, height);
-        ctx.lineTo(x, height - 5);
+        ctx.lineTo(x, height - 4);
         ctx.strokeStyle = tickColor;
         ctx.lineWidth = 1;
         ctx.stroke();

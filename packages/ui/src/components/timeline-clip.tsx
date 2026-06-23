@@ -31,13 +31,13 @@ function getClipColor(trackType?: string) {
   }
 }
 
-function formatFrame(frame: number, fps: number): string {
+function formatTimecode(frame: number, fps: number): string {
   const totalSeconds = Math.floor(frame / fps);
   const f = frame % fps;
   const s = totalSeconds % 60;
   const m = Math.floor(totalSeconds / 60) % 60;
   const h = Math.floor(totalSeconds / 3600);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
+  return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
 }
 
 export const TimelineClip = React.memo(function TimelineClip({
@@ -56,9 +56,12 @@ export const TimelineClip = React.memo(function TimelineClip({
   const end = (clip.timelineEnd as number) * ppf;
   const width = end - start;
   const IconComponent = getClipIcon(trackType);
-  const showDetails = width > 60;
-  const showTimecodes = width > 180;
   const clipName = clip.name || (clip.id as string).slice(0, 8);
+
+  // Responsive visibility
+  const showName = width > 40;
+  const showMeta = width > 140;
+  const showIcon = width > 50;
 
   return (
     <div
@@ -68,22 +71,23 @@ export const TimelineClip = React.memo(function TimelineClip({
       style={{
         left: start,
         width: width,
-        height: height - 16,
-        top: 8,
+        height: height - 20,
+        top: 10,
         background: getClipColor(trackType),
         ...style,
       }}
     >
-      {/* Accent strip */}
+      {/* Inner highlight */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: 2,
-          background: 'rgba(255,255,255,0.25)',
+          height: '50%',
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0.06) 0%, transparent 100%)',
           borderRadius: 'var(--tl-clip-radius) var(--tl-clip-radius) 0 0',
+          pointerEvents: 'none',
         }}
       />
 
@@ -92,76 +96,76 @@ export const TimelineClip = React.memo(function TimelineClip({
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
+          gap: 6,
           height: '100%',
-          padding: '0 12px',
+          padding: '0 10px',
           overflow: 'hidden',
           position: 'relative',
           zIndex: 1,
         }}
       >
-        {showDetails && (
+        {showIcon && (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              background: 'rgba(255,255,255,0.15)',
+              width: 20,
+              height: 20,
+              borderRadius: 5,
+              background: 'rgba(255,255,255,0.1)',
               flexShrink: 0,
             }}
           >
-            <IconComponent size={12} style={{ color: 'rgba(255,255,255,0.9)' }} />
+            <IconComponent size={11} style={{ color: 'rgba(255,255,255,0.8)' }} />
           </div>
         )}
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          gap: 2,
-          minWidth: 0,
-          flex: 1,
-        }}>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              color: 'var(--tl-clip-text)',
-              lineHeight: '1.3',
-              letterSpacing: '0.01em',
-            }}
-          >
-            {clipName}
-          </span>
-          {showTimecodes && (
+        {showName && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            gap: 1,
+            minWidth: 0,
+            flex: 1,
+          }}>
             <span
               style={{
-                fontSize: 9,
-                fontFamily: '"SF Mono", "JetBrains Mono", monospace',
-                color: 'rgba(255,255,255,0.45)',
+                fontSize: 12,
+                fontWeight: 500,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                color: 'var(--tl-clip-text)',
                 lineHeight: '1.2',
-                letterSpacing: '0.04em',
+                letterSpacing: '-0.01em',
               }}
             >
-              {formatFrame(clip.timelineStart as number, 30)} → {formatFrame(clip.timelineEnd as number, 30)}
+              {clipName}
             </span>
-          )}
-        </div>
+            {showMeta && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontFamily: 'var(--tl-font-mono)',
+                  color: 'rgba(255,255,255,0.35)',
+                  lineHeight: '1.2',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {formatTimecode(clip.timelineStart as number, 30)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* In-point handle */}
+      {/* Handles */}
       <div className="tl-clip-handle tl-clip-handle-left">
         <div className="tl-clip-handle-grip" />
       </div>
-
-      {/* Out-point handle */}
       <div className="tl-clip-handle tl-clip-handle-right">
         <div className="tl-clip-handle-grip" />
       </div>
