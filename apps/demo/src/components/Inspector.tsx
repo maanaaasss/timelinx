@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import { useSelectedClipIds, useClipWithEngine, useTimelineWithEngine, usePlayheadFrame } from '@timelinx/react';
 import { Search } from 'lucide-react';
@@ -16,31 +16,14 @@ export function Inspector({ engine }: InspectorProps) {
 
   if (selectedArray.length === 0) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 20px',
-        textAlign: 'center',
-      }}>
-        <div style={{
-          width: 56,
-          height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: 14,
-          marginBottom: 14,
-          color: 'rgba(255,255,255,0.15)',
-        }}>
+      <div className="panel-empty" style={{ padding: '40px 20px' }}>
+        <div className="panel-empty-icon" style={{ marginBottom: 14 }}>
           <Search size={24} strokeWidth={1.5} />
         </div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>
+        <div className="panel-empty-title">
           No clip selected
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>
+        <div className="panel-empty-sub">
           Click a clip to view details
         </div>
       </div>
@@ -49,14 +32,8 @@ export function Inspector({ engine }: InspectorProps) {
 
   if (selectedArray.length > 1) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '32px 20px',
-        textAlign: 'center',
-      }}>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
+      <div className="panel-empty" style={{ padding: '32px 20px' }}>
+        <div className="panel-empty-title">
           {selectedArray.length} clips selected
         </div>
       </div>
@@ -77,7 +54,7 @@ function ClipInspector({ clipId, engine }: { clipId: string; engine: TimelineEng
   const mediaDuration = (clip.mediaOut as number) - (clip.mediaIn as number);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="panel-stack">
       <Section title="Clip">
         <Field label="Name" value={clip.name || (clipId as string).slice(0, 8)} />
         <Field label="ID" value={(clipId as string).slice(0, 12)} dim />
@@ -119,20 +96,11 @@ function ClipInspector({ clipId, engine }: { clipId: string; engine: TimelineEng
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <div style={{
-        fontSize: 10,
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.06em',
-        color: 'rgba(255,255,255,0.3)',
-        marginBottom: 10,
-        paddingBottom: 6,
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
-      }}>
+    <div className="inspector-section">
+      <div className="inspector-section-title">
         {title}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div>
         {children}
       </div>
     </div>
@@ -141,19 +109,9 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Field({ label, value, dim }: { label: string; value: string; dim?: boolean }) {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      fontSize: 12,
-      padding: '3px 0',
-    }}>
-      <span style={{ color: 'rgba(255,255,255,0.35)' }}>{label}</span>
-      <span style={{
-        color: dim ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.65)',
-        fontFamily: '"SF Mono", "JetBrains Mono", monospace',
-        fontSize: 11,
-      }}>
+    <div className="inspector-field">
+      <span>{label}</span>
+      <span className={`inspector-value${dim ? ' dim' : ''}`}>
         {value}
       </span>
     </div>

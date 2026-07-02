@@ -27,17 +27,7 @@ const PANELS: { id: PanelId; label: string; icon: LucideIcon }[] = [
 
 export function IconBar({ activePanel, onPanelToggle }: IconBarProps) {
   return (
-    <div style={{
-      width: 48,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '12px 0',
-      gap: 4,
-      background: '#141418',
-      borderRight: '1px solid rgba(255,255,255,0.06)',
-      flexShrink: 0,
-    }}>
+    <div className="sidebar">
       {PANELS.map((panel) => {
         const isActive = activePanel === panel.id;
         return (
@@ -45,35 +35,8 @@ export function IconBar({ activePanel, onPanelToggle }: IconBarProps) {
             key={panel.id}
             onClick={() => onPanelToggle(panel.id)}
             title={panel.label}
-            style={{
-              width: 36,
-              height: 36,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: isActive
-                ? 'rgba(99,102,241,0.15)'
-                : 'transparent',
-              border: 'none',
-              borderRadius: 10,
-              cursor: 'pointer',
-              color: isActive
-                ? '#818cf8'
-                : 'rgba(255,255,255,0.35)',
-              transition: 'all 150ms ease',
-            }}
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.35)';
-              }
-            }}
+            className={`sidebar-btn${isActive ? ' active' : ''}`}
+            aria-label={panel.label}
           >
             <panel.icon size={18} strokeWidth={1.8} />
           </button>

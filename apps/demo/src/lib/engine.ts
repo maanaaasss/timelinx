@@ -293,3 +293,37 @@ export function addAssetToTimeline(drop: AddAssetDrop): void {
 export function resetEngine(): void {
   engine = null;
 }
+
+// ── Extend TimelineEngine prototype dynamically to support track mute/lock ──
+import { toggleTrackMute as coreToggleMute, toggleTrackLock as coreToggleLock } from '@timelinx/core/internal';
+
+Object.defineProperty(TimelineEngine.prototype, 'toggleTrackMute', {
+  value: function(trackId: string) {
+    const nextState = coreToggleMute((this as any).currentState, trackId);
+    (this as any).history.push({
+      state: nextState,
+      transaction: { id: `mute-${trackId}-${Date.now()}`, label: 'Toggle Mute', timestamp: Date.now(), operations: [] }
+    });
+    (this as any).currentState = nextState;
+    (this as any).applyStateChange(nextState);
+    return { accepted: true };
+  },
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(TimelineEngine.prototype, 'toggleTrackLock', {
+  value: function(trackId: string) {
+    const nextState = coreToggleLock((this as any).currentState, trackId);
+    (this as any).history.push({
+      state: nextState,
+      transaction: { id: `lock-${trackId}-${Date.now()}`, label: 'Toggle Lock', timestamp: Date.now(), operations: [] }
+    });
+    (this as any).currentState = nextState;
+    (this as any).applyStateChange(nextState);
+    return { accepted: true };
+  },
+  writable: true,
+  configurable: true
+});
+

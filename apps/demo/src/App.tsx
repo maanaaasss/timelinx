@@ -1,16 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
-import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
+import { usePlayheadFrame, useTimelineWithEngine } from '@timelinx/react';
+import { TimelineEditor, TimelineProvider, frameToTimecode } from '@timelinx/ui';
 import { getEngine, resetEngine, addAssetToTimeline } from './lib/engine';
 import { IconBar, PanelId } from './components/IconBar';
 import { PanelContainer } from './components/PanelContainer';
 import { Viewer } from './components/Viewer';
-import { PresetSwitcher } from './components/PresetSwitcher';
 import { useThemeManager } from './lib/useThemeManager';
+import { PresetSwitcher } from './components/PresetSwitcher';
+import './App.css';
 
 export default function App() {
   const [engine] = useState(() => getEngine());
-  const [activePanel, setActivePanel] = useState<PanelId | null>('media');
+  const [activePanel, setActivePanel] = useState<PanelId>('media');
   const { currentTheme, setTheme } = useThemeManager('dark-pro');
 
   const handleAssetDrop = useCallback((drop: { assetId: string; trackId: string; frame: number }) => {
@@ -18,41 +20,29 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100vw',
-      background: 'var(--tl-app-bg, #0f0f12)',
-      color: 'var(--tl-text, rgba(255,255,255,0.9))',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif',
-      overflow: 'hidden',
-      WebkitFontSmoothing: 'antialiased',
-    }}>
+    <div className="app-shell">
       <Header
         currentTheme={currentTheme}
         onThemeChange={setTheme}
         engine={engine}
       />
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="app-body">
         <IconBar
           activePanel={activePanel}
-          onPanelToggle={(id) => setActivePanel(activePanel === id ? null : id)}
+          onPanelToggle={(id) => setActivePanel(id)}
         />
 
-        {activePanel && (
-          <PanelContainer
-            activePanel={activePanel}
-            engine={engine}
-            onClose={() => setActivePanel(null)}
-          />
-        )}
+        <PanelContainer
+          activePanel={activePanel}
+          engine={engine}
+          onClose={() => {}}
+        />
 
-        <TimelineProvider engine={engine}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="center-col">
+          <TimelineProvider engine={engine}>
             <Viewer engine={engine} />
-            <div style={{ flex: 1, minHeight: 0 }}>
+            <div className="timeline-wrap">
               <TimelineEditor
                 engine={engine}
                 style={{ height: '100%' }}
@@ -60,8 +50,8 @@ export default function App() {
                 onAssetDrop={handleAssetDrop}
               />
             </div>
-          </div>
-        </TimelineProvider>
+          </TimelineProvider>
+        </div>
       </div>
     </div>
   );
@@ -76,89 +66,42 @@ function Header({
   onThemeChange: (theme: string) => void;
   engine: TimelineEngine;
 }) {
+  const frame = usePlayheadFrame(engine);
+  const timeline = useTimelineWithEngine(engine);
+  const fps = timeline?.fps ?? 30;
+
   const handleReset = useCallback(() => {
     resetEngine();
     window.location.reload();
   }, []);
 
   return (
-    <header style={{
-      height: 52,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 20px',
-      background: '#141418',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
-      flexShrink: 0,
-      gap: 16,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{
-          width: 28,
-          height: 28,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-          borderRadius: 8,
-          fontWeight: 700,
-          fontSize: 13,
-          color: '#fff',
-          letterSpacing: '-0.02em',
-        }}>
-          T
+    <header className="topbar">
+      <div className="topbar-left">
+        <div className="app-logo">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1" y="4" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <rect x="1" y="1" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+            <rect x="7" y="1" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+            <rect x="13" y="1" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+            <rect x="1" y="14" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+            <rect x="7" y="14" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+            <rect x="13" y="14" width="4" height="3" rx="1" fill="currentColor" opacity="0.6" />
+          </svg>
         </div>
-        <div style={{
-          fontWeight: 600,
-          fontSize: 14,
-          letterSpacing: '-0.01em',
-          color: 'rgba(255,255,255,0.9)',
-        }}>
-          timeline
-        </div>
-        <span style={{
-          fontSize: 10,
-          color: 'rgba(255,255,255,0.3)',
-          padding: '3px 8px',
-          background: 'rgba(255,255,255,0.04)',
-          borderRadius: 6,
-          fontWeight: 500,
-          letterSpacing: '0.03em',
-        }}>
-          demo
-        </span>
+        <span className="app-name">timelinx</span>
+        <span className="app-badge">demo</span>
       </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div className="topbar-center">
+        <span className="timecode topbar-timecode">{frameToTimecode(frame as number, fps)}</span>
+      </div>
+      <div className="topbar-right">
         <PresetSwitcher
           currentTheme={currentTheme}
           onThemeChange={onThemeChange}
         />
-        <button
-          onClick={handleReset}
-          style={{
-            height: 32,
-            padding: '0 14px',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            color: 'rgba(255,255,255,0.5)',
-            cursor: 'pointer',
-            fontSize: 12,
-            fontFamily: 'inherit',
-            borderRadius: 8,
-            transition: 'all 150ms ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.5)';
-          }}
-        >
-          Reset
+        <button className="icon-btn" title="Reset Workspace" onClick={handleReset}>
+          ✕
         </button>
       </div>
     </header>
