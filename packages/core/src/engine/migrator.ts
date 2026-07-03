@@ -47,6 +47,9 @@ export function migrate(raw: unknown): TimelineState {
 
   const curr = current as Record<string, unknown>;
   const registry = curr.assetRegistry;
+  if (curr.timeline === undefined || registry === undefined) {
+    throw new SerializationError('Migrated result missing required fields (timeline, assetRegistry)');
+  }
   const assetRegistry =
     registry instanceof Map
       ? registry

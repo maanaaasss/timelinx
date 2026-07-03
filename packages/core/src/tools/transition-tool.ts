@@ -69,7 +69,7 @@ function txId(): string {
 
 export class TransitionTool implements ITool {
   readonly id: ToolId = toToolId('transition');
-  readonly shortcutKey: string = 'T';
+  readonly shortcutKey: string = 'g';
 
   private pendingClipId: ClipId | null = null;
   private dragStartX: number = 0;

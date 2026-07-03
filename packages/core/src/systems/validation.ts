@@ -114,7 +114,7 @@ export function validateClip(state: TimelineState, clip: Clip): ValidationResult
   // Check timeline duration matches media duration (Phase 1 - no speed remapping)
   const timelineDuration = getClipDuration(clip);
   const mediaDuration = getClipMediaDuration(clip);
-  if (timelineDuration !== mediaDuration) {
+  if (Math.abs(timelineDuration - mediaDuration) > 0.5) {
     errors.push(invalidResult(
       'DURATION_MISMATCH',
       `Clip timeline duration (${timelineDuration}) must match media duration (${mediaDuration}) in Phase 1`,

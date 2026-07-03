@@ -5,9 +5,11 @@ import { PanelId } from './IconBar';
 import { MediaPool } from './MediaPool';
 import { Inspector } from './Inspector';
 import { EffectsPanel } from './EffectsPanel';
-import { MarkersPanel } from './MarkersPanel';
-import { TransitionsPanel } from './TransitionsPanel';
-import { KeyframesPanel } from './KeyframesPanel';
+import {
+  MarkersPanel,
+  TransitionsPanel,
+  KeyframesPanel,
+} from '@timelinx/ui';
 
 interface PanelContainerProps {
   activePanel: PanelId;
@@ -41,12 +43,12 @@ export function PanelContainer({ activePanel, engine, onClose }: PanelContainerP
       </div>
 
       <div className="panel-content">
-        {activePanel === 'media' && <MediaPool engine={engine} />}
-        {activePanel === 'inspector' && <Inspector engine={engine} />}
-        {activePanel === 'effects' && <EffectsPanel />}
-        {activePanel === 'markers' && <MarkersPanel />}
+        {activePanel === 'media'       && <MediaPool engine={engine} />}
+        {activePanel === 'inspector'   && <Inspector engine={engine} />}
+        {activePanel === 'effects'     && <EffectsPanel />}
+        {activePanel === 'markers'     && <MarkersPanel />}
         {activePanel === 'transitions' && <TransitionsPanel />}
-        {activePanel === 'keyframes' && <KeyframesPanel />}
+        {activePanel === 'keyframes'   && <KeyframesPanel />}
       </div>
     </aside>
   );

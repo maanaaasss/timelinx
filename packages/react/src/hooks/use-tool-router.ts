@@ -17,13 +17,14 @@ export function useToolRouter(
     getScrollLeft?: () => number;
   },
 ): ToolRouterHandlers {
+  const { getPixelsPerFrame, getScrollLeft } = options;
   return useMemo(
     () =>
       createToolRouter({
         engine,
-        getPixelsPerFrame: options.getPixelsPerFrame,
-        getScrollLeft: options.getScrollLeft,
+        getPixelsPerFrame,
+        getScrollLeft,
       }),
-    [engine],
+    [engine, getPixelsPerFrame, getScrollLeft],
   );
 }

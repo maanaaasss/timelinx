@@ -1,0 +1,754 @@
+/* ============================================================
+   TIMELINX TEMPLATE EDITOR — Bright Creative Theme
+   ============================================================ */
+
+/* ── Canvas Background ──────────────────────────────────────── */
+.tpl-canvas {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(122, 148, 255, 0.06), transparent 60%),
+    repeating-conic-gradient(rgba(255, 255, 255, 0.018) 0% 25%, transparent 0% 50%) 50% / 24px 24px,
+    #f8f9fc;
+}
+
+.tpl-canvas:focus {
+  outline: none;
+}
+
+.tpl-canvas-inner {
+  position: relative;
+  width: 390px;
+  height: 693px;
+  background: #ffffff;
+  border-radius: var(--radius-xl, 12px);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ── Elements ───────────────────────────────────────────────── */
+.tpl-element {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.tpl-element:hover {
+  border-color: rgba(122, 148, 255, 0.4);
+}
+
+.tpl-element.selected {
+  border-color: #7a94ff;
+  box-shadow: 0 0 0 3px rgba(122, 148, 255, 0.18);
+}
+
+.tpl-element.locked {
+  border-color: rgba(255, 107, 102, 0.3);
+  cursor: not-allowed;
+}
+
+.tpl-element.locked:hover {
+  border-color: rgba(255, 107, 102, 0.5);
+}
+
+.tpl-element-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 8px;
+  word-break: break-word;
+  line-height: 1.3;
+  user-select: none;
+}
+
+.tpl-element-shape {
+  border-radius: 4px;
+}
+
+.tpl-element-shape.circle {
+  border-radius: 50%;
+}
+
+.tpl-element-image {
+  width: 100%;
+  height: 100%;
+  background: #e8eaf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3b4;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tpl-lock-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff6b66;
+  color: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(255, 107, 102, 0.4);
+  pointer-events: none;
+}
+
+/* ── Locked Regions ─────────────────────────────────────────── */
+.tpl-locked-region {
+  position: absolute;
+  border: 2px dashed rgba(255, 107, 102, 0.4);
+  border-radius: 6px;
+  cursor: not-allowed;
+  z-index: 100;
+}
+
+.tpl-locked-label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #ff6b66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+.tpl-locked-remove {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 107, 102, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.tpl-locked-region:hover .tpl-locked-remove {
+  opacity: 1;
+}
+
+/* ── Shell Layout ───────────────────────────────────────────── */
+.tpl-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #f3f5f9;
+  color: #1a1d27;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.tpl-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7ee;
+}
+
+.tpl-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 240px;
+}
+
+.tpl-topbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.tpl-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 240px;
+  justify-content: flex-end;
+}
+
+.tpl-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: #7a94ff;
+  background: linear-gradient(135deg, rgba(122, 148, 255, 0.15), rgba(122, 148, 255, 0.06));
+  border: 1px solid rgba(122, 148, 255, 0.25);
+  border-radius: 8px;
+}
+
+.tpl-app-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1d27;
+}
+
+.tpl-app-badge {
+  padding: 2px 8px;
+  color: #7a94ff;
+  background: rgba(122, 148, 255, 0.08);
+  border: 1px solid rgba(122, 148, 255, 0.2);
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tpl-template-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.tpl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.tpl-btn-outline {
+  color: #6b7280;
+  background: #ffffff;
+  border: 1px solid #dde0e8;
+}
+
+.tpl-btn-outline:hover {
+  background: #f3f5f9;
+  border-color: #c4c9d6;
+}
+
+.tpl-btn-primary {
+  color: #ffffff;
+  background: #7a94ff;
+}
+
+.tpl-btn-primary:hover {
+  background: #8ea5ff;
+}
+
+/* ── Body Layout ────────────────────────────────────────────── */
+.tpl-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+.tpl-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 52px;
+  padding: 10px 0;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid #e5e7ee;
+}
+
+.tpl-sidebar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: #9ca3b4;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.tpl-sidebar-btn:hover {
+  color: #6b7280;
+  background: #f3f5f9;
+}
+
+.tpl-sidebar-btn.active {
+  color: #7a94ff;
+  background: rgba(122, 148, 255, 0.1);
+  border-color: rgba(122, 148, 255, 0.25);
+}
+
+/* ── Panel ──────────────────────────────────────────────────── */
+.tpl-panel {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid #e5e7ee;
+}
+
+.tpl-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 42px;
+  padding: 0 14px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #eef0f5;
+}
+
+.tpl-panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3b4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tpl-panel-body {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+/* ── Elements Panel ─────────────────────────────────────────── */
+.tpl-elements-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tpl-add-element-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  color: #3d4455;
+  background: #f8f9fc;
+  border: 1px solid #eef0f5;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  text-align: left;
+}
+
+.tpl-add-element-btn:hover {
+  background: #f0f2f7;
+  border-color: #dde0e8;
+  transform: translateY(-1px);
+}
+
+.tpl-add-element-btn svg {
+  color: #7a94ff;
+  flex-shrink: 0;
+}
+
+.tpl-divider {
+  height: 1px;
+  background: #eef0f5;
+  margin: 6px 0;
+}
+
+/* ── Brand Panel ────────────────────────────────────────────── */
+.tpl-brand-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tpl-brand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tpl-brand-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3b4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tpl-brand-colors {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tpl-brand-swatch {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.tpl-brand-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tpl-brand-fonts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tpl-brand-font {
+  display: block;
+  padding: 8px 12px;
+  background: #f8f9fc;
+  border: 1px solid #eef0f5;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #3d4455;
+}
+
+/* ── Canvas Area ────────────────────────────────────────────── */
+.tpl-canvas-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Properties Panel ───────────────────────────────────────── */
+.tpl-properties {
+  width: 272px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-left: 1px solid #e5e7ee;
+  overflow-y: auto;
+}
+
+.tpl-props-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef0f5;
+}
+
+.tpl-props-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3b4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tpl-props-type {
+  padding: 2px 8px;
+  background: rgba(122, 148, 255, 0.08);
+  color: #7a94ff;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.tpl-props-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3b4;
+}
+
+.tpl-props-section {
+  padding: 14px;
+  border-bottom: 1px solid #f0f2f7;
+}
+
+.tpl-props-section-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #b0b7c6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tpl-props-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tpl-props-label {
+  width: 28px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #9ca3b4;
+}
+
+.tpl-props-input {
+  width: 60px;
+  height: 28px;
+  padding: 0 8px;
+  background: #f8f9fc;
+  border: 1px solid #eef0f5;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #3d4455;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.tpl-props-input:focus {
+  outline: none;
+  border-color: #7a94ff;
+  box-shadow: 0 0 0 2px rgba(122, 148, 255, 0.15);
+}
+
+.tpl-props-input-wide {
+  flex: 1;
+  width: auto;
+}
+
+.tpl-props-select {
+  flex: 1;
+  height: 28px;
+  padding: 0 8px;
+  background: #f8f9fc;
+  border: 1px solid #eef0f5;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #3d4455;
+}
+
+.tpl-props-select:focus {
+  outline: none;
+  border-color: #7a94ff;
+}
+
+.tpl-props-color {
+  width: 28px;
+  height: 28px;
+  padding: 2px;
+  background: #f8f9fc;
+  border: 1px solid #eef0f5;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tpl-props-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.tpl-props-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}
+
+.tpl-props-slider {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #e5e7ee;
+  border-radius: 9999px;
+  outline: none;
+}
+
+.tpl-props-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #7a94ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.tpl-props-value {
+  width: 32px;
+  text-align: right;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #6b7280;
+}
+
+.tpl-props-hint {
+  font-size: 11px;
+  color: #b0b7c6;
+  font-style: italic;
+}
+
+/* ── Locked Region List ─────────────────────────────────────── */
+.tpl-locked-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: rgba(255, 107, 102, 0.06);
+  border: 1px solid rgba(255, 107, 102, 0.15);
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.tpl-locked-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: #ff6b66;
+}
+
+.tpl-locked-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  color: #ff6b66;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 120ms ease;
+}
+
+.tpl-locked-delete:hover {
+  background: rgba(255, 107, 102, 0.12);
+}
+
+/* ── Template Library ───────────────────────────────────────── */
+.tpl-library {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tpl-lib-categories {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tpl-lib-cat-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f5f9;
+  border: 1px solid #e5e7ee;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.tpl-lib-cat-btn:hover {
+  background: #ebedf3;
+}
+
+.tpl-lib-cat-btn.active {
+  color: #ffffff;
+  background: #7a94ff;
+  border-color: #7a94ff;
+}
+
+.tpl-lib-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tpl-lib-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: #ffffff;
+  border: 2px solid #eef0f5;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.tpl-lib-card:hover {
+  border-color: #c4c9d6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.tpl-lib-card.selected {
+  border-color: #7a94ff;
+  background: rgba(122, 148, 255, 0.04);
+  box-shadow: 0 0 0 3px rgba(122, 148, 255, 0.12);
+}
+
+.tpl-lib-thumb {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tpl-lib-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

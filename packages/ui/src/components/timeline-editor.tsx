@@ -11,6 +11,7 @@ import {
   useVirtualWindow,
   useTrackWithEngine,
   useClips,
+  useHistory,
 } from '@timelinx/react';
 import type { TimelineEngine } from '@timelinx/react';
 import type {
@@ -20,16 +21,30 @@ import type {
   ClipId,
   TrackId,
   ProvisionalState,
+  OperationPrimitive,
 } from '@timelinx/core';
-import { toFrame, createTrack, createClip, toAssetId, createAsset, frameRate } from '@timelinx/core';
+import { toFrame, createTrack, createClip, toAssetId, createAsset, frameRate, toTrackId } from '@timelinx/core';
 import { TimelineProvider, useTimelineContext, TimelineCtx } from '../context/timeline-context';
-import { TimelineToolbar } from './timeline-toolbar';
 import { TimelineRuler } from './timeline-ruler';
 import { TimelineTrack } from './timeline-track';
 import { TimelineClip } from './timeline-clip';
 import { TimelinePlayhead } from './timeline-playhead';
-import { IconPlus, IconFilm, IconHeadphones } from './icons';
-import { frameToTimecode } from '../shared/time';
+import { ZoomControls } from './zoom-controls';
+import { SnapIndicator } from './snap-indicator';
+import { DropZone } from './drop-zone';
+import {
+  IconCursor,
+  IconRazor,
+  IconSlip,
+  IconSlide,
+  IconTrim,
+  IconHand,
+  IconUndo,
+  IconRedo,
+  IconPlayerPlay,
+  IconPlayerPause,
+} from './icons';
+import { frameToTimecode, getFriendlyTrackLabel } from '../shared/time';
 
 const DEFAULT_TRACK_HEIGHT_VIDEO = 80;
 const DEFAULT_TRACK_HEIGHT_AUDIO = 68;
@@ -41,21 +56,6 @@ const txId = () => `ui-tx-${++_txSeq}`;
 
 function extractModifiers(e: React.PointerEvent | React.KeyboardEvent): Modifiers {
   return { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey };
-}
-
-function getFriendlyTrackLabel(
-  trackId: string,
-  type: string,
-  allTrackIds: readonly string[],
-  trackTypes: Map<string, string>,
-): string {
-  const prefix = type === 'video' ? 'Video' : type === 'audio' ? 'Audio' : type === 'subtitle' ? 'Subtitles' : 'Track';
-  let idx = 1;
-  for (const tid of allTrackIds) {
-    if (tid === trackId) break;
-    if (trackTypes.get(tid) === type) idx++;
-  }
-  return `${prefix} ${idx}`;
 }
 
 const ClipRow = React.memo(function ClipRow({
@@ -93,31 +93,34 @@ const ClipRow = React.memo(function ClipRow({
 
   return (
     <div
+      className={`tl-track tl-track--${trackType || 'video'}`}
       data-track-id={trackId}
-      className="tl-track-row"
       style={{
         height,
       }}
     >
-      {clips.map((clip) => {
-        const isGhost = provisionalIds.has(clip.id as string);
-        const ghostClip = isGhost
-          ? provisionalClips.find((pc) => pc.id === clip.id)
-          : null;
-        return (
-          <TimelineClip
-            key={clip.id as string}
-            clip={ghostClip ?? clip}
-            trackId={trackId}
-            isAudio={isAudio}
-            ppf={ppf}
-            height={height}
-            isSelected={selection.has(clip.id as string)}
-            isProvisional={isGhost}
-            trackType={trackType}
-          />
-        );
-      })}
+      <div className="tl-track-body">
+        {clips.map((clip) => {
+          const isGhost = provisionalIds.has(clip.id as string);
+          const ghostClip = isGhost
+            ? provisionalClips.find((pc) => pc.id === clip.id)
+            : null;
+          return (
+            <TimelineClip
+              key={clip.id as string}
+              clip={ghostClip ?? clip}
+              trackId={trackId}
+              isAudio={isAudio}
+              ppf={ppf}
+              height={height}
+              isSelected={selection.has(clip.id as string)}
+              isProvisional={isGhost}
+              trackType={trackType}
+              fps={fps}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 });
@@ -213,6 +216,24 @@ function EditorInner({
   const selection = useSelectedClipIds(engine);
   const cursor = useCursor(engine);
   const virtualWindow = useVirtualWindow(engine, vpWidth, scrollLeft, ppf);
+  const history = useHistory(engine);
+
+  const frameRef = useRef(frame);
+  frameRef.current = frame;
+  const durationFramesRef = useRef(timeline.duration as number);
+  durationFramesRef.current = timeline.duration as number;
+
+  const zoomOut = useCallback(() => setPpf(Math.max(1, ppf * 0.8)), [ppf, setPpf]);
+  const zoomIn = useCallback(() => setPpf(Math.min(100, ppf * 1.25)), [ppf, setPpf]);
+  const zoom = Math.max(1, Math.min(100, Math.round(ppf)));
+  const onZoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPpf(parseFloat(e.target.value));
+  }, [setPpf]);
+  const undo = useCallback(() => engine.undo(), [engine]);
+  const redo = useCallback(() => engine.redo(), [engine]);
+  const togglePlay = useCallback(() => {
+    isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play();
+  }, [isPlaying, engine]);
 
   const fps = timeline.fps as number;
   const durationFrames = timeline.duration as number;
@@ -251,7 +272,7 @@ function EditorInner({
       map.set(t.id as string, t.type);
     }
     return map;
-  }, [trackIds]);
+  }, [trackIds, engine.getState().timeline.tracks]);
 
   const getTrackHeight = useCallback(
     (trackId: string) => {
@@ -278,7 +299,7 @@ function EditorInner({
         id: txId(),
         label: `Add ${type} track`,
         timestamp: Date.now(),
-        operations: [{ type: 'ADD_TRACK', track: createTrack({ id, name, type }) }] as any,
+        operations: [{ type: 'ADD_TRACK', track: createTrack({ id, name, type }) }],
       });
       triggerUpdate();
     },
@@ -291,7 +312,7 @@ function EditorInner({
         id: txId(),
         label: 'Delete track',
         timestamp: Date.now(),
-        operations: [{ type: 'DELETE_TRACK', trackId }] as any,
+        operations: [{ type: 'DELETE_TRACK', trackId: toTrackId(trackId) }],
       });
       triggerUpdate();
     },
@@ -339,7 +360,7 @@ function EditorInner({
         id: txId(),
         label: 'Add Clip',
         timestamp: Date.now(),
-        operations: [{ type: 'INSERT_CLIP', clip, trackId }] as any,
+        operations: [{ type: 'INSERT_CLIP', clip, trackId: trackId as TrackId }],
       });
       triggerUpdate();
     },
@@ -353,7 +374,7 @@ function EditorInner({
       map.set(t.id as string, t.clips.length);
     }
     return map;
-  }, [trackIds, provisional]);
+  }, [trackIds, provisional, engine.getState().timeline.tracks]);
 
   useEffect(() => {
     const el = scrollContainerRef.current;
@@ -373,7 +394,7 @@ function EditorInner({
 
   // Auto-focus the editor on mount so keyboard shortcuts work
   useEffect(() => {
-    const editorEl = document.querySelector('.tl-editor') as HTMLElement | null;
+    const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
     if (editorEl) {
       editorEl.focus({ preventScroll: true });
     }
@@ -381,7 +402,7 @@ function EditorInner({
 
   // Re-focus when clicking inside the editor area
   const handleEditorClick = useCallback(() => {
-    const editorEl = document.querySelector('.tl-editor') as HTMLElement | null;
+    const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
     if (editorEl && document.activeElement !== editorEl) {
       editorEl.focus({ preventScroll: true });
     }
@@ -556,22 +577,16 @@ function EditorInner({
         const sel = engine.getSnapshot().selectedClipIds;
         if (sel.size > 0) {
           e.preventDefault();
-          const ops: Array<{ type: 'DELETE_CLIP'; clipId: ClipId; trackId: TrackId }> = [];
+          const ops: OperationPrimitive[] = [];
           for (const cid of sel) {
-            for (const trk of engine.getState().timeline.tracks) {
-              const c = trk.clips.find((cl: any) => cl.id === cid);
-              if (c) {
-                ops.push({ type: 'DELETE_CLIP', clipId: c.id, trackId: trk.id });
-                break;
-              }
-            }
+            ops.push({ type: 'DELETE_CLIP', clipId: cid as ClipId });
           }
           if (ops.length > 0) {
             engine.dispatch({
               id: `delete-${Date.now()}`,
               label: 'Delete clips',
               timestamp: Date.now(),
-              operations: ops as any,
+              operations: ops,
             });
             engine.clearSelection();
           }
@@ -582,13 +597,13 @@ function EditorInner({
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
-        engine.seekTo(toFrame(Math.max(0, (frame as number) - step)));
+        engine.seekTo(toFrame(Math.max(0, (frameRef.current as number) - step)));
         return;
       }
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
-        engine.seekTo(toFrame(Math.min(durationFrames - 1, (frame as number) + step)));
+        engine.seekTo(toFrame(Math.min(durationFramesRef.current - 1, (frameRef.current as number) + step)));
         return;
       }
 
@@ -605,7 +620,7 @@ function EditorInner({
       }
       if (e.key === 'End') {
         e.preventDefault();
-        engine.seekTo(toFrame(durationFrames - 1));
+        engine.seekTo(toFrame(durationFramesRef.current - 1));
         return;
       }
 
@@ -637,7 +652,7 @@ function EditorInner({
       const handled = engine.handleKeyDown(keyEvt, extractModifiers(e));
       if (handled) e.preventDefault();
     },
-    [engine, frame, durationFrames, isPlaying],
+    [engine, isPlaying],
   );
 
   const onScroll = useCallback(
@@ -694,7 +709,7 @@ function EditorInner({
 
   return (
     <div
-      className={`tl-editor${className ? ` ${className}` : ''}`}
+      className={`timeline-editor${className ? ` ${className}` : ''}`}
       role="application"
       aria-label="Timeline editor"
       style={{
@@ -704,18 +719,103 @@ function EditorInner({
       onClick={handleEditorClick}
       tabIndex={0}
     >
-      {showToolbar && <TimelineToolbar />}
+      {showToolbar && (
+        <div className="tl-toolbar">
+          {/* Group 1: edit tools */}
+          <div className="tl-tool-group">
+            <button
+              className={`tool-btn ${toolId === 'selection' ? 'active' : ''}`}
+              title="Select (V)"
+              aria-pressed={toolId === 'selection'}
+              onClick={() => engine.activateTool('selection')}
+            >
+              <IconCursor size={15} />
+            </button>
+            <button
+              className={`tool-btn ${toolId === 'razor' ? 'active' : ''}`}
+              title="Razor (C)"
+              aria-pressed={toolId === 'razor'}
+              onClick={() => engine.activateTool('razor')}
+            >
+              <IconRazor size={15} />
+            </button>
+            <button
+              className={`tool-btn ${toolId === 'slip' ? 'active' : ''}`}
+              title="Slip (S)"
+              aria-pressed={toolId === 'slip'}
+              onClick={() => engine.activateTool('slip')}
+            >
+              <IconSlip size={15} />
+            </button>
+            <button
+              className={`tool-btn ${toolId === 'slide' ? 'active' : ''}`}
+              title="Slide (Y)"
+              aria-pressed={toolId === 'slide'}
+              onClick={() => engine.activateTool('slide')}
+            >
+              <IconSlide size={15} />
+            </button>
+            <button
+              className={`tool-btn ${toolId === 'ripple-trim' ? 'active' : ''}`}
+              title="Ripple Trim (T)"
+              aria-pressed={toolId === 'ripple-trim'}
+              onClick={() => engine.activateTool('ripple-trim')}
+            >
+              <IconTrim size={15} />
+            </button>
+            <button
+              className={`tool-btn ${toolId === 'hand' ? 'active' : ''}`}
+              title="Hand (H)"
+              aria-pressed={toolId === 'hand'}
+              onClick={() => engine.activateTool('hand')}
+            >
+              <IconHand size={15} />
+            </button>
+          </div>
 
-      <div className="tl-workspace-split">
+          <div className="tl-sep" />
+
+          {/* Position display */}
+          <span className="toolbar-position">
+            {frameToTimecode(frame as number, fps)} / {frameToTimecode(durationFrames, fps)}
+          </span>
+
+          <div className="tl-spacer" />
+
+          {/* Zoom */}
+          <ZoomControls ppf={ppf} onPpfChange={setPpf} />
+
+          <div className="tl-sep" />
+
+          {/* Undo/Redo */}
+          <div className="tl-tool-group">
+            <button className="tool-btn" title="Undo" onClick={undo} disabled={!history.canUndo}>
+              <IconUndo size={15} />
+            </button>
+            <button className="tool-btn" title="Redo" onClick={redo} disabled={!history.canRedo}>
+              <IconRedo size={15} />
+            </button>
+          </div>
+
+          <div className="tl-sep" />
+
+          {/* Play in toolbar */}
+          <button
+            className={`tool-btn ${isPlaying ? 'active' : ''}`}
+            title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+            aria-pressed={isPlaying}
+            onClick={togglePlay}
+          >
+            {isPlaying ? <IconPlayerPause size={15} /> : <IconPlayerPlay size={15} />}
+          </button>
+        </div>
+      )}
+
+      <div className="timeline-workspace-split">
         {/* ── Left: Track Labels ── */}
-        <div ref={labelColumnRef} className="tl-label-column">
-          <div className="tl-label-header">
-            <span style={{
-              fontFamily: '"JetBrains Mono", "SF Mono", monospace',
-              fontSize: 11,
-              letterSpacing: '0.05em',
-              color: 'var(--tl-timecode-color)',
-            }}>
+        <div ref={labelColumnRef} className="timeline-label-column">
+          <div className="timeline-label-header">
+            <span className="timecode">
               {frameToTimecode(frame as number, fps)}
             </span>
           </div>
@@ -727,7 +827,7 @@ function EditorInner({
             const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
             return (
               <div key={tid} style={{ position: 'relative' }}>
-                {isSep && <div style={{ height: 1, background: 'var(--tl-separator)' }} />}
+                {isSep && <div className="timeline-track-separator" />}
                 <TimelineTrack
                   trackId={tid}
                   shortId={friendlyLabel}
@@ -761,16 +861,16 @@ function EditorInner({
         {/* ── Right: Scroll Area (Ruler & Tracks Canvas) ── */}
         <div
           ref={scrollContainerRef}
-          className="tl-scroll-area"
+          className="timeline-scroll-area"
           onScroll={onScroll}
         >
-          <div className="tl-ruler-container">
+          <div className="timeline-ruler-container">
             <TimelineRuler totalWidth={timelineWidth} />
           </div>
 
           <div
             ref={trackAreaRef}
-            className="tl-track-canvas"
+            className="timeline-track-canvas"
             style={{
               width: Math.max(timelineWidth, vpWidth),
               minHeight: totalTrackHeight,
@@ -795,7 +895,7 @@ function EditorInner({
               const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
               return (
                 <React.Fragment key={tid}>
-                  {isSep && <div style={{ height: 1, background: 'var(--tl-separator)' }} />}
+                  {isSep && <div className="timeline-track-separator" />}
                   <ClipRow
                     trackId={tid}
                     ppf={ppf}
@@ -812,51 +912,19 @@ function EditorInner({
               );
             })}
 
-            {snapFrames.map((sf) => (
-              <div
-                key={`snap-${sf}`}
-                style={{
-                  position: 'absolute',
-                  left: sf * ppf,
-                  top: 0,
-                  width: 1,
-                  height: totalTrackHeight,
-                  background: 'var(--tl-snap-color)',
-                  pointerEvents: 'none',
-                  zIndex: 15,
-                }}
-              />
-            ))}
+            <SnapIndicator
+              frames={snapFrames}
+              ppf={ppf}
+              totalHeight={totalTrackHeight}
+            />
 
             {dropTarget && (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: dropTarget.frame * ppf,
-                  height: totalTrackHeight,
-                  top: 0,
-                  width: 2,
-                  background: 'var(--tl-snap-color)',
-                  pointerEvents: 'none',
-                  zIndex: 30,
-                }}
-              >
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: 4,
-                    left: 6,
-                    padding: '2px 4px',
-                    borderRadius: 2,
-                    background: 'var(--tl-snap-color)',
-                    color: '#000',
-                    fontSize: 9,
-                    fontWeight: 600,
-                  }}
-                >
-                  {dropTarget.frame}
-                </span>
-              </div>
+              <DropZone
+                frame={dropTarget.frame}
+                ppf={ppf}
+                totalHeight={totalTrackHeight}
+                fps={fps}
+              />
             )}
 
             <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />

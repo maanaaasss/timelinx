@@ -1,0 +1,6 @@
+/* Clip-specific styles — all base styles are in structure.css */
+
+/* Tint the clip name to match track type slightly */
+.tl-clip--video .clip-name { color: color-mix(in srgb, var(--track-video) 30%, var(--text-primary)); }
+.tl-clip--audio .clip-name { color: color-mix(in srgb, var(--track-audio) 25%, var(--text-primary)); }
+.tl-clip--subtitle .clip-name { color: color-mix(in srgb, var(--track-subtitle) 25%, var(--text-primary)); }

@@ -42,6 +42,7 @@ import type { Track }        from '../types/track';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction }   from '../types/operations';
 import type { TimelineState } from '../types/state';
+import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -84,8 +85,6 @@ function findRollTarget(
 
   return { leftClip, rightClip };
 }
-
-import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // Helpers

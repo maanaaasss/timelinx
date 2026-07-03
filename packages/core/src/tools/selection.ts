@@ -521,7 +521,6 @@ export class SelectionTool implements ITool {
   // ── ITool: onCancel ─────────────────────────────────────────────────────
 
   onCancel(): void {
-    this.selected.clear();
     this.mode                  = 'idle';
     this.dragStartFrame        = null;
     this.dragStartX            = null;

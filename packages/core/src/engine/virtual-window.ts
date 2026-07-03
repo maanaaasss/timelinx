@@ -41,10 +41,7 @@ export function getVisibleClips(
   const tracks = state.timeline.tracks;
   for (let i = 0; i < tracks.length; i++) {
     const track = tracks[i]!;
-    const sortedClips = [...track.clips].sort(
-      (a, b) => (a.timelineStart as number) - (b.timelineStart as number),
-    );
-    for (const clip of sortedClips) {
+    for (const clip of track.clips) {
       const clipStart = clip.timelineStart as number;
       const clipEnd = clip.timelineEnd as number;
       const durationFrames = clipEnd - clipStart;

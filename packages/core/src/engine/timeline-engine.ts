@@ -48,6 +48,8 @@ import { TimelineFrame } from '../types/frame';
 import { HistoryState, createHistory, pushHistory, undo as undoHistory, redo as redoHistory, canUndo as canUndoHistory, canRedo as canRedoHistory, getCurrentState } from './history';
 import { dispatch } from './dispatcher';
 import type { DispatchResult, OperationPrimitive } from '../types/operations';
+import { checkInvariants } from '../validation/invariants';
+import { validateOperation } from '../validation/validators';
 import * as ClipOps from '../operations/clip-operations';
 import * as TrackOps from '../operations/track-operations';
 import * as TimelineOps from '../operations/timeline-operations';
@@ -72,6 +74,10 @@ function legacyDispatch(
     newState = operation(currentState);
   } catch (err) {
     return { accepted: false, errors: [{ code: 'OPERATION_ERROR', message: String(err) }] };
+  }
+  const violations = checkInvariants(newState);
+  if (violations.length > 0) {
+    return { accepted: false, errors: [{ code: 'INVARIANT_VIOLATED', message: violations.map(v => v.message).join('; ') }] };
   }
   // pushHistory is already imported at the top of this file
   const newHistory = pushHistory(history, newState);

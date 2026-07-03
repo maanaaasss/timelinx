@@ -7,116 +7,77 @@
 @import '../tokens.css';
 
 :root {
+  color-scheme: dark;
+
   /* ── App chrome ── */
-  --tl-app-bg:          #000000;
-  --tl-panel-bg:        #0a0a0a;
-  --tl-toolbar-bg:      #111111;
-  --tl-toolbar-border:  rgba(255,255,255,0.15);
-  --tl-toolbar-height:  52px;
+  --bg-app:            #000000;
+  --bg-panel:          #0a0a0a;
+  --bg-surface:        #111111;
+  --bg-surface-soft:   #161616;
+  --bg-raised:         #1a1a1a;
+  --bg-hover:          rgba(255,255,255,0.1);
+  --bg-overlay:        rgba(255,255,255,0.12);
+  --bg-input:          #0d0d0d;
 
-  /* ── Ruler ── */
-  --tl-ruler-bg:        #080808;
-  --tl-ruler-tick:      rgba(255,255,255,0.2);
-  --tl-ruler-tick-maj:  rgba(255,255,255,0.4);
-  --tl-ruler-text:      rgba(255,255,255,0.6);
-  --tl-ruler-height:    40px;
-
-  /* ── Timecode ── */
-  --tl-timecode-color:  #ffffff;
-
-  /* ── Track ── */
-  --tl-track-bg:        rgba(255,255,255,0.03);
-  --tl-track-bg-video:  rgba(255,255,255,0.04);
-  --tl-track-bg-audio:  rgba(255,255,255,0.03);
-  --tl-track-border:    rgba(255,255,255,0.12);
-  --tl-track-height:    80px;
-  --tl-track-height-audio: 72px;
-
-  /* ── Label ── */
-  --tl-label-width:     200px;
-  --tl-label-bg:        #080808;
-  --tl-label-text:      rgba(255,255,255,0.8);
-  --tl-label-text-dim:  rgba(255,255,255,0.45);
-  --tl-label-border:    rgba(255,255,255,0.12);
-
-  /* ── Clips ── */
-  --tl-clip-video-bg:   linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  --tl-clip-video-top:  #60a5fa;
-  --tl-clip-audio-bg:   linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  --tl-clip-audio-top:  #4ade80;
-  --tl-clip-selected:   #f59e0b;
-  --tl-clip-provisional: rgba(245,158,11,0.4);
-  --tl-clip-border:     rgba(255,255,255,0.2);
-  --tl-clip-border-sel: #f59e0b;
-  --tl-clip-text:       #ffffff;
-  --tl-clip-text-dim:   rgba(255,255,255,0.7);
-  --tl-clip-video-text: #ffffff;
-  --tl-clip-audio-text: #ffffff;
-  --tl-clip-radius:     8px;
-  --tl-clip-video-accent: rgba(255,255,255,0.3);
-  --tl-clip-audio-accent: rgba(255,255,255,0.25);
-
-  /* ── Playhead ── */
-  --tl-playhead-color:  #ef4444;
-  --tl-playhead-width:  2px;
-
-  /* ── Snap ── */
-  --tl-snap-color:      #f59e0b;
-
-  /* ── Toolbar buttons ── */
-  --tl-btn-bg:          transparent;
-  --tl-btn-bg-hover:    rgba(255,255,255,0.1);
-  --tl-btn-bg-active:   rgba(245,158,11,0.2);
-  --tl-btn-border:      rgba(255,255,255,0.12);
-  --tl-btn-border-active: #f59e0b;
-  --tl-btn-text:        rgba(255,255,255,0.7);
-  --tl-btn-text-active: #ffffff;
-
-  /* ── Type colors ── */
-  --tl-type-video:      #3b82f6;
-  --tl-type-audio:      #22c55e;
-  --tl-type-subtitle:   #f59e0b;
-  --tl-type-title:      #a78bfa;
-
-  /* ── Solo / Mute ── */
-  --tl-solo-active:     #f59e0b;
-  --tl-mute-active:     #ef4444;
-
-  /* ── Track label controls ── */
-  --tl-track-badge-bg:  rgba(255,255,255,0.06);
-  --tl-track-toggle-active-bg: rgba(255,255,255,0.1);
-  --tl-track-vis-inactive: rgba(255,255,255,0.25);
-  --tl-track-delete-hover: #ef4444;
-  --tl-track-add-text:  rgba(255,255,255,0.5);
-  --tl-track-add-hover: #f59e0b;
-  --tl-track-solo-active-text: #000000;
-  --tl-track-mute-active-text: #ffffff;
-
-  /* ── Separators / borders ── */
-  --tl-separator:       rgba(255,255,255,0.1);
-  --tl-add-track-border: rgba(255,255,255,0.15);
+  /* ── Borders ── */
+  --border-faint:      rgba(255,255,255,0.1);
+  --border-subtle:     rgba(255,255,255,0.15);
+  --border-default:    rgba(255,255,255,0.22);
+  --border-strong:     rgba(255,255,255,0.35);
+  --border-focus:      rgba(245,158,11,0.8);
 
   /* ── Text ── */
-  --tl-text:            #ffffff;
-  --tl-play-btn:        #ffffff;
+  --text-primary:      #ffffff;
+  --text-secondary:    rgba(255,255,255,0.8);
+  --text-tertiary:     rgba(255,255,255,0.55);
+  --text-disabled:     rgba(255,255,255,0.3);
+  --text-inverse:      #000000;
+  --text-mono:         rgba(255,255,255,0.85);
 
-  /* ── Waveform ── */
-  --tl-waveform-center: rgba(255,255,255,0.15);
-  --tl-waveform-line:   rgba(255,255,255,0.7);
+  /* ── Accent ── */
+  --accent:            #f59e0b;
+  --accent-hover:      #fbbf24;
+  --accent-active:     #d97706;
+  --accent-subtle:     rgba(245,158,11,0.15);
+  --accent-border:     rgba(245,158,11,0.5);
+  --accent-glow:       rgba(245,158,11,0.25);
 
-  /* ── Clip trim handles ── */
-  --tl-clip-trim:       rgba(255,255,255,0.25);
+  /* ── Colors ── */
+  --color-danger:      #ef4444;
+  --color-danger-subtle: rgba(239,68,68,0.15);
+  --color-success:     #22c55e;
+  --color-warning:     #f59e0b;
+  --color-warning-subtle: rgba(245,158,11,0.15);
 
-  /* ── Resize ── */
-  --tl-resize-handle:   rgba(255,255,255,0.2);
+  /* ── Tracks ── */
+  --track-video:       #3b82f6;
+  --track-video-dim:   rgba(59,130,246,0.85);
+  --track-video-bg:    rgba(59,130,246,0.12);
+  --track-video-border: rgba(59,130,246,0.4);
+  --track-audio:       #22c55e;
+  --track-audio-dim:   rgba(34,197,94,0.85);
+  --track-audio-bg:    rgba(34,197,94,0.12);
+  --track-audio-border: rgba(34,197,94,0.4);
+  --track-subtitle:    #f59e0b;
+  --track-subtitle-dim: rgba(245,158,11,0.85);
+  --track-subtitle-bg: rgba(245,158,11,0.12);
+  --track-subtitle-border: rgba(245,158,11,0.4);
+  --track-image:       #a78bfa;
+  --track-image-bg:    rgba(167,139,250,0.12);
+  --track-image-border: rgba(167,139,250,0.4);
+
+  /* ── Playhead ── */
+  --playhead-color:    #ef4444;
+  --playhead-shadow:   0 0 0 1px rgba(0,0,0,0.9), 0 0 14px rgba(239,68,68,0.5);
 
   /* ── Scrollbar ── */
-  --tl-scrollbar-track: transparent;
-  --tl-scrollbar-thumb: rgba(255,255,255,0.15);
-  --tl-scrollbar-thumb-hover: rgba(255,255,255,0.25);
+  --scrollbar-track:   transparent;
+  --scrollbar-thumb:   rgba(255,255,255,0.18);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.3);
 
   /* ── Shadows ── */
-  --tl-shadow-sm:       0 1px 2px rgba(0,0,0,0.5);
-  --tl-shadow-md:       0 4px 12px rgba(0,0,0,0.6);
-  --tl-shadow-lg:       0 8px 24px rgba(0,0,0,0.7);
+  --shadow-sm:         0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md:         0 4px 12px rgba(0,0,0,0.6);
+  --shadow-lg:         0 8px 24px rgba(0,0,0,0.7);
+  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.8);
 }

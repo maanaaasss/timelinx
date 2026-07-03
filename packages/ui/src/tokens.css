@@ -1,151 +1,168 @@
-/* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — Design Tokens
-   
-   Refined, calm, modern.
-   CapCut / Linear / Framer aesthetic.
-   ═══════════════════════════════════════════════════════════ */
+/* ============================================================
+   TIMELINX DESIGN TOKENS — Professional NLE Grade
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap') layer(fonts);
 
 :root {
-  /* ── Surface hierarchy ── */
-  --tl-surface-base:       #09090b;
-  --tl-surface-raised:     #111113;
-  --tl-surface-overlay:    #18181b;
-  --tl-surface-elevated:   #1f1f23;
-  --tl-surface-hover:      rgba(255,255,255,0.03);
-  --tl-surface-active:     rgba(255,255,255,0.05);
+  color-scheme: dark;
 
-  /* ── App chrome ── */
-  --tl-app-bg:             var(--tl-surface-base);
-  --tl-panel-bg:           var(--tl-surface-raised);
-  --tl-toolbar-bg:         var(--tl-surface-overlay);
-  --tl-toolbar-border:     rgba(255,255,255,0.03);
-  --tl-toolbar-height:     48px;
+  /* ── Surfaces ── */
+  --bg-app:          #07080C;
+  --bg-panel:        #0C0D12;
+  --bg-surface:      #10111A;
+  --bg-surface-soft: #141620;
+  --bg-raised:       #191B25;
+  --bg-hover:        #1E2130;
+  --bg-overlay:      #232538;
+  --bg-input:        #0E0F17;
 
-  /* ── Ruler ── */
-  --tl-ruler-bg:           var(--tl-surface-raised);
-  --tl-ruler-height:       32px;
-  --tl-ruler-tick:         rgba(255,255,255,0.04);
-  --tl-ruler-tick-maj:     rgba(255,255,255,0.1);
-  --tl-ruler-text:         rgba(255,255,255,0.2);
-
-  /* ── Timecode ── */
-  --tl-timecode-color:     rgba(255,255,255,0.65);
-  --tl-timecode-size:      12px;
-
-  /* ── Track ── */
-  --tl-track-bg:           transparent;
-  --tl-track-bg-video:     rgba(255,255,255,0.008);
-  --tl-track-bg-audio:     rgba(255,255,255,0.006);
-  --tl-track-border:       rgba(255,255,255,0.02);
-  --tl-track-height:       84px;
-  --tl-track-height-audio: 72px;
-
-  /* ── Label ── */
-  --tl-label-width:        140px;
-  --tl-label-bg:           var(--tl-surface-raised);
-  --tl-label-text:         rgba(255,255,255,0.5);
-  --tl-label-text-dim:     rgba(255,255,255,0.18);
-  --tl-label-border:       rgba(255,255,255,0.02);
-
-  /* ── Clips — softer, modern tones ── */
-  --tl-clip-video-bg:      linear-gradient(135deg, #4b7bec 0%, #3d6dd4 100%);
-  --tl-clip-video-top:     rgba(255,255,255,0.1);
-  --tl-clip-audio-bg:      linear-gradient(135deg, #38b2ac 0%, #2d9e98 100%);
-  --tl-clip-audio-top:     rgba(255,255,255,0.08);
-  --tl-clip-subtitle-bg:   linear-gradient(135deg, #9f7aea 0%, #8b6dd4 100%);
-  --tl-clip-selected:      #818cf8;
-  --tl-clip-provisional:   rgba(129,140,248,0.25);
-  --tl-clip-border:        rgba(255,255,255,0.05);
-  --tl-clip-border-sel:    #a5b4fc;
-  --tl-clip-text:          #ffffff;
-  --tl-clip-text-dim:      rgba(255,255,255,0.45);
-  --tl-clip-video-text:    #ffffff;
-  --tl-clip-audio-text:    #ffffff;
-  --tl-clip-radius:        12px;
-  --tl-clip-video-accent:  rgba(255,255,255,0.12);
-  --tl-clip-audio-accent:  rgba(255,255,255,0.08);
-
-  /* ── Playhead ── */
-  --tl-playhead-color:     #818cf8;
-  --tl-playhead-width:     1.5px;
-
-  /* ── Snap ── */
-  --tl-snap-color:         #fbbf24;
-
-  /* ── Toolbar buttons (ghost) ── */
-  --tl-btn-bg:             transparent;
-  --tl-btn-bg-hover:       rgba(255,255,255,0.04);
-  --tl-btn-bg-active:      rgba(129,140,248,0.1);
-  --tl-btn-border:         transparent;
-  --tl-btn-border-active:  #818cf8;
-  --tl-btn-text:           rgba(255,255,255,0.35);
-  --tl-btn-text-active:    #ffffff;
-  --tl-btn-radius:         8px;
-
-  /* ── Type colors ── */
-  --tl-type-video:         #4b7bec;
-  --tl-type-audio:         #38b2ac;
-  --tl-type-subtitle:      #9f7aea;
-  --tl-type-title:         #9f7aea;
-
-  /* ── Solo / Mute ── */
-  --tl-solo-active:        #fbbf24;
-  --tl-mute-active:        #f56565;
-
-  /* ── Track label controls ── */
-  --tl-track-badge-bg:     rgba(255,255,255,0.03);
-  --tl-track-toggle-active-bg: rgba(255,255,255,0.06);
-  --tl-track-vis-inactive: rgba(255,255,255,0.1);
-  --tl-track-delete-hover: #f56565;
-  --tl-track-add-text:     rgba(255,255,255,0.25);
-  --tl-track-add-hover:    #818cf8;
-  --tl-track-solo-active-text: #000000;
-  --tl-track-mute-active-text: #ffffff;
-
-  /* ── Separators ── */
-  --tl-separator:          rgba(255,255,255,0.02);
-  --tl-add-track-border:   rgba(255,255,255,0.03);
+  /* ── Borders ── */
+  --border-faint:    rgba(255,255,255,0.05);
+  --border-subtle:   rgba(255,255,255,0.08);
+  --border-default:  rgba(255,255,255,0.11);
+  --border-strong:   rgba(255,255,255,0.18);
+  --border-focus:    rgba(88,100,242,0.7);
 
   /* ── Text ── */
-  --tl-text:               rgba(255,255,255,0.85);
-  --tl-play-btn:           rgba(255,255,255,0.85);
+  --text-primary:    #EAEBEF;
+  --text-secondary:  #8D8FA0;
+  --text-tertiary:   #53566A;
+  --text-disabled:   #363849;
+  --text-inverse:    #07080C;
+  --text-mono:       #9CA0B4;
 
-  /* ── Waveform ── */
-  --tl-waveform-center:    rgba(255,255,255,0.03);
-  --tl-waveform-line:      rgba(255,255,255,0.2);
+  /* ── Accent ── */
+  --accent:          #5864F2;
+  --accent-hover:    #6472F4;
+  --accent-active:   #4A55E0;
+  --accent-subtle:   rgba(88,100,242,0.1);
+  --accent-border:   rgba(88,100,242,0.24);
+  --accent-glow:     rgba(88,100,242,0.18);
 
-  /* ── Clip trim handles ── */
-  --tl-clip-trim:          rgba(255,255,255,0.1);
+  /* ── Semantic ── */
+  --color-danger:         #F04444;
+  --color-danger-subtle:  rgba(240,68,68,0.1);
+  --color-success:        #22C55E;
+  --color-warning:        #F59E0B;
+  --color-warning-subtle: rgba(245,158,11,0.1);
 
-  /* ── Resize ── */
-  --tl-resize-handle:      rgba(255,255,255,0.06);
+  /* ── Track types — vibrant but not neon ── */
+  --track-video:         #4F80FF;
+  --track-video-dim:     rgba(79,128,255,0.8);
+  --track-video-bg:      rgba(79,128,255,0.1);
+  --track-video-border:  rgba(79,128,255,0.28);
+  --track-audio:         #19C97A;
+  --track-audio-dim:     rgba(25,201,122,0.8);
+  --track-audio-bg:      rgba(25,201,122,0.1);
+  --track-audio-border:  rgba(25,201,122,0.26);
+  --track-subtitle:      #F0A429;
+  --track-subtitle-dim:  rgba(240,164,41,0.8);
+  --track-subtitle-bg:   rgba(240,164,41,0.1);
+  --track-subtitle-border: rgba(240,164,41,0.26);
+  --track-image:         #B86EF4;
+  --track-image-bg:      rgba(184,110,244,0.1);
+  --track-image-border:  rgba(184,110,244,0.26);
 
-  /* ── Scrollbar ── */
-  --tl-scrollbar-track:    transparent;
-  --tl-scrollbar-thumb:    rgba(255,255,255,0.05);
-  --tl-scrollbar-thumb-hover: rgba(255,255,255,0.1);
+  /* ── Glow values ── */
+  --glow-video:     rgba(79,128,255,0.3);
+  --glow-audio:     rgba(25,201,122,0.3);
+  --glow-subtitle:  rgba(240,164,41,0.3);
+  --glow-image:     rgba(184,110,244,0.3);
 
-  /* ── Shadows ── */
-  --tl-shadow-sm:          0 1px 2px rgba(0,0,0,0.2);
-  --tl-shadow-md:          0 2px 8px rgba(0,0,0,0.25);
-  --tl-shadow-lg:          0 4px 16px rgba(0,0,0,0.35);
-  --tl-shadow-clip:        0 1px 3px rgba(0,0,0,0.12);
-  --tl-shadow-clip-hover:  0 2px 8px rgba(0,0,0,0.2);
-  --tl-shadow-clip-selected: 0 0 0 2px var(--tl-clip-border-sel), 0 2px 12px rgba(129,140,248,0.15);
+  /* ── Typography ── */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+  --text-xs:   11px;
+  --text-sm:   12px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   16px;
+  --text-xl:   20px;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+
+  --leading-tight:  1.2;
+  --leading-normal: 1.5;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
 
   /* ── Radius ── */
-  --tl-radius-xs:          4px;
-  --tl-radius-sm:          6px;
-  --tl-radius-md:          10px;
-  --tl-radius-lg:          14px;
-  --tl-radius-xl:          18px;
+  --radius-sm:   3px;
+  --radius-md:   5px;
+  --radius-lg:   7px;
+  --radius-xl:   10px;
+  --radius-full: 9999px;
 
-  /* ── Transitions ── */
-  --tl-transition-fast:    60ms ease;
-  --tl-transition-base:    100ms ease;
-  --tl-transition-slow:    180ms ease;
+  /* ── Shadows ── */
+  --shadow-sm:      0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg:      0 12px 40px rgba(0,0,0,0.44);
+  --shadow-overlay: 0 20px 60px rgba(0,0,0,0.6);
 
-  /* ── Font ── */
-  --tl-font-sans:          "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --tl-font-mono:          "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+  --ring-surface: inset 0 0 0 1px var(--border-subtle);
+  --ring-raised:  inset 0 0 0 1px var(--border-default);
+  --ring-accent:  inset 0 0 0 1px var(--accent-border);
+
+  /* ── Motion ── */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   80ms;
+  --duration-normal: 140ms;
+  --duration-slow:   220ms;
+
+  /* ── Scrollbar ── */
+  --scrollbar-track:       transparent;
+  --scrollbar-thumb:       rgba(255,255,255,0.1);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.2);
+
+  /* ── Timeline-specific ── */
+  --track-height:       54px;
+  --track-header-width: 168px;
+  --ruler-height:       28px;
+  --toolbar-height:     38px;
+  --topbar-height:      42px;
+  --sidebar-width:      0px;
+  --playhead-color:     #FFFFFF;
+  --playhead-shadow:    0 0 0 1px rgba(7,8,12,0.9), 0 0 8px rgba(255,255,255,0.4);
+  --clip-radius:        var(--radius-sm);
+  --clip-padding:       0 8px;
+  --tl-separator:       var(--border-subtle);
+  --tl-snap-color:      #F5A623;
+  --tl-timecode-color:  var(--text-mono);
+}
+
+/* ── Base resets ── */
+button, input, select, textarea { font: inherit; }
+button { color: inherit; }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+
+.timecode {
+  color: var(--text-mono);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
 }

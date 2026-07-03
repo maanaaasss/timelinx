@@ -2,6 +2,14 @@ import React from 'react';
 import { useTimelineContext } from '../context/timeline-context';
 import { useTrackWithEngine } from '@timelinx/react';
 import { IconVideo, IconMusic, IconSubtitle } from './icons';
+import { Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+
+declare module '@timelinx/react' {
+  interface TimelineEngine {
+    toggleTrackMute(trackId: string): { accepted: boolean };
+    toggleTrackLock(trackId: string): { accepted: boolean };
+  }
+}
 
 export interface TimelineTrackProps {
   trackId: string;
@@ -22,14 +30,6 @@ function getTrackIcon(type: string) {
   }
 }
 
-function getTrackColor(type: string): string {
-  switch (type) {
-    case 'audio': return 'rgba(56, 178, 172, 0.4)';
-    case 'subtitle': return 'rgba(159, 122, 234, 0.4)';
-    default: return 'rgba(75, 123, 236, 0.4)';
-  }
-}
-
 export const TimelineTrack = React.memo(function TimelineTrack({
   trackId,
   shortId,
@@ -46,52 +46,44 @@ export const TimelineTrack = React.memo(function TimelineTrack({
   if (!track) return null;
 
   const IconComponent = getTrackIcon(track.type);
-  const iconColor = getTrackColor(track.type);
+  const VisibilityIcon = track.muted ? EyeOff : Eye;
+  const LockIcon = track.locked ? Lock : Unlock;
 
   return (
     <div
-      className={`tl-track-label-card${className ? ` ${className}` : ''}`}
+      className={`tl-track tl-track--${track.type}${className ? ` ${className}` : ''}`}
       style={{
         height,
         ...style,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 26,
-            height: 26,
-            borderRadius: 7,
-            background: 'rgba(255,255,255,0.03)',
-            flexShrink: 0,
-          }}
-        >
-          <IconComponent size={13} style={{ color: iconColor }} />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <span style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: 'rgba(255,255,255,0.65)',
-            lineHeight: '1.2',
-            letterSpacing: '-0.01em',
-          }}>
-            {shortId}
-          </span>
-          {clipCount > 0 && (
-            <span style={{
-              fontSize: 10,
-              color: 'rgba(255,255,255,0.2)',
-              lineHeight: '1.3',
-              marginTop: 1,
-            }}>
-              {clipCount}
-            </span>
-          )}
+      <div className="tl-track-header">
+        <div className="tl-track-dot" />
+        <span className="tl-track-icon">
+          <IconComponent size={11} />
+        </span>
+        <span className="tl-track-label">{shortId}</span>
+        <div className="tl-track-controls">
+          <button
+            className={`tl-ctrl-btn ${track.muted ? 'muted' : ''}`}
+            title={track.type === 'audio' ? 'Mute' : 'Hide'}
+            onClick={(e) => {
+              e.stopPropagation();
+              engine.toggleTrackMute(track.id);
+            }}
+          >
+            <VisibilityIcon size={12} />
+          </button>
+          <button
+            className={`tl-ctrl-btn ${track.locked ? 'locked' : ''}`}
+            title="Lock"
+            onClick={(e) => {
+              e.stopPropagation();
+              engine.toggleTrackLock(track.id);
+            }}
+          >
+            <LockIcon size={12} />
+          </button>
         </div>
       </div>
     </div>

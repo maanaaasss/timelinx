@@ -1,11 +1,11 @@
-# @webpacked-timeline/core
+# @timelinx/core
 
 Headless TypeScript engine for professional NLE timeline editing. Framework-agnostic, fully tested, zero dependencies.
 
 ## Install
 
 ```bash
-npm install @webpacked-timeline/core
+npm install @timelinx/core
 ```
 
 ## Features
@@ -39,7 +39,7 @@ import {
   toClipId,
   toAssetId,
   frameRate,
-} from '@webpacked-timeline/core';
+} from '@timelinx/core';
 
 // 1. Build initial state
 const state = createTimelineState({
@@ -85,7 +85,7 @@ if (result.ok) {
 ## Playback
 
 ```typescript
-import { PlaybackEngine, browserClock } from '@webpacked-timeline/core';
+import { PlaybackEngine, browserClock } from '@timelinx/core';
 
 const playback = new PlaybackEngine(
   state,
@@ -107,7 +107,7 @@ import {
   exportToEDL,
   exportToAAF,
   exportToFCPXML,
-} from '@webpacked-timeline/core';
+} from '@timelinx/core';
 
 // JSON round-trip
 const json = serializeTimeline(state);
@@ -153,7 +153,7 @@ const fcpxml = exportToFCPXML(state);
 ## Tests
 
 ```bash
-pnpm --filter @webpacked-timeline/core test
+pnpm --filter @timelinx/core test
 # 852 tests, 0 TypeScript errors
 ```
 

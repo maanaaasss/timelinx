@@ -4,9 +4,17 @@
   "description": "Browser-native timeline editor engine and UI",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && pnpm --filter @timelinx/ui build",
+    "build": "pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && pnpm --filter @timelinx/media-web build && pnpm --filter @timelinx/ai build && pnpm --filter @timelinx/collab build && pnpm --filter @timelinx/ui build",
+    "build:apps": "pnpm --filter @timelinx/demo build && pnpm --filter @timelinx/creator-editor build && pnpm --filter @timelinx/podcast-editor build && pnpm --filter @timelinx/pro-timeline build && pnpm --filter @timelinx/template-editor build && pnpm --filter @timelinx/headless-example build && pnpm --filter @timelinx/nl-command-demo build && pnpm --filter @timelinx/collab-demo build",
     "dev": "pnpm --filter @timelinx/demo dev",
-    "test": "pnpm --filter @timelinx/core test && pnpm --filter @timelinx/react test"
+    "dev:creator": "pnpm --filter @timelinx/creator-editor dev",
+    "dev:podcast": "pnpm --filter @timelinx/podcast-editor dev",
+    "dev:pro": "pnpm --filter @timelinx/pro-timeline dev",
+    "dev:template": "pnpm --filter @timelinx/template-editor dev",
+    "dev:headless": "pnpm --filter @timelinx/headless-example dev",
+    "dev:nl": "pnpm --filter @timelinx/nl-command-demo dev",
+    "dev:collab": "pnpm --filter @timelinx/collab-demo dev",
+    "test": "pnpm --filter @timelinx/core test && pnpm --filter @timelinx/react test && pnpm --filter @timelinx/media-web test && pnpm --filter @timelinx/ai test && pnpm --filter @timelinx/collab test"
   },
   "keywords": [],
   "author": "",

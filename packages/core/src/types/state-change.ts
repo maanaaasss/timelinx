@@ -14,6 +14,7 @@ export type StateChange = {
   readonly markers: boolean;
   readonly timeline: boolean;
   readonly playhead: boolean;
+  readonly assetRegistry: boolean;
 };
 
 export const EMPTY_STATE_CHANGE: StateChange = {
@@ -22,6 +23,7 @@ export const EMPTY_STATE_CHANGE: StateChange = {
   markers: false,
   timeline: false,
   playhead: false,
+  assetRegistry: false,
 };
 
 /**
@@ -74,5 +76,6 @@ export function diffStates(
     markers,
     timeline,
     playhead: false,
+    assetRegistry: prev.assetRegistry !== next.assetRegistry,
   };
 }

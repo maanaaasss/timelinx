@@ -1,20 +1,20 @@
-# @webpacked-timeline/react
+# @timelinx/react
 
-React adapter for `@webpacked-timeline/core`. Provides `TimelineEngine`, hooks, context, and tool routing for building timeline editors.
+React adapter for `@timelinx/core`. Provides `TimelineEngine`, hooks, context, and tool routing for building timeline editors.
 
 ## Install
 
 ```bash
-npm install @webpacked-timeline/core @webpacked-timeline/react
+npm install @timelinx/core @timelinx/react
 ```
 
-Both packages are required. `@webpacked-timeline/core` is a peer dependency.
+Both packages are required. `@timelinx/core` is a peer dependency.
 
 ## Quick Start
 
 ```tsx
-import { TimelineEngine, TimelineProvider, useTrackIds, usePlayheadFrame } from '@webpacked-timeline/react';
-import { createTimelineState, createTimeline, toFrame, frameRate } from '@webpacked-timeline/core';
+import { TimelineEngine, TimelineProvider, useTrackIds, usePlayheadFrame } from '@timelinx/react';
+import { createTimelineState, createTimeline, toFrame, frameRate } from '@timelinx/core';
 
 const engine = new TimelineEngine({
   initialState: createTimelineState({
@@ -83,7 +83,7 @@ For use without context: `useTimelineWithEngine(engine)`, `useTrackIdsWithEngine
 ## Tool Routing
 
 ```tsx
-import { useToolRouter } from '@webpacked-timeline/react';
+import { useToolRouter } from '@timelinx/react';
 
 const handlers = useToolRouter(engine, {
   getPixelsPerFrame: () => ppf,

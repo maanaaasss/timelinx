@@ -175,7 +175,7 @@ export class TimelineEngine {
       this.playback = null;
     }
 
-    this.keyboardHandler = new KeyboardHandler(this.playback ?? ({} as PlaybackEngine), {
+    this.keyboardHandler = new KeyboardHandler(this.playback, {
       onMarkIn: options.onMarkIn,
       onMarkOut: options.onMarkOut,
       getTimelineState: () => this.currentState,
@@ -195,7 +195,12 @@ export class TimelineEngine {
   }
 
   dispatch(transaction: Transaction): DispatchResult {
-    const result = coreDispatch(this.currentState, transaction);
+    let result: DispatchResult;
+    try {
+      result = coreDispatch(this.currentState, transaction);
+    } catch {
+      return { accepted: false, reason: 'INVARIANT_VIOLATED', message: 'coreDispatch threw' };
+    }
     if (!result.accepted) {
       return result;
     }
@@ -207,20 +212,7 @@ export class TimelineEngine {
       transaction,
     );
 
-    this.trackIndex.build(result.nextState);
-    this.snapManager.scheduleRebuild(result.nextState);
-    this.playback?.updateState(result.nextState);
-
-    const nextIds = result.nextState.timeline.tracks.map((t) => t.id);
-    const idsChanged =
-      this.stableTrackIds.length !== nextIds.length ||
-      this.stableTrackIds.some((id, i) => id !== nextIds[i]);
-    if (idsChanged) {
-      this.stableTrackIds = nextIds;
-    }
-
-    this.rebuildSnapshot(change);
-    this.notify();
+    this._rebuildAndNotify(result.nextState, change);
     return result;
   }
 
@@ -243,6 +235,10 @@ export class TimelineEngine {
   private applyStateChange(state: TimelineState): void {
     const change = diffStates(this.prevState, state);
     this.prevState = state;
+    this._rebuildAndNotify(state, change);
+  }
+
+  private _rebuildAndNotify(state: TimelineState, change: StateChange): void {
     this.trackIndex.build(state);
     this.snapManager.scheduleRebuild(state);
     this.playback?.updateState(state);
@@ -275,17 +271,17 @@ export class TimelineEngine {
    * SelectionTool's internal Set is always mirrored in the engine snapshot.
    */
   private _syncSelectionFromTool(): void {
-    const tool = getActiveTool(this.toolRegistry) as unknown as {
-      getSelection?: () => ReadonlySet<string>;
-    };
-    if (typeof tool.getSelection === 'function') {
-      this._selectedClipIds = tool.getSelection();
+    const tool = getActiveTool(this.toolRegistry);
+    if (typeof (tool as ITool & { getSelection?: () => ReadonlySet<string> }).getSelection === 'function') {
+      this._selectedClipIds = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
     }
   }
 
   handlePointerDown(event: TimelinePointerEvent, modifiers: Modifiers): void {
     const ctx = this.buildToolContext(modifiers);
-    getActiveTool(this.toolRegistry).onPointerDown(event, ctx);
+    try {
+      getActiveTool(this.toolRegistry).onPointerDown(event, ctx);
+    } catch { /* tool error — don't crash engine */ }
     this._syncSelectionFromTool();
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
     this.notify();
@@ -293,13 +289,14 @@ export class TimelineEngine {
 
   handlePointerMove(event: TimelinePointerEvent, modifiers: Modifiers): void {
     const ctx = this.buildToolContext(modifiers);
-    const provisional = getActiveTool(this.toolRegistry).onPointerMove(event, ctx);
+    let provisional: ReturnType<ITool['onPointerMove']> = null;
+    try {
+      provisional = getActiveTool(this.toolRegistry).onPointerMove(event, ctx);
+    } catch { /* tool error — don't crash engine */ }
     this.provisional =
       provisional !== null
         ? setProvisional(this.provisional, provisional)
         : clearProvisional(this.provisional);
-    // NOTE: Don't sync selection on move — selection only changes on up/down.
-    // Rebuild snapshot with current state (doesn't re-allocate state object).
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
     this.notifyProvisional();
   }
@@ -307,7 +304,10 @@ export class TimelineEngine {
   handlePointerUp(event: TimelinePointerEvent, modifiers: Modifiers): void {
     this.provisional = clearProvisional(this.provisional);
     const ctx = this.buildToolContext(modifiers);
-    const tx = getActiveTool(this.toolRegistry).onPointerUp(event, ctx);
+    let tx: Transaction | null = null;
+    try {
+      tx = getActiveTool(this.toolRegistry).onPointerUp(event, ctx);
+    } catch { /* tool error — don't crash engine */ }
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -319,7 +319,9 @@ export class TimelineEngine {
 
   /** Option Y: cursor left timeline mid-drag — cancel tool gesture and clear provisional. */
   handlePointerLeave(_event: TimelinePointerEvent): void {
-    getActiveTool(this.toolRegistry).onCancel();
+    try {
+      getActiveTool(this.toolRegistry).onCancel();
+    } catch { /* tool error — don't crash engine */ }
     this._syncSelectionFromTool();
     this.provisional = clearProvisional(this.provisional);
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
@@ -331,7 +333,10 @@ export class TimelineEngine {
       return true;
     }
     const ctx = this.buildToolContext(modifiers);
-    const tx = getActiveTool(this.toolRegistry).onKeyDown(event, ctx);
+    let tx: Transaction | null = null;
+    try {
+      tx = getActiveTool(this.toolRegistry).onKeyDown(event, ctx);
+    } catch { /* tool error — don't crash engine */ }
     if (tx !== null) {
       this.dispatch(tx);
       return true;
@@ -341,7 +346,9 @@ export class TimelineEngine {
 
   handleKeyUp(event: TimelineKeyEvent, modifiers: Modifiers): void {
     const ctx = this.buildToolContext(modifiers);
-    getActiveTool(this.toolRegistry).onKeyUp(event, ctx);
+    try {
+      getActiveTool(this.toolRegistry).onKeyUp(event, ctx);
+    } catch { /* tool error — don't crash engine */ }
   }
 
   private buildToolContext(modifiers: Modifiers): ToolContext {
@@ -359,7 +366,7 @@ export class TimelineEngine {
       snapIndex,
       pixelsPerFrame: ppf,
       modifiers,
-      frameAtX: (x: number): TimelineFrame => Math.round(x / ppf) as TimelineFrame,
+      frameAtX: (x: number): TimelineFrame => toFrame(Math.round(x / ppf)),
       trackAtY: (y: number): TrackId | null => {
         const i = Math.floor(y / DEFAULT_TRACK_H);
         const t = state.timeline.tracks[i];
@@ -454,7 +461,7 @@ export class TimelineEngine {
       this.playback.seekTo(frame);
     } else {
       const maxFrame = (this.currentState.timeline.duration as number) - 1;
-      this._playheadFrame = Math.max(0, Math.min(frame as number, maxFrame)) as TimelineFrame;
+      this._playheadFrame = toFrame(Math.max(0, Math.min(frame as number, maxFrame)));
       this.rebuildSnapshot(EMPTY_STATE_CHANGE);
       this.notify();
     }
@@ -473,12 +480,9 @@ export class TimelineEngine {
    * Keeps the tool's internal Set in sync with external API calls.
    */
   private _writeSelectionToTool(ids: ReadonlySet<string>): void {
-    const tool = getActiveTool(this.toolRegistry) as unknown as {
-      clearSelection?: () => void;
-      getSelection?: () => ReadonlySet<string>;
-    };
-    if (typeof tool.clearSelection === 'function') {
-      tool.clearSelection();
+    const tool = getActiveTool(this.toolRegistry);
+    if (typeof (tool as ITool & { clearSelection?: () => void }).clearSelection === 'function') {
+      (tool as ITool & { clearSelection: () => void }).clearSelection();
       // SelectionTool.clearSelection() clears the set; we can't add back via public API
       // so we just clear — the engine's _selectedClipIds drives rendering.
     }

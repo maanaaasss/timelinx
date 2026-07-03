@@ -259,10 +259,11 @@ describe('createToolRouter', () => {
 
 describe('useToolRouter', () => {
   it('11. Returns stable handlers reference across re-renders (same engine)', () => {
+    const getPixelsPerFrame = () => ppf;
     const { result, rerender } = renderHook(
       () =>
         useToolRouter(engine, {
-          getPixelsPerFrame: () => ppf,
+          getPixelsPerFrame,
         }),
     );
     const first = result.current;

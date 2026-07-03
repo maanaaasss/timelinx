@@ -1,8 +1,93 @@
 /* ═══════════════════════════════════════════════════════════
-   @webpacked-timeline/ui — Dark Theme (Default)
+   @timelinx/ui — Dark Pro Preset
    
-   Modern browser-native dark theme.
-   Clean, spacious, and approachable.
+   DaVinci Resolve-inspired deep dark. Blue-shifted panel chrome,
+   vivid accent system, rich glow shadows.
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
+
+:root {
+  color-scheme: dark;
+
+  /* ── App chrome ── */
+  --bg-app:            #080b12;
+  --bg-panel:          #0c1018;
+  --bg-surface:        #101520;
+  --bg-surface-soft:   #141924;
+  --bg-raised:         #181e2c;
+  --bg-hover:          #1e2636;
+  --bg-overlay:        #232d40;
+  --bg-input:          #111622;
+
+  /* ── Borders ── */
+  --border-faint:      rgba(120,160,255,0.055);
+  --border-subtle:     rgba(120,160,255,0.09);
+  --border-default:    rgba(120,160,255,0.14);
+  --border-strong:     rgba(120,160,255,0.22);
+  --border-focus:      rgba(108,148,255,0.76);
+
+  /* ── Text ── */
+  --text-primary:      #eef2ff;
+  --text-secondary:    #9baac8;
+  --text-tertiary:     #5d6e8a;
+  --text-disabled:     #3e4d65;
+  --text-inverse:      #080b12;
+  --text-mono:         #b0bcd6;
+
+  /* ── Accent — electric indigo-blue ── */
+  --accent:            #6c94ff;
+  --accent-hover:      #82a8ff;
+  --accent-active:     #5580ef;
+  --accent-subtle:     rgba(108,148,255,0.11);
+  --accent-border:     rgba(108,148,255,0.3);
+  --accent-glow:       rgba(108,148,255,0.2);
+
+  /* ── Semantic ── */
+  --color-danger:      #ff5f5b;
+  --color-danger-subtle: rgba(255,95,91,0.12);
+  --color-success:     #28d4a4;
+  --color-warning:     #f5b94a;
+  --color-warning-subtle: rgba(245,185,74,0.13);
+
+  /* ── Track types ── */
+  --track-video:        #5d88ff;
+  --track-video-dim:    rgba(93,136,255,0.78);
+  --track-video-bg:     rgba(93,136,255,0.1);
+  --track-video-border: rgba(93,136,255,0.3);
+  --track-audio:        #28cfa6;
+  --track-audio-dim:    rgba(40,207,166,0.78);
+  --track-audio-bg:     rgba(40,207,166,0.1);
+  --track-audio-border: rgba(40,207,166,0.28);
+  --track-subtitle:     #f0b840;
+  --track-subtitle-dim: rgba(240,184,64,0.78);
+  --track-subtitle-bg:  rgba(240,184,64,0.1);
+  --track-subtitle-border: rgba(240,184,64,0.28);
+  --track-image:        #c882ff;
+  --track-image-bg:     rgba(200,130,255,0.1);
+  --track-image-border: rgba(200,130,255,0.28);
+
+  /* ── Glow colors (used in structure.css for clip decorations) ── */
+  --glow-video:        rgba(93,136,255,0.36);
+  --glow-audio:        rgba(40,207,166,0.36);
+  --glow-subtitle:     rgba(240,184,64,0.36);
+  --glow-image:        rgba(200,130,255,0.36);
+
+  /* ── Playhead ── */
+  --playhead-color:    #ffffff;
+  --playhead-shadow:   0 0 0 1px rgba(8,11,18,0.9), 0 0 12px rgba(255,255,255,0.45), 0 0 28px rgba(108,148,255,0.3);
+
+  /* ── Scrollbar ── */
+  --scrollbar-track:   transparent;
+  --scrollbar-thumb:   rgba(108,148,255,0.14);
+  --scrollbar-thumb-hover: rgba(108,148,255,0.28);
+
+  /* ── Shadows — deeper and more saturated ── */
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.55);
+  --shadow-md:         0 8px 24px rgba(0,0,0,0.35);
+  --shadow-lg:         0 18px 56px rgba(0,0,0,0.48);
+  --shadow-overlay:    0 24px 80px rgba(0,0,0,0.62);
+
+  /* ── Snap ── */
+  --tl-snap-color:     #ffd15c;
+}

@@ -12,7 +12,7 @@ import {
   frameRate,
 } from '@timelinx/core';
 import {
-  TimelineEngine,         // Phase 1 engine from @webpacked-timeline/react
+  TimelineEngine,         // Phase 1 engine from @timelinx/react
   TimelineProvider,
   useTimeline,
 } from '../index';

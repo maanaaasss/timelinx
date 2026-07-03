@@ -5,7 +5,7 @@
  * Returns state + stable action callbacks.
  */
 
-import { useSyncExternalStore, useCallback } from 'react';
+import { useSyncExternalStore, useCallback, useMemo } from 'react';
 import type {
   PlaybackEngine,
   PlayheadState,
@@ -77,7 +77,7 @@ export function usePlayhead(engine: PlaybackEngine): UsePlayheadResult {
     else engine.play();
   }, [engine]);
 
-  return {
+  return useMemo(() => ({
     ...state,
     play,
     pause,
@@ -94,5 +94,10 @@ export function usePlayhead(engine: PlaybackEngine): UsePlayheadResult {
     seekToNextMarker,
     seekToPrevMarker,
     toggle,
-  };
+  }), [
+    state, play, pause, seekTo, setPlaybackRate, setQuality,
+    setLoopRegion, setPreroll, setPostroll, seekToStart, seekToEnd,
+    seekToNextClipBoundary, seekToPrevClipBoundary, seekToNextMarker,
+    seekToPrevMarker, toggle,
+  ]);
 }

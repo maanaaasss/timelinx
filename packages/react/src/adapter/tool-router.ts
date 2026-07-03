@@ -23,6 +23,7 @@ export type ToolRouterHandlers = {
   onPointerUp: (e: ReactPointerEvent) => void;
   onPointerLeave: (e: ReactPointerEvent) => void;
   onKeyDown: (e: ReactKeyboardEvent) => void;
+  destroy: () => void;
 };
 
 function getScrollLeftDefault(): number {
@@ -166,6 +167,15 @@ export function createToolRouter(options: ToolRouterOptions): ToolRouterHandlers
       const converted = convertKeyEvent(e);
       const handled = engine.handleKeyDown(converted, extractModifiers(e));
       if (handled) e.preventDefault();
+    },
+
+    destroy(): void {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      lastMoveEvent = null;
+      lastModifiers = null;
     },
   };
 }

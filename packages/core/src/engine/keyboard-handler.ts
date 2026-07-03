@@ -57,14 +57,14 @@ function bindingSpecificity(b: KeyBinding): number {
 
 export class KeyboardHandler {
   private bindings: KeyBinding[];
-  private engine: PlaybackEngine;
+  private engine: PlaybackEngine | null;
   private jogLevel = 0;
   private onMarkIn: ((frame: TimelineFrame) => void) | undefined;
   private onMarkOut: ((frame: TimelineFrame) => void) | undefined;
   private getTimelineState: (() => TimelineState) | undefined;
 
   constructor(
-    engine: PlaybackEngine,
+    engine: PlaybackEngine | null,
     options?: KeyboardHandlerOptions,
   ) {
     this.engine = engine;
@@ -83,6 +83,7 @@ export class KeyboardHandler {
   }
 
   private dispatchAction(action: KeyBinding['action']): void {
+    if (this.engine === null) return;
     switch (action) {
       case 'play-pause':
         if (this.engine.getState().isPlaying) this.engine.pause();

@@ -1,0 +1,6 @@
+/* Track-specific styles — all base styles are in structure.css */
+
+/* Tint the label to match track type slightly */
+.tl-track--video .tl-track-label { color: color-mix(in srgb, var(--track-video) 40%, var(--text-secondary)); }
+.tl-track--audio .tl-track-label { color: color-mix(in srgb, var(--track-audio) 35%, var(--text-secondary)); }
+.tl-track--subtitle .tl-track-label { color: color-mix(in srgb, var(--track-subtitle) 35%, var(--text-secondary)); }

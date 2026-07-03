@@ -76,7 +76,7 @@ cd apps/demo && pnpm dev             # Run demo app
 
 ## Status
 
-Feature-complete. All phases delivered:
+Beta kernel with production-facing APIs:
 
 | Phase | Description | Status |
 |-------|-------------|--------|

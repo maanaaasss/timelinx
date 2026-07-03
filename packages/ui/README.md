@@ -1,21 +1,21 @@
-# @webpacked-timeline/ui
+# @timelinx/ui
 
-Professional React timeline editor. Drop-in components built on `@webpacked-timeline/core` and `@webpacked-timeline/react`.
+Professional React timeline editor. Drop-in components built on `@timelinx/core` and `@timelinx/react`.
 
 ## Install
 
 ```bash
-npm install @webpacked-timeline/ui @webpacked-timeline/react @webpacked-timeline/core
+npm install @timelinx/ui @timelinx/react @timelinx/core
 ```
 
 ## Quick Start
 
 ```tsx
-import { TimelineEditor } from '@webpacked-timeline/ui';
-import '@webpacked-timeline/ui/styles/tokens';
-import '@webpacked-timeline/ui/styles/structure';
-import { TimelineEngine } from '@webpacked-timeline/react';
-import { createTimelineState, createTimeline, toFrame, frameRate } from '@webpacked-timeline/core';
+import { TimelineEditor } from '@timelinx/ui';
+import '@timelinx/ui/styles/tokens';
+import '@timelinx/ui/styles/structure';
+import { TimelineEngine } from '@timelinx/react';
+import { createTimelineState, createTimeline, toFrame, frameRate } from '@timelinx/core';
 
 const engine = new TimelineEngine({
   initialState: createTimelineState({
@@ -48,7 +48,7 @@ export default function App() {
 
 ```typescript
 interface TimelineEditorProps {
-  engine: TimelineEngine;      // from @webpacked-timeline/react
+  engine: TimelineEngine;      // from @timelinx/react
   initialPpf?: number;         // initial pixels per frame (default: 4)
   onPpfChange?: (ppf: number) => void;
   registerZoomHandler?: (handler: (ppf: number) => void) => void;
@@ -64,8 +64,8 @@ interface TimelineEditorProps {
 For custom layouts, use the context directly:
 
 ```tsx
-import { TimelineProvider, useTimelineContext, useEngine } from '@webpacked-timeline/ui';
-import { frameToPx, pxToFrame, frameToTimecode } from '@webpacked-timeline/ui';
+import { TimelineProvider, useTimelineContext, useEngine } from '@timelinx/ui';
+import { frameToPx, pxToFrame, frameToTimecode } from '@timelinx/ui';
 ```
 
 ## Theming
@@ -76,13 +76,13 @@ All visual properties are controlled by ~50 CSS custom properties.
 
 ```tsx
 // Dark Pro (default — DaVinci-inspired)
-import '@webpacked-timeline/ui/styles/presets/dark-pro';
+import '@timelinx/ui/styles/presets/dark-pro';
 
 // Light (Final Cut Pro-inspired)
-import '@webpacked-timeline/ui/styles/presets/light';
+import '@timelinx/ui/styles/presets/light';
 
 // High Contrast (WCAG AAA accessible)
-import '@webpacked-timeline/ui/styles/presets/high-contrast';
+import '@timelinx/ui/styles/presets/high-contrast';
 ```
 
 ### Custom Theme

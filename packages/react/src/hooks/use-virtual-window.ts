@@ -23,40 +23,29 @@ export function useVirtualWindow(
   );
 }
 
-function getVisibleClipsCached(
-  state: TimelineState,
-  window: VirtualWindow,
-  cache: { state: TimelineState | null; window: VirtualWindow | null; result: VirtualClipEntry[] },
-): VirtualClipEntry[] {
-  if (cache.state === state && cache.window === window) return cache.result;
-  cache.state = state;
-  cache.window = window;
-  cache.result = getVisibleClips(state, window);
-  return cache.result;
-}
-
 export function useVisibleClips(
   engine: TimelineEngine,
-  window: VirtualWindow,
+  virtualWindow: VirtualWindow,
 ): VirtualClipEntry[] {
-  const cache = useRef<{
+  const state = useSyncExternalStore(
+    engine.subscribe,
+    () => engine.getSnapshot().state,
+    () => engine.getSnapshot().state,
+  );
+
+  const cacheRef = useRef<{
     state: TimelineState | null;
     window: VirtualWindow | null;
     result: VirtualClipEntry[];
   }>({ state: null, window: null, result: [] });
-  return useSyncExternalStore(
-    engine.subscribe,
-    () =>
-      getVisibleClipsCached(
-        engine.getSnapshot().state,
-        window,
-        cache.current,
-      ),
-    () =>
-      getVisibleClipsCached(
-        engine.getSnapshot().state,
-        window,
-        cache.current,
-      ),
-  );
+
+  return useMemo(() => {
+    const cache = cacheRef.current;
+    if (cache.state === state && cache.window === virtualWindow) return cache.result;
+    const result = getVisibleClips(state, virtualWindow);
+    cache.state = state;
+    cache.window = virtualWindow;
+    cache.result = result;
+    return result;
+  }, [state, virtualWindow]);
 }

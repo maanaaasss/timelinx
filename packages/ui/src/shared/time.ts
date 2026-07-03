@@ -21,6 +21,21 @@ export function frameToTimecode(frame: number, fps: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
 }
 
+export function getFriendlyTrackLabel(
+  trackId: string,
+  type: string,
+  allTrackIds: readonly string[],
+  trackTypes: Map<string, string>,
+): string {
+  const prefix = type === 'video' ? 'Video' : type === 'audio' ? 'Audio' : type === 'subtitle' ? 'Subtitles' : 'Track';
+  let idx = 1;
+  for (const tid of allTrackIds) {
+    if (tid === trackId) break;
+    if (trackTypes.get(tid) === type) idx++;
+  }
+  return `${prefix} ${idx}`;
+}
+
 export function rulerTickInterval(
   pixelsPerFrame: number,
   fps: number,

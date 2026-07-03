@@ -1,5 +1,5 @@
 /**
- * @webpacked-timeline/react — hooks
+ * @timelinx/react — hooks
  *
  * Phase R Step 2: All hooks use useSyncExternalStore. Engine-as-first-arg hooks
  * live in hooks/index.ts. This file provides useEngine() from context and
@@ -7,29 +7,47 @@
  * continues to work without passing engine.
  */
 
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { TimelineContext } from './TimelineProvider';
 import type { TimelineEngine } from './engine';
 import type { TrackId, ClipId, ProvisionalState } from '@timelinx/core';
 
-// Re-export all engine-as-first-arg hooks from hooks/index
-export {
-  useTimeline as useTimelineWithEngine,
-  useTrackIds as useTrackIdsWithEngine,
-  useTrack as useTrackWithEngine,
-  useClip as useClipWithEngine,
+// Re-export + import all engine-as-first-arg hooks from hooks/index
+import {
+  useTimeline as useTimelineEngine,
+  useTrackIds as useTrackIdsEngine,
+  useTrack as useTrackEngine,
+  useClip as useClipEngine,
   useClips,
   useMarkers,
   useHistory,
   useActiveToolId,
   useCursor,
-  useProvisional as useProvisionalWithEngine,
+  useProvisional as useProvisionalEngine,
   usePlayheadFrame,
   useIsPlaying,
   useChange,
   usePlaybackEngine,
   useSelectedClipIds,
 } from './hooks/index';
+
+export {
+  useTimelineEngine as useTimelineWithEngine,
+  useTrackIdsEngine as useTrackIdsWithEngine,
+  useTrackEngine as useTrackWithEngine,
+  useClipEngine as useClipWithEngine,
+  useClips,
+  useMarkers,
+  useHistory,
+  useActiveToolId,
+  useCursor,
+  useProvisionalEngine as useProvisionalWithEngine,
+  usePlayheadFrame,
+  useIsPlaying,
+  useChange,
+  usePlaybackEngine,
+  useSelectedClipIds,
+};
 
 // ---------------------------------------------------------------------------
 // useEngine — from context (no subscription)
@@ -60,51 +78,49 @@ export function useEngine(): TimelineEngine {
 // Context-based wrappers (engine from context, then delegate to hooks/index)
 // ---------------------------------------------------------------------------
 
-import {
-  useTimeline as useTimelineFromIndex,
-  useTrackIds as useTrackIdsFromIndex,
-  useTrack as useTrackFromIndex,
-  useClip as useClipFromIndex,
-  useActiveToolId as useActiveToolIdFromIndex,
-  useCursor as useCursorFromIndex,
-  useProvisional as useProvisionalFromIndex,
-  useHistory as useHistoryFromIndex,
-} from './hooks/index';
-
-export function useTimeline(): ReturnType<typeof useTimelineFromIndex> {
-  return useTimelineFromIndex(useTimelineContext());
+export function useTimeline(): ReturnType<typeof useTimelineEngine> {
+  return useTimelineEngine(useTimelineContext());
 }
 
-export function useTrackIds(): ReturnType<typeof useTrackIdsFromIndex> {
-  return useTrackIdsFromIndex(useTimelineContext());
+export function useTrackIds(): ReturnType<typeof useTrackIdsEngine> {
+  return useTrackIdsEngine(useTimelineContext());
 }
 
-export function useTrack(id: TrackId | string): ReturnType<typeof useTrackFromIndex> {
-  return useTrackFromIndex(useTimelineContext(), id);
+export function useTrack(id: TrackId | string): ReturnType<typeof useTrackEngine> {
+  return useTrackEngine(useTimelineContext(), id);
 }
 
-export function useClip(id: ClipId | string): ReturnType<typeof useClipFromIndex> {
-  return useClipFromIndex(useTimelineContext(), id);
+export function useClip(id: ClipId | string): ReturnType<typeof useClipEngine> {
+  return useClipEngine(useTimelineContext(), id);
 }
 
-/** Returns { id, cursor }. Use useActiveToolId(engine) / useCursor(engine) for separate subs. */
+/** Returns { id, cursor } from a single subscription. Use useActiveToolId / useCursor for separate subs. */
 export function useActiveTool(): { readonly id: string; readonly cursor: string } {
   const engine = useTimelineContext();
-  const id = useActiveToolIdFromIndex(engine);
-  const cursor = useCursorFromIndex(engine);
-  return { id, cursor };
+  const id = useActiveToolId(engine);
+  const cursor = useCursor(engine);
+  return useMemo(() => ({ id, cursor }), [id, cursor]);
+}
+
+/**
+ * Returns { canUndo, canRedo } from a single subscription.
+ * Prefer this over separate useCanUndo / useCanRedo to avoid duplicate subscriptions.
+ */
+export function useCanUndoRedo(): { canUndo: boolean; canRedo: boolean } {
+  const engine = useTimelineContext();
+  return useHistory(engine);
 }
 
 export function useCanUndo(): boolean {
-  return useHistoryFromIndex(useTimelineContext()).canUndo;
+  return useHistory(useTimelineContext()).canUndo;
 }
 
 export function useCanRedo(): boolean {
-  return useHistoryFromIndex(useTimelineContext()).canRedo;
+  return useHistory(useTimelineContext()).canRedo;
 }
 
 export function useProvisional(): ProvisionalState | null {
-  return useProvisionalFromIndex(useTimelineContext());
+  return useProvisionalEngine(useTimelineContext());
 }
 
 // ---------------------------------------------------------------------------

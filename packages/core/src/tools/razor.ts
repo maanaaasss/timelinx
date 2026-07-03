@@ -39,7 +39,7 @@ import { findClipById } from '../systems/queries';
 // ---------------------------------------------------------------------------
 
 /** Production default: crypto.randomUUID() */
-let generateId: () => string = () => crypto.randomUUID();
+let generateId: () => string = () => (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
 
 /**
  * Override the ID generator in tests for deterministic IDs.

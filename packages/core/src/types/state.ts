@@ -47,15 +47,9 @@ export type TimelineState = {
 export function createTimelineState(params: {
   timeline:       Timeline;
   assetRegistry?: AssetRegistry;
-  /** @deprecated use assetRegistry. Kept for test backward-compat only. */
-  assets?:        Map<string, Asset>;
 }): TimelineState {
-  // Support legacy 'assets' param during test migration
   const registry: AssetRegistry =
-    params.assetRegistry ??
-    (params.assets
-      ? (params.assets as unknown as AssetRegistry)
-      : new Map<AssetId, Asset>());
+    params.assetRegistry ?? new Map<AssetId, Asset>();
 
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,

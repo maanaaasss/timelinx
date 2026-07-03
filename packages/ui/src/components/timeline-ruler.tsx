@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useTimelineWithEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { rulerTickInterval } from '../shared/time';
@@ -31,6 +31,13 @@ export const TimelineRuler = React.memo(function TimelineRuler({
   const fps = (timeline.fps as number) || 30;
   const duration = (timeline.duration as number) || 9000;
 
+  const cssVars = useMemo(() => ({
+    bgColor: resolveCssVar('--bg-panel', '#0F0F13'),
+    textColor: resolveCssVar('--text-tertiary', '#8B8A9A'),
+    tickColor: resolveCssVar('--border-faint', 'rgba(255,255,255,0.04)'),
+    tickMajColor: resolveCssVar('--border-default', 'rgba(255,255,255,0.11)'),
+  }), []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -49,8 +56,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 
     ctx.clearRect(0, 0, width, height);
 
-    const bgColor = resolveCssVar('--tl-ruler-bg', '#111113');
-    ctx.fillStyle = bgColor;
+    ctx.fillStyle = cssVars.bgColor;
     ctx.fillRect(0, 0, width, height);
 
     const { major, minor } = rulerTickInterval(ppf, fps);
@@ -58,12 +64,8 @@ export const TimelineRuler = React.memo(function TimelineRuler({
     const startFrame = Math.max(0, Math.floor(scrollLeft / ppf));
     const endFrame = Math.min(duration, Math.ceil((scrollLeft + vpWidth) / ppf));
 
-    const textColor = resolveCssVar('--tl-ruler-text', 'rgba(255,255,255,0.2)');
-    const tickColor = resolveCssVar('--tl-ruler-tick', 'rgba(255,255,255,0.04)');
-    const tickMajColor = resolveCssVar('--tl-ruler-tick-maj', 'rgba(255,255,255,0.1)');
-
-    // Elegant font: medium weight, clean
-    ctx.font = '500 10px "Inter", "SF Pro Display", -apple-system, sans-serif';
+    // Elegant font: mono font for labels
+    ctx.font = '500 9px "JetBrains Mono", "SF Mono", monospace';
     ctx.textBaseline = 'alphabetic';
 
     for (let f = startFrame; f <= endFrame; f++) {
@@ -78,13 +80,13 @@ export const TimelineRuler = React.memo(function TimelineRuler({
         // Major tick
         ctx.beginPath();
         ctx.moveTo(x, height);
-        ctx.lineTo(x, height - 10);
-        ctx.strokeStyle = tickMajColor;
+        ctx.lineTo(x, height - 8);
+        ctx.strokeStyle = cssVars.tickMajColor;
         ctx.lineWidth = 1;
         ctx.stroke();
 
         // Label — elegant, simple
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = cssVars.textColor;
         const totalSeconds = f / fps;
         let label: string;
 
@@ -117,18 +119,18 @@ export const TimelineRuler = React.memo(function TimelineRuler({
           }
         }
 
-        ctx.fillText(label, x + 5, height - 12);
+        ctx.fillText(label, x + 5, height - 10);
       } else {
         // Minor tick — very subtle
         ctx.beginPath();
         ctx.moveTo(x, height);
         ctx.lineTo(x, height - 4);
-        ctx.strokeStyle = tickColor;
+        ctx.strokeStyle = cssVars.tickColor;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
     }
-  }, [ppf, scrollLeft, vpWidth, rulerHeight, fps, duration, totalWidth]);
+  }, [ppf, scrollLeft, vpWidth, rulerHeight, fps, duration, totalWidth, cssVars]);
 
   const handlePointer = (e: React.PointerEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -150,7 +152,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 
   return (
     <div
-      className={`tl-ruler-content${className ? ` ${className}` : ''}`}
+      className={`timeline-ruler${className ? ` ${className}` : ''}`}
       style={{
         width: totalWidth,
         height: '100%',

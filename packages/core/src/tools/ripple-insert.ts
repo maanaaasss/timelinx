@@ -60,7 +60,7 @@ const PROVISIONAL_INSERT_ID = 'provisional-insert' as ClipId;
 // ---------------------------------------------------------------------------
 
 /** Production default: crypto.randomUUID() */
-let generateId: () => string = () => crypto.randomUUID();
+let generateId: () => string = () => (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
 
 /**
  * Replace the ID generator for deterministic IDs in tests.

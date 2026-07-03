@@ -1,4 +1,4 @@
-# @webpacked-timeline/core — Architecture (HLD & LLD)
+# @timelinx/core — Architecture (HLD & LLD)
 
 High-Level Design (HLD) and Low-Level Design (LLD) for the timeline editing kernel.
 
@@ -8,7 +8,7 @@ High-Level Design (HLD) and Low-Level Design (LLD) for the timeline editing kern
 
 ### 1.1 Purpose
 
-`@webpacked-timeline/core` is a **framework-agnostic**, **immutable** timeline editing kernel. It:
+`@timelinx/core` is a **framework-agnostic**, **immutable** timeline editing kernel. It:
 
 - Holds the single source of truth: **TimelineState** (timeline + asset registry).
 - Exposes **one** mutation entry point: **dispatch(state, transaction)**.
@@ -28,7 +28,7 @@ High-Level Design (HLD) and Low-Level Design (LLD) for the timeline editing kern
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           @webpacked-timeline/core                                     │
+│                           @timelinx/core                                     │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  TYPES           │  Canonical data: TimelineState, Clip, Track, Asset,       │
 │                  │  OperationPrimitive, Transaction, TimelineFrame, IDs     │

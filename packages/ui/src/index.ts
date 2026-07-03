@@ -1,5 +1,5 @@
 /**
- * @webpacked-timeline/ui — Public API
+ * @timelinx/ui — Public API
  *
  * Core structural timeline components.
  */
@@ -21,6 +21,44 @@ export type { TimelineClipProps } from './components/timeline-clip';
 
 export { TimelinePlayhead } from './components/timeline-playhead';
 export type { TimelinePlayheadProps } from './components/timeline-playhead';
+
+// ── Decomposed Components ──────────────────────────────────────────────────
+export { ZoomControls } from './components/zoom-controls';
+export type { ZoomControlsProps } from './components/zoom-controls';
+
+export { TrackList } from './components/track-list';
+export type { TrackListProps } from './components/track-list';
+
+export { SnapIndicator } from './components/snap-indicator';
+export type { SnapIndicatorProps } from './components/snap-indicator';
+
+export { DropZone } from './components/drop-zone';
+export type { DropZoneProps } from './components/drop-zone';
+
+// ── Panel Components ───────────────────────────────────────────────────────
+export { MarkersPanel } from './components/markers-panel';
+export type { MarkersPanelProps } from './components/markers-panel';
+
+export { CaptionsPanel } from './components/captions-panel';
+export type { CaptionsPanelProps } from './components/captions-panel';
+
+export { TransitionsPanel } from './components/transitions-panel';
+export type { TransitionsPanelProps } from './components/transitions-panel';
+
+export { KeyframesPanel } from './components/keyframes-panel';
+export type { KeyframesPanelProps } from './components/keyframes-panel';
+
+export { InspectorPanel } from './components/inspector-panel';
+export type { InspectorPanelProps } from './components/inspector-panel';
+
+export { AssetBin } from './components/asset-bin';
+export type { AssetBinProps } from './components/asset-bin';
+
+export { KeyboardShortcutsOverlay } from './components/keyboard-shortcuts-overlay';
+export type { KeyboardShortcutsOverlayProps } from './components/keyboard-shortcuts-overlay';
+
+export { CommandPalette } from './components/command-palette';
+export type { CommandPaletteProps } from './components/command-palette';
 
 // ── Context (for custom layouts) ───────────────────────────────────────────
 export {

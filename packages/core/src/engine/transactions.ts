@@ -39,7 +39,7 @@ export interface TransactionContext {
   initialState: TimelineState;
   
   /** Current state after applied operations */
-  currentState: TimelineState;
+  readonly currentState: TimelineState;
   
   /** Operations applied so far */
   operations: Operation[];
@@ -115,10 +115,7 @@ export function commitTransaction(tx: TransactionContext): TimelineState {
     throw new Error('Transaction already finalized');
   }
   
-  // Mark as finalized
-  tx.finalized = true;
-  
-  // Return final state
+  // Return final state (without mutating tx)
   // Note: Validation happens at dispatch layer, not here
   return tx.currentState;
 }
@@ -136,10 +133,7 @@ export function rollbackTransaction(tx: TransactionContext): TimelineState {
     throw new Error('Transaction already finalized');
   }
   
-  // Mark as finalized
-  tx.finalized = true;
-  
-  // Return initial state
+  // Return initial state (without mutating tx)
   return tx.initialState;
 }
 

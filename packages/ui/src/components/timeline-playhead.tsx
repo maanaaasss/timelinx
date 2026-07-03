@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlayheadFrame } from '@timelinx/react';
+import { usePlayheadFrame, useIsPlaying } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 
 export interface TimelinePlayheadProps {
@@ -17,37 +17,20 @@ export const TimelinePlayhead = React.memo(function TimelinePlayhead({
 }: TimelinePlayheadProps) {
   const { engine, ppf } = useTimelineContext();
   const playheadFrame = usePlayheadFrame(engine);
+  const isPlaying = useIsPlaying(engine);
 
   const x = (playheadFrame as number) * ppf;
 
   return (
     <div
-      className={className}
+      className={`tl-playhead${isPlaying ? ' tl-playhead--playing' : ''}${className ? ` ${className}` : ''}`}
       style={{
-        position: 'absolute',
-        top: topOffset,
-        left: 0,
         height: totalHeight,
-        pointerEvents: 'none',
-        zIndex: 50,
         transform: `translate3d(${x}px, 0px, 0px)`,
         ...style,
       }}
     >
-      {/* Thin vertical line with subtle glow */}
-      <div
-        className="tl-playhead-line"
-        style={{
-          height: '100%',
-          width: 'var(--tl-playhead-width, 1.5px)',
-          boxShadow: '0 0 6px rgba(129,140,248,0.15)',
-        }}
-      />
-      {/* Rounded head at top */}
-      <div
-        className="tl-playhead-head"
-        style={{ top: 0 }}
-      />
+      <div className="tl-playhead-handle" />
     </div>
   );
 });

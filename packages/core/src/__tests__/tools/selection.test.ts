@@ -453,7 +453,7 @@ describe('SelectionTool — MODE 4: rubber-band select', () => {
 });
 
 describe('SelectionTool — onCancel', () => {
-  it('resets ALL instance state including selection', () => {
+  it('resets gesture state but preserves selection', () => {
     const state = makeState();
     const ctx   = makeCtx(state);
     const tool  = new SelectionTool();
@@ -466,7 +466,8 @@ describe('SelectionTool — onCancel', () => {
     // Cancel mid-drag
     tool.onCancel();
 
-    expect(tool.getSelection().size).toBe(0);
+    // onCancel should NOT clear selection — only cancel the gesture
+    expect(tool.getSelection().size).toBe(1);
     // After cancel, getCursor() should return 'default'
     expect(tool.getCursor(ctx)).toBe('default');
   });

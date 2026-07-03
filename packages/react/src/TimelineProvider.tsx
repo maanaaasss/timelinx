@@ -1,5 +1,5 @@
 /**
- * @webpacked-timeline/react - TimelineProvider
+ * @timelinx/react - TimelineProvider
  *
  * React context provider for the Phase 1 TimelineEngine.
  *
@@ -8,8 +8,8 @@
  *
  * @example
  * ```tsx
- * import { TimelineEngine } from '@webpacked-timeline/react';
- * import { TimelineProvider } from '@webpacked-timeline/react';
+ * import { TimelineEngine } from '@timelinx/react';
+ * import { TimelineProvider } from '@timelinx/react';
  *
  * const engine = new TimelineEngine(initialState);
  *

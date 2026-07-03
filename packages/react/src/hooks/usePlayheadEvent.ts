@@ -25,5 +25,5 @@ export function usePlayheadEvent(
       if (types.includes(event.type)) handler(event);
     });
     return unsub;
-  }, [engine]);
+  }, [engine, handler, eventType]);
 }

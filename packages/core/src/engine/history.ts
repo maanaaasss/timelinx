@@ -225,7 +225,6 @@ export class HistoryStack {
     if (this.compressor.shouldCompress(transaction, now)) {
       if (this.entries.length > 0) {
         this.entries[this.entries.length - 1] = entry;
-        this.compressor.record(transaction, now);
         return;
       }
     }

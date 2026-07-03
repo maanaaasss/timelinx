@@ -71,11 +71,6 @@ type OTIODoc = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-let clipIdCounter = 0;
-function generateClipId(): string {
-  return `clip-${++clipIdCounter}`;
-}
-
 function parseFps(doc: OTIODoc, options?: OTIOImportOptions): number {
   if (options?.fps != null) return options.fps;
   const global = doc.global_start_time;
@@ -111,6 +106,11 @@ function ensureFrameRate(fps: number): import('../types/frame').FrameRate {
 // ---------------------------------------------------------------------------
 
 export function importFromOTIO(doc: unknown, options?: OTIOImportOptions): TimelineState {
+  let clipIdCounter = 0;
+  function generateClipId(): string {
+    return `clip-${++clipIdCounter}`;
+  }
+
   if (typeof doc !== 'object' || doc === null) {
     throw new SerializationError('Invalid OTIO document');
   }

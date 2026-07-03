@@ -1,7 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useCallback } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import { usePlayheadFrame, useIsPlaying, useTimelineWithEngine } from '@timelinx/react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, StepBack, StepForward } from 'lucide-react';
+import {
+  SkipBack, SkipForward, Play, Pause, Volume2,
+  StepBack, StepForward, Maximize2,
+} from 'lucide-react';
 import { toFrame } from '@timelinx/core';
 
 interface ViewerProps {
@@ -12,126 +15,174 @@ export function Viewer({ engine }: ViewerProps) {
   const frame = usePlayheadFrame(engine);
   const isPlaying = useIsPlaying(engine);
   const timeline = useTimelineWithEngine(engine);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  const fps = timeline?.fps ?? 30;
-  const durationFrames = timeline?.duration ?? 0;
-  const currentTimecode = formatTimecode(frame as number, fps);
+  const fps = (timeline?.fps as number) ?? 30;
+  const durationFrames = (timeline?.duration as number) ?? 0;
 
-  const progress = durationFrames > 0 ? ((frame as number) / durationFrames) * 100 : 0;
+  const progress = durationFrames > 0
+    ? Math.min(1, (frame as number) / durationFrames) * 100
+    : 0;
 
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      engine.playbackEngine?.pause();
-    } else {
-      engine.playbackEngine?.play();
+  /* Playback controls */
+  const handlePlayPause = useCallback(() => {
+    if (engine.playbackEngine) {
+      if (isPlaying) engine.playbackEngine.pause();
+      else engine.playbackEngine.play();
     }
-  };
+  }, [isPlaying, engine]);
 
-  const handleSkipBack = () => {
-    const newFrame = Math.max(0, (frame as number) - fps);
-    engine.seekTo(toFrame(newFrame));
-  };
+  const handleSeekStart = useCallback(() => {
+    engine.seekTo(toFrame(0));
+  }, [engine]);
 
-  const handleSkipForward = () => {
-    const newFrame = Math.min(durationFrames - 1, (frame as number) + fps);
-    engine.seekTo(toFrame(newFrame));
-  };
+  const handleSeekEnd = useCallback(() => {
+    engine.seekTo(toFrame(Math.max(0, durationFrames - 1)));
+  }, [durationFrames, engine]);
+
+  const handleStepBack = useCallback(() => {
+    engine.seekTo(toFrame(Math.max(0, (frame as number) - 1)));
+  }, [frame, engine]);
+
+  const handleStepForward = useCallback(() => {
+    engine.seekTo(toFrame(Math.min(durationFrames - 1, (frame as number) + 1)));
+  }, [frame, durationFrames, engine]);
+
+  const handleSkipBack = useCallback(() => {
+    engine.seekTo(toFrame(Math.max(0, (frame as number) - fps)));
+  }, [frame, fps, engine]);
+
+  const handleSkipForward = useCallback(() => {
+    engine.seekTo(toFrame(Math.min(durationFrames - 1, (frame as number) + fps)));
+  }, [frame, fps, durationFrames, engine]);
+
+  const handleScrubClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const t = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    engine.seekTo(toFrame(Math.round(t * durationFrames)));
+  }, [durationFrames, engine]);
 
   return (
-    <div ref={containerRef} className="preview-panel">
-      {/* Preview Viewport */}
-      <div className="preview-viewport">
-        <video
-          ref={videoRef}
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            display: 'none',
-          }}
-        />
-
-        {/* Empty State */}
-        <div className="preview-empty-state">
-          <div className="preview-empty-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <path d="M4 8C4 6.34315 5.34315 5 7 5H25C26.6569 5 28 6.34315 28 8V24C28 25.6569 26.6569 27 25 27H7C5.34315 27 4 25.6569 4 24V8Z" stroke="currentColor" strokeWidth="1.5"/>
-              <path d="M13 11.5L21.5 16L13 20.5V11.5Z" fill="currentColor" opacity="0.5"/>
+    <div className="workspace-monitor">
+      {/* Viewport — black canvas, professional empty state */}
+      <div className="monitor-viewport">
+        <div className="monitor-empty">
+          <div className="monitor-empty-icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <rect x="1" y="3" width="20" height="13" rx="2" stroke="currentColor" strokeWidth="1.4" />
+              <path d="M8 20h6M11 16v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              <path d="M9 9.5l4-2.5v6l-4-2.5z" fill="currentColor" opacity="0.5" />
             </svg>
           </div>
-          <p className="preview-empty-label">{isPlaying ? 'Playing' : 'Nothing to preview'}</p>
-          <p className="preview-empty-sub">Import media files to get started</p>
+          <span className="monitor-empty-label">No media source</span>
         </div>
       </div>
 
-      {/* Progress Bar / Scrubber */}
-      <div className="preview-progress-container">
-        <span className="timecode" style={{ minWidth: 82 }}>
-          {currentTimecode}
-        </span>
-        <div
-          className="preview-progress-bar-bg"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const percent = x / rect.width;
-            const newFrame = Math.round(percent * durationFrames);
-            engine.seekTo(toFrame(newFrame));
-          }}
-        >
-          <div
-            className="preview-progress-bar-fill"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Progress / scrub bar */}
+      <div className="monitor-scrubber">
+        <span className="transport-timecode">{tc(frame as number, fps)}</span>
+        <div className="scrubber-bar" onClick={handleScrubClick}>
+          <div className="scrubber-fill" style={{ width: `${progress}%` }} />
         </div>
-        <span className="timecode" style={{ minWidth: 82, textAlign: 'right' }}>
-          {formatTimecode(durationFrames, fps)}
-        </span>
+        <span className="transport-duration">{tc(durationFrames, fps)}</span>
       </div>
 
-      {/* Controls Bar */}
-      <div className="preview-controls">
-        <span className="timecode">{currentTimecode}</span>
+      {/* Transport row */}
+      <div className="monitor-transport">
+        {/* Left: timecode */}
+        <div className="transport-meta">
+          <span
+            className="transport-timecode"
+            style={{ fontSize: 12, color: 'var(--text-primary)', minWidth: 106 }}
+          >
+            {tc(frame as number, fps)}
+          </span>
+        </div>
 
-        <div className="transport">
-          <button className="transport-btn" title="Go to start" onClick={() => engine.seekTo(toFrame(0))}>
-            <StepBack size={12} />
-          </button>
-          <button className="transport-btn" title="Skip Back 1s" onClick={handleSkipBack}>
-            <SkipBack size={12} />
+        {/* Center: transport controls */}
+        <div className="transport-group">
+          <button
+            className="transport-btn"
+            title="Go to start (Home)"
+            onClick={handleSeekStart}
+          >
+            <StepBack size={13} />
           </button>
           <button
-            className={`transport-btn transport-btn--play${isPlaying ? ' active' : ''}`}
-            title={isPlaying ? 'Pause' : 'Play'}
+            className="transport-btn"
+            title="Skip back 1 second"
+            onClick={handleSkipBack}
+          >
+            <SkipBack size={13} />
+          </button>
+          <button
+            className="transport-btn"
+            title="Step back 1 frame (←)"
+            onClick={handleStepBack}
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M8 3L4 6.5L8 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="3" y1="3" x2="3" y2="10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <button
+            className={`transport-btn transport-btn--play${isPlaying ? ' playing' : ''}`}
+            title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
             onClick={handlePlayPause}
           >
-            {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" style={{ marginLeft: 1 }} />}
+            {isPlaying
+              ? <Pause size={13} fill="currentColor" />
+              : <Play size={13} fill="currentColor" style={{ marginLeft: 1 }} />
+            }
           </button>
-          <button className="transport-btn" title="Skip Forward 1s" onClick={handleSkipForward}>
-            <SkipForward size={12} />
+
+          <button
+            className="transport-btn"
+            title="Step forward 1 frame (→)"
+            onClick={handleStepForward}
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M5 3l4 3.5L5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="10" y1="3" x2="10" y2="10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
           </button>
-          <button className="transport-btn" title="Go to end" onClick={() => engine.seekTo(toFrame(durationFrames - 1))}>
-            <StepForward size={12} />
+          <button
+            className="transport-btn"
+            title="Skip forward 1 second"
+            onClick={handleSkipForward}
+          >
+            <SkipForward size={13} />
+          </button>
+          <button
+            className="transport-btn"
+            title="Go to end (End)"
+            onClick={handleSeekEnd}
+          >
+            <StepForward size={13} />
           </button>
         </div>
 
-        <div className="preview-meta">
-          <span className="timecode">{formatTimecode(durationFrames, fps)}</span>
-          <button className="icon-btn" title="Volume">
-            <Volume2 size={14} />
+        {/* Right: volume + meta */}
+        <div className="transport-meta">
+          <button className="transport-vol-btn" title="Volume">
+            <Volume2 size={13} />
           </button>
+          <span className="transport-duration">{durationFrames}f @ {fps}fps</span>
         </div>
       </div>
     </div>
   );
 }
 
-function formatTimecode(frame: number, fps: number): string {
-  const totalSeconds = Math.floor(frame / fps);
-  const f = frame % fps;
-  const s = totalSeconds % 60;
-  const m = Math.floor(totalSeconds / 60) % 60;
-  const h = Math.floor(totalSeconds / 3600);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}:${String(f).padStart(2, '0')}`;
+function tc(frames: number, fps: number): string {
+  const totalSecs = Math.floor(frames / fps);
+  const f = frames % fps;
+  const s = totalSecs % 60;
+  const m = Math.floor(totalSecs / 60) % 60;
+  const h = Math.floor(totalSecs / 3600);
+  return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
+}
+
+function pad(n: number): string {
+  return String(Math.max(0, n)).padStart(2, '0');
 }
