@@ -292,7 +292,7 @@ export function applyOperation(
       const track = state.timeline.tracks.find((t) => t.id === op.trackId);
       if (!track) return state;
       const genAsset = createGeneratorAsset({
-        id: op.generator.id as unknown as string,
+        id: op.generator.id as unknown as string, // Generator IDs are string-compatible
         name: op.generator.name,
         mediaType: track.type,
         generatorDef: op.generator,
@@ -300,8 +300,8 @@ export function applyOperation(
       });
       const clip = createClip({
         id: `gen-clip-${op.generator.id}`,
-        assetId: genAsset.id as unknown as string,
-        trackId: op.trackId as unknown as string,
+        assetId: genAsset.id as unknown as string, // AssetId is a branded string
+        trackId: op.trackId as unknown as string, // TrackId is a branded string
         timelineStart: op.atFrame,
         timelineEnd: (op.atFrame + op.generator.duration) as TimelineFrame,
         mediaIn: 0 as TimelineFrame,
@@ -538,6 +538,11 @@ export function applyOperation(
 
     case 'SET_TRACK_OPACITY': {
       return updateTrack(state, op.trackId, (t) => ({ ...t, opacity: op.opacity }));
+    }
+
+    default: {
+      const _exhaustive: never = op;
+      throw new Error(`Unhandled operation type: ${(_exhaustive as any).type}`);
     }
   }
 }

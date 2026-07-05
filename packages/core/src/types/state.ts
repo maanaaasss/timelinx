@@ -1,19 +1,17 @@
 /**
- * TIMELINE STATE — Phase 0 compliant
+ * AssetRegistry — the immutable map of assets.
  *
- * TimelineState is the single source of truth for the engine.
- * Phase 0 only: timeline + assetRegistry. No Phase 2 fields.
- *
- * RULE: Every function that changes state returns a NEW TimelineState.
- * Never mutate the existing state.
+ * IMMUTABILITY CONTRACT:
+ * - The type is `ReadonlyMap<AssetId, Asset>` — TypeScript enforces immutability at compile time.
+ * - At runtime, the dispatcher freezes the map via `Object.freeze()` to prevent accidental mutation.
+ * - IMPORTANT: `Object.freeze()` on a Map does NOT prevent `.set()`, `.delete()`, or `.clear()`
+ *   at runtime — those operate on Map internal slots, not object properties. The `ReadonlyMap`
+ *   type prevents this at compile time only. Consumers using `as any`/`as unknown` casts or
+ *   plain JS can still call `.set()`/`.delete()`/`.clear()` at runtime.
+ * - If you need runtime-enforced immutability, wrap the map in a custom immutable structure.
  */
-
+import type { AssetId, Asset } from './asset';
 import type { Timeline } from './timeline';
-import type { Asset, AssetId } from './asset';
-
-// ---------------------------------------------------------------------------
-// AssetRegistry — ReadonlyMap is the invariant boundary
-// ---------------------------------------------------------------------------
 
 export type AssetRegistry = ReadonlyMap<AssetId, Asset>;
 

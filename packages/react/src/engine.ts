@@ -198,8 +198,9 @@ export class TimelineEngine {
     let result: DispatchResult;
     try {
       result = coreDispatch(this.currentState, transaction);
-    } catch {
-      return { accepted: false, reason: 'INVARIANT_VIOLATED', message: 'coreDispatch threw' };
+    } catch (err) {
+      try { this.options.onError?.(err, 'dispatch'); } catch (_) { console.error('onError callback threw', _); }
+      return { accepted: false, reason: 'INVARIANT_VIOLATED', message: err instanceof Error ? err.message : 'coreDispatch threw' };
     }
     if (!result.accepted) {
       return result;
@@ -281,7 +282,9 @@ export class TimelineEngine {
     const ctx = this.buildToolContext(modifiers);
     try {
       getActiveTool(this.toolRegistry).onPointerDown(event, ctx);
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onPointerDown'); } catch (_) { console.error('onError callback threw', _); }
+    }
     this._syncSelectionFromTool();
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
     this.notify();
@@ -292,7 +295,9 @@ export class TimelineEngine {
     let provisional: ReturnType<ITool['onPointerMove']> = null;
     try {
       provisional = getActiveTool(this.toolRegistry).onPointerMove(event, ctx);
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onPointerMove'); } catch (_) { console.error('onError callback threw', _); }
+    }
     this.provisional =
       provisional !== null
         ? setProvisional(this.provisional, provisional)
@@ -307,7 +312,9 @@ export class TimelineEngine {
     let tx: Transaction | null = null;
     try {
       tx = getActiveTool(this.toolRegistry).onPointerUp(event, ctx);
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onPointerUp'); } catch (_) { console.error('onError callback threw', _); }
+    }
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -321,7 +328,9 @@ export class TimelineEngine {
   handlePointerLeave(_event: TimelinePointerEvent): void {
     try {
       getActiveTool(this.toolRegistry).onCancel();
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onCancel'); } catch (_) { console.error('onError callback threw', _); }
+    }
     this._syncSelectionFromTool();
     this.provisional = clearProvisional(this.provisional);
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
@@ -336,7 +345,9 @@ export class TimelineEngine {
     let tx: Transaction | null = null;
     try {
       tx = getActiveTool(this.toolRegistry).onKeyDown(event, ctx);
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onKeyDown'); } catch (_) { console.error('onError callback threw', _); }
+    }
     if (tx !== null) {
       this.dispatch(tx);
       return true;
@@ -348,7 +359,9 @@ export class TimelineEngine {
     const ctx = this.buildToolContext(modifiers);
     try {
       getActiveTool(this.toolRegistry).onKeyUp(event, ctx);
-    } catch { /* tool error — don't crash engine */ }
+    } catch (err) {
+      try { this.options.onError?.(err, 'onKeyUp'); } catch (_) { console.error('onError callback threw', _); }
+    }
   }
 
   private buildToolContext(modifiers: Modifiers): ToolContext {
@@ -400,7 +413,7 @@ export class TimelineEngine {
     };
     return {
       state: this.currentState,
-      provisional: this.provisional.current,
+      provisional: this.provisional,
       activeToolId: this.toolRegistry.activeToolId as string,
       canUndo: u,
       canRedo: r,

@@ -35,10 +35,19 @@ export function validateOperation(
     case 'INSERT_CLIP':      return validateInsertClip(state, op);
     case 'SET_MEDIA_BOUNDS': return validateSetMediaBounds(state, op);
     case 'SET_CLIP_SPEED':   return validateSetClipSpeed(state, op);
+    case 'RENAME_TIMELINE':       return null; // always valid
+    case 'SET_TIMELINE_DURATION': return validateSetTimelineDuration(state, op);
+    case 'SET_CLIP_ENABLED':      return null; // always valid
 
     case 'ADD_TRACK':        return validateAddTrack(state, op);
     case 'DELETE_TRACK':     return validateDeleteTrack(state, op);
     case 'UNREGISTER_ASSET': return validateUnregisterAsset(state, op);
+    case 'REGISTER_ASSET': {
+      if (state.assetRegistry.has(op.asset.id)) {
+        return { reason: 'DUPLICATE_ID', message: `Asset '${op.asset.id}' already exists in registry.` };
+      }
+      return null;
+    }
 
     case 'ADD_MARKER':       return validateAddMarker(state, op);
     case 'MOVE_MARKER':      return validateMoveMarker(state, op);
@@ -74,8 +83,20 @@ export function validateOperation(
     case 'DELETE_TRACK_GROUP':     return validateDeleteTrackGroup(state, op);
     case 'SET_TRACK_BLEND_MODE':   return validateSetTrackBlendMode(state, op);
     case 'SET_TRACK_OPACITY':      return validateSetTrackOpacity(state, op);
+    case 'REORDER_TRACK':          return null; // always valid
+    case 'SET_ASSET_STATUS':       return null; // always valid
+    case 'SET_CLIP_COLOR':         return null; // always valid
+    case 'SET_CLIP_NAME':          return null; // always valid
+    case 'SET_CLIP_REVERSED':      return null; // always valid
+    case 'SET_SEQUENCE_SETTINGS':  return null; // always valid
+    case 'SET_TIMELINE_START_TC':  return null; // always valid
+    case 'SET_TRACK_HEIGHT':       return null; // always valid
+    case 'SET_TRACK_NAME':         return null; // always valid
 
-    default: return null;
+    default: {
+      const _exhaustive: never = op;
+      return { reason: 'UNKNOWN_OPERATION', message: `Unknown operation type: ${(_exhaustive as any).type}` };
+    }
   }
 }
 
@@ -98,7 +119,7 @@ function validateMoveClip(
   const duration = clip.timelineEnd - clip.timelineStart;
   const newEnd = op.newTimelineStart + duration;
 
-  if (op.newTimelineStart < 0 || newEnd > state.timeline.duration) {
+  if (!Number.isFinite(op.newTimelineStart) || op.newTimelineStart < 0 || !Number.isFinite(newEnd) || newEnd > state.timeline.duration) {
     return { reason: 'OUT_OF_BOUNDS', message: `MOVE_CLIP would place clip '${op.clipId}' outside timeline bounds.` };
   }
 
@@ -116,6 +137,9 @@ function validateResizeClip(
 ): Rejection | null {
   const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
+  if (!Number.isFinite(op.newFrame)) {
+    return { reason: 'OUT_OF_BOUNDS', message: `RESIZE_CLIP newFrame must be a finite number.` };
+  }
   if (op.edge === 'start' && op.newFrame >= clip.timelineEnd) {
     return { reason: 'OUT_OF_BOUNDS', message: `RESIZE_CLIP start edge must be < timelineEnd.` };
   }
@@ -131,8 +155,8 @@ function validateSliceClip(
 ): Rejection | null {
   const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
-  if (op.atFrame <= clip.timelineStart || op.atFrame >= clip.timelineEnd) {
-    return { reason: 'OUT_OF_BOUNDS', message: `SLICE_CLIP atFrame must be strictly inside the clip bounds.` };
+  if (Number.isNaN(op.atFrame) || op.atFrame <= clip.timelineStart || op.atFrame >= clip.timelineEnd) {
+    return { reason: 'OUT_OF_BOUNDS', message: `SLICE_CLIP atFrame must be a finite number strictly inside the clip bounds.` };
   }
   return null;
 }
@@ -179,8 +203,8 @@ function validateSetMediaBounds(
   if (!clip) return { reason: 'ASSET_MISSING', message: `Clip '${op.clipId}' not found.` };
   const asset = state.assetRegistry.get(clip.assetId);
   if (!asset) return { reason: 'ASSET_MISSING', message: `Asset '${clip.assetId}' not found.` };
-  if (op.mediaIn < 0) return { reason: 'MEDIA_BOUNDS_INVALID', message: `mediaIn must be >= 0.` };
-  if (op.mediaOut > asset.intrinsicDuration) {
+  if (!Number.isFinite(op.mediaIn) || op.mediaIn < 0) return { reason: 'MEDIA_BOUNDS_INVALID', message: `mediaIn must be >= 0.` };
+  if (!Number.isFinite(op.mediaOut) || op.mediaOut > asset.intrinsicDuration) {
     return { reason: 'MEDIA_BOUNDS_INVALID', message: `mediaOut (${op.mediaOut}) exceeds asset intrinsicDuration (${asset.intrinsicDuration}).` };
   }
   return null;
@@ -190,7 +214,25 @@ function validateSetClipSpeed(
   _state: TimelineState,
   op: Extract<OperationPrimitive, { type: 'SET_CLIP_SPEED' }>,
 ): Rejection | null {
-  if (op.speed <= 0) return { reason: 'SPEED_INVALID', message: `speed must be > 0, got ${op.speed}.` };
+  if (!Number.isFinite(op.speed) || op.speed <= 0) return { reason: 'SPEED_INVALID', message: `speed must be > 0, got ${op.speed}.` };
+  return null;
+}
+
+function validateSetTimelineDuration(
+  state: TimelineState,
+  op: Extract<OperationPrimitive, { type: 'SET_TIMELINE_DURATION' }>,
+): Rejection | null {
+  if (!Number.isFinite(op.duration) || op.duration <= 0) {
+    return { reason: 'OUT_OF_BOUNDS', message: `Duration must be > 0, got ${op.duration}.` };
+  }
+  // Reject if any clip extends beyond the new duration
+  for (const track of state.timeline.tracks) {
+    for (const clip of track.clips) {
+      if (clip.timelineEnd > op.duration) {
+        return { reason: 'OUT_OF_BOUNDS', message: `Cannot shrink timeline: clip '${clip.id}' extends to ${clip.timelineEnd}.` };
+      }
+    }
+  }
   return null;
 }
 
@@ -256,11 +298,11 @@ function validateAddMarker(
   }
   const dur = state.timeline.duration;
   if (marker.type === 'point') {
-    if (marker.frame < 0 || marker.frame > dur) {
+    if (Number.isNaN(marker.frame) || marker.frame < 0 || marker.frame > dur) {
       return { reason: 'OUT_OF_BOUNDS', message: `Point marker frame (${marker.frame}) must be in [0, ${dur}].` };
     }
   } else {
-    if (marker.frameStart >= marker.frameEnd) {
+    if (Number.isNaN(marker.frameStart) || Number.isNaN(marker.frameEnd) || marker.frameStart >= marker.frameEnd) {
       return { reason: 'OUT_OF_BOUNDS', message: `Range marker frameStart must be < frameEnd.` };
     }
     if (marker.frameEnd > dur) {
@@ -278,13 +320,13 @@ function validateMoveMarker(
   if (!marker) return { reason: 'NOT_FOUND', message: `Marker '${op.markerId}' not found.` };
   const dur = state.timeline.duration;
   if (marker.type === 'point') {
-    if (op.newFrame < 0 || op.newFrame > dur) {
+    if (Number.isNaN(op.newFrame) || op.newFrame < 0 || op.newFrame > dur) {
       return { reason: 'OUT_OF_BOUNDS', message: `newFrame (${op.newFrame}) must be in [0, ${dur}].` };
     }
   } else {
     const duration = marker.frameEnd - marker.frameStart;
     const newEnd = op.newFrame + duration;
-    if (op.newFrame < 0 || newEnd > dur) {
+    if (Number.isNaN(op.newFrame) || op.newFrame < 0 || newEnd > dur) {
       return { reason: 'OUT_OF_BOUNDS', message: `MOVE_MARKER would place range marker outside timeline.` };
     }
   }
@@ -310,7 +352,7 @@ function validateSetInPoint(
   op: Extract<OperationPrimitive, { type: 'SET_IN_POINT' }>,
 ): Rejection | null {
   if (op.frame === null) return null;
-  if (op.frame < 0) return { reason: 'OUT_OF_BOUNDS', message: `In point frame must be >= 0.` };
+  if (Number.isNaN(op.frame) || op.frame < 0) return { reason: 'OUT_OF_BOUNDS', message: `In point frame must be >= 0.` };
   const out = state.timeline.outPoint;
   if (out !== null && op.frame >= out) {
     return { reason: 'OUT_OF_BOUNDS', message: `In point must be < out point (${out}).` };
@@ -323,7 +365,7 @@ function validateSetOutPoint(
   op: Extract<OperationPrimitive, { type: 'SET_OUT_POINT' }>,
 ): Rejection | null {
   if (op.frame === null) return null;
-  if (op.frame < 0) return { reason: 'OUT_OF_BOUNDS', message: `Out point frame must be >= 0.` };
+  if (Number.isNaN(op.frame) || op.frame < 0) return { reason: 'OUT_OF_BOUNDS', message: `Out point frame must be >= 0.` };
   const inPt = state.timeline.inPoint;
   if (inPt !== null && op.frame <= inPt) {
     return { reason: 'OUT_OF_BOUNDS', message: `Out point must be > in point (${inPt}).` };
@@ -343,7 +385,7 @@ function validateAddBeatGrid(
     return { reason: 'BEAT_GRID_EXISTS', message: `Timeline already has a beat grid.` };
   }
   const { beatGrid } = op;
-  if (beatGrid.bpm <= 0) return { reason: 'OUT_OF_BOUNDS', message: `Beat grid bpm must be > 0.` };
+  if (Number.isNaN(beatGrid.bpm) || beatGrid.bpm <= 0) return { reason: 'OUT_OF_BOUNDS', message: `Beat grid bpm must be > 0.` };
   if (beatGrid.timeSignature[0] <= 0 || beatGrid.timeSignature[1] <= 0) {
     return { reason: 'OUT_OF_BOUNDS', message: `Beat grid timeSignature must be positive.` };
   }
@@ -372,7 +414,7 @@ function validateInsertGenerator(
     return { reason: 'TYPE_MISMATCH', message: `INSERT_GENERATOR requires video or audio track.` };
   }
   const dur = state.timeline.duration;
-  if (op.atFrame < 0 || op.atFrame + op.generator.duration > dur) {
+  if (Number.isNaN(op.atFrame) || op.atFrame < 0 || op.atFrame + op.generator.duration > dur) {
     return { reason: 'OUT_OF_BOUNDS', message: `INSERT_GENERATOR would place clip outside timeline.` };
   }
   const genEnd = op.atFrame + op.generator.duration;
@@ -393,7 +435,7 @@ function validateAddCaption(
   if (!track) return { reason: 'OUT_OF_BOUNDS', message: `Track '${op.trackId}' not found.` };
   if (track.locked) return { reason: 'LOCKED_TRACK', message: `Track '${op.trackId}' is locked.` };
   const { caption } = op;
-  if (caption.startFrame >= caption.endFrame) {
+  if (Number.isNaN(caption.startFrame) || Number.isNaN(caption.endFrame) || caption.startFrame >= caption.endFrame) {
     return { reason: 'OUT_OF_BOUNDS', message: `Caption startFrame must be < endFrame.` };
   }
   if (caption.endFrame > state.timeline.duration) {
@@ -420,12 +462,12 @@ function validateEditCaption(
   const caption = track.captions.find((c) => c.id === op.captionId);
   if (!caption) return { reason: 'NOT_FOUND', message: `Caption '${op.captionId}' not found on track.` };
   if (op.startFrame !== undefined && op.endFrame !== undefined) {
-    if (op.startFrame >= op.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
+    if (Number.isNaN(op.startFrame) || Number.isNaN(op.endFrame) || op.startFrame >= op.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
     if (op.endFrame > state.timeline.duration) return { reason: 'OUT_OF_BOUNDS', message: `endFrame exceeds timeline duration.` };
   } else if (op.startFrame !== undefined) {
-    if (op.startFrame >= caption.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
+    if (Number.isNaN(op.startFrame) || op.startFrame >= caption.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
   } else if (op.endFrame !== undefined) {
-    if (caption.startFrame >= op.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `endFrame must be > startFrame.` };
+    if (Number.isNaN(op.endFrame) || caption.startFrame >= op.endFrame) return { reason: 'OUT_OF_BOUNDS', message: `endFrame must be > startFrame.` };
     if (op.endFrame > state.timeline.duration) return { reason: 'OUT_OF_BOUNDS', message: `endFrame exceeds timeline duration.` };
   }
   return null;
@@ -519,7 +561,7 @@ function validateAddKeyframe(
   if (effect.keyframes.some((k) => k.id === op.keyframe.id)) {
     return { reason: 'DUPLICATE_KEYFRAME_ID', message: `Keyframe '${op.keyframe.id}' already exists on effect '${op.effectId}'.` };
   }
-  if (op.keyframe.frame < 0) {
+  if (Number.isNaN(op.keyframe.frame) || op.keyframe.frame < 0) {
     return { reason: 'INVALID_RANGE', message: `Keyframe frame (${op.keyframe.frame}) must be >= 0.` };
   }
   return null;
@@ -535,7 +577,7 @@ function validateMoveKeyframe(
   if (!effect) return { reason: 'EFFECT_NOT_FOUND', message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.` };
   const kf = effect.keyframes.find((k) => k.id === op.keyframeId);
   if (!kf) return { reason: 'KEYFRAME_NOT_FOUND', message: `Keyframe '${op.keyframeId}' not found on effect '${op.effectId}'.` };
-  if (op.newFrame < 0) {
+  if (Number.isNaN(op.newFrame) || op.newFrame < 0) {
     return { reason: 'INVALID_RANGE', message: `newFrame (${op.newFrame}) must be >= 0.` };
   }
   return null;
@@ -723,7 +765,7 @@ function validateSetTrackOpacity(
 ): Rejection | null {
   const track = state.timeline.tracks.find((t) => t.id === op.trackId);
   if (!track) return { reason: 'TRACK_NOT_FOUND', message: `Track '${op.trackId}' not found.` };
-  if (op.opacity < 0 || op.opacity > 1) {
+  if (Number.isNaN(op.opacity) || op.opacity < 0 || op.opacity > 1) {
     return { reason: 'INVALID_OPACITY', message: `opacity must be in [0, 1].` };
   }
   return null;

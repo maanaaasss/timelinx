@@ -149,7 +149,9 @@ export type RejectionReason =
   | 'DUPLICATE_LINK_GROUP_ID'
   | 'DUPLICATE_TRACK_GROUP_ID'
   | 'INVALID_OPACITY'
-  | 'TRACK_NOT_FOUND';
+  | 'TRACK_NOT_FOUND'
+  | 'UNKNOWN_OPERATION'
+  | 'DUPLICATE_ID';
 
 export type DispatchResult =
   | { accepted: true;  nextState: TimelineState }
@@ -182,7 +184,8 @@ export type ViolationType =
   | 'TRACK_GROUP_NOT_FOUND'
   | 'INVALID_OPACITY'
   | 'INVALID_RANGE'
-  | 'LINK_GROUP_NOT_FOUND';
+  | 'LINK_GROUP_NOT_FOUND'
+  | 'DUPLICATE_ID';
 
 export type InvariantViolation = {
   readonly type: ViolationType;

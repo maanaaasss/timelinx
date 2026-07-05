@@ -59,13 +59,53 @@ export function dispatch(
   }
 
   // Step 4: Commit — bump version
+  // We intentionally do NOT deep-clone here: applyOperation already does
+  // structural sharing (only cloning modified tracks/clips). Deep-cloning
+  // would destroy those shared references, breaking React hook memoization
+  // (useSyncExternalStore uses Object.is on selector results — new refs
+  // cause unnecessary re-renders).
+  //
+  // Instead we freeze shared containers so push/splice on returned state
+  // throw in strict mode rather than silently mutating the original.
+
+  // Object.freeze() on a Map does NOT prevent .set()/.delete()/.clear() —
+  // those operate on internal slots, not object properties. Wrap in a
+  // read-only proxy BEFORE freezing the top-level object (freeze makes
+  // properties non-writable, preventing later reassignment).
+  const frozenRegistry = new Proxy(
+    proposedState.assetRegistry as Map<unknown, unknown>,
+    {
+      get(target, prop, receiver) {
+        if (prop === 'set' || prop === 'delete' || prop === 'clear') {
+          throw new TypeError(
+            `Cannot modify frozen AssetRegistry: ${(prop as string).toUpperCase()} is disabled`,
+          );
+        }
+        const value = Reflect.get(target, prop, target);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    },
+  ) as typeof proposedState.assetRegistry;
+
   const nextState: TimelineState = {
     ...proposedState,
+    assetRegistry: frozenRegistry,
     timeline: {
       ...proposedState.timeline,
       version: state.timeline.version + 1,
     },
   };
+
+  Object.freeze(nextState);
+  Object.freeze(nextState.timeline);
+  Object.freeze(nextState.timeline.tracks);
+  for (const track of nextState.timeline.tracks) {
+    Object.freeze(track);
+    Object.freeze(track.clips);
+    for (const clip of track.clips) {
+      Object.freeze(clip);
+    }
+  }
 
   return { accepted: true, nextState };
 }

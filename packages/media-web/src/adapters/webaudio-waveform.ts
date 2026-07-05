@@ -81,7 +81,9 @@ export class WebAudioWaveformAdapter {
     audioBuffer: AudioBuffer,
   ): Promise<WaveformExtractionResult> {
     try {
-      const { channels, peaksPerSecond } = this.config;
+      const { channels: rawChannels, peaksPerSecond: rawPeaksPerSecond } = this.config;
+      const channels = rawChannels ?? 1;
+      const peaksPerSecond = rawPeaksPerSecond ?? 20;
       const duration = audioBuffer.duration;
       const totalPeaks = Math.ceil(duration * peaksPerSecond);
       const channelData: Array<WaveformPeak[]> = [];

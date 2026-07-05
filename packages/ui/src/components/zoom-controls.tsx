@@ -40,6 +40,7 @@ export const ZoomControls = React.memo(function ZoomControls({
         onChange={handleSliderChange}
         aria-label="Zoom level"
       />
+      <span className="zoom-level">{zoom}x</span>
       <button className="tool-btn" title="Zoom in" onClick={handleZoomIn}>
         <IconZoomIn size={15} />
       </button>

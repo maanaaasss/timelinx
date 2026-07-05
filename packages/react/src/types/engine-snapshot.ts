@@ -33,6 +33,8 @@ export type TimelineEngineOptions = {
   onMarkOut?: (frame: TimelineFrame) => void;
   onZoomChange?: (pixelsPerFrame: number) => void;
   getPixelsPerFrame?: () => number;
+  /** Called when a tool throws — receives the error and the method name. */
+  onError?: (error: unknown, method: string) => void;
 };
 
 export type EngineSnapshot = {

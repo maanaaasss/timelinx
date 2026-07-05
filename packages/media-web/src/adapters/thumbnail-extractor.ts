@@ -106,7 +106,7 @@ export class ThumbnailExtractorAdapter {
     }
 
     // Draw a placeholder
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D | null;
     if (ctx) {
       const hue = (request.mediaFrame as number * 3) % 360;
       ctx.fillStyle = `hsl(${hue}, 60%, 40%)`;

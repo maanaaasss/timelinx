@@ -109,7 +109,7 @@ async function handleThumbnailRequest(entry: ThumbnailQueueEntry): Promise<void>
       payload: result,
     };
 
-    self.postMessage(response, [result.bitmap as unknown as Transferable]);
+    self.postMessage(response, { transfer: [result.bitmap as unknown as Transferable] });
   } catch (error) {
     const response: ThumbnailWorkerResponse = {
       type: 'error',

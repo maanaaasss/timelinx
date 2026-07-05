@@ -5,6 +5,9 @@
  *
  * Two APIs:
  * - HistoryState + pure functions (createHistory, pushHistory, undo, redo)
+ *   @deprecated Use HistoryStack instead. These pure functions are kept for
+ *   backward compatibility with timeline-engine.ts but should not be used
+ *   in new code. HistoryStack provides compression, checkpoints, and persistence.
  * - HistoryStack class with compression, checkpoints, and persistence
  */
 
@@ -220,6 +223,14 @@ export class HistoryStack {
     }
   }
 
+  /**
+   * Push with compression — replaces the last entry if within compression window.
+   *
+   * NOTE: Intentionally mutates `this.entries` via index assignment when compressing.
+   * This is safe because HistoryStack is a class with internal mutable state,
+   * not a pure functional API. The mutation is confined to the entries array
+   * and does not affect any external references.
+   */
   pushWithCompression(entry: HistoryEntry, transaction: Transaction): void {
     const now = this.clock();
     if (this.compressor.shouldCompress(transaction, now)) {

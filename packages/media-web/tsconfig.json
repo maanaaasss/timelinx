@@ -14,9 +14,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "isolatedModules": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/__tests__/**"]

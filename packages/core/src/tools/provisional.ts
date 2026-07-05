@@ -13,6 +13,10 @@
  *   1. provisional.clips has a clip with this id → return ghost version
  *   2. clip exists in committed state → return committed
  *   3. clip absent from both (deleted mid-drag) → return undefined
+ *
+ * NOTE: ProvisionalManager is now just `ProvisionalState | null`.
+ * The wrapper type and helper functions are kept for backward compatibility
+ * but are deprecated. New code should use `ProvisionalState | null` directly.
  */
 
 import type { ClipId, Clip } from '../types/clip';
@@ -20,42 +24,43 @@ import type { TimelineState } from '../types/state';
 import type { ProvisionalState } from './types';
 
 // ---------------------------------------------------------------------------
-// ProvisionalManager
+// ProvisionalManager (deprecated — use ProvisionalState | null directly)
 // ---------------------------------------------------------------------------
 
-export type ProvisionalManager = {
-  readonly current: ProvisionalState | null;
-};
+/**
+ * @deprecated Use `ProvisionalState | null` directly instead.
+ */
+export type ProvisionalManager = ProvisionalState | null;
 
-// ---------------------------------------------------------------------------
-// Functions
-// ---------------------------------------------------------------------------
-
-/** Create an empty provisional manager (current = null). */
+/**
+ * @deprecated Use `null` directly instead.
+ */
 export function createProvisionalManager(): ProvisionalManager {
-  return { current: null };
+  return null;
 }
 
-/** Return a new manager with current set to state.
- *  Pure — never mutates the original manager. */
+/**
+ * @deprecated Use the ProvisionalState value directly instead.
+ */
 export function setProvisional(
   _manager: ProvisionalManager,
   state:    ProvisionalState,
 ): ProvisionalManager {
-  return { current: state };
+  return state;
 }
 
-/** Return a new manager with current set to null.
- *  Pure — never mutates the original manager. */
+/**
+ * @deprecated Use `null` directly instead.
+ */
 export function clearProvisional(_manager: ProvisionalManager): ProvisionalManager {
-  return { current: null };
+  return null;
 }
 
 /**
  * Resolve which version of a clip to render.
  *
  * Priority:
- *   1. If manager.current has a clip with this id → return provisional (ghost)
+ *   1. If provisional has a clip with this id → return provisional (ghost)
  *   2. Otherwise → search committed state
  *   3. If absent from both (clip deleted mid-drag) → return undefined
  *
@@ -73,8 +78,8 @@ export function resolveClip(
   manager: ProvisionalManager,
 ): Clip | undefined {
   // Priority 1 — provisional ghost
-  if (manager.current !== null) {
-    const ghost = manager.current.clips.find(c => c.id === clipId);
+  if (manager !== null) {
+    const ghost = manager.clips.find(c => c.id === clipId);
     if (ghost) return ghost;
   }
 

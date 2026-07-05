@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — Dark Pro Preset
+   @timelinx/ui — Dark Pro Theme (Alternate)
    
-   DaVinci Resolve-inspired deep dark. Blue-shifted panel chrome,
-   vivid accent system, rich glow shadows.
+   Deep dark with blue-shifted chrome. For users who
+   prefer dark interfaces.
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
@@ -10,84 +10,89 @@
 :root {
   color-scheme: dark;
 
-  /* ── App chrome ── */
-  --bg-app:            #080b12;
-  --bg-panel:          #0c1018;
-  --bg-surface:        #101520;
-  --bg-surface-soft:   #141924;
-  --bg-raised:         #181e2c;
-  --bg-hover:          #1e2636;
-  --bg-overlay:        #232d40;
-  --bg-input:          #111622;
+  /* ── Surfaces ── */
+  --bg-canvas:         #0c0e14;
+  --bg-app:            #101218;
+  --bg-panel:          #161922;
+  --bg-surface:        #1a1e2a;
+  --bg-surface-raised: #1e2232;
+  --bg-surface-soft:   #1c2030;
+  --bg-subtle:         #14171f;
+  --bg-raised:         #1e2232;
+  --bg-hover:          rgba(255,255,255,0.06);
+  --bg-active:         rgba(255,255,255,0.08);
+  --bg-overlay:        rgba(255,255,255,0.1);
+  --bg-input:          #12141c;
+  --bg-input-focus:    #1a1e2a;
 
   /* ── Borders ── */
-  --border-faint:      rgba(120,160,255,0.055);
-  --border-subtle:     rgba(120,160,255,0.09);
-  --border-default:    rgba(120,160,255,0.14);
-  --border-strong:     rgba(120,160,255,0.22);
-  --border-focus:      rgba(108,148,255,0.76);
+  --border-faint:      rgba(255,255,255,0.06);
+  --border-subtle:     rgba(255,255,255,0.09);
+  --border-default:    rgba(255,255,255,0.13);
+  --border-strong:     rgba(255,255,255,0.2);
+  --border-focus:      var(--accent-500);
 
   /* ── Text ── */
-  --text-primary:      #eef2ff;
-  --text-secondary:    #9baac8;
-  --text-tertiary:     #5d6e8a;
-  --text-disabled:     #3e4d65;
-  --text-inverse:      #080b12;
-  --text-mono:         #b0bcd6;
+  --text-primary:      #f0f0f3;
+  --text-secondary:    #8b8fa4;
+  --text-tertiary:     #5c6078;
+  --text-disabled:     #3a3e50;
+  --text-inverse:      #101218;
+  --text-mono:         #b0b4c8;
 
-  /* ── Accent — electric indigo-blue ── */
-  --accent:            #6c94ff;
-  --accent-hover:      #82a8ff;
-  --accent-active:     #5580ef;
-  --accent-subtle:     rgba(108,148,255,0.11);
-  --accent-border:     rgba(108,148,255,0.3);
-  --accent-glow:       rgba(108,148,255,0.2);
+  /* ── Accent ── */
+  --accent:            #818cf8;
+  --accent-hover:      #a5b4fc;
+  --accent-active:     #6366f1;
+  --accent-subtle:     rgba(129,140,248,0.12);
+  --accent-border:     rgba(129,140,248,0.28);
+  --accent-glow:       rgba(129,140,248,0.18);
+  --accent-on-fill:    #1e1b4b;
 
   /* ── Semantic ── */
-  --color-danger:      #ff5f5b;
-  --color-danger-subtle: rgba(255,95,91,0.12);
-  --color-success:     #28d4a4;
-  --color-warning:     #f5b94a;
-  --color-warning-subtle: rgba(245,185,74,0.13);
+  --color-danger:      #f87171;
+  --color-danger-subtle: rgba(248,113,113,0.12);
+  --color-success:     #4ade80;
+  --color-success-subtle: rgba(74,222,128,0.12);
+  --color-warning:     #fbbf24;
+  --color-warning-subtle: rgba(251,191,36,0.12);
 
   /* ── Track types ── */
-  --track-video:        #5d88ff;
-  --track-video-dim:    rgba(93,136,255,0.78);
-  --track-video-bg:     rgba(93,136,255,0.1);
-  --track-video-border: rgba(93,136,255,0.3);
-  --track-audio:        #28cfa6;
-  --track-audio-dim:    rgba(40,207,166,0.78);
-  --track-audio-bg:     rgba(40,207,166,0.1);
-  --track-audio-border: rgba(40,207,166,0.28);
-  --track-subtitle:     #f0b840;
-  --track-subtitle-dim: rgba(240,184,64,0.78);
-  --track-subtitle-bg:  rgba(240,184,64,0.1);
-  --track-subtitle-border: rgba(240,184,64,0.28);
-  --track-image:        #c882ff;
-  --track-image-bg:     rgba(200,130,255,0.1);
-  --track-image-border: rgba(200,130,255,0.28);
+  --track-video:       #60a5fa;
+  --track-video-dim:   rgba(96,165,250,0.75);
+  --track-video-bg:    rgba(96,165,250,0.1);
+  --track-video-border: rgba(96,165,250,0.25);
+  --track-audio:       #4ade80;
+  --track-audio-dim:   rgba(74,222,128,0.75);
+  --track-audio-bg:    rgba(74,222,128,0.1);
+  --track-audio-border: rgba(74,222,128,0.25);
+  --track-subtitle:    #fbbf24;
+  --track-subtitle-dim: rgba(251,191,36,0.75);
+  --track-subtitle-bg: rgba(251,191,36,0.1);
+  --track-subtitle-border: rgba(251,191,36,0.25);
+  --track-image:       #c4b5fd;
+  --track-image-bg:    rgba(196,181,253,0.1);
+  --track-image-border: rgba(196,181,253,0.25);
 
-  /* ── Glow colors (used in structure.css for clip decorations) ── */
-  --glow-video:        rgba(93,136,255,0.36);
-  --glow-audio:        rgba(40,207,166,0.36);
-  --glow-subtitle:     rgba(240,184,64,0.36);
-  --glow-image:        rgba(200,130,255,0.36);
+  /* ── Glow ── */
+  --glow-video:        rgba(96,165,250,0.2);
+  --glow-audio:        rgba(74,222,128,0.2);
+  --glow-subtitle:     rgba(251,191,36,0.2);
+  --glow-image:        rgba(196,181,253,0.2);
 
   /* ── Playhead ── */
-  --playhead-color:    #ffffff;
-  --playhead-shadow:   0 0 0 1px rgba(8,11,18,0.9), 0 0 12px rgba(255,255,255,0.45), 0 0 28px rgba(108,148,255,0.3);
+  --playhead-color:    #818cf8;
+  --playhead-shadow:   0 0 0 2px rgba(16,18,24,0.9), 0 0 12px rgba(129,140,248,0.3);
 
   /* ── Scrollbar ── */
   --scrollbar-track:   transparent;
-  --scrollbar-thumb:   rgba(108,148,255,0.14);
-  --scrollbar-thumb-hover: rgba(108,148,255,0.28);
+  --scrollbar-thumb:   rgba(255,255,255,0.1);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.18);
 
-  /* ── Shadows — deeper and more saturated ── */
-  --shadow-sm:         0 1px 3px rgba(0,0,0,0.55);
-  --shadow-md:         0 8px 24px rgba(0,0,0,0.35);
-  --shadow-lg:         0 18px 56px rgba(0,0,0,0.48);
-  --shadow-overlay:    0 24px 80px rgba(0,0,0,0.62);
-
-  /* ── Snap ── */
-  --tl-snap-color:     #ffd15c;
+  /* ── Shadows ── */
+  --shadow-xs:         0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-md:         0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  --shadow-lg:         0 8px 24px rgba(0,0,0,0.35), 0 4px 8px rgba(0,0,0,0.2);
+  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3);
 }

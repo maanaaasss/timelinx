@@ -1,12 +1,14 @@
 /**
- * SelectionTool — with edge trimming support
+ * SelectionTool
  *
- * Handles five interaction modes:
+ * Handles four interaction modes:
  *   MODE 1: Single click  → select/deselect clip
  *   MODE 2: Single drag   → move one clip
  *   MODE 3: Multi drag    → move all selected clips
  *   MODE 4: Rubber-band   → marquee select
- *   MODE 5: Edge drag     → trim clip start/end
+ *
+ * Edge trimming is handled via near-edge clicks in onPointerUp
+ * (pendingTrimEdge path), not as a separate drag mode.
  */
 
 import type {
@@ -40,7 +42,7 @@ const MIN_DURATION_FRAMES = 1;
 // Internal types
 // ---------------------------------------------------------------------------
 
-type DragMode = 'idle' | 'drag-clip' | 'rubber-band' | 'trim-edge';
+type DragMode = 'idle' | 'drag-clip' | 'rubber-band';
 
 type TrimEdge = 'start' | 'end';
 
@@ -69,15 +71,6 @@ function hitEdge(
   if (Math.abs(clientX - startPx) <= EDGE_HIT_ZONE_PX) return 'start';
   if (Math.abs(clientX - endPx)   <= EDGE_HIT_ZONE_PX) return 'end';
   return null;
-}
-
-function collectClips(state: TimelineState, ids: ReadonlySet<ClipId>): Clip[] {
-  const result: Clip[] = [];
-  for (const id of ids) {
-    const c = liveClip(state, id);
-    if (c) result.push(c);
-  }
-  return result;
 }
 
 function validSingleClipStart(
@@ -141,10 +134,8 @@ export class SelectionTool implements ITool {
   private isMultiDrag:      boolean                  = false;
   private originalPositions: Map<ClipId, OriginalPosition> = new Map();
 
-  // trim-edge mode
-  private trimEdge:         TrimEdge      | null = null;
-  private trimOrigStart:    TimelineFrame | null = null;
-  private trimOrigEnd:      TimelineFrame | null = null;
+  // near-edge trim (click-based, not drag mode)
+  private pendingTrimEdge:  TrimEdge      | null = null;
 
   // rubber-band mode
   private rubberBandStartFrame: TimelineFrame | null = null;
@@ -168,7 +159,6 @@ export class SelectionTool implements ITool {
   // ── ITool: getCursor ────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.mode === 'trim-edge')    return 'ew-resize';
     if (this.mode === 'drag-clip')    return 'grabbing';
     if (this.mode === 'rubber-band')  return 'crosshair';
     if (this.lastHitEdge !== null)    return 'ew-resize';
@@ -192,19 +182,9 @@ export class SelectionTool implements ITool {
       const clip = liveClip(ctx.state, event.clipId);
       if (!clip) return;
 
-      // Check if we're hitting an edge — switch to trim mode
+      // Check if we're hitting an edge — record but don't switch to trim mode yet
       const edge = hitEdge(clip, event.x, ctx.pixelsPerFrame, 0);
-      if (edge !== null) {
-        this.mode          = 'trim-edge';
-        this.dragStartX    = event.x;
-        this.dragStartY    = event.y;
-        this.dragStartFrame = event.frame;
-        this.dragClipId    = event.clipId;
-        this.trimEdge      = edge;
-        this.trimOrigStart = clip.timelineStart;
-        this.trimOrigEnd   = clip.timelineEnd;
-        return;
-      }
+      this.pendingTrimEdge = edge;
 
       // Regular clip drag
       this.mode          = 'drag-clip';
@@ -260,36 +240,6 @@ export class SelectionTool implements ITool {
           startY:     this.rubberBandStartY,
           endY:       event.y,
         },
-        isProvisional: true,
-      };
-    }
-
-    // ── MODE 5: trim-edge ───────────────────────────────────────────────
-    if (this.mode === 'trim-edge' && this.dragClipId !== null && this.trimEdge !== null) {
-      const clip = liveClip(ctx.state, this.dragClipId);
-      if (!clip) return null;
-
-      const rawFrame = event.frame;
-      const snapped = ctx.snap(rawFrame, [this.dragClipId]) as TimelineFrame;
-
-      // Clamp to valid range
-      let newFrame: TimelineFrame;
-      if (this.trimEdge === 'end') {
-        const minEnd = (clip.timelineStart + MIN_DURATION_FRAMES) as TimelineFrame;
-        newFrame = Math.max(snapped, minEnd) as TimelineFrame;
-      } else {
-        const maxStart = (clip.timelineEnd - MIN_DURATION_FRAMES) as TimelineFrame;
-        const minStart = 0 as TimelineFrame;
-        newFrame = Math.min(Math.max(snapped, minStart), maxStart) as TimelineFrame;
-      }
-
-      // Build ghost
-      const ghost: Clip = this.trimEdge === 'end'
-        ? { ...clip, timelineEnd: newFrame }
-        : { ...clip, timelineStart: newFrame };
-
-      return {
-        clips: [ghost],
         isProvisional: true,
       };
     }
@@ -369,7 +319,7 @@ export class SelectionTool implements ITool {
     const savedOrigPositions  = new Map(this.originalPositions);
     const savedRbStartFrame   = this.rubberBandStartFrame;
     const savedSelected       = new Set(this.selected);
-    const savedTrimEdge       = this.trimEdge;
+    const savedPendingTrimEdge = this.pendingTrimEdge;
 
     this._resetDragState();
 
@@ -395,45 +345,43 @@ export class SelectionTool implements ITool {
       return null;
     }
 
-    // ── MODE 5: trim-edge complete ──────────────────────────────────────
-    if (previousMode === 'trim-edge' && savedDragClipId !== null && savedTrimEdge !== null) {
-      const clip = liveClip(ctx.state, savedDragClipId);
-      if (!clip) return null;
-
-      const rawFrame = event.frame;
-      const snapped = ctx.snap(rawFrame, [savedDragClipId]) as TimelineFrame;
-
-      let newFrame: TimelineFrame;
-      if (savedTrimEdge === 'end') {
-        const minEnd = (clip.timelineStart + MIN_DURATION_FRAMES) as TimelineFrame;
-        newFrame = Math.max(snapped, minEnd) as TimelineFrame;
-      } else {
-        const maxStart = (clip.timelineEnd - MIN_DURATION_FRAMES) as TimelineFrame;
-        newFrame = Math.min(Math.max(snapped, 0), maxStart) as TimelineFrame;
-      }
-
-      // No-op check
-      const originalEdge = savedTrimEdge === 'end' ? clip.timelineEnd : clip.timelineStart;
-      if (newFrame === originalEdge) return null;
-
-      return {
-        id:         txId(),
-        label:      `Trim ${savedTrimEdge}`,
-        timestamp:  Date.now(),
-        operations: [{
-          type:    'RESIZE_CLIP',
-          clipId:  savedDragClipId,
-          edge:    savedTrimEdge,
-          newFrame,
-        }],
-      };
-    }
-
     if (previousMode !== 'drag-clip') return null;
 
-    // ── MODE 1: click ───────────────────────────────────────────────────
+    // ── Below drag threshold — click or near-edge trim ──────────────────
     const dxPx = savedDragStartX !== null ? Math.abs(event.x - savedDragStartX) : 0;
     if (dxPx < DRAG_THRESHOLD_PX) {
+      // Near-edge click → trim
+      if (savedPendingTrimEdge !== null && savedDragClipId !== null) {
+        const clip = liveClip(ctx.state, savedDragClipId);
+        if (!clip) return null;
+
+        const rawFrame = event.frame;
+        const snapped = ctx.snap(rawFrame, [savedDragClipId]) as TimelineFrame;
+
+        let newFrame: TimelineFrame;
+        if (savedPendingTrimEdge === 'end') {
+          const minEnd = (clip.timelineStart + MIN_DURATION_FRAMES) as TimelineFrame;
+          newFrame = Math.max(snapped, minEnd) as TimelineFrame;
+        } else {
+          const maxStart = (clip.timelineEnd - MIN_DURATION_FRAMES) as TimelineFrame;
+          newFrame = Math.min(Math.max(snapped, 0), maxStart) as TimelineFrame;
+        }
+
+        const originalEdge = savedPendingTrimEdge === 'end' ? clip.timelineEnd : clip.timelineStart;
+        if (newFrame === originalEdge) return null;
+
+        return {
+          id:         txId(),
+          label:      `Trim ${savedPendingTrimEdge}`,
+          timestamp:  Date.now(),
+          operations: [{
+            type:    'RESIZE_CLIP',
+            clipId:  savedDragClipId,
+            edge:    savedPendingTrimEdge,
+            newFrame,
+          }],
+        };
+      }
       if (event.clipId !== null) {
         if (event.shiftKey) {
           if (this.selected.has(event.clipId)) this.selected.delete(event.clipId);
@@ -442,8 +390,6 @@ export class SelectionTool implements ITool {
           this.selected.clear();
           this.selected.add(event.clipId);
         }
-      } else {
-        this.selected.clear();
       }
       return null;
     }
@@ -528,9 +474,7 @@ export class SelectionTool implements ITool {
     this.dragClipId            = null;
     this.isMultiDrag           = false;
     this.originalPositions.clear();
-    this.trimEdge              = null;
-    this.trimOrigStart         = null;
-    this.trimOrigEnd           = null;
+    this.pendingTrimEdge       = null;
     this.rubberBandStartFrame  = null;
     this.rubberBandStartY      = null;
     this.lastClientX           = null;
@@ -547,9 +491,7 @@ export class SelectionTool implements ITool {
     this.dragStartY            = null;
     this.isMultiDrag           = false;
     this.originalPositions.clear();
-    this.trimEdge              = null;
-    this.trimOrigStart         = null;
-    this.trimOrigEnd           = null;
+    this.pendingTrimEdge       = null;
     this.rubberBandStartFrame  = null;
     this.rubberBandStartY      = null;
   }

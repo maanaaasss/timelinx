@@ -22,6 +22,16 @@ import { findClipById } from '../systems/queries';
 export function checkInvariants(state: TimelineState): InvariantViolation[] {
   const violations: InvariantViolation[] = [];
 
+  // —— Null/malformed state guard ————————————————————————————————————————
+  if (!state || !state.timeline || !Array.isArray(state.timeline.tracks)) {
+    violations.push({
+      type:     'SCHEMA_VERSION_MISMATCH',
+      entityId: 'timeline',
+      message:  'State or timeline is null/undefined/malformed.',
+    });
+    return violations;
+  }
+
   // —— Schema version check (runs first — a version mismatch invalidates everything) ——
   if (state.schemaVersion !== CURRENT_SCHEMA_VERSION) {
     violations.push({
@@ -32,6 +42,60 @@ export function checkInvariants(state: TimelineState): InvariantViolation[] {
     return violations;
   }
 
+  // —— Duplicate ID checks ——————————————————————————————————————————————
+  const clipIds = new Set<string>();
+  const trackIds = new Set<string>();
+  const markerIds = new Set<string>();
+
+  for (const track of state.timeline.tracks) {
+    if (trackIds.has(track.id)) {
+      violations.push({
+        type: 'DUPLICATE_ID',
+        entityId: track.id,
+        message: `Duplicate track ID '${track.id}'.`,
+      });
+    }
+    trackIds.add(track.id);
+
+    for (const clip of track.clips) {
+      if (clipIds.has(clip.id)) {
+        violations.push({
+          type: 'DUPLICATE_ID',
+          entityId: clip.id,
+          message: `Duplicate clip ID '${clip.id}'.`,
+        });
+      }
+      clipIds.add(clip.id);
+    }
+  }
+
+  for (const m of state.timeline.markers) {
+    if (markerIds.has(m.id)) {
+      violations.push({
+        type: 'DUPLICATE_ID',
+        entityId: m.id,
+        message: `Duplicate marker ID '${m.id}'.`,
+      });
+    }
+    markerIds.add(m.id);
+  }
+
+  // —— Asset duplicate ID checks ————————————————————————————————————————
+  if (state.assetRegistry) {
+    const assetIds = new Set<string>();
+    for (const [id] of state.assetRegistry) {
+      if (assetIds.has(id)) {
+        violations.push({
+          type: 'DUPLICATE_ID',
+          entityId: id,
+          message: `Duplicate asset ID '${id}'.`,
+        });
+      }
+      assetIds.add(id);
+    }
+  }
+
+  // —— Per-track checks ——————————————————————————————————————————————————
   for (const track of state.timeline.tracks) {
     checkTrack(state, track, violations);
   }
@@ -59,6 +123,18 @@ function checkTrack(
   violations: InvariantViolation[],
 ): void {
   const clips = track.clips;
+
+  // —— Check: track opacity must be in [0, 1] ————————————————————————
+  const opacity = (track as Record<string, unknown>).opacity;
+  if (opacity !== undefined && opacity !== null) {
+    if (typeof opacity === 'number' && (Number.isNaN(opacity) || opacity < 0 || opacity > 1)) {
+      violations.push({
+        type: 'INVALID_OPACITY',
+        entityId: track.id,
+        message: `Track '${track.id}': opacity (${opacity}) must be in [0, 1].`,
+      });
+    }
+  }
 
   // —— Check 8: clips[] must be sorted ascending by timelineStart ——————————
   for (let i = 1; i < clips.length; i++) {
@@ -111,6 +187,80 @@ function checkClip(
   clip: Clip,
   violations: InvariantViolation[],
 ): void {
+  // —— Check: clip.trackId must match the track it's on ——————————————————
+  if (clip.trackId !== track.id) {
+    violations.push({
+      type: 'TRACK_TYPE_MISMATCH',
+      entityId: clip.id,
+      message:
+        `Clip '${clip.id}' has trackId '${clip.trackId}' but is on track '${track.id}'.`,
+    });
+  }
+
+  // —— Check: All frame values must be finite numbers ———————————————————
+  const frameFields = [
+    { name: 'timelineStart', value: clip.timelineStart },
+    { name: 'timelineEnd', value: clip.timelineEnd },
+    { name: 'mediaIn', value: clip.mediaIn },
+    { name: 'mediaOut', value: clip.mediaOut },
+  ];
+  for (const { name, value } of frameFields) {
+    if (!Number.isFinite(value)) {
+      violations.push({
+        type: 'MEDIA_BOUNDS_INVALID',
+        entityId: clip.id,
+        message: `Clip '${clip.id}': ${name} (${value}) must be a finite number.`,
+      });
+    }
+  }
+
+  // —— Check: All frame values must be integers ————————————————————————
+  for (const { name, value } of frameFields) {
+    if (Number.isFinite(value) && !Number.isInteger(value)) {
+      violations.push({
+        type: 'MEDIA_BOUNDS_INVALID',
+        entityId: clip.id,
+        message: `Clip '${clip.id}': ${name} (${value}) must be an integer.`,
+      });
+    }
+  }
+
+  // —— Check: timelineStart must be non-negative ——————————————————————
+  if (Number.isFinite(clip.timelineStart) && clip.timelineStart < 0) {
+    violations.push({
+      type: 'MEDIA_BOUNDS_INVALID',
+      entityId: clip.id,
+      message: `Clip '${clip.id}': timelineStart (${clip.timelineStart}) must be >= 0.`,
+    });
+  }
+
+  // —— Check: timelineEnd must be non-negative ——————————————————————
+  if (Number.isFinite(clip.timelineEnd) && clip.timelineEnd < 0) {
+    violations.push({
+      type: 'MEDIA_BOUNDS_INVALID',
+      entityId: clip.id,
+      message: `Clip '${clip.id}': timelineEnd (${clip.timelineEnd}) must be >= 0.`,
+    });
+  }
+
+  // —— Check: zero-duration clips are not allowed ————————————————————
+  if (Number.isFinite(clip.timelineStart) && Number.isFinite(clip.timelineEnd) && clip.timelineStart === clip.timelineEnd) {
+    violations.push({
+      type: 'MEDIA_BOUNDS_INVALID',
+      entityId: clip.id,
+      message: `Clip '${clip.id}': zero-duration clip (timelineStart === timelineEnd === ${clip.timelineStart}).`,
+    });
+  }
+
+  // —— Check: timelineStart < timelineEnd —————————————————————————————
+  if (Number.isFinite(clip.timelineStart) && Number.isFinite(clip.timelineEnd) && clip.timelineStart > clip.timelineEnd) {
+    violations.push({
+      type: 'MEDIA_BOUNDS_INVALID',
+      entityId: clip.id,
+      message: `Clip '${clip.id}': timelineStart (${clip.timelineStart}) must be <= timelineEnd (${clip.timelineEnd}).`,
+    });
+  }
+
   // —— Check 2: assetId must exist in assetRegistry (ASSET_MISSING) —————————
   const asset = state.assetRegistry.get(clip.assetId);
   if (!asset) {
@@ -180,7 +330,7 @@ function checkClip(
   }
 
   // —— Check 9: speed > 0 (SPEED_INVALID) ————————————————————————————
-  if (clip.speed <= 0) {
+  if (!Number.isFinite(clip.speed) || clip.speed <= 0) {
     violations.push({
       type: 'SPEED_INVALID',
       entityId: clip.id,
@@ -233,16 +383,17 @@ function checkMarkerBounds(
   violations: InvariantViolation[],
 ): void {
   const dur = state.timeline.duration;
-  for (const m of state.timeline.markers) {
+  const markers = state.timeline.markers ?? [];
+  for (const m of markers) {
     if (m.type === 'point') {
-      if (m.frame < 0) {
+      if (Number.isNaN(m.frame) || m.frame < 0) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
           message: `Point marker '${m.id}' frame (${m.frame}) must be >= 0.`,
         });
       }
-      if (m.frame >= dur) {
+      if (!Number.isNaN(m.frame) && m.frame >= dur) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
@@ -250,28 +401,28 @@ function checkMarkerBounds(
         });
       }
     } else {
-      if (m.frameStart < 0) {
+      if (Number.isNaN(m.frameStart) || m.frameStart < 0) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
           message: `Range marker '${m.id}' frameStart (${m.frameStart}) must be >= 0.`,
         });
       }
-      if (m.frameStart >= dur) {
+      if (!Number.isNaN(m.frameStart) && m.frameStart >= dur) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
           message: `Range marker '${m.id}' frameStart (${m.frameStart}) must be < timeline duration (${dur}).`,
         });
       }
-      if (m.frameEnd > dur) {
+      if (Number.isNaN(m.frameEnd) || m.frameEnd > dur) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
           message: `Range marker '${m.id}' frameEnd (${m.frameEnd}) exceeds timeline duration (${dur}).`,
         });
       }
-      if (m.frameEnd <= m.frameStart) {
+      if (Number.isNaN(m.frameStart) || Number.isNaN(m.frameEnd) || m.frameEnd <= m.frameStart) {
         violations.push({
           type: 'MARKER_OUT_OF_BOUNDS',
           entityId: m.id,
@@ -293,21 +444,21 @@ function checkInOutPoints(
   const dur = state.timeline.duration;
   const inPt = state.timeline.inPoint;
   const outPt = state.timeline.outPoint;
-  if (inPt !== null && inPt < 0) {
+  if (inPt !== null && (Number.isNaN(inPt) || inPt < 0)) {
     violations.push({
       type: 'IN_OUT_INVALID',
       entityId: 'timeline',
       message: `In point (${inPt}) must be >= 0.`,
     });
   }
-  if (outPt !== null && outPt > dur) {
+  if (outPt !== null && (Number.isNaN(outPt) || outPt > dur)) {
     violations.push({
       type: 'IN_OUT_INVALID',
       entityId: 'timeline',
       message: `Out point (${outPt}) must be <= timeline duration (${dur}).`,
     });
   }
-  if (inPt !== null && outPt !== null && inPt >= outPt) {
+  if (inPt !== null && outPt !== null && !Number.isNaN(inPt) && !Number.isNaN(outPt) && inPt >= outPt) {
     violations.push({
       type: 'IN_OUT_INVALID',
       entityId: 'timeline',
@@ -326,7 +477,7 @@ function checkBeatGrid(
 ): void {
   const bg = state.timeline.beatGrid;
   if (bg === null) return;
-  if (bg.bpm <= 0) {
+  if (Number.isNaN(bg.bpm) || bg.bpm <= 0) {
     violations.push({
       type: 'BEAT_GRID_INVALID',
       entityId: 'timeline',
@@ -352,7 +503,8 @@ function checkCaptionBounds(
   violations: InvariantViolation[],
 ): void {
   const dur = state.timeline.duration;
-  for (const cap of track.captions) {
+  const captions = track.captions ?? [];
+  for (const cap of captions) {
     if (cap.endFrame > dur) {
       violations.push({
         type: 'CAPTION_OUT_OF_BOUNDS',
@@ -368,7 +520,7 @@ function checkCaptionBounds(
       });
     }
   }
-  const byStart = [...track.captions].sort((a, b) => a.startFrame - b.startFrame);
+  const byStart = [...captions].sort((a, b) => a.startFrame - b.startFrame);
   for (let i = 0; i < byStart.length - 1; i++) {
     const a = byStart[i]!;
     const b = byStart[i + 1]!;
