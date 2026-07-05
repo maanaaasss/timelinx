@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/react",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "React adapter for @timelinx/core. Hooks, context, and tool routing for building timeline editors.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,7 +32,7 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@timelinx/core": "workspace:*"
+    "@timelinx/core": "^1.0.0-beta.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
@@ -64,5 +64,8 @@
     "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/react/README.md"
+  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/react/README.md",
+  "publishConfig": {
+    "access": "public"
+  }
 }
