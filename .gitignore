@@ -48,3 +48,7 @@ coverage/
 
 # Agent config
 .agents/
+
+# Stryker mutation testing
+packages/core/reports/
+packages/core/stryker.log
