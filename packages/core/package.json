@@ -61,6 +61,9 @@
     "directory": "packages/core"
   },
   "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/core/README.md",
+  "publishConfig": {
+    "access": "public"
+  },
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
     "@stryker-mutator/core": "^9.6.1",

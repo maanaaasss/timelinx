@@ -64,5 +64,8 @@
     "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/react"
   },
-  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/react/README.md"
+  "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/react/README.md",
+  "publishConfig": {
+    "access": "public"
+  }
 }
