@@ -31,11 +31,12 @@
   "files": [
     "dist",
     "README.md",
-    "CHANGELOG.md"
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsup src/index.ts src/serialization.ts src/media.ts src/internal.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts src/serialization.ts src/media.ts src/internal.ts --format cjs,esm --dts --watch",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -59,6 +60,8 @@
   "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/core/README.md",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^24.10.11",
     "@vitest/coverage-v8": "^2.1.8",
     "fast-check": "^4.8.0",

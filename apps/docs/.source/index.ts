@@ -1,9 +1,0 @@
-// @ts-nocheck -- skip type checking
-import * as docs_4 from "../content/docs/preset/default.mdx?collection=docs&hash=1782125514529"
-import * as docs_3 from "../content/docs/api/ui.mdx?collection=docs&hash=1782125514529"
-import * as docs_2 from "../content/docs/api/react.mdx?collection=docs&hash=1782125514529"
-import * as docs_1 from "../content/docs/api/core.mdx?collection=docs&hash=1782125514529"
-import * as docs_0 from "../content/docs/getting-started.mdx?collection=docs&hash=1782125514529"
-import { _runtime } from "fumadocs-mdx"
-import * as _source from "../source.config"
-export const docs = _runtime.docs<typeof _source.docs>([{ info: {"path":"getting-started.mdx","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/getting-started.mdx"}, data: docs_0 }, { info: {"path":"api/core.mdx","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/api/core.mdx"}, data: docs_1 }, { info: {"path":"api/react.mdx","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/api/react.mdx"}, data: docs_2 }, { info: {"path":"api/ui.mdx","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/api/ui.mdx"}, data: docs_3 }, { info: {"path":"preset/default.mdx","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/preset/default.mdx"}, data: docs_4 }], [{"info":{"path":"meta.json","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/meta.json"},"data":{"title":"Documentation"}}, {"info":{"path":"api/meta.json","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/api/meta.json"},"data":{"title":"API Reference"}}, {"info":{"path":"preset/meta.json","absolutePath":"/Users/manas/Documents/Manas/Projects/timeline/apps/docs/content/docs/preset/meta.json"},"data":{"title":"Presets"}}])

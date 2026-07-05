@@ -1,6 +1,7 @@
 {
   "name": "@timelinx/ui",
   "version": "1.0.0-beta.1",
+  "private": true,
   "description": "Modern browser-native React timeline UI. Drop-in components built on @timelinx/core and @timelinx/react.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -21,11 +22,12 @@
   "files": [
     "dist",
     "README.md",
-    "CHANGELOG.md"
+    "LICENSE"
   ],
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly --outDir dist && cp src/tokens.css dist/ && sed 's|@import .\\.\\./tokens\\.css.|@import \"./tokens.css\";|' src/styles/structure.css > dist/structure.css && mkdir -p dist/presets && cp src/presets/*.css dist/presets/",
     "dev": "vite build --watch",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
