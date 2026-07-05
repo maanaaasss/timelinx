@@ -1466,6 +1466,10 @@ In `dispatch()`, each operation in a transaction is validated against the state 
 ### Core Principles
 
 1. **Immutable state** — Every operation returns a new state object. Never mutate.
+   > **Note on Map immutability:** `Object.freeze()` on `AssetRegistry` (a `Map`) does not prevent
+   > `.set()`, `.delete()`, or `.clear()` at runtime — those operate on Map internal slots, not
+   > object properties. The `ReadonlyMap` type prevents this at compile time only. Consumers using
+   > `as any`/`as unknown` casts or plain JS can still mutate the map at runtime.
 2. **Single mutation path** — Only `dispatch()` can change state.
 3. **Framework-agnostic core** — No DOM, no React, runs anywhere.
 4. **Rolling validation** — Each op validated against previous result.
