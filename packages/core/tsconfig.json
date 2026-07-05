@@ -17,8 +17,9 @@
 
     // Other Outputs
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    // declaration and declarationMap are handled by tsup --dts, not tsc directly.
+    // Enabling them here causes a collision: tsc emits .d.ts into dist/, then tsup
+    // --dts tries to overwrite the same files, producing "Cannot write file" errors.
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
