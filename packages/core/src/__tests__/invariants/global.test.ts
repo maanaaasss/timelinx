@@ -22,6 +22,7 @@ import { toKeyframeId } from '../../types/keyframe';
 import { LINEAR_EASING } from '../../types/easing';
 import { toMarkerId } from '../../types/marker';
 import { toCaptionId } from '../../types/caption';
+import { toTrackGroupId } from '../../types/track-group';
 import type { TimelineState } from '../../types/state';
 import type { Transaction, OperationPrimitive } from '../../types/operations';
 
@@ -239,8 +240,9 @@ describe('Invariant: no orphaned references', () => {
     // even though its trackId says ghost-track. This is a data integrity issue
     // but the current checker doesn't flag it. We test what it DOES check.
     const violations = checkInvariants(badState);
-    // At minimum, the clip should be checked against the track it's actually on
-    expect(violations.every(v => v.entityId !== 'ghost')).toBe(true);
+    // The invariant checker should flag the trackId mismatch:
+    // clip's trackId ('ghost-track') doesn't match the track it's on ('track-1')
+    expect(violations.some(v => v.entityId === 'ghost')).toBe(true);
   });
 });
 
@@ -756,5 +758,43 @@ describe('Invariant: dispatch integration', () => {
       frame: toFrame(2500),
     }]);
     expect(state.timeline.outPoint).toBe(2500);
+  });
+});
+
+// ── TRACK_GROUP_NOT_FOUND ─────────────────────────────────────────────────────
+
+describe('Invariant: track group references', () => {
+  it('track groupId referencing non-existent group → TRACK_GROUP_NOT_FOUND', () => {
+    const state = makeBaseState();
+    const track = state.timeline.tracks[0]!;
+    const corrupt = {
+      ...state,
+      timeline: {
+        ...state.timeline,
+        tracks: [{ ...track, groupId: toTrackGroupId('nonexistent') }],
+      },
+    };
+    const violations = checkInvariants(corrupt);
+    expect(violations.length).toBeGreaterThan(0);
+    expect(violations[0]!.type).toBe('TRACK_GROUP_NOT_FOUND');
+  });
+});
+
+// ── BEAT_GRID_INVALID ────────────────────────────────────────────────────────
+
+describe('Invariant: beat grid', () => {
+  it('BeatGrid bpm = 0 → BEAT_GRID_INVALID', () => {
+    let state = makeBaseState();
+    state = apply(state, 'add beat grid', [{
+      type: 'ADD_BEAT_GRID',
+      beatGrid: { bpm: 120, timeSignature: [4, 4], offset: toFrame(0) },
+    }]);
+    const corrupt = {
+      ...state,
+      timeline: { ...state.timeline, beatGrid: { bpm: 0, timeSignature: [4, 4] as readonly [number, number], offset: toFrame(0) } },
+    };
+    const violations = checkInvariants(corrupt);
+    expect(violations.length).toBeGreaterThan(0);
+    expect(violations[0]!.type).toBe('BEAT_GRID_INVALID');
   });
 });

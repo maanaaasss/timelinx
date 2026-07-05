@@ -2,9 +2,9 @@
  * PROVISIONAL MANAGER TESTS — Phase 1
  *
  * Gate conditions:
- * ✓ createProvisionalManager: current is null
- * ✓ setProvisional: sets current, returns new object (no mutation)
- * ✓ clearProvisional: resets current to null, returns new object (no mutation)
+ * ✓ createProvisionalManager: returns null
+ * ✓ setProvisional: returns the provisional state directly
+ * ✓ clearProvisional: returns null
  * ✓ resolveClip: provisional version wins over committed when both exist
  * ✓ resolveClip: returns committed when no provisional override
  * ✓ resolveClip: returns undefined when absent from both (deleted-during-drag)
@@ -76,27 +76,27 @@ function makeProvisional(clips: ReturnType<typeof makeClip>[]): ProvisionalState
 // ── createProvisionalManager ──────────────────────────────────────────────────
 
 describe('createProvisionalManager', () => {
-  it('creates a manager with current = null', () => {
+  it('creates null (empty provisional state)', () => {
     const manager = createProvisionalManager();
-    expect(manager.current).toBeNull();
+    expect(manager).toBeNull();
   });
 });
 
 // ── setProvisional ─────────────────────────────────────────────────────────────
 
 describe('setProvisional', () => {
-  it('sets current to the provided provisional state', () => {
+  it('returns the provided provisional state', () => {
     const clip = makeClip('c1', 0, 100);
     const provisional = makeProvisional([clip]);
     const manager = setProvisional(createProvisionalManager(), provisional);
-    expect(manager.current).toBe(provisional);
+    expect(manager).toBe(provisional);
   });
 
   it('returns a NEW object — does not mutate the original manager', () => {
     const original = createProvisionalManager();
     const clip = makeClip('c1', 0, 100);
     const next = setProvisional(original, makeProvisional([clip]));
-    expect(original.current).toBeNull();    // original unchanged
+    expect(original).toBeNull();    // original unchanged
     expect(next).not.toBe(original);        // different reference
   });
 
@@ -105,33 +105,33 @@ describe('setProvisional', () => {
     const clip2 = makeClip('c2', 0, 200);
     const m1 = setProvisional(createProvisionalManager(), makeProvisional([clip1]));
     const m2 = setProvisional(m1, makeProvisional([clip2]));
-    expect(m2.current!.clips[0]!.id).toBe('c2');
-    expect(m1.current!.clips[0]!.id).toBe('c1'); // m1 unchanged
+    expect(m2!.clips[0]!.id).toBe('c2');
+    expect(m1!.clips[0]!.id).toBe('c1'); // m1 unchanged
   });
 });
 
 // ── clearProvisional ──────────────────────────────────────────────────────────
 
 describe('clearProvisional', () => {
-  it('resets current to null', () => {
+  it('returns null', () => {
     const clip = makeClip('c1', 0, 100);
     const withProvisional = setProvisional(createProvisionalManager(), makeProvisional([clip]));
     const cleared = clearProvisional(withProvisional);
-    expect(cleared.current).toBeNull();
+    expect(cleared).toBeNull();
   });
 
-  it('returns a NEW object — does not mutate the original manager', () => {
+  it('returns null — does not mutate the original manager', () => {
     const clip = makeClip('c1', 0, 100);
     const original = setProvisional(createProvisionalManager(), makeProvisional([clip]));
     const cleared = clearProvisional(original);
-    expect(original.current).not.toBeNull(); // original unchanged
+    expect(original).not.toBeNull(); // original unchanged
     expect(cleared).not.toBe(original);
   });
 
-  it('clearing an already-null manager returns a new manager with null', () => {
+  it('clearing an already-null manager returns null', () => {
     const original = createProvisionalManager();
     const cleared = clearProvisional(original);
-    expect(cleared.current).toBeNull();
+    expect(cleared).toBeNull();
   });
 });
 
@@ -141,7 +141,7 @@ describe('resolveClip — no provisional', () => {
   it('returns the committed clip when provisional is null', () => {
     const clip = makeClip('c1', 0, 100);
     const state = makeStateWithClip(clip);
-    const manager = createProvisionalManager(); // current = null
+    const manager = createProvisionalManager(); // null
     const result = resolveClip(toClipId('c1'), state, manager);
     expect(result).toBeDefined();
     expect(result!.timelineStart).toBe(toFrame(0));

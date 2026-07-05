@@ -193,6 +193,9 @@ describe('dispatch — rejected transactions', () => {
     const tx = makeTx('Delete ghost', [{ type: 'DELETE_CLIP', clipId: toClipId('no-such-clip') }]);
     const result = dispatch(state, tx);
     expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('ASSET_MISSING');
+    expect(result.message).toContain('no-such-clip');
   });
 
   it('rejects UNREGISTER_ASSET when asset is still in use', () => {
@@ -214,6 +217,9 @@ describe('dispatch — rejected transactions', () => {
     ]);
     const result = dispatch(state, tx);
     expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('ASSET_MISSING');
+    expect(result.message).toContain('no-such-clip');
     // State must be completely unchanged
     expect(state.timeline.name).toBe('Dispatch Test');
     expect(state.timeline.duration).toBe(3000);
@@ -284,6 +290,139 @@ describe('dispatch — REGISTER_ASSET + INSERT_CLIP flow', () => {
     const clips = r2.nextState.timeline.tracks[0]!.clips;
     expect(clips.length).toBe(2);
     expect(clips.find(c => c.id === 'clip-b')).toBeDefined();
+  });
+
+  it('rejects REGISTER_ASSET with DUPLICATE_ID when asset already exists', () => {
+    const state = makeState();
+    const duplicateAsset = createAsset({
+      id: 'asset-1',
+      name: 'Duplicate',
+      mediaType: 'video',
+      filePath: '/clips/dup.mp4',
+      intrinsicDuration: toFrame(100),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
+    });
+    const tx = makeTx('Duplicate register', [{ type: 'REGISTER_ASSET', asset: duplicateAsset }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('DUPLICATE_ID');
+    expect(result.message).toContain('asset-1');
+  });
+
+  it('rejects MOVE_CLIP with NaN position', () => {
+    const state = makeState();
+    const tx = makeTx('NaN move', [{
+      type: 'MOVE_CLIP',
+      clipId: toClipId('clip-a'),
+      newTimelineStart: NaN,
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('OUT_OF_BOUNDS');
+  });
+
+  it('rejects SET_CLIP_SPEED with NaN', () => {
+    const state = makeState();
+    const tx = makeTx('NaN speed', [{
+      type: 'SET_CLIP_SPEED',
+      clipId: toClipId('clip-a'),
+      speed: NaN,
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('SPEED_INVALID');
+  });
+
+  it('rejects SET_CLIP_SPEED with negative', () => {
+    const state = makeState();
+    const tx = makeTx('Negative speed', [{
+      type: 'SET_CLIP_SPEED',
+      clipId: toClipId('clip-a'),
+      speed: -2,
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('SPEED_INVALID');
+  });
+
+  it('rejects SET_TIMELINE_DURATION with NaN', () => {
+    const state = makeState();
+    const tx = makeTx('NaN duration', [{
+      type: 'SET_TIMELINE_DURATION',
+      duration: NaN,
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('OUT_OF_BOUNDS');
+  });
+
+  it('rejects SET_TIMELINE_DURATION with negative', () => {
+    const state = makeState();
+    const tx = makeTx('Negative duration', [{
+      type: 'SET_TIMELINE_DURATION',
+      duration: toFrame(-100),
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('OUT_OF_BOUNDS');
+  });
+
+  it('rejects INSERT_CLIP with NaN frames', () => {
+    const state = makeState();
+    const nanClip = createClip({
+      id: 'nan-clip',
+      assetId: 'asset-1',
+      trackId: 'video-1',
+      timelineStart: NaN,
+      timelineEnd: NaN,
+      mediaIn: toFrame(0),
+      mediaOut: toFrame(100),
+    });
+    const tx = makeTx('NaN insert', [{
+      type: 'INSERT_CLIP',
+      clip: nanClip,
+      trackId: toTrackId('video-1'),
+    }]);
+    const result = dispatch(state, tx);
+    expect(result.accepted).toBe(false);
+  });
+
+  it('rejects INSERT_CLIP on a locked track', () => {
+    const state = makeState();
+    const stateWithLock = {
+      ...state,
+      timeline: {
+        ...state.timeline,
+        tracks: state.timeline.tracks.map(t =>
+          t.id === 'video-1' ? { ...t, locked: true } : t
+        ),
+      },
+    };
+    const newClip = createClip({
+      id: 'locked-clip',
+      assetId: 'asset-1',
+      trackId: 'video-1',
+      timelineStart: toFrame(500),
+      timelineEnd: toFrame(600),
+      mediaIn: toFrame(0),
+      mediaOut: toFrame(100),
+    });
+    const tx = makeTx('Insert locked', [{
+      type: 'INSERT_CLIP',
+      clip: newClip,
+      trackId: toTrackId('video-1'),
+    }]);
+    const result = dispatch(stateWithLock, tx);
+    expect(result.accepted).toBe(false);
+    if (result.accepted) return;
+    expect(result.reason).toBe('LOCKED_TRACK');
   });
 });
 

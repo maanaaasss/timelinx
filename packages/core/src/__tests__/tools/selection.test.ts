@@ -155,17 +155,26 @@ describe('SelectionTool — MODE 1: single click', () => {
     state = makeState();
   });
 
-  it('click on clip selects it', () => {
+  it('click on clip selects it — subsequent drag moves that clip', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50 }), ctx);
     tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, x: 51 }), ctx); // < 4px
     tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, x: 51 }), ctx);
 
-    expect(tool.getSelection().has(CLIP_A_ID)).toBe(true);
-    expect(tool.getSelection().size).toBe(1);
+    // Behavioral: drag the same clip → should produce MOVE_CLIP for clip-a
+    tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, frame: toFrame(0), x: 0 }), ctx);
+    tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, frame: toFrame(50), x: 500 }), ctx);
+    const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, frame: toFrame(50), x: 500 }), ctx);
+    expect(tx).not.toBeNull();
+    expect(tx!.operations).toHaveLength(1);
+    const op = tx!.operations[0]!;
+    expect(op.type).toBe('MOVE_CLIP');
+    if (op.type === 'MOVE_CLIP') {
+      expect(op.clipId).toBe(CLIP_A_ID);
+    }
   });
 
-  it('click on different clip replaces selection', () => {
+  it('click on different clip replaces selection — subsequent drag moves new clip', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50  }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, x: 51  }), ctx);
@@ -173,12 +182,18 @@ describe('SelectionTool — MODE 1: single click', () => {
     tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, x: 200 }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_B_ID, x: 201 }), ctx);
 
-    expect(tool.getSelection().has(CLIP_B_ID)).toBe(true);
-    expect(tool.getSelection().has(CLIP_A_ID)).toBe(false);
-    expect(tool.getSelection().size).toBe(1);
+    // Behavioral: drag clip-b → should produce MOVE_CLIP for clip-b only
+    tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, frame: toFrame(0), x: 200 }), ctx);
+    tool.onPointerMove(makeEv({ clipId: CLIP_B_ID, frame: toFrame(50), x: 700 }), ctx);
+    const tx = tool.onPointerUp(makeEv({ clipId: CLIP_B_ID, frame: toFrame(50), x: 700 }), ctx);
+    expect(tx).not.toBeNull();
+    expect(tx!.operations).toHaveLength(1);
+    if (tx!.operations[0]!.type === 'MOVE_CLIP') {
+      expect(tx!.operations[0]!.clipId).toBe(CLIP_B_ID);
+    }
   });
 
-  it('shift-click toggles clip into selection', () => {
+  it('shift-click toggles clip into selection — drag moves both', () => {
     const ctx = makeCtx(state);
     // Select A first
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50  }), ctx);
@@ -188,22 +203,41 @@ describe('SelectionTool — MODE 1: single click', () => {
     tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, x: 200, shiftKey: true }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_B_ID, x: 201, shiftKey: true }), ctx);
 
-    expect(tool.getSelection().has(CLIP_A_ID)).toBe(true);
-    expect(tool.getSelection().has(CLIP_B_ID)).toBe(true);
+    // Behavioral: drag clip-a → should produce MOVE_CLIP for both clips
+    tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, frame: toFrame(0), x: 0 }), ctx);
+    tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, frame: toFrame(30), x: 300 }), ctx);
+    const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, frame: toFrame(30), x: 300 }), ctx);
+    expect(tx).not.toBeNull();
+    expect(tx!.operations).toHaveLength(2);
+    const clipIds = tx!.operations.map(o => o.type === 'MOVE_CLIP' ? o.clipId : null);
+    expect(clipIds).toContain(CLIP_A_ID);
+    expect(clipIds).toContain(CLIP_B_ID);
   });
 
-  it('shift-click on already-selected clip deselects it', () => {
+  it('shift-click on already-selected clip deselects it — drag moves only remaining', () => {
     const ctx = makeCtx(state);
+    // Select both
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50 }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, x: 51 }), ctx);
+    tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, x: 200, shiftKey: true }), ctx);
+    tool.onPointerUp(makeEv({ clipId: CLIP_B_ID, x: 201, shiftKey: true }), ctx);
 
+    // Shift-click A to deselect
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50, shiftKey: true }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, x: 51, shiftKey: true }), ctx);
 
-    expect(tool.getSelection().has(CLIP_A_ID)).toBe(false);
+    // Behavioral: drag clip-b → should produce MOVE_CLIP for clip-b only
+    tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, frame: toFrame(0), x: 200 }), ctx);
+    tool.onPointerMove(makeEv({ clipId: CLIP_B_ID, frame: toFrame(50), x: 700 }), ctx);
+    const tx = tool.onPointerUp(makeEv({ clipId: CLIP_B_ID, frame: toFrame(50), x: 700 }), ctx);
+    expect(tx).not.toBeNull();
+    expect(tx!.operations).toHaveLength(1);
+    if (tx!.operations[0]!.type === 'MOVE_CLIP') {
+      expect(tx!.operations[0]!.clipId).toBe(CLIP_B_ID);
+    }
   });
 
-  it('click on empty space clears selection', () => {
+  it('click on empty space clears selection — drag produces nothing', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: 50 }), ctx);
     tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, x: 51 }), ctx);
@@ -212,6 +246,10 @@ describe('SelectionTool — MODE 1: single click', () => {
     tool.onPointerDown(makeEv({ clipId: null, x: 150 }), ctx);
     tool.onPointerUp(makeEv({ clipId: null, x: 151 }), ctx);
 
+    // Behavioral: no clip selected, so clicking clip-a then dragging should
+    // not produce a MOVE_CLIP for clip-a (it's not selected for multi-drag)
+    // A single click/drag on clip-a will move just clip-a since it's a fresh gesture
+    // Verify selection is empty
     expect(tool.getSelection().size).toBe(0);
   });
 
@@ -341,7 +379,7 @@ describe('SelectionTool — MODE 3: multi-clip drag', () => {
     expect(provisional!.clips).toHaveLength(2);   // both clips in ghost
   });
 
-  it('all selected clips move by identical delta', () => {
+  it('all selected clips move by identical delta — dispatch produces correct state', () => {
     const ctx = makeCtx(state);
     selectBoth(ctx);
 
@@ -361,6 +399,18 @@ describe('SelectionTool — MODE 3: multi-clip drag', () => {
 
     if (opA?.type === 'MOVE_CLIP') expect(opA.newTimelineStart).toBe(toFrame(50));   // 0 + 50
     if (opB?.type === 'MOVE_CLIP') expect(opB.newTimelineStart).toBe(toFrame(250));  // 200 + 50
+
+    // Behavioral: dispatch the transaction and verify state reflects the move
+    const result = dispatch(state, tx!);
+    expect(result.accepted).toBe(true);
+    if (!result.accepted) return;
+    const clips = result.nextState.timeline.tracks[0]!.clips;
+    const movedA = clips.find(c => c.id === CLIP_A_ID)!;
+    const movedB = clips.find(c => c.id === CLIP_B_ID)!;
+    expect(movedA.timelineStart).toBe(50);
+    expect(movedA.timelineEnd).toBe(150);
+    expect(movedB.timelineStart).toBe(250);
+    expect(movedB.timelineEnd).toBe(350);
   });
 
   it('multi-clip MOVE_CLIP Transaction passes checkInvariants', () => {

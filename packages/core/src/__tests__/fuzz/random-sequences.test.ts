@@ -27,6 +27,8 @@ import {
 } from '../helpers/arbitraries';
 import type { TimelineState } from '../../types/state';
 import type { Transaction, OperationPrimitive } from '../../types/operations';
+import type { AssetId } from '../../types/asset';
+import type { TrackId } from '../../types/track';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -504,6 +506,200 @@ describe('Fuzz: ADD_MARKER / DELETE_MARKER sequences', () => {
               expect(checkInvariants(result.nextState)).toEqual([]);
               s = result.nextState;
             }
+          }
+        },
+      ),
+      { numRuns: 300, timeout: 30000 },
+    );
+  });
+});
+
+// ── Fuzz: multi-track, mixed types, multi-asset ──────────────────────────────
+
+describe('Fuzz: multi-track mixed video+audio', () => {
+  function makeMultiTrackState(): TimelineState {
+    const videoAsset = createAsset({
+      id: 'vid-asset', name: 'Video', mediaType: 'video',
+      filePath: '/v.mp4', intrinsicDuration: toFrame(10000),
+      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    });
+    const audioAsset = createAsset({
+      id: 'aud-asset', name: 'Audio', mediaType: 'audio',
+      filePath: '/a.wav', intrinsicDuration: toFrame(10000),
+      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    });
+    const videoClip = createClip({
+      id: 'v-clip', assetId: 'vid-asset', trackId: 'v-track',
+      timelineStart: toFrame(0), timelineEnd: toFrame(200),
+      mediaIn: toFrame(0), mediaOut: toFrame(200),
+    });
+    const audioClip = createClip({
+      id: 'a-clip', assetId: 'aud-asset', trackId: 'a-track',
+      timelineStart: toFrame(50), timelineEnd: toFrame(300),
+      mediaIn: toFrame(50), mediaOut: toFrame(300),
+    });
+    const vTrack = createTrack({ id: 'v-track', name: 'V1', type: 'video', clips: [videoClip] });
+    const aTrack = createTrack({ id: 'a-track', name: 'A1', type: 'audio', clips: [audioClip] });
+    const timeline = createTimeline({
+      id: 'multi-tl', name: 'Multi', fps: 30, duration: toFrame(5000),
+      startTimecode: toTimecode('00:00:00:00'), tracks: [vTrack, aTrack],
+    });
+    return createTimelineState({
+      timeline,
+      assetRegistry: new Map([
+        [toAssetId('vid-asset'), videoAsset],
+        [toAssetId('aud-asset'), audioAsset],
+      ]),
+    });
+  }
+
+  it('operations across video+audio tracks maintain invariants', () => {
+    resetCounters();
+    const state = makeMultiTrackState();
+
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.oneof(
+            fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'multi-fuzz' }),
+            fc.integer({ min: 0, max: 4800 }).map(pos => ({
+              type: 'MOVE_CLIP' as const,
+              clipId: toClipId('v-clip'),
+              newTimelineStart: toFrame(pos),
+            })),
+            fc.integer({ min: 0, max: 4700 }).map(pos => ({
+              type: 'MOVE_CLIP' as const,
+              clipId: toClipId('a-clip'),
+              newTimelineStart: toFrame(pos),
+            })),
+            fc.constant({
+              type: 'DELETE_CLIP' as const,
+              clipId: toClipId('v-clip'),
+            }),
+            fc.constant({
+              type: 'SET_CLIP_SPEED' as const,
+              clipId: toClipId('v-clip'),
+              speed: 1.0,
+            }),
+          ),
+          { maxLength: 20 },
+        ),
+        (ops) => {
+          let s = state;
+          for (const op of ops) {
+            const tx: Transaction = {
+              id: `fuzz-mixed-${Date.now()}-${Math.random()}`,
+              label: 'fuzz', timestamp: Date.now(),
+              operations: [op],
+            };
+            const result = dispatch(s, tx);
+            if (result.accepted) {
+              expect(checkInvariants(result.nextState)).toEqual([]);
+              s = result.nextState;
+            }
+          }
+        },
+      ),
+      { numRuns: 300, timeout: 30000 },
+    );
+  });
+});
+
+describe('Fuzz: multi-asset operations', () => {
+  function makeMultiAssetState(): TimelineState {
+    const assets: [AssetId, ReturnType<typeof createAsset>][] = [];
+    const clips: ReturnType<typeof createClip>[] = [];
+    for (let i = 0; i < 3; i++) {
+      const aid = toAssetId(`asset-${i}`);
+      assets.push([aid, createAsset({
+        id: `asset-${i}`, name: `Asset ${i}`, mediaType: 'video',
+        filePath: `/v${i}.mp4`, intrinsicDuration: toFrame(10000),
+        nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+      })]);
+      clips.push(createClip({
+        id: `clip-${i}`, assetId: `asset-${i}`, trackId: 'track-1',
+        timelineStart: toFrame(i * 200), timelineEnd: toFrame(i * 200 + 100),
+        mediaIn: toFrame(0), mediaOut: toFrame(100),
+      }));
+    }
+    const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips });
+    const timeline = createTimeline({
+      id: 'multi-asset-tl', name: 'MultiAsset', fps: 30, duration: toFrame(5000),
+      startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    });
+    return createTimelineState({ timeline, assetRegistry: new Map(assets) });
+  }
+
+  it('operations on multi-asset state maintain invariants', () => {
+    resetCounters();
+    const state = makeMultiAssetState();
+
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.oneof(
+            fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'ma-fuzz' }),
+            fc.constantFrom('clip-0', 'clip-1', 'clip-2').map(id => ({
+              type: 'DELETE_CLIP' as const,
+              clipId: toClipId(id),
+            })),
+            fc.integer({ min: 0, max: 4800 }).map(pos => ({
+              type: 'MOVE_CLIP' as const,
+              clipId: toClipId('clip-0'),
+              newTimelineStart: toFrame(pos),
+            })),
+          ),
+          { maxLength: 15 },
+        ),
+        (ops) => {
+          let s = state;
+          for (const op of ops) {
+            const tx: Transaction = {
+              id: `fuzz-ma-${Date.now()}-${Math.random()}`,
+              label: 'fuzz', timestamp: Date.now(),
+              operations: [op],
+            };
+            const result = dispatch(s, tx);
+            if (result.accepted) {
+              expect(checkInvariants(result.nextState)).toEqual([]);
+              s = result.nextState;
+            }
+          }
+        },
+      ),
+      { numRuns: 300, timeout: 30000 },
+    );
+  });
+});
+
+describe('Fuzz: multi-op transactions', () => {
+  it('multi-op transactions are atomic — all or nothing', () => {
+    resetCounters();
+    const state = makeInitialState();
+
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.tuple(
+            fc.constantFrom('RENAME_TIMELINE', 'MOVE_CLIP', 'SET_TIMELINE_DURATION'),
+            fc.integer({ min: 0, max: 4800 }),
+          ),
+          { maxLength: 5 },
+        ),
+        (tuples) => {
+          const ops: OperationPrimitive[] = tuples.map(([type, val]) => {
+            if (type === 'RENAME_TIMELINE') return { type: 'RENAME_TIMELINE' as const, name: 'multi' };
+            if (type === 'MOVE_CLIP') return { type: 'MOVE_CLIP' as const, clipId: toClipId('clip-1'), newTimelineStart: toFrame(val) };
+            return { type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(Math.max(300, val)) };
+          });
+          const tx: Transaction = {
+            id: `fuzz-multiop-${Date.now()}`,
+            label: 'fuzz', timestamp: Date.now(),
+            operations: ops,
+          };
+          const result = dispatch(state, tx);
+          if (result.accepted) {
+            expect(checkInvariants(result.nextState)).toEqual([]);
           }
         },
       ),

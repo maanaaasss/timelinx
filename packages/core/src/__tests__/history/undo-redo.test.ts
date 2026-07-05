@@ -8,7 +8,7 @@
  * rejected operations never enter history, and compression round-trips.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   createHistory, pushHistory, undo, redo, canUndo, canRedo,
   getCurrentState, HistoryStack,
