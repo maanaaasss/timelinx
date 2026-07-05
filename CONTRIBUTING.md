@@ -63,8 +63,6 @@ timelinx/
 │   ├── media-web/     @timelinx/media-web — WebCodecs, WebAudio, thumbnails
 │   ├── collab/        @timelinx/collab    — CRDT collaboration layer
 │   └── ai/            @timelinx/ai        — AI operation layer
-├── apps/
-│   └── demo/          Demo application for local development
 ├── docs/
 │   ├── phase-1/       Phase 1 completion reports
 │   └── phase-2/       Phase 2 CI/CD pipeline documentation
@@ -145,7 +143,7 @@ Coverage reports are gitignored. Do not commit them.
 ## Linting & Typechecking
 
 ```bash
-# Lint (ESLint — currently configured for @timelinx/react)
+# Lint (ESLint — configured for all packages via shared base config)
 pnpm lint
 
 # Typecheck all packages (tsc --noEmit)
