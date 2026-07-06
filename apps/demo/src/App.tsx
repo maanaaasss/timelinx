@@ -7,6 +7,7 @@ import {
   createTimelineState,
   toFrame,
   frameRate,
+  toClipId,
   toTrackId,
 } from '@timelinx/core';
 import {
@@ -218,7 +219,7 @@ function SplitButton() {
       label: 'Split clip',
       timestamp: Date.now(),
       operations: [
-        { type: 'DELETE_CLIP', clipId: clip.id },
+        { type: 'DELETE_CLIP', clipId: toClipId(clipId) },
         {
           type: 'INSERT_CLIP',
           trackId: clip.trackId,
