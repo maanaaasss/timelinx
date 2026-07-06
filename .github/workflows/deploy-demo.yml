@@ -45,7 +45,7 @@ jobs:
 
       - name: Install demo dependencies
         working-directory: apps/demo
-        run: npm install
+        run: npm ci
 
       - name: Build demo
         working-directory: apps/demo
