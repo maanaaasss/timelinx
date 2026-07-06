@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import {
   createAsset,
   createClip,
@@ -10,8 +10,7 @@ import {
   frameRate,
   toTrackId,
 } from '@timelinx/core';
-import { TimelineEngine, TimelineProvider } from '@timelinx/react';
-import { useState } from 'react';
+import { TimelineEngine } from '@timelinx/react';
 import { createToolRouter } from '@timelinx/react';
 
 function createTestEngine() {
@@ -154,8 +153,6 @@ describe('Demo drag-to-move', () => {
       await new Promise((r) => requestAnimationFrame(r));
     });
 
-    const stateAfterMove = engine.getState();
-    const clipAfterMove = stateAfterMove.timeline.tracks[0]!.clips[0]!;
     // The provisional state should show the clip has moved
     const provisional = engine.getSnapshot().provisional;
     if (provisional && provisional.clips.length > 0) {
