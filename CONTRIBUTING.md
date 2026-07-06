@@ -63,6 +63,8 @@ timelinx/
 │   ├── media-web/     @timelinx/media-web — WebCodecs, WebAudio, thumbnails
 │   ├── collab/        @timelinx/collab    — CRDT collaboration layer
 │   └── ai/            @timelinx/ai        — AI operation layer
+├── apps/
+│   └── demo/          @timelinx/demo      — Public demo (excluded from workspace)
 ├── docs/
 │   ├── phase-1/       Phase 1 completion reports
 │   └── phase-2/       Phase 2 CI/CD pipeline documentation
@@ -298,6 +300,23 @@ Releases are automated via [Changesets](https://changesets.dev/) and GitHub Acti
 3. Version bumps follow semantic versioning: `patch` for fixes, `minor` for features, `major` for breaking changes.
 
 **Do not manually version or publish packages.** The automated pipeline handles this.
+
+---
+
+## Demo App (`apps/demo`)
+
+The demo app is **excluded** from the pnpm workspace. It installs `@timelinx/core` and `@timelinx/react` from the npm registry (not workspace-linked) to verify they work for external consumers.
+
+To set up the demo:
+
+```bash
+cd apps/demo
+npm install    # Uses npm, not pnpm — independent lockfile
+npm run dev    # Start Vite dev server
+npm run build  # Production build
+```
+
+The demo has its own `package-lock.json` and is not included in root `pnpm build`, `pnpm test`, or `pnpm lint`.
 
 ---
 
