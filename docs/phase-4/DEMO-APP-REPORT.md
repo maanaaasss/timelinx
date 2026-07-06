@@ -251,3 +251,57 @@ Done in 2.6s using pnpm v10.28.2
 | `npm ls` shows registry versions | N/A | ✅ Yes |
 | `pnpm install --frozen-lockfile` | N/A | ✅ Passes |
 | `.npmrc` needed | No (cargo-culted) | Removed |
+
+## 7. Drag Bug — Root Cause and Fix
+
+### Root Cause
+
+The demo's `ClipView` component implemented drag-to-move manually using `onMouseDown` + `window.addEventListener('mousemove')`. This bypassed the tool system entirely.
+
+The `SelectionTool` in `@timelinx/core` expects pointer events to flow through the `ToolRouter`, which:
+1. Converts React pointer events to `TimelinePointerEvent`
+2. Does DOM hit-testing by walking up from `e.target` looking for `data-clip-id` and `data-track-id` attributes
+3. Passes the converted event to `engine.handlePointerDown/Move/Up`
+4. The `SelectionTool` handles drag threshold (`DRAG_THRESHOLD_PX = 4`), snap, and dispatches `MOVE_CLIP`
+
+The demo's manual implementation:
+- Used `onMouseDown` instead of the tool router's pointer events
+- Didn't use `data-clip-id` attributes for hit-testing
+- Dispatched `MOVE_CLIP` directly instead of letting the tool system handle it
+- Had no drag threshold — every mousemove dispatched a move operation
+
+### Fix
+
+Rewrote `ClipView` and `TimelineView` to use the tool system:
+
+1. **`useToolRouter` hook** — returns stable event handlers (`onPointerDown`, `onPointerMove`, `onPointerUp`, `onPointerLeave`)
+2. **`data-clip-id` and `data-track-id` attributes** — added to clip and track elements for DOM hit-testing
+3. **Container div** — attaches tool router handlers, with `touchAction: 'none'` for pointer capture
+4. **Removed manual drag state** — no more `isDragging`, `dragStartRef`, or `window.addEventListener`
+
+### Manual Verification
+
+After merging the fix:
+1. Load https://maanaaasss.github.io/timelinx/
+2. Click a clip — it selects (white outline)
+3. Drag a clip past 4px threshold — it moves on the timeline
+4. Release — clip stays at new position
+5. Undo — clip returns to original position
+6. Test on video, audio, and title tracks — all work
+
+### Regression Test
+
+Added `apps/demo/src/__tests__/drag.test.tsx` with 3 tests:
+
+1. **Initial state** — clip starts at `timelineStart=100`
+2. **Drag past threshold** — tool router dispatches `MOVE_CLIP`, clip position changes
+3. **Click without drag** — movement below 4px threshold does not move clip
+
+All tests use `createToolRouter` directly with fake DOM events, bypassing React rendering for deterministic results.
+
+```
+$ cd apps/demo && npm test
+ ✓ src/__tests__/drag.test.tsx (3 tests) 8ms
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+```
