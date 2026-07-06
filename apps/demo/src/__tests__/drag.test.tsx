@@ -177,6 +177,88 @@ describe('Demo drag-to-move', () => {
     expect(Number(clipAfterUp.timelineStart)).not.toBe(100);
   });
 
+  it('drag works even when React nullifies currentTarget after handler returns (rAF regression)', async () => {
+    const engine = createTestEngine();
+    const PPF = 2;
+
+    const handlers = createToolRouter({
+      engine,
+      getPixelsPerFrame: () => PPF,
+    });
+
+    const clipEl = document.createElement('div');
+    clipEl.dataset.clipId = 'clip-1';
+    clipEl.dataset.trackId = 'v1';
+    clipEl.getBoundingClientRect = () => ({
+      left: 200, top: 0, width: 600, height: 50,
+      right: 800, bottom: 50, x: 200, y: 0, toJSON: () => {},
+    });
+
+    const container = document.createElement('div');
+    container.dataset.timelineContainer = 'true';
+    container.appendChild(clipEl);
+    container.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 2000, height: 200,
+      right: 2000, bottom: 200, x: 0, y: 0, toJSON: () => {},
+    });
+
+    // Pointer down with valid currentTarget
+    const down = makeFakePointerEvent({
+      clientX: 300,
+      clientY: 25,
+      buttons: 1,
+      target: clipEl,
+      currentTarget: container,
+    });
+    act(() => {
+      handlers.onPointerDown(down);
+    });
+
+    // Move: create event with valid currentTarget, then nullify it
+    // to simulate React's behavior of clearing currentTarget after handler returns
+    const move = makeFakePointerEvent({
+      clientX: 350,
+      clientY: 25,
+      buttons: 1,
+      target: clipEl,
+      currentTarget: container,
+    });
+    // Simulate React nullifying currentTarget after the handler returns
+    (move as any).currentTarget = null;
+    act(() => {
+      handlers.onPointerMove(move);
+    });
+
+    // Flush rAF — this is where the old code would crash with
+    // "Cannot read properties of null (reading 'getBoundingClientRect')"
+    await act(async () => {
+      await new Promise((r) => requestAnimationFrame(r));
+    });
+
+    // The provisional state should show the clip has moved despite null currentTarget
+    const provisional = engine.getSnapshot().provisional;
+    expect(provisional).not.toBeNull();
+    if (provisional && provisional.clips.length > 0) {
+      expect(Number(provisional.clips[0]!.timelineStart)).not.toBe(100);
+    }
+
+    // Pointer up to commit
+    const up = makeFakePointerEvent({
+      clientX: 350,
+      clientY: 25,
+      buttons: 0,
+      target: clipEl,
+      currentTarget: container,
+    });
+    act(() => {
+      handlers.onPointerUp(up);
+    });
+
+    const stateAfterUp = engine.getState();
+    const clipAfterUp = stateAfterUp.timeline.tracks[0]!.clips[0]!;
+    expect(Number(clipAfterUp.timelineStart)).not.toBe(100);
+  });
+
   it('click without drag does not move clip', async () => {
     const engine = createTestEngine();
     const PPF = 2;
