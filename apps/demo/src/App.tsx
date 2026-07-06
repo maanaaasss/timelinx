@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import {
   createAsset,
   createClip,
@@ -7,7 +7,6 @@ import {
   createTimelineState,
   toFrame,
   frameRate,
-  toClipId,
   toTrackId,
 } from '@timelinx/core';
 import {
@@ -20,6 +19,7 @@ import {
   useCanUndoRedo,
   useEngine,
   useSelectedClipIds,
+  useToolRouter,
 } from '@timelinx/react';
 
 function createEditorEngine() {
@@ -184,7 +184,7 @@ function SplitButton() {
   const selectedClipIds = useSelectedClipIds(engine);
   const [splitPoint, setSplitPoint] = useState(150);
 
-  const handleSplit = useCallback(() => {
+  const handleSplit = () => {
     if (selectedClipIds.size === 0) {
       alert('Select a clip first by clicking on it');
       return;
@@ -218,7 +218,7 @@ function SplitButton() {
       label: 'Split clip',
       timestamp: Date.now(),
       operations: [
-        { type: 'DELETE_CLIP', clipId: toClipId(clipId) },
+        { type: 'DELETE_CLIP', clipId: clip.id },
         {
           type: 'INSERT_CLIP',
           trackId: clip.trackId,
@@ -247,7 +247,7 @@ function SplitButton() {
         },
       ],
     });
-  }, [engine, selectedClipIds, splitPoint]);
+  };
 
   return (
     <div className="controls">
@@ -277,10 +277,7 @@ function SplitButton() {
 
 function ClipView({ clipId }: { clipId: string }) {
   const clip = useClip(clipId);
-  const engine = useEngine();
-  const selectedClipIds = useSelectedClipIds(engine);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef<{ x: number; timelineStart: number } | null>(null);
+  const selectedClipIds = useSelectedClipIds(useEngine());
 
   if (!clip) return null;
 
@@ -293,63 +290,15 @@ function ClipView({ clipId }: { clipId: string }) {
     ? 'audio'
     : 'text';
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-    dragStartRef.current = {
-      x: e.clientX,
-      timelineStart: Number(clip.timelineStart),
-    };
-
-    engine.toggleClipSelection(clipId, e.shiftKey);
-  };
-
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!dragStartRef.current) return;
-
-      const dx = e.clientX - dragStartRef.current.x;
-      const framesToMove = Math.round(dx / 2);
-      const newStart = Math.max(0, dragStartRef.current.timelineStart + framesToMove);
-
-      engine.dispatch({
-        id: 'move-clip',
-        label: 'Move clip',
-        timestamp: Date.now(),
-        operations: [
-          {
-            type: 'MOVE_CLIP',
-            clipId: toClipId(clipId),
-            newTimelineStart: toFrame(newStart),
-          },
-        ],
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      dragStartRef.current = null;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, clipId, engine]);
-
   return (
     <div
       className={`clip ${clipType} ${isSelected ? 'selected' : ''}`}
-      onMouseDown={handleMouseDown}
-      style={{ width: Math.max(120, duration * 0.8) }}
+      data-clip-id={clipId}
+      data-track-id={clip.trackId}
+      style={{ width: Math.max(120, Number(duration) * 0.8) }}
     >
       <div className="clip-info">{clip.id}</div>
-      <div className="clip-duration">{duration} frames</div>
+      <div className="clip-duration">{String(duration)} frames</div>
     </div>
   );
 }
@@ -360,7 +309,7 @@ function TrackView({ trackId }: { trackId: string }) {
   if (!track) return null;
 
   return (
-    <div className="track">
+    <div className="track" data-track-id={trackId}>
       <div className="track-header">{track.name}</div>
       <div className="track-clips">
         {track.clips.map((clip) => (
@@ -374,15 +323,34 @@ function TrackView({ trackId }: { trackId: string }) {
 function TimelineView() {
   const timeline = useTimeline();
   const trackIds = useTrackIds();
+  const engine = useEngine();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const ppf = useMemo(() => 2, []);
+
+  const handlers = useToolRouter(engine, {
+    getPixelsPerFrame: () => ppf,
+    getScrollLeft: () => containerRef.current?.scrollLeft ?? 0,
+  });
 
   return (
     <div className="timeline">
       <div style={{ padding: '12px', borderBottom: '1px solid #333' }}>
-        <strong>{timeline.name}</strong> — {trackIds.length} tracks, {timeline.duration} frames
+        <strong>{timeline.name}</strong> — {trackIds.length} tracks, {String(timeline.duration)} frames
       </div>
-      {trackIds.map((id) => (
-        <TrackView key={id} trackId={id} />
-      ))}
+      <div
+        ref={containerRef}
+        data-timeline-container="true"
+        onPointerDown={handlers.onPointerDown}
+        onPointerMove={handlers.onPointerMove}
+        onPointerUp={handlers.onPointerUp}
+        onPointerLeave={handlers.onPointerLeave}
+        style={{ touchAction: 'none' }}
+      >
+        {trackIds.map((id) => (
+          <TrackView key={id} trackId={id} />
+        ))}
+      </div>
     </div>
   );
 }
