@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   createAsset,
   createClip,
@@ -10,6 +10,7 @@ import {
   toClipId,
   toTrackId,
 } from '@timelinx/core';
+import type { Clip } from '@timelinx/core';
 import {
   TimelineEngine,
   TimelineProvider,
@@ -21,6 +22,7 @@ import {
   useEngine,
   useSelectedClipIds,
   useToolRouter,
+  useProvisional,
 } from '@timelinx/react';
 
 function createEditorEngine() {
@@ -276,45 +278,111 @@ function SplitButton() {
   );
 }
 
-function ClipView({ clipId }: { clipId: string }) {
-  const clip = useClip(clipId);
-  const selectedClipIds = useSelectedClipIds(useEngine());
+const PPF = 2; // pixels per frame — shared constant
 
-  if (!clip) return null;
+function clipLeft(clip: Clip): number {
+  return Number(clip.timelineStart) * PPF;
+}
 
-  const isSelected = selectedClipIds.has(clipId);
-  const duration = clip.timelineEnd - clip.timelineStart;
+function clipWidth(clip: Clip): number {
+  return Math.max(60, Number(clip.timelineEnd - clip.timelineStart) * PPF);
+}
 
-  const clipType = clip.assetId.includes('video')
-    ? 'video'
-    : clip.assetId.includes('audio')
+function clipTypeOf(clip: Clip): 'video' | 'audio' | 'text' {
+  return clip.assetId.includes('audio')
     ? 'audio'
-    : 'text';
+    : clip.assetId.includes('text')
+    ? 'text'
+    : 'video';
+}
 
+function ClipView({
+  clipId,
+  isSelected,
+  ghost,
+}: {
+  clipId: string;
+  isSelected?: boolean;
+  ghost?: boolean;
+}) {
+  const clip = useClip(clipId);
+  if (!clip) return null;
+  const type = clipTypeOf(clip);
   return (
     <div
-      className={`clip ${clipType} ${isSelected ? 'selected' : ''}`}
+      className={`clip ${type}${isSelected ? ' selected' : ''}${ghost ? ' ghost' : ''}`}
       data-clip-id={clipId}
       data-track-id={clip.trackId}
-      style={{ width: Math.max(120, Number(duration) * 0.8) }}
+      style={{
+        position: 'absolute',
+        left: clipLeft(clip),
+        width: clipWidth(clip),
+        opacity: ghost ? 0.85 : 1,
+      }}
     >
       <div className="clip-info">{clip.id}</div>
-      <div className="clip-duration">{String(duration)} frames</div>
+      <div className="clip-duration">{String(clip.timelineEnd - clip.timelineStart)} fr @ {String(clip.timelineStart)}</div>
     </div>
   );
 }
 
-function TrackView({ trackId }: { trackId: string }) {
+/** Renders a ghost clip from provisional (drag-preview) data — no hook dependency needed */
+function GhostClip({ clip }: { clip: Clip }) {
+  const type = clipTypeOf(clip);
+  return (
+    <div
+      className={`clip ${type} ghost`}
+      style={{
+        position: 'absolute',
+        left: clipLeft(clip),
+        width: clipWidth(clip),
+        pointerEvents: 'none',
+        opacity: 0.7,
+        outline: '2px dashed rgba(255,255,255,0.6)',
+      }}
+    >
+      <div className="clip-info">{clip.id} (preview)</div>
+      <div className="clip-duration">{String(clip.timelineEnd - clip.timelineStart)} fr @ {String(clip.timelineStart)}</div>
+    </div>
+  );
+}
+
+const TRACK_CLIP_H = 60; // px
+
+function TrackView({ trackId, selectedClipIds }: { trackId: string; selectedClipIds: ReadonlySet<string> }) {
   const track = useTrack(trackId);
+  const provisional = useProvisional();
 
   if (!track) return null;
+
+  // Build a map of clipId → provisional ghost clip (if any)
+  const ghostMap = new Map<string, Clip>();
+  if (provisional && provisional.clips.length > 0) {
+    for (const c of provisional.clips) {
+      if (c.trackId === trackId) {
+        ghostMap.set(c.id, c as Clip);
+      }
+    }
+  }
 
   return (
     <div className="track" data-track-id={trackId}>
       <div className="track-header">{track.name}</div>
-      <div className="track-clips">
+      <div
+        className="track-clips"
+        style={{ position: 'relative', height: TRACK_CLIP_H }}
+      >
         {track.clips.map((clip) => (
-          <ClipView key={clip.id} clipId={clip.id} />
+          <ClipView
+            key={clip.id}
+            clipId={clip.id}
+            isSelected={selectedClipIds.has(clip.id)}
+            ghost={ghostMap.has(clip.id)}
+          />
+        ))}
+        {/* Ghost overlays show the clip's target position during drag */}
+        {[...ghostMap.values()].map((ghost) => (
+          <GhostClip key={`ghost-${ghost.id}`} clip={ghost} />
         ))}
       </div>
     </div>
@@ -326,28 +394,38 @@ function TimelineView() {
   const trackIds = useTrackIds();
   const engine = useEngine();
   const containerRef = useRef<HTMLDivElement>(null);
+  const selectedClipIds = useSelectedClipIds(engine);
 
-  const ppf = useMemo(() => 2, []);
+  // Stable callbacks so useToolRouter doesn't recreate the tool router on every render.
+  // Previously these were inline arrow functions, causing useMemo's dep array to see
+  // new references each render and recreate the router — harmless for correctness
+  // but wasteful. useCallback fixes this.
+  const getPixelsPerFrame = useCallback(() => PPF, []);
+  const getScrollLeft = useCallback(() => containerRef.current?.scrollLeft ?? 0, []);
 
-  const handlers = useToolRouter(engine, {
-    getPixelsPerFrame: () => ppf,
-    getScrollLeft: () => containerRef.current?.scrollLeft ?? 0,
-  });
+  const handlers = useToolRouter(engine, { getPixelsPerFrame, getScrollLeft });
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    console.log('[DEMO] pointerDown', { clientX: e.clientX, clientY: e.clientY, target: e.currentTarget });
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    console.log('[DEMO] pointerDown', {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      target: (e.target as HTMLElement)?.dataset,
+    });
     handlers.onPointerDown(e);
-  };
+  }, [handlers]);
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    console.log('[DEMO] pointerMove', { clientX: e.clientX, clientY: e.clientY });
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
     handlers.onPointerMove(e);
-  };
+  }, [handlers]);
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
     console.log('[DEMO] pointerUp', { clientX: e.clientX, clientY: e.clientY });
     handlers.onPointerUp(e);
-  };
+  }, [handlers]);
+
+  const handlePointerLeave = useCallback((e: React.PointerEvent) => {
+    handlers.onPointerLeave(e);
+  }, [handlers]);
 
   return (
     <div className="timeline">
@@ -360,11 +438,11 @@ function TimelineView() {
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlers.onPointerLeave}
-        style={{ touchAction: 'none' }}
+        onPointerLeave={handlePointerLeave}
+        style={{ touchAction: 'none', overflowX: 'auto' }}
       >
         {trackIds.map((id) => (
-          <TrackView key={id} trackId={id} />
+          <TrackView key={id} trackId={id} selectedClipIds={selectedClipIds} />
         ))}
       </div>
     </div>
