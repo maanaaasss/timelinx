@@ -334,6 +334,21 @@ function TimelineView() {
     getScrollLeft: () => containerRef.current?.scrollLeft ?? 0,
   });
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    console.log('[DEMO] pointerDown', { clientX: e.clientX, clientY: e.clientY, target: e.currentTarget });
+    handlers.onPointerDown(e);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    console.log('[DEMO] pointerMove', { clientX: e.clientX, clientY: e.clientY });
+    handlers.onPointerMove(e);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    console.log('[DEMO] pointerUp', { clientX: e.clientX, clientY: e.clientY });
+    handlers.onPointerUp(e);
+  };
+
   return (
     <div className="timeline">
       <div style={{ padding: '12px', borderBottom: '1px solid #333' }}>
@@ -342,9 +357,9 @@ function TimelineView() {
       <div
         ref={containerRef}
         data-timeline-container="true"
-        onPointerDown={handlers.onPointerDown}
-        onPointerMove={handlers.onPointerMove}
-        onPointerUp={handlers.onPointerUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
         onPointerLeave={handlers.onPointerLeave}
         style={{ touchAction: 'none' }}
       >

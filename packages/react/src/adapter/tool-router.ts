@@ -32,30 +32,54 @@ function getScrollLeftDefault(): number {
 
 const EDGE_HIT_PX = 8;
 
-function convertPointerEvent(
-  e: ReactPointerEvent,
+type PointerSnapshot = {
+  clientX: number;
+  clientY: number;
+  buttons: number;
+  shiftKey: boolean;
+  altKey: boolean;
+  metaKey: boolean;
+  target: EventTarget | null;
+  currentTargetRect: DOMRect | null;
+  currentTarget: EventTarget | null;
+};
+
+function snapshotPointerEvent(e: ReactPointerEvent): PointerSnapshot {
+  return {
+    clientX: e.clientX,
+    clientY: e.clientY,
+    buttons: e.buttons,
+    shiftKey: e.shiftKey,
+    altKey: e.altKey,
+    metaKey: e.metaKey,
+    target: e.target,
+    currentTargetRect: (e.currentTarget as HTMLElement | null)?.getBoundingClientRect?.() ?? null,
+    currentTarget: e.currentTarget,
+  };
+}
+
+function convertPointerEventFromSnapshot(
+  snap: PointerSnapshot,
   getPixelsPerFrame: () => number,
   getScrollLeft: () => number,
 ): TimelinePointerEvent {
   const ppf = getPixelsPerFrame();
   const sl = getScrollLeft();
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  const rect = snap.currentTargetRect;
 
-  // x is in timeline coordinate space (scroll-adjusted, from timeline origin)
-  const x = e.clientX - rect.left + sl;
-  const y = e.clientY - rect.top;
+  const x = rect ? snap.clientX - rect.left + sl : snap.clientX;
+  const y = rect ? snap.clientY - rect.top : snap.clientY;
 
-  // Frame from x position
   const frame = Math.max(0, Math.round(x / ppf)) as TimelineFrame;
 
-  // DOM hit-test: walk up from target
   let clipId: string | undefined;
   let trackId: string | undefined;
   let edge: 'left' | 'right' | 'none' = 'none';
   let clipEl: HTMLElement | null = null;
 
-  let el: HTMLElement | null = e.target as HTMLElement | null;
-  while (el && el !== e.currentTarget) {
+  let el: HTMLElement | null = snap.target as HTMLElement | null;
+  const container = snap.currentTarget as HTMLElement | null;
+  while (el && el !== container) {
     if (!clipId && el.dataset.clipId) {
       clipId = el.dataset.clipId;
       clipEl = el;
@@ -67,10 +91,9 @@ function convertPointerEvent(
     el = el.parentElement;
   }
 
-  // Edge detection
   if (clipId && clipEl) {
     const cr = clipEl.getBoundingClientRect();
-    const localX = e.clientX - cr.left;
+    const localX = snap.clientX - cr.left;
     const thresh = Math.min(EDGE_HIT_PX, cr.width * 0.15);
     if (localX <= thresh) edge = 'left';
     else if (localX >= cr.width - thresh) edge = 'right';
@@ -82,12 +105,24 @@ function convertPointerEvent(
     clipId: (clipId as ClipId) ?? null,
     x,
     y,
-    buttons: e.buttons,
-    shiftKey: e.shiftKey,
-    altKey: e.altKey,
-    metaKey: e.metaKey,
+    buttons: snap.buttons,
+    shiftKey: snap.shiftKey,
+    altKey: snap.altKey,
+    metaKey: snap.metaKey,
     edge,
   };
+}
+
+function convertPointerEvent(
+  e: ReactPointerEvent,
+  getPixelsPerFrame: () => number,
+  getScrollLeft: () => number,
+): TimelinePointerEvent {
+  return convertPointerEventFromSnapshot(
+    snapshotPointerEvent(e),
+    getPixelsPerFrame,
+    getScrollLeft,
+  );
 }
 
 function extractModifiers(e: ReactPointerEvent | ReactKeyboardEvent): Modifiers {
@@ -117,7 +152,7 @@ export function createToolRouter(options: ToolRouterOptions): ToolRouterHandlers
   const getPixelsPerFrame = options.getPixelsPerFrame;
 
   let rafId: number | null = null;
-  let lastMoveEvent: ReactPointerEvent | null = null;
+  let lastMoveSnapshot: PointerSnapshot | null = null;
   let lastModifiers: Modifiers | null = null;
 
   return {
@@ -128,16 +163,16 @@ export function createToolRouter(options: ToolRouterOptions): ToolRouterHandlers
 
     onPointerMove(e: ReactPointerEvent): void {
       e.preventDefault();
-      lastMoveEvent = e;
+      lastMoveSnapshot = snapshotPointerEvent(e);
       lastModifiers = extractModifiers(e);
       if (rafId !== null) {
         cancelAnimationFrame(rafId);
       }
       rafId = requestAnimationFrame(() => {
         rafId = null;
-        if (lastMoveEvent !== null && lastModifiers !== null) {
-          const converted = convertPointerEvent(
-            lastMoveEvent,
+        if (lastMoveSnapshot !== null && lastModifiers !== null) {
+          const converted = convertPointerEventFromSnapshot(
+            lastMoveSnapshot,
             getPixelsPerFrame,
             getScrollLeft,
           );
@@ -156,7 +191,7 @@ export function createToolRouter(options: ToolRouterOptions): ToolRouterHandlers
         cancelAnimationFrame(rafId);
         rafId = null;
       }
-      lastMoveEvent = null;
+      lastMoveSnapshot = null;
       lastModifiers = null;
       const converted = convertPointerEvent(e, getPixelsPerFrame, getScrollLeft);
       engine.handlePointerUp(converted, extractModifiers(e));
@@ -174,7 +209,7 @@ export function createToolRouter(options: ToolRouterOptions): ToolRouterHandlers
         cancelAnimationFrame(rafId);
         rafId = null;
       }
-      lastMoveEvent = null;
+      lastMoveSnapshot = null;
       lastModifiers = null;
     },
   };
