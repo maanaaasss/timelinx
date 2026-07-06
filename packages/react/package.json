@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/react",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "React adapter for @timelinx/core. Hooks, context, and tool routing for building timeline editors.",
   "type": "module",
   "main": "./dist/index.cjs",
