@@ -55,9 +55,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # NOTE: For the first publish of each package, NPM_TOKEN is required because
-          # npm OIDC trusted publishing needs the package to already exist on npmjs.com.
-          # After the first publish, configure OIDC trusted publishing on npmjs.com
-          # (Settings → Publishing access → Add trusted publisher) linking this repo +
-          # this workflow file, then remove NPM_TOKEN from repository secrets.
+          # NODE_AUTH_TOKEN is intentionally omitted to allow npm OIDC trusted publishing.
+          # npm uses the GitHub OIDC id-token when no explicit auth token is set.
