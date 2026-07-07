@@ -4,6 +4,8 @@
 
 Completed Milestone 2: all five panels (Effects, Transitions, Keyframes, Captions, Inspector) now dispatch real operations through the engine. Fixed KeyframeTool to auto-create effects on effect-less clips. Added caption rendering on the S1 timeline track. Documented `workspace:*` publishing constraint. Fixed three real-browser bugs: TransitionTool not working, keyboard shortcuts not activating tools, and Inspector showing "no transform data".
 
+**Code pushed:** Branch `milestone-2/bugfix-round2` pushed to `origin`. Commit `2842b42`.
+
 **Note on manual verification:** The automated test suite covers engine logic and hook reactivity via jsdom, but real browser interaction was not verified. jsdom does not support canvas, pointer events, or CSS layout — so visual rendering and pointer-based interactions cannot be confirmed from tests alone. The "Manual Verification" column below reflects what the tests *assert* rather than what was observed in a browser.
 
 ## What Was Built
