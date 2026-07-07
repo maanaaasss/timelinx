@@ -32,7 +32,7 @@
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@timelinx/core": "^1.0.0-beta.1"
+    "@timelinx/core": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",

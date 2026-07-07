@@ -144,7 +144,9 @@ describe('Phase 4 — Backward compat (createClip, createTrack, createTimeline)'
     expect(clip.id).toBe('c1');
     expect(clip.timelineStart).toBe(0);
     expect(clip.effects).toBeUndefined();
-    expect(clip.transform).toBeUndefined();
+    expect(clip.transform).toBeDefined();
+    expect(clip.transform!.positionX.value).toBe(0);
+    expect(clip.transform!.opacity.value).toBe(1);
     expect(clip.audio).toBeUndefined();
     expect(clip.transition).toBeUndefined();
   });

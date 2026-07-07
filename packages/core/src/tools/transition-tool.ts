@@ -87,7 +87,17 @@ export class TransitionTool implements ITool {
     const { state, pixelsPerFrame } = ctx;
     const x = event.x;
 
-    // Prefer starting a drag from the right edge over deleting the transition
+    // Prefer pre-computed edge from tool-router, fall back to pixel detection
+    if (event.edge === 'right' && event.clipId !== null) {
+      const clip = findClipById(state, event.clipId);
+      if (clip) {
+        this.pendingClipId = clip.id;
+        this.dragStartX = x;
+        return;
+      }
+    }
+
+    // Fallback: pixel-based detection for direct calls and backward compatibility
     const atEdge = findClipAtRightEdge(state, x, pixelsPerFrame);
     if (atEdge) {
       this.pendingClipId = atEdge.clip.id;

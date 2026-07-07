@@ -270,11 +270,16 @@ export class TimelineEngine {
    * Read selection from the active tool (if it exposes getSelection) and
    * sync to this._selectedClipIds. Called after every pointer event so that
    * SelectionTool's internal Set is always mirrored in the engine snapshot.
+   *
+   * Creates a copy of the Set so that tool-internal mutations (e.g., clear)
+   * don't silently change the snapshot reference — React's Object.is comparison
+   * needs a new Set to detect the change and trigger re-render.
    */
   private _syncSelectionFromTool(): void {
     const tool = getActiveTool(this.toolRegistry);
     if (typeof (tool as ITool & { getSelection?: () => ReadonlySet<string> }).getSelection === 'function') {
-      this._selectedClipIds = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
+      const toolSelection = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
+      this._selectedClipIds = new Set(toolSelection);
     }
   }
 
@@ -298,12 +303,33 @@ export class TimelineEngine {
     } catch (err) {
       try { this.options.onError?.(err, 'onPointerMove'); } catch (_) { console.error('onError callback threw', _); }
     }
+
+    const prevProvisional = this.provisional;
     this.provisional =
       provisional !== null
         ? setProvisional(this.provisional, provisional)
         : clearProvisional(this.provisional);
-    this.rebuildSnapshot(EMPTY_STATE_CHANGE);
-    this.notifyProvisional();
+
+    // Only compute cursor when something might have changed (provisional changed, or tool state updated).
+    // Avoid calling buildToolContext + getCursor on every pointer-move when idle — that's the main jank source.
+    const provisionalChanged = this.provisional !== prevProvisional;
+    const wasIdle = prevProvisional === null && this.provisional === null;
+
+    if (!wasIdle || provisionalChanged) {
+      // Something changed — rebuild snapshot and notify
+      this.rebuildSnapshot(EMPTY_STATE_CHANGE);
+      this.notifyProvisional();
+    } else {
+      // Idle hover — only check cursor, skip full rebuild if cursor unchanged
+      const activeTool = getActiveTool(this.toolRegistry);
+      const newCursor = activeTool?.getCursor(ctx) ?? 'default';
+      if (newCursor !== this.snapshot.cursor) {
+        // Cursor changed (e.g., moved from clip body to edge) — need to notify
+        this.rebuildSnapshot(EMPTY_STATE_CHANGE);
+        this.notifyProvisional();
+      }
+      // else: cursor unchanged, no rebuild, no notification — zero cost
+    }
   }
 
   handlePointerUp(event: TimelinePointerEvent, modifiers: Modifiers): void {
@@ -340,6 +366,16 @@ export class TimelineEngine {
   handleKeyDown(event: TimelineKeyEvent, modifiers: Modifiers): boolean {
     if (this.keyboardHandler.handleKeyDown(event)) {
       return true;
+    }
+    // Check if any tool's shortcutKey matches the pressed key
+    if (!modifiers.ctrl && !modifiers.meta && !modifiers.alt) {
+      const key = event.key.toLowerCase();
+      for (const [toolId, tool] of this.toolRegistry.tools) {
+        if (tool.shortcutKey && tool.shortcutKey.toLowerCase() === key) {
+          this.activateTool(toolId);
+          return true;
+        }
+      }
     }
     const ctx = this.buildToolContext(modifiers);
     let tx: Transaction | null = null;

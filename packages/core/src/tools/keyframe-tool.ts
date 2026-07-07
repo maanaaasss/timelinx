@@ -20,9 +20,10 @@ import type {
 import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
 import type { EffectId } from '../types/effect';
+import { createEffect, toEffectId } from '../types/effect';
 import type { KeyframeId, Keyframe } from '../types/keyframe';
 import type { TimelineState } from '../types/state';
-import type { Transaction } from '../types/operations';
+import type { Transaction, OperationPrimitive } from '../types/operations';
 import type { TimelineFrame } from '../types/frame';
 import { toFrame } from '../types/frame';
 import { toKeyframeId } from '../types/keyframe';
@@ -74,6 +75,10 @@ export class KeyframeTool implements ITool {
     effectId: EffectId;
     targetFrame: TimelineFrame;
   } | null = null;
+  private pendingCreateEffect: {
+    clipId: ClipId;
+    effect: ReturnType<typeof createEffect>;
+  } | null = null;
 
   getCursor(_ctx: ToolContext): string {
     return 'crosshair';
@@ -90,9 +95,23 @@ export class KeyframeTool implements ITool {
     if (!clip) return;
 
     const effects = clip.effects ?? [];
-    if (effects.length === 0) return;
+    let targetEffectId: EffectId;
 
-    const hitKf = findKeyframeAt(clip, event.x, ctx.pixelsPerFrame);
+    if (effects.length === 0) {
+      const defaultEffect = createEffect(
+        toEffectId(`default-${Date.now()}`),
+        'brightness',
+      );
+      this.pendingCreateEffect = {
+        clipId: clip.id,
+        effect: defaultEffect,
+      };
+      targetEffectId = defaultEffect.id;
+    } else {
+      targetEffectId = effects[0]!.id;
+    }
+
+    const hitKf = effects.length > 0 ? findKeyframeAt(clip, event.x, ctx.pixelsPerFrame) : null;
     if (hitKf) {
       this.draggingKeyframe = {
         clipId: clip.id,
@@ -104,7 +123,6 @@ export class KeyframeTool implements ITool {
       return;
     }
 
-    const firstEffect = effects[0]!;
     let targetFrame = ctx.frameAtX(event.x) as TimelineFrame;
     if (ctx.snapIndex.enabled) {
       const snapPoint = nearest(
@@ -117,10 +135,10 @@ export class KeyframeTool implements ITool {
       if (snapPoint) targetFrame = snapPoint.frame as TimelineFrame;
     }
     this.activeClipId = clip.id;
-    this.activeEffectId = firstEffect.id;
+    this.activeEffectId = targetEffectId;
     this.pendingAddKeyframe = {
       clipId: clip.id,
-      effectId: firstEffect.id,
+      effectId: targetEffectId,
       targetFrame,
     };
   }
@@ -167,30 +185,39 @@ export class KeyframeTool implements ITool {
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     const dragging = this.draggingKeyframe;
     const pendingAdd = this.pendingAddKeyframe;
+    const pendingCreate = this.pendingCreateEffect;
 
     this.draggingKeyframe = null;
     this.activeClipId = null;
     this.activeEffectId = null;
     this.pendingAddKeyframe = null;
+    this.pendingCreateEffect = null;
 
     if (pendingAdd !== null) {
+      const ops: OperationPrimitive[] = [];
+      if (pendingCreate !== null) {
+        ops.push({
+          type: 'ADD_EFFECT',
+          clipId: pendingCreate.clipId,
+          effect: pendingCreate.effect,
+        });
+      }
+      ops.push({
+        type: 'ADD_KEYFRAME',
+        clipId: pendingAdd.clipId,
+        effectId: pendingAdd.effectId,
+        keyframe: {
+          id: toKeyframeId(`kf-${Date.now()}`),
+          frame: pendingAdd.targetFrame,
+          value: 1.0,
+          easing: LINEAR_EASING,
+        },
+      });
       return {
         id: txId(),
-        label: 'Add keyframe',
+        label: pendingCreate !== null ? 'Add effect + keyframe' : 'Add keyframe',
         timestamp: Date.now(),
-        operations: [
-          {
-            type: 'ADD_KEYFRAME',
-            clipId: pendingAdd.clipId,
-            effectId: pendingAdd.effectId,
-            keyframe: {
-              id: toKeyframeId(`kf-${Date.now()}`),
-              frame: pendingAdd.targetFrame,
-              value: 1.0,
-              easing: LINEAR_EASING,
-            },
-          },
-        ],
+        operations: ops,
       };
     }
 
@@ -261,5 +288,6 @@ export class KeyframeTool implements ITool {
     this.activeClipId = null;
     this.activeEffectId = null;
     this.pendingAddKeyframe = null;
+    this.pendingCreateEffect = null;
   }
 }

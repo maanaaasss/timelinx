@@ -10,6 +10,7 @@ import type { AssetId } from './asset';
 import type { TrackId } from './track';
 import type { Effect } from './effect';
 import type { ClipTransform } from './clip-transform';
+import { DEFAULT_CLIP_TRANSFORM } from './clip-transform';
 import type { AudioProperties } from './audio-properties';
 import type { Transition } from './transition';
 
@@ -103,7 +104,7 @@ export function createClip(params: {
     color: params.color ?? null,
     metadata: params.metadata ?? {},
     ...(params.effects !== undefined && { effects: params.effects }),
-    ...(params.transform !== undefined && { transform: params.transform }),
+    transform: params.transform ?? DEFAULT_CLIP_TRANSFORM,
     ...(params.audio !== undefined && { audio: params.audio }),
     ...(params.transition !== undefined && { transition: params.transition }),
   };

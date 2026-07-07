@@ -168,6 +168,11 @@ export { toTrackGroupId, createTrackGroup } from './types/track-group';
 export type { LinkGroupId, LinkGroup } from './types/link-group';
 export { toLinkGroupId, createLinkGroup } from './types/link-group';
 
+// Caption types and subtitle import
+export type { CaptionId, CaptionStyle, Caption } from './types/caption';
+export { toCaptionId } from './types/caption';
+export { parseSRT, parseVTT, subtitleImportToOps, defaultCaptionStyle } from './engine/subtitle-import';
+
 // Phase 2 tools (default set for React TimelineEngine)
 export { SelectionTool } from './tools/selection';
 export { RazorTool } from './tools/razor';
