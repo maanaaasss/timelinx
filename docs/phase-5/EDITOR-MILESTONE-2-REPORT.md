@@ -255,7 +255,7 @@ Invalid/empty values are silently reverted to the last committed value without d
 
 ## Updated Test Results
 
-- **50 tests passing** across 2 editor test files + 156 in react package
+- **51 tests passing** across 2 editor test files + 156 in react package
 - 9 new tests added in Round 3 (total across all rounds)
 - 2 isolation tests updated to test correctness instead of render counts
 - 1 engine test updated to use non-matching key for no-op test
@@ -263,6 +263,8 @@ Invalid/empty values are silently reverted to the last committed value without d
 ### New Tests (Caption Drag-to-Move)
 
 - `25. Caption drag-to-move via SelectionTool` — full pointer-event sequence: down → move → up, asserts `EDIT_CAPTION` dispatched with shifted frames, caption position updated in state
+- `25b. SelectionTool returns provisional ghost caption during drag` — verifies provisional state contains ghost caption at preview position
+- `25c. Shift-click toggles caption selection` — verifies caption selection model works correctly
 
 ## Caption Drag-to-Move Implementation
 
@@ -286,18 +288,32 @@ Five independent gaps prevented caption drag:
 
 ### Implementation
 
-Extended `SelectionTool` with a `drag-caption` mode:
+Extended `SelectionTool` with a `drag-caption` mode that now matches clip drag behavior:
 
-1. **`packages/core/src/tools/types.ts`** — Added `CaptionId` import, `captionId: CaptionId | null` to `TimelinePointerEvent`
-2. **`packages/core/src/tools/selection.ts`** — Added `'drag-caption'` to `DragMode` union, 4 new instance variables (`dragCaptionId`, `dragCaptionTrackId`, `dragCaptionOrigStart`, `dragCaptionOrigEnd`), updated `onPointerDown`/`onPointerMove`/`onPointerUp`/`getCursor`/`_resetDragState` to handle caption drag via `EDIT_CAPTION` transactions
+1. **`packages/core/src/tools/types.ts`** — Added `CaptionId` import, `captionId: CaptionId | null` to `TimelinePointerEvent`, added `captions?: readonly Caption[]` to `ProvisionalState`
+2. **`packages/core/src/tools/selection.ts`** — Added `'drag-caption'` to `DragMode` union, 4 new instance variables (`dragCaptionId`, `dragCaptionTrackId`, `dragCaptionOrigStart`, `dragCaptionOrigEnd`), added `selectedCaptions` set for caption selection, added `getCaptionSelection()` and `clearCaptionSelection()` methods, updated `onPointerDown`/`onPointerMove`/`onPointerUp`/`getCursor`/`onCancel` to handle caption drag with:
+   - **Ghost preview**: `onPointerMove` returns `ProvisionalState` with ghost captions at preview position
+   - **Snap**: Captions snap to clip edges, clip ends, and playhead positions
+   - **Collision avoidance**: `validCaptionStart()` finds non-overlapping position among other captions
+   - **Selection**: Shift-click toggles caption selection, multiple captions can be selected
 3. **`packages/react/src/adapter/tool-router.ts`** — Added `captionId` detection in DOM hit-test loop (checks `data-caption-id` attribute), populates `captionId` on `TimelinePointerEvent`
-4. **`apps/editor/src/components/TrackView.tsx`** — Added `data-track-id` attribute to `CaptionBlock` DOM element
-5. **`apps/editor/src/App.css`** — Changed `.caption-block` cursor to `grab`, added `.caption-block:active { cursor: grabbing; }`
+4. **`apps/editor/src/components/TrackView.tsx`** — Added `data-track-id` attribute to `CaptionBlock` DOM element, added ghost caption rendering via `GhostCaption` component
+5. **`apps/editor/src/components/GhostCaption.tsx`** — New component for ghost caption preview during drag (opacity 0.7, dashed outline, `pointer-events: none`)
+6. **`apps/editor/src/App.css`** — Changed `.caption-block` cursor to `grab`, added `.caption-block:active { cursor: grabbing; }`, added `.caption-block.ghost` (opacity 0.7, dashed border), added `.caption-block.selected` (blue glow border)
 
 ### Tests
 
-- **Core:** 3 SelectionTool caption drag tests in `packages/core/src/__tests__/tools/selection.test.ts` — drag produces EDIT_CAPTION, click without drag returns null, cursor is "grabbing" during drag — ALL PASS (1454 total core tests)
-- **Editor:** Test 25 in `apps/editor/src/__tests__/features.test.tsx` — end-to-end: creates engine, gets state, runs SelectionTool pointer events, dispatches transaction, verifies caption position updated — PASS
+- **Core:** 5 SelectionTool caption drag tests in `packages/core/src/__tests__/tools/selection.test.ts`:
+  - Drag produces EDIT_CAPTION with shifted frames
+  - Click without drag returns null
+  - Cursor is "grabbing" during drag
+  - Returns provisional ghost caption during drag
+  - Shift-click toggles caption selection
+  - ALL PASS (1456 total core tests)
+- **Editor:** 2 tests in `apps/editor/src/__tests__/features.test.tsx`:
+  - Test 25: End-to-end drag produces EDIT_CAPTION and updates state
+  - Test 25b: Returns provisional ghost caption during drag
+  - ALL PASS (58 total editor tests)
 
 ### Build Issue Resolved
 
