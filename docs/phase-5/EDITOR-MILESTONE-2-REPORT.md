@@ -270,6 +270,8 @@ Invalid/empty values are silently reverted to the last committed value without d
 
 `EDIT_CAPTION` already supports repositioning via `startFrame`/`endFrame` — no `MOVE_CAPTION` operation needed. The gap was purely editor wiring: captions couldn't be dragged to move their position on the timeline (unlike video/audio clips).
 
+Key type distinction: `Caption` (`id`, `text`, `startFrame`, `endFrame`, `language`, `style`, `burnIn`) is a genuinely separate type from `Clip` (`timelineStart`, `timelineEnd`, `trackId`, `effects`, `transition`, etc.). They share `startFrame`/`endFrame` semantics but have different fields — so extending `SelectionTool` with a dedicated `drag-caption` mode (rather than reusing clip drag logic) was the clean approach.
+
 ### Root Cause
 
 Five independent gaps prevented caption drag:
@@ -304,6 +306,23 @@ The editor integration test initially failed because vitest cached stale compile
 ### Note on Browser Verification
 
 jsdom does not support real pointer events or CSS layout. The automated tests assert engine logic (SelectionTool produces correct `EDIT_CAPTION` transactions, dispatch updates state). Actual drag interaction on the timeline canvas cannot be verified from tests alone.
+
+### Reactivity Lessons Applied
+
+The prompt asked to apply reactivity lessons from the last round. For caption drag, **no provisional state is needed** — unlike clip drag (which returns ghost clips during move for visual feedback), caption drag returns `null` from `onPointerMove` and commits the position atomically via `EDIT_CAPTION` on `onPointerUp`. This means:
+
+- No ghost/provisional rendering during caption drag (simpler implementation)
+- Caption position updates reactively after dispatch via the existing `useAllTracks` → `useTrackCaptions` hook chain in `CaptionsPanel`
+- `CaptionBlock` in `TrackView.tsx` receives captions as props from the parent track renderer, which re-renders when the track's captions array changes after dispatch
+
+No new reactive hooks were needed — the existing subscription infrastructure handles caption position updates correctly.
+
+## Definition of Done
+
+- [x] Commit, push to branch `milestone-2/caption-fix-and-reactivity-audit`
+- [x] PR [#16](https://github.com/maanaaasss/timelinx/pull/16) updated with caption drag commits
+- [x] CI passes (Build & Test — lint, typecheck, build, test all green)
+- [x] Branch/PR/CI status reported explicitly
 
 ## Remaining Known Limitations
 
