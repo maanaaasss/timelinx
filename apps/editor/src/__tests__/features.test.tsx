@@ -16,7 +16,6 @@ import {
   useClipEffects,
   useAllTracks,
   useAllTransitions,
-  useClip,
 } from '@timelinx/react';
 import {
   createClip,
