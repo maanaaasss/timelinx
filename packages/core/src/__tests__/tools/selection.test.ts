@@ -621,7 +621,7 @@ describe('SelectionTool — caption drag', () => {
     expect(tx!.label).toBe('Move Caption');
     expect(tx!.operations).toHaveLength(1);
     expect(tx!.operations[0]!.type).toBe('EDIT_CAPTION');
-    const op = tx!.operations[0] as Extract<typeof tx!.operations[0], { type: 'EDIT_CAPTION' }>;
+    const op = tx!.operations[0]! as { type: 'EDIT_CAPTION'; captionId: string; trackId: string; startFrame: number; endFrame: number };
     expect(op.captionId).toBe(toCaptionId('cap-1'));
     expect(op.trackId).toBe(toTrackId('track-1'));
     expect(Number(op.startFrame)).toBe(500);
