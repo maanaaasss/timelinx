@@ -352,9 +352,13 @@ body {
   border: 1px solid rgba(100, 150, 255, 0.6);
   border-radius: 3px;
   overflow: hidden;
-  cursor: default;
+  cursor: grab;
   display: flex;
   align-items: center;
+}
+
+.caption-block:active {
+  cursor: grabbing;
 }
 
 .caption-text {

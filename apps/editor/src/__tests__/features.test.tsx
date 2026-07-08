@@ -30,6 +30,7 @@ import {
   toCaptionId,
   toKeyframeId,
   LINEAR_EASING,
+  SelectionTool,
 } from '@timelinx/core';
 import React from 'react';
 
@@ -1267,19 +1268,19 @@ describe('Editor — Feature Verification', () => {
       const rightEdgePx = Number(clip2!.timelineEnd) * pixelsPerFrame;
 
       engine.handlePointerDown(
-        { x: rightEdgePx - 2, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
+        { x: rightEdgePx - 2, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), captionId: null, edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
         { shift: false, alt: false, ctrl: false, meta: false },
       );
 
       for (let i = 0; i < 20; i++) {
         engine.handlePointerMove(
-          { x: rightEdgePx + i * 5, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
+          { x: rightEdgePx + i * 5, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), captionId: null, edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
           { shift: false, alt: false, ctrl: false, meta: false },
         );
       }
 
       engine.handlePointerUp(
-        { x: rightEdgePx + 100, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 0, frame: clip2!.timelineEnd },
+        { x: rightEdgePx + 100, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), captionId: null, edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 0, frame: clip2!.timelineEnd },
         { shift: false, alt: false, ctrl: false, meta: false },
       );
 
@@ -1721,6 +1722,73 @@ describe('Editor — Feature Verification', () => {
       );
       expect(call).toBeDefined();
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('25. Caption drag-to-move via SelectionTool', () => {
+    it('SelectionTool produces EDIT_CAPTION transaction when dragging a caption', () => {
+      const engine = createEditorEngine();
+
+      // Get initial caption state
+      const stateBefore = engine.getState();
+      const s1Track = stateBefore.timeline.tracks.find((t) => t.id === 's1');
+      expect(s1Track).toBeDefined();
+      const caption = s1Track!.captions.find((c) => c.id === 'cap-1');
+      expect(caption).toBeDefined();
+      const origStart = Number(caption!.startFrame);
+      const origEnd = Number(caption!.endFrame);
+      const duration = origEnd - origStart;
+      expect(origStart).toBe(0);
+      expect(duration).toBe(90);
+
+      // Use SelectionTool directly (same pattern as core unit tests)
+      const tool = new SelectionTool();
+      const ctx = {
+        state: stateBefore,
+        snapIndex: null,
+        pixelsPerFrame: 0.5,
+        modifiers: { shift: false, alt: false, ctrl: false, meta: false },
+        frameAtX: (x: number) => toFrame(Math.round(x / 0.5)),
+        trackAtY: () => null,
+        snap: (frame: unknown) => frame,
+      };
+
+      // Pointer down on caption
+      tool.onPointerDown({
+        frame: toFrame(0), trackId: toTrackId('s1'), clipId: null,
+        captionId: toCaptionId('cap-1'), x: 0, y: 50, buttons: 1,
+        shiftKey: false, altKey: false, metaKey: false,
+      }, ctx);
+
+      // Drag right — 200px at ppf=0.5 = 400 frames
+      tool.onPointerMove({
+        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
+        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 1,
+        shiftKey: false, altKey: false, metaKey: false,
+      }, ctx);
+
+      // Pointer up — should produce EDIT_CAPTION
+      const tx = tool.onPointerUp({
+        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
+        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 0,
+        shiftKey: false, altKey: false, metaKey: false,
+      }, ctx);
+
+      expect(tx).not.toBeNull();
+      expect(tx!.label).toBe('Move Caption');
+      expect(tx!.operations).toHaveLength(1);
+      expect(tx!.operations[0]!.type).toBe('EDIT_CAPTION');
+
+      // Dispatch the transaction and verify state updated
+      const result = engine.dispatch(tx!);
+      expect(result.accepted).toBe(true);
+
+      const stateAfter = engine.getState();
+      const s1TrackAfter = stateAfter.timeline.tracks.find((t) => t.id === 's1');
+      const captionAfter = s1TrackAfter!.captions.find((c) => c.id === 'cap-1');
+      expect(captionAfter).toBeDefined();
+      expect(Number(captionAfter!.startFrame)).toBe(400);
+      expect(Number(captionAfter!.endFrame)).toBe(490); // 400 + 90
     });
   });
 });

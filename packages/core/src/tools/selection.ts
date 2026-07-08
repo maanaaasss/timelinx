@@ -9,6 +9,10 @@
  *
  * Edge trimming is handled via near-edge clicks in onPointerUp
  * (pendingTrimEdge path), not as a separate drag mode.
+ *
+ * Edge trim behavior:
+ *   - Default: ripple trim (resize clip + shift downstream clips)
+ *   - Alt/Option held: roll trim (resize both clips at cut point, no ripple)
  */
 
 import type {
@@ -25,6 +29,7 @@ import {
 } from './types';
 import type { ClipId, Clip } from '../types/clip';
 import type { TrackId }      from '../types/track';
+import type { CaptionId }    from '../types/caption';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction }   from '../types/operations';
 import type { TimelineState } from '../types/state';
@@ -42,7 +47,7 @@ const MIN_DURATION_FRAMES = 1;
 // Internal types
 // ---------------------------------------------------------------------------
 
-type DragMode = 'idle' | 'drag-clip' | 'rubber-band';
+type DragMode = 'idle' | 'drag-clip' | 'drag-caption' | 'rubber-band';
 
 type TrimEdge = 'start' | 'end';
 
@@ -137,6 +142,12 @@ export class SelectionTool implements ITool {
   // near-edge trim (click-based, not drag mode)
   private pendingTrimEdge:  TrimEdge      | null = null;
 
+  // drag-caption mode
+  private dragCaptionId:       CaptionId     | null = null;
+  private dragCaptionTrackId:  TrackId       | null = null;
+  private dragCaptionOrigStart: TimelineFrame | null = null;
+  private dragCaptionOrigEnd:   TimelineFrame | null = null;
+
   // rubber-band mode
   private rubberBandStartFrame: TimelineFrame | null = null;
   private rubberBandStartY:     number        | null = null;
@@ -160,6 +171,7 @@ export class SelectionTool implements ITool {
 
   getCursor(_ctx: ToolContext): string {
     if (this.mode === 'drag-clip')    return 'grabbing';
+    if (this.mode === 'drag-caption') return 'grabbing';
     if (this.mode === 'rubber-band')  return 'crosshair';
     if (this.lastHitEdge !== null)    return 'ew-resize';
     if (this._lastHoveredClipId !== null) return 'grab';
@@ -206,6 +218,20 @@ export class SelectionTool implements ITool {
           });
         }
       }
+    } else if (event.captionId !== null && event.trackId !== null) {
+      // Caption drag — find the caption on the track
+      const track = ctx.state.timeline.tracks.find((t) => t.id === event.trackId);
+      const caption = track?.captions.find((c) => c.id === event.captionId);
+      if (!caption) return;
+
+      this.mode = 'drag-caption';
+      this.dragStartX = event.x;
+      this.dragStartY = event.y;
+      this.dragStartFrame = event.frame;
+      this.dragCaptionId = event.captionId;
+      this.dragCaptionTrackId = event.trackId;
+      this.dragCaptionOrigStart = caption.startFrame;
+      this.dragCaptionOrigEnd = caption.endFrame;
     } else {
       this.mode                  = 'rubber-band';
       this.dragStartX            = event.x;
@@ -242,6 +268,15 @@ export class SelectionTool implements ITool {
         },
         isProvisional: true,
       };
+    }
+
+    // ── MODE 5: caption drag (no provisional — captions have no ghost) ──
+    if (this.mode === 'drag-caption') {
+      if (this.dragStartX === null) return null;
+      const dxPx = Math.abs(event.x - this.dragStartX);
+      if (dxPx < DRAG_THRESHOLD_PX) return null;
+      // Captions don't have provisional state; position is committed on pointerUp
+      return null;
     }
 
     // ── MODE 1: click (below drag threshold) ────────────────────────────
@@ -320,6 +355,10 @@ export class SelectionTool implements ITool {
     const savedRbStartFrame   = this.rubberBandStartFrame;
     const savedSelected       = new Set(this.selected);
     const savedPendingTrimEdge = this.pendingTrimEdge;
+    const savedCaptionId      = this.dragCaptionId;
+    const savedCaptionTrackId = this.dragCaptionTrackId;
+    const savedCaptionOrigStart = this.dragCaptionOrigStart;
+    const savedCaptionOrigEnd   = this.dragCaptionOrigEnd;
 
     this._resetDragState();
 
@@ -345,12 +384,46 @@ export class SelectionTool implements ITool {
       return null;
     }
 
+    // ── MODE 5: caption drag complete ────────────────────────────────────
+    if (previousMode === 'drag-caption') {
+      if (savedCaptionId === null || savedCaptionTrackId === null) return null;
+      if (savedCaptionOrigStart === null || savedCaptionOrigEnd === null) return null;
+
+      const dxPx = savedDragStartX !== null ? Math.abs(event.x - savedDragStartX) : 0;
+      if (dxPx < DRAG_THRESHOLD_PX) return null; // click, not drag
+
+      const frameDelta = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
+      const newStart = (savedCaptionOrigStart + frameDelta) as TimelineFrame;
+      const newEnd = (savedCaptionOrigEnd + frameDelta) as TimelineFrame;
+
+      // Clamp to timeline bounds
+      const duration = (savedCaptionOrigEnd - savedCaptionOrigStart) as TimelineFrame;
+      const maxStart = Math.max(0, (ctx.state.timeline.duration - duration)) as TimelineFrame;
+      const clampedStart = Math.max(0, Math.min(newStart, maxStart)) as TimelineFrame;
+      const clampedEnd = (clampedStart + duration) as TimelineFrame;
+
+      if (clampedStart === savedCaptionOrigStart) return null; // no movement
+
+      return {
+        id: txId(),
+        label: 'Move Caption',
+        timestamp: Date.now(),
+        operations: [{
+          type: 'EDIT_CAPTION',
+          captionId: savedCaptionId,
+          trackId: savedCaptionTrackId,
+          startFrame: clampedStart,
+          endFrame: clampedEnd,
+        }],
+      };
+    }
+
     if (previousMode !== 'drag-clip') return null;
 
     // ── Below drag threshold — click or near-edge trim ──────────────────
     const dxPx = savedDragStartX !== null ? Math.abs(event.x - savedDragStartX) : 0;
     if (dxPx < DRAG_THRESHOLD_PX) {
-      // Near-edge click → trim
+      // Near-edge click → trim (ripple by default, roll with Alt)
       if (savedPendingTrimEdge !== null && savedDragClipId !== null) {
         const clip = liveClip(ctx.state, savedDragClipId);
         if (!clip) return null;
@@ -370,16 +443,93 @@ export class SelectionTool implements ITool {
         const originalEdge = savedPendingTrimEdge === 'end' ? clip.timelineEnd : clip.timelineStart;
         if (newFrame === originalEdge) return null;
 
+        // Alt/Option held → roll trim (resize both clips at cut point, no ripple)
+        if (event.altKey) {
+          // Find the adjacent clip at the cut point
+          const track = ctx.state.timeline.tracks.find(t => t.id === clip.trackId);
+          if (!track) return null;
+
+          let leftClip: typeof clip | null = null;
+          let rightClip: typeof clip | null = null;
+
+          if (savedPendingTrimEdge === 'end') {
+            // Trimming end of this clip → find clip whose start matches this clip's end
+            leftClip = clip;
+            rightClip = track.clips.find(
+              c => c.id !== clip.id && c.timelineStart === clip.timelineEnd,
+            ) ?? null;
+          } else {
+            // Trimming start of this clip → find clip whose end matches this clip's start
+            rightClip = clip;
+            leftClip = track.clips.find(
+              c => c.id !== clip.id && c.timelineEnd === clip.timelineStart,
+            ) ?? null;
+          }
+
+          // Roll trim: both clips resize to newFrame, no downstream shift
+          const operations: Transaction['operations'][number][] = [
+            { type: 'RESIZE_CLIP', clipId: clip.id, edge: savedPendingTrimEdge, newFrame },
+          ];
+
+          if (leftClip && rightClip && leftClip.id !== rightClip.id) {
+            // Adjacent clip exists — resize it too to maintain adjacency
+            const adjacentClip = savedPendingTrimEdge === 'end' ? rightClip : leftClip;
+            const adjacentEdge = savedPendingTrimEdge === 'end' ? 'start' : 'end';
+            operations.push({
+              type: 'RESIZE_CLIP',
+              clipId: adjacentClip.id,
+              edge: adjacentEdge,
+              newFrame,
+            });
+          }
+
+          return {
+            id: txId(),
+            label: 'Roll Trim',
+            timestamp: Date.now(),
+            operations,
+          };
+        }
+
+        // Default: ripple trim — resize this clip, shift downstream clips
+        const delta = (newFrame - originalEdge) as TimelineFrame;
+
+        // Find downstream clips to shift
+        const downstreamClips: typeof clip[] = [];
+        if (savedPendingTrimEdge === 'end') {
+          // END edge trim: clips with timelineStart >= clip.timelineEnd (to the right)
+          for (const track of ctx.state.timeline.tracks) {
+            for (const c of track.clips) {
+              if (c.id !== clip.id && c.timelineStart >= clip.timelineEnd) {
+                downstreamClips.push(c);
+              }
+            }
+          }
+        } else {
+          // START edge trim: clips with timelineEnd <= clip.timelineStart (to the left)
+          for (const track of ctx.state.timeline.tracks) {
+            for (const c of track.clips) {
+              if (c.id !== clip.id && c.timelineEnd <= clip.timelineStart) {
+                downstreamClips.push(c);
+              }
+            }
+          }
+        }
+
+        const operations: Transaction['operations'][number][] = [
+          { type: 'RESIZE_CLIP', clipId: clip.id, edge: savedPendingTrimEdge, newFrame },
+          ...downstreamClips.map(c => ({
+            type: 'MOVE_CLIP' as const,
+            clipId: c.id,
+            newTimelineStart: (c.timelineStart + delta) as TimelineFrame,
+          })),
+        ];
+
         return {
-          id:         txId(),
-          label:      `Trim ${savedPendingTrimEdge}`,
-          timestamp:  Date.now(),
-          operations: [{
-            type:    'RESIZE_CLIP',
-            clipId:  savedDragClipId,
-            edge:    savedPendingTrimEdge,
-            newFrame,
-          }],
+          id: txId(),
+          label: 'Ripple Trim',
+          timestamp: Date.now(),
+          operations,
         };
       }
       if (event.clipId !== null) {
@@ -492,6 +642,10 @@ export class SelectionTool implements ITool {
     this.isMultiDrag           = false;
     this.originalPositions.clear();
     this.pendingTrimEdge       = null;
+    this.dragCaptionId         = null;
+    this.dragCaptionTrackId    = null;
+    this.dragCaptionOrigStart  = null;
+    this.dragCaptionOrigEnd    = null;
     this.rubberBandStartFrame  = null;
     this.rubberBandStartY      = null;
   }

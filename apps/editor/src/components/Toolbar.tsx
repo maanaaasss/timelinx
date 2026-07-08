@@ -31,6 +31,7 @@ function buildSyntheticPointerEvent(
     frame,
     trackId,
     clipId,
+    captionId: null,
     x: 0,
     y: 0,
     buttons: 1,

@@ -8,7 +8,7 @@
 
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { TimelineEngine } from '../engine';
-import type { TimelinePointerEvent, TimelineKeyEvent, Modifiers, ClipId, TrackId } from '@timelinx/core';
+import type { TimelinePointerEvent, TimelineKeyEvent, Modifiers, ClipId, TrackId, CaptionId } from '@timelinx/core';
 import type { TimelineFrame } from '@timelinx/core';
 
 export type ToolRouterOptions = {
@@ -73,6 +73,7 @@ function convertPointerEventFromSnapshot(
   const frame = Math.max(0, Math.round(x / ppf)) as TimelineFrame;
 
   let clipId: string | undefined;
+  let captionId: string | undefined;
   let trackId: string | undefined;
   let edge: 'left' | 'right' | 'none' = 'none';
   let clipEl: HTMLElement | null = null;
@@ -84,10 +85,13 @@ function convertPointerEventFromSnapshot(
       clipId = el.dataset.clipId;
       clipEl = el;
     }
+    if (!captionId && el.dataset.captionId) {
+      captionId = el.dataset.captionId;
+    }
     if (!trackId && el.dataset.trackId) {
       trackId = el.dataset.trackId;
     }
-    if (clipId && trackId) break;
+    if ((clipId || captionId) && trackId) break;
     el = el.parentElement;
   }
 
@@ -103,6 +107,7 @@ function convertPointerEventFromSnapshot(
     frame,
     trackId: (trackId as TrackId) ?? null,
     clipId: (clipId as ClipId) ?? null,
+    captionId: (captionId as CaptionId) ?? null,
     x,
     y,
     buttons: snap.buttons,

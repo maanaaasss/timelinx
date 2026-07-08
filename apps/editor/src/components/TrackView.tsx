@@ -9,13 +9,14 @@ interface TrackViewProps {
   selectedClipIds: ReadonlySet<string>;
 }
 
-function CaptionBlock({ caption, ppf }: { caption: Caption; ppf: number }) {
+function CaptionBlock({ caption, ppf, trackId }: { caption: Caption; ppf: number; trackId: string }) {
   const left = Number(caption.startFrame) * ppf;
   const width = Math.max(40, (Number(caption.endFrame) - Number(caption.startFrame)) * ppf);
   return (
     <div
       className="caption-block"
       data-caption-id={caption.id}
+      data-track-id={trackId}
       style={{
         transform: `translateX(${left}px)`,
         width,
@@ -73,7 +74,7 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
           <GhostClip key={`ghost-${ghost.id}`} clip={ghost} ppf={ppf} trackType={trackTypeClass} />
         ))}
         {captions.map((caption) => (
-          <CaptionBlock key={caption.id} caption={caption} ppf={ppf} />
+          <CaptionBlock key={caption.id} caption={caption} ppf={ppf} trackId={trackId} />
         ))}
       </div>
     </div>

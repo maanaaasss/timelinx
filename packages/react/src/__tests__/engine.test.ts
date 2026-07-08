@@ -60,6 +60,7 @@ function makePointerEvent(frame = 0): TimelinePointerEvent {
     frame:    toFrame(frame),
     trackId:  null,
     clipId:   null,
+    captionId: null,
     x:        0,
     y:        0,
     buttons:  1,

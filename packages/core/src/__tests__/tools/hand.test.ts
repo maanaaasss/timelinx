@@ -34,6 +34,7 @@ function makeEv(x: number = 0, frame: TimelineFrame = toFrame(0)): TimelinePoint
     frame, x, y: 24,
     trackId:  toTrackId('track-1'),
     clipId:   null,
+    captionId: null,
     buttons:  1,
     shiftKey: false, altKey: false, metaKey: false,
   };

@@ -2,11 +2,13 @@
 
 ## Summary
 
-Completed Milestone 2: all five panels (Effects, Transitions, Keyframes, Captions, Inspector) now dispatch real operations through the engine. Fixed KeyframeTool to auto-create effects on effect-less clips. Added caption rendering on the S1 timeline track. Documented `workspace:*` publishing constraint. Fixed three real-browser bugs: TransitionTool not working, keyboard shortcuts not activating tools, and Inspector showing "no transform data".
+Completed Milestone 2: all five panels (Effects, Transitions, Keyframes, Captions, Inspector) now dispatch real operations through the engine. Fixed KeyframeTool to auto-create effects on effect-less clips. Added caption rendering on the S1 timeline track. Documented `workspace:*` publishing constraint. Fixed three real-browser bugs: TransitionTool not working, keyboard shortcuts not activating tools, and Inspector showing "no transform data". Implemented caption drag-to-move on the timeline via SelectionTool extension.
 
 **Code pushed:** Branch `milestone-2/bugfix-round2` pushed to `origin`. Commit `2842b42`.
 
 **Round 3 pushed:** Branch `milestone-2/caption-fix-and-reactivity-audit` pushed to `origin`. Commits `1ec57b0`..`be726d3`. PR [#16](https://github.com/maanaaasss/timelinx/pull/16) — CI PASS.
+
+**Caption drag-to-move:** Implemented SelectionTool `drag-caption` mode that produces `EDIT_CAPTION` transactions. Core tests: 3 new. Editor test: 1 new (test 25). All tests pass: 1454 core + 50 editor.
 
 **Note on manual verification:** The automated test suite covers engine logic and hook reactivity via jsdom, but real browser interaction was not verified. jsdom does not support canvas, pointer events, or CSS layout — so visual rendering and pointer-based interactions cannot be confirmed from tests alone. The "Manual Verification" column below reflects what the tests *assert* rather than what was observed in a browser.
 
@@ -75,6 +77,7 @@ Completed Milestone 2: all five panels (Effects, Transitions, Keyframes, Caption
 | TransitionTool drag-to-create | Y — `features.test.tsx` "TransitionTool creates transition via engine pointer events" | **NOT VERIFIED IN BROWSER** — jsdom only |
 | Caption creation avoids overlap | Y — `features.test.tsx` "creating a caption at playhead position avoids overlap" | **NOT VERIFIED IN BROWSER** — jsdom only |
 | Dispatch rejection logging | Y — `features.test.tsx` "creating a caption that overlaps is rejected and logged" | Console output only |
+| Caption drag-to-move | Y — `features.test.tsx` test 25: SelectionTool produces EDIT_CAPTION with shifted frames | **NOT VERIFIED IN BROWSER** — jsdom only |
 | Inspector local state buffer | Y — `features.test.tsx` "typing in numeric input does not dispatch until blur" | **NOT VERIFIED IN BROWSER** — jsdom only |
 
 ## Automated Test Results
@@ -252,10 +255,55 @@ Invalid/empty values are silently reverted to the last committed value without d
 
 ## Updated Test Results
 
-- **49 tests passing** across 2 editor test files + 156 in react package
+- **50 tests passing** across 2 editor test files + 156 in react package
 - 9 new tests added in Round 3 (total across all rounds)
 - 2 isolation tests updated to test correctness instead of render counts
 - 1 engine test updated to use non-matching key for no-op test
+
+### New Tests (Caption Drag-to-Move)
+
+- `25. Caption drag-to-move via SelectionTool` — full pointer-event sequence: down → move → up, asserts `EDIT_CAPTION` dispatched with shifted frames, caption position updated in state
+
+## Caption Drag-to-Move Implementation
+
+### Finding (Step 1)
+
+`EDIT_CAPTION` already supports repositioning via `startFrame`/`endFrame` — no `MOVE_CAPTION` operation needed. The gap was purely editor wiring: captions couldn't be dragged to move their position on the timeline (unlike video/audio clips).
+
+### Root Cause
+
+Five independent gaps prevented caption drag:
+
+| Layer | Gap |
+|-------|-----|
+| `CaptionBlock` DOM | Missing `data-track-id` attribute |
+| `TimelinePointerEvent` | No `captionId` field |
+| Tool-router hit-test | Only looked for `data-clip-id`, not `data-caption-id` |
+| SelectionTool | Only handled clips, not captions |
+| CSS | `cursor: default` on `.caption-block` instead of `grab` |
+
+### Implementation
+
+Extended `SelectionTool` with a `drag-caption` mode:
+
+1. **`packages/core/src/tools/types.ts`** — Added `CaptionId` import, `captionId: CaptionId | null` to `TimelinePointerEvent`
+2. **`packages/core/src/tools/selection.ts`** — Added `'drag-caption'` to `DragMode` union, 4 new instance variables (`dragCaptionId`, `dragCaptionTrackId`, `dragCaptionOrigStart`, `dragCaptionOrigEnd`), updated `onPointerDown`/`onPointerMove`/`onPointerUp`/`getCursor`/`_resetDragState` to handle caption drag via `EDIT_CAPTION` transactions
+3. **`packages/react/src/adapter/tool-router.ts`** — Added `captionId` detection in DOM hit-test loop (checks `data-caption-id` attribute), populates `captionId` on `TimelinePointerEvent`
+4. **`apps/editor/src/components/TrackView.tsx`** — Added `data-track-id` attribute to `CaptionBlock` DOM element
+5. **`apps/editor/src/App.css`** — Changed `.caption-block` cursor to `grab`, added `.caption-block:active { cursor: grabbing; }`
+
+### Tests
+
+- **Core:** 3 SelectionTool caption drag tests in `packages/core/src/__tests__/tools/selection.test.ts` — drag produces EDIT_CAPTION, click without drag returns null, cursor is "grabbing" during drag — ALL PASS (1454 total core tests)
+- **Editor:** Test 25 in `apps/editor/src/__tests__/features.test.tsx` — end-to-end: creates engine, gets state, runs SelectionTool pointer events, dispatches transaction, verifies caption position updated — PASS
+
+### Build Issue Resolved
+
+The editor integration test initially failed because vitest cached stale compiled output from `@timelinx/core/dist/`. The dist was built before caption drag changes were added. Running with `--no-cache` after rebuilding core resolved the issue.
+
+### Note on Browser Verification
+
+jsdom does not support real pointer events or CSS layout. The automated tests assert engine logic (SelectionTool produces correct `EDIT_CAPTION` transactions, dispatch updates state). Actual drag interaction on the timeline canvas cannot be verified from tests alone.
 
 ## Remaining Known Limitations
 

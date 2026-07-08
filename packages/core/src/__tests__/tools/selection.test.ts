@@ -19,6 +19,7 @@ import { createTrack, toTrackId } from '../../types/track';
 import { createClip, toClipId }   from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
+import { toCaptionId }      from '../../types/caption';
 import { buildSnapIndex }   from '../../snap-index';
 import type {
   ToolContext,
@@ -113,6 +114,7 @@ function makeEv(overrides: {
   frame?:    TimelineFrame;
   trackId?:  TrackId | null;
   clipId?:   ClipId  | null;
+  captionId?: import('@timelinx/core').CaptionId | null;
   x?:        number;
   y?:        number;
   buttons?:  number;
@@ -124,6 +126,7 @@ function makeEv(overrides: {
     frame:    overrides.frame   ?? toFrame(0),
     trackId:  overrides.trackId ?? TRACK_ID,
     clipId:   overrides.clipId  ?? null,
+    captionId: overrides.captionId ?? null,
     x:        overrides.x       ?? 0,
     y:        overrides.y       ?? 24,
     buttons:  overrides.buttons ?? 1,
@@ -576,5 +579,74 @@ describe('SelectionTool — no React imports (structural)', () => {
     const tool = new SelectionTool();
     expect(tool.id).toBe('selection');
     expect(tool.shortcutKey).toBe('v');
+  });
+});
+
+describe('SelectionTool — caption drag', () => {
+  function makeStateWithCaption(): TimelineState {
+    const asset = createAsset({
+      id: 'asset-1', name: 'Test', mediaType: 'video',
+      filePath: '/test.mp4', intrinsicDuration: toFrame(600),
+      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    });
+    const track = createTrack({
+      id: 'track-1', name: 'S1', type: 'subtitle',
+      clips: [],
+      captions: [
+        { id: toCaptionId('cap-1'), text: 'Hello', startFrame: toFrame(0), endFrame: toFrame(90), language: 'en-US', style: { fontFamily: 'Arial', fontSize: 14, color: '#fff', backgroundColor: '#000', hAlign: 'center', vAlign: 'bottom' }, burnIn: false },
+      ],
+    });
+    const timeline = createTimeline({
+      id: 'tl', name: 'Test', fps: frameRate(30), duration: toFrame(9000),
+      startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    });
+    return createTimelineState({ timeline, assetRegistry: new Map([[ASSET_ID, asset]]) });
+  }
+
+  it('drag-caption produces EDIT_CAPTION with shifted frames', () => {
+    const state = makeStateWithCaption();
+    const ctx = makeCtx(state);
+    const tool = new SelectionTool();
+
+    // Pointer down on caption
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0 }), ctx);
+
+    // Drag right (50px at ppf=10 → 500 frames)
+    tool.onPointerMove(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(500), x: 50 }), ctx);
+
+    // Pointer up
+    const tx = tool.onPointerUp(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(500), x: 50 }), ctx);
+
+    expect(tx).not.toBeNull();
+    expect(tx!.label).toBe('Move Caption');
+    expect(tx!.operations).toHaveLength(1);
+    expect(tx!.operations[0]!.type).toBe('EDIT_CAPTION');
+    const op = tx!.operations[0] as Extract<typeof tx!.operations[0], { type: 'EDIT_CAPTION' }>;
+    expect(op.captionId).toBe(toCaptionId('cap-1'));
+    expect(op.trackId).toBe(toTrackId('track-1'));
+    expect(Number(op.startFrame)).toBe(500);
+    expect(Number(op.endFrame)).toBe(590); // 500 + 90 duration
+  });
+
+  it('click without drag does not produce transaction', () => {
+    const state = makeStateWithCaption();
+    const ctx = makeCtx(state);
+    const tool = new SelectionTool();
+
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0 }), ctx);
+    // No move
+    const tx = tool.onPointerUp(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0 }), ctx);
+
+    expect(tx).toBeNull();
+  });
+
+  it('returns "grabbing" cursor during caption drag', () => {
+    const state = makeStateWithCaption();
+    const ctx = makeCtx(state);
+    const tool = new SelectionTool();
+
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0 }), ctx);
+    tool.onPointerMove(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(500), x: 50 }), ctx);
+    expect(tool.getCursor(ctx)).toBe('grabbing');
   });
 });
