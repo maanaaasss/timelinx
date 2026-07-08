@@ -1,28 +1,25 @@
 import { useState, useCallback } from 'react';
-import { useEngine } from '@timelinx/react';
-import { toCaptionId } from '@timelinx/core';
+import { useEngine, useAllTracks, useFps, usePlayheadFrame, useTrackCaptions } from '@timelinx/react';
+import { toCaptionId, defaultCaptionStyle } from '@timelinx/core';
 import type { CaptionId, TrackId, Caption } from '@timelinx/core';
 
 export function CaptionsPanel() {
   const engine = useEngine();
-  const state = engine.getState();
-  const fps = Number(state.timeline.fps) || 30;
-  const playheadFrame = engine.getPlayheadFrame();
+  const tracks = useAllTracks(engine);
+  const fps = useFps(engine);
+  const playheadFrame = usePlayheadFrame(engine);
 
-  const tracks = state.timeline.tracks;
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [selectedCaptionId, setSelectedCaptionId] = useState<string | null>(null);
   const [editText, setEditText] = useState<string | null>(null);
 
   const activeTrackId = selectedTrackId ?? (tracks[0]?.id ?? null);
+  const captionsFromHook = useTrackCaptions(engine, activeTrackId ?? '');
 
   const captions: { caption: Caption; trackId: string }[] = [];
   if (activeTrackId) {
-    const track = tracks.find((t) => t.id === activeTrackId);
-    if (track?.captions) {
-      for (const c of track.captions) {
-        captions.push({ caption: c, trackId: track.id });
-      }
+    for (const c of captionsFromHook) {
+      captions.push({ caption: c, trackId: activeTrackId });
     }
   }
 
@@ -32,9 +29,19 @@ export function CaptionsPanel() {
 
   const handleAddCaption = useCallback(() => {
     if (!activeTrackId) return;
-    const fpsVal = Number(state.timeline.fps) || 30;
-    const startFrame = playheadFrame;
-    const endFrame = (startFrame + fpsVal * 2) as import('@timelinx/core').TimelineFrame;
+    const duration = fps * 2;
+    let startFrame = playheadFrame;
+    let endFrame = (startFrame + duration) as import('@timelinx/core').TimelineFrame;
+
+    const overlapping = captionsFromHook.some(
+      (c) => startFrame < (c.endFrame as number) && endFrame > (c.startFrame as number),
+    );
+    if (overlapping && captionsFromHook.length > 0) {
+      const lastEnd = Math.max(...captionsFromHook.map((c) => c.endFrame as number));
+      startFrame = lastEnd as import('@timelinx/core').TimelineFrame;
+      endFrame = (lastEnd + duration) as import('@timelinx/core').TimelineFrame;
+    }
+
     engine.dispatch({
       id: `add-caption-${Date.now()}`,
       label: 'Add caption',
@@ -48,11 +55,12 @@ export function CaptionsPanel() {
           startFrame: startFrame as import('@timelinx/core').TimelineFrame,
           endFrame: endFrame as import('@timelinx/core').TimelineFrame,
           language: 'en-US',
+          style: defaultCaptionStyle,
           burnIn: false,
         },
       }],
     });
-  }, [engine, activeTrackId, playheadFrame, state.timeline.fps]);
+  }, [engine, activeTrackId, playheadFrame, fps, captionsFromHook]);
 
   const handleDeleteCaption = useCallback((captionId: string, trackId: string) => {
     engine.dispatch({

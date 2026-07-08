@@ -1,28 +1,17 @@
 import { useState, useCallback } from 'react';
-import { useEngine } from '@timelinx/react';
-import type { ClipId, Transition } from '@timelinx/core';
+import { useEngine, useAllTracks, useAllTransitions } from '@timelinx/react';
+import type { ClipId } from '@timelinx/core';
 
 export function TransitionsPanel() {
   const engine = useEngine();
-  const state = engine.getState();
+  const tracks = useAllTracks(engine);
+  const allTransitions = useAllTransitions(engine);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
 
-  const tracks = state.timeline.tracks;
-
-  const clipsWithTransitions: { clipId: string; trackId: string; transition: Transition }[] = [];
-  for (const track of tracks) {
-    if (selectedTrackId && track.id !== selectedTrackId) continue;
-    for (const clip of track.clips) {
-      if (clip.transition) {
-        clipsWithTransitions.push({
-          clipId: clip.id,
-          trackId: track.id,
-          transition: clip.transition,
-        });
-      }
-    }
-  }
+  const clipsWithTransitions = selectedTrackId
+    ? allTransitions.filter((t) => t.trackId === selectedTrackId)
+    : allTransitions;
 
   const selectedClip = selectedClipId
     ? clipsWithTransitions.find((c) => c.clipId === selectedClipId)

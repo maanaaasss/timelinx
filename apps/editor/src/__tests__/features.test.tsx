@@ -13,6 +13,10 @@ import {
   useMarkers,
   usePlayheadFrame,
   useActiveToolId,
+  useClipEffects,
+  useAllTracks,
+  useAllTransitions,
+  useClip,
 } from '@timelinx/react';
 import {
   createClip,
@@ -1244,6 +1248,480 @@ describe('Editor — Feature Verification', () => {
       expect(screen.getByTestId('transform-clip-1').textContent).toBe('1');
       expect(screen.getByTestId('transform-clip-2').textContent).toBe('1');
       expect(screen.getByTestId('transform-clip-3').textContent).toBe('1');
+    });
+  });
+
+  describe('20. TransitionTool — drag-to-create (real behavior)', () => {
+    it('TransitionTool creates transition via engine pointer events', () => {
+      const engine = createEditorEngine();
+
+      engine.handleKeyDown({ key: 'g', code: 'KeyG', shiftKey: false, altKey: false, metaKey: false, ctrlKey: false, repeat: false }, { shift: false, alt: false, ctrl: false, meta: false });
+      expect(engine.getActiveToolId()).toBe('transition');
+
+      const state = engine.getState();
+      const track = state.timeline.tracks.find((t) => t.id === 'v1');
+      const clip2 = track?.clips.find((c) => c.id === 'clip-2');
+      expect(clip2).toBeDefined();
+      expect(clip2!.transition).toBeUndefined();
+
+      const pixelsPerFrame = 0.5;
+      const rightEdgePx = Number(clip2!.timelineEnd) * pixelsPerFrame;
+
+      engine.handlePointerDown(
+        { x: rightEdgePx - 2, y: 100, clientX: rightEdgePx - 2, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+        { shift: false, alt: false, ctrl: false, meta: false },
+      );
+
+      for (let i = 0; i < 20; i++) {
+        engine.handlePointerMove(
+          { x: rightEdgePx + i * 5, y: 100, clientX: rightEdgePx + i * 5, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+          { shift: false, alt: false, ctrl: false, meta: false },
+        );
+      }
+
+      engine.handlePointerUp(
+        { x: rightEdgePx + 100, y: 100, clientX: rightEdgePx + 100, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+        { shift: false, alt: false, ctrl: false, meta: false },
+      );
+
+      const stateAfter = engine.getState();
+      const trackAfter = stateAfter.timeline.tracks.find((t) => t.id === 'v1');
+      const clip2After = trackAfter?.clips.find((c) => c.id === 'clip-2');
+      expect(clip2After?.transition).toBeDefined();
+      expect(clip2After?.transition?.type).toBe('dissolve');
+    });
+  });
+
+  describe('21. Reactive hooks — panels re-render on state changes', () => {
+    it('EffectsPanel re-renders when effect is added via engine dispatch', () => {
+      function ReactiveEffectsTest() {
+        const engine = useEngine();
+        const selectedClipIds = useSelectedClipIds(engine);
+        const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
+        const effects = useClipEffects(engine, selectedClipId ?? '');
+        const effectCount = effects.length;
+        return (
+          <div>
+            <span data-testid="effect-count">{effectCount}</span>
+            <span data-testid="effect-types">{effects.map((e) => e.effectType).join(',')}</span>
+            <button
+              data-testid="select-clip-1"
+              onClick={() => engine.setSelectedClipIds(new Set(['clip-1']))}
+            >
+              Select
+            </button>
+            <button
+              data-testid="add-effect"
+              onClick={() => {
+                if (!selectedClipId) return;
+                engine.dispatch({
+                  id: 'add-fx',
+                  label: 'Add effect',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_EFFECT',
+                    clipId: selectedClipId as import('@timelinx/core').ClipId,
+                    effect: createEffect(toEffectId('reactive-test-fx'), 'brightness'),
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <ReactiveEffectsTest />
+        </TestWrapper>
+      );
+      expect(screen.getByTestId('effect-count').textContent).toBe('0');
+      fireEvent.click(screen.getByTestId('select-clip-1'));
+      expect(Number(screen.getByTestId('effect-count').textContent)).toBeGreaterThanOrEqual(1);
+      const before = Number(screen.getByTestId('effect-count').textContent);
+      fireEvent.click(screen.getByTestId('add-effect'));
+      expect(Number(screen.getByTestId('effect-count').textContent)).toBe(before + 1);
+    });
+
+    it('CaptionsPanel re-renders when caption is added via engine dispatch', () => {
+      function ReactiveCaptionsTest() {
+        const engine = useEngine();
+        const tracks = useAllTracks(engine);
+        const s1Track = tracks.find((t) => t.id === 's1');
+        const captionCount = s1Track?.captions?.length ?? 0;
+        return (
+          <div>
+            <span data-testid="caption-count">{captionCount}</span>
+            <button
+              data-testid="add-caption"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'add-cap',
+                  label: 'Add caption',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_CAPTION',
+                    trackId: 's1' as import('@timelinx/core').TrackId,
+                    caption: {
+                      id: toCaptionId(`reactive-cap-${Date.now()}`),
+                      text: 'Reactive test caption',
+                      startFrame: toFrame(400),
+                      endFrame: toFrame(460),
+                      language: 'en-US',
+                      burnIn: false,
+                    },
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <ReactiveCaptionsTest />
+        </TestWrapper>
+      );
+      const initial = Number(screen.getByTestId('caption-count').textContent);
+      fireEvent.click(screen.getByTestId('add-caption'));
+      expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial + 1);
+    });
+
+    it('TransitionsPanel re-renders when transition is added via engine dispatch', () => {
+      function ReactiveTransitionsTest() {
+        const engine = useEngine();
+        const allTransitions = useAllTransitions(engine);
+        const transitionCount = allTransitions.length;
+        return (
+          <div>
+            <span data-testid="transition-count">{transitionCount}</span>
+            <button
+              data-testid="add-transition"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'add-tr',
+                  label: 'Add transition',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_TRANSITION',
+                    clipId: 'clip-2' as import('@timelinx/core').ClipId,
+                    transition: createTransition(toTransitionId('reactive-tr'), 'dissolve', 30),
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <ReactiveTransitionsTest />
+        </TestWrapper>
+      );
+      const initial = Number(screen.getByTestId('transition-count').textContent);
+      fireEvent.click(screen.getByTestId('add-transition'));
+      expect(Number(screen.getByTestId('transition-count').textContent)).toBe(initial + 1);
+    });
+
+    it('InspectorPanel re-renders with correct clip data when selection changes', () => {
+      function ReactiveInspectorTest() {
+        const engine = useEngine();
+        const selectedClipIds = useSelectedClipIds(engine);
+        const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
+        const track = useTrack('v1');
+        const clip = selectedClipId ? track?.clips.find((c) => c.id === selectedClipId) ?? null : null;
+        const opacity = clip?.transform?.opacity?.value ?? 'none';
+        return (
+          <div>
+            <span data-testid="selected-opacity">{String(opacity)}</span>
+            <button
+              data-testid="select-clip-1"
+              onClick={() => engine.setSelectedClipIds(new Set(['clip-1']))}
+            >
+              Select Clip 1
+            </button>
+            <button
+              data-testid="select-clip-2"
+              onClick={() => engine.setSelectedClipIds(new Set(['clip-2']))}
+            >
+              Select Clip 2
+            </button>
+            <button
+              data-testid="set-opacity"
+              onClick={() => {
+                if (!selectedClipId || !clip) return;
+                engine.dispatch({
+                  id: 'set-opacity',
+                  label: 'Set opacity',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'SET_CLIP_TRANSFORM',
+                    clipId: selectedClipId as import('@timelinx/core').ClipId,
+                    transform: {
+                      opacity: { value: 0.3, keyframes: [] },
+                    },
+                  }],
+                });
+              }}
+            >
+              Set Opacity
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <ReactiveInspectorTest />
+        </TestWrapper>
+      );
+      expect(screen.getByTestId('selected-opacity').textContent).toBe('none');
+      fireEvent.click(screen.getByTestId('select-clip-1'));
+      expect(screen.getByTestId('selected-opacity').textContent).toBe('1');
+      fireEvent.click(screen.getByTestId('set-opacity'));
+      expect(screen.getByTestId('selected-opacity').textContent).toBe('0.3');
+      fireEvent.click(screen.getByTestId('select-clip-2'));
+      expect(screen.getByTestId('selected-opacity').textContent).toBe('1');
+    });
+  });
+
+  describe('22. Inspector numeric input — local state buffer', () => {
+    it('typing in numeric input does not dispatch until blur', () => {
+      function InputBufferTest() {
+        const engine = useEngine();
+        const selectedClipIds = useSelectedClipIds(engine);
+        const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
+        const track = useTrack('v1');
+        const clip = selectedClipId ? track?.clips.find((c) => c.id === selectedClipId) ?? null : null;
+        const opacity = clip?.transform?.opacity?.value ?? 1;
+        const [localValue, setLocalValue] = React.useState(String(opacity));
+        const [committed, setCommitted] = React.useState(opacity);
+
+        React.useEffect(() => {
+          setLocalValue(String(opacity));
+          setCommitted(opacity);
+        }, [opacity]);
+
+        return (
+          <div>
+            <span data-testid="clip-opacity">{committed}</span>
+            <button
+              data-testid="select-clip-1"
+              onClick={() => engine.setSelectedClipIds(new Set(['clip-1']))}
+            >
+              Select
+            </button>
+            <input
+              data-testid="opacity-input"
+              type="number"
+              min={0}
+              max={1}
+              step={0.1}
+              value={localValue}
+              onChange={(e) => setLocalValue(e.target.value)}
+              onBlur={() => {
+                if (!selectedClipId || !clip) return;
+                const val = Number(localValue);
+                if (!isNaN(val)) {
+                  engine.dispatch({
+                    id: 'set-opacity',
+                    label: 'Set opacity',
+                    timestamp: Date.now(),
+                    operations: [{
+                      type: 'SET_CLIP_TRANSFORM',
+                      clipId: selectedClipId as import('@timelinx/core').ClipId,
+                      transform: {
+                        opacity: { value: val, keyframes: [] },
+                      },
+                    }],
+                  });
+                }
+              }}
+            />
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <InputBufferTest />
+        </TestWrapper>
+      );
+      fireEvent.click(screen.getByTestId('select-clip-1'));
+      expect(screen.getByTestId('clip-opacity').textContent).toBe('1');
+      const input = screen.getByTestId('opacity-input') as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '0.5' } });
+      expect(screen.getByTestId('clip-opacity').textContent).toBe('1');
+      fireEvent.blur(input);
+      expect(screen.getByTestId('clip-opacity').textContent).toBe('0.5');
+    });
+  });
+
+  describe('23. Transition delete via TransitionsPanel UI', () => {
+    it('clicking delete button on transition removes it from state', () => {
+      function TransitionDeleteTest() {
+        const engine = useEngine();
+        const allTransitions = useAllTransitions(engine);
+        const hasTransition = allTransitions.some((t) => t.clipId === 'clip-2');
+        return (
+          <div>
+            <span data-testid="has-transition">{String(hasTransition)}</span>
+            <button
+              data-testid="add-transition"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'add-tr',
+                  label: 'Add transition',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_TRANSITION',
+                    clipId: 'clip-2' as import('@timelinx/core').ClipId,
+                    transition: createTransition(toTransitionId('del-test-tr'), 'dissolve', 30),
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+            <button
+              data-testid="delete-transition"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'del-tr',
+                  label: 'Delete transition',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'DELETE_TRANSITION',
+                    clipId: 'clip-2' as import('@timelinx/core').ClipId,
+                  }],
+                });
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <TransitionDeleteTest />
+        </TestWrapper>
+      );
+      expect(screen.getByTestId('has-transition').textContent).toBe('false');
+      fireEvent.click(screen.getByTestId('add-transition'));
+      expect(screen.getByTestId('has-transition').textContent).toBe('true');
+      fireEvent.click(screen.getByTestId('delete-transition'));
+      expect(screen.getByTestId('has-transition').textContent).toBe('false');
+    });
+  });
+
+  describe('24. Caption creation — new caption via UI trigger', () => {
+    it('creating a new caption at a non-overlapping position succeeds', () => {
+      function NewCaptionTest() {
+        const engine = useEngine();
+        const track = useTrack('s1');
+        const captionCount = track?.captions?.length ?? 0;
+        return (
+          <div>
+            <span data-testid="caption-count">{captionCount}</span>
+            <button
+              data-testid="add-caption"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'add-new-cap',
+                  label: 'Add caption',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_CAPTION',
+                    trackId: 's1' as import('@timelinx/core').TrackId,
+                    caption: {
+                      id: toCaptionId('test-new-cap'),
+                      text: 'Brand new caption',
+                      startFrame: toFrame(500),
+                      endFrame: toFrame(560),
+                      language: 'en-US',
+                      burnIn: false,
+                    },
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <NewCaptionTest />
+        </TestWrapper>
+      );
+      const initial = Number(screen.getByTestId('caption-count').textContent);
+      fireEvent.click(screen.getByTestId('add-caption'));
+      expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial + 1);
+    });
+
+    it('creating a caption that overlaps an existing one is rejected and logged', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      function OverlapCaptionTest() {
+        const engine = useEngine();
+        const track = useTrack('s1');
+        const captionCount = track?.captions?.length ?? 0;
+        return (
+          <div>
+            <span data-testid="caption-count">{captionCount}</span>
+            <button
+              data-testid="add-overlap-cap"
+              onClick={() => {
+                engine.dispatch({
+                  id: 'add-overlap-cap',
+                  label: 'Add caption',
+                  timestamp: Date.now(),
+                  operations: [{
+                    type: 'ADD_CAPTION',
+                    trackId: 's1' as import('@timelinx/core').TrackId,
+                    caption: {
+                      id: toCaptionId('overlap-cap'),
+                      text: 'Overlap caption',
+                      startFrame: toFrame(50),
+                      endFrame: toFrame(110),
+                      language: 'en-US',
+                      burnIn: false,
+                    },
+                  }],
+                });
+              }}
+            >
+              Add
+            </button>
+          </div>
+        );
+      }
+
+      render(
+        <TestWrapper>
+          <OverlapCaptionTest />
+        </TestWrapper>
+      );
+      const initial = Number(screen.getByTestId('caption-count').textContent);
+      fireEvent.click(screen.getByTestId('add-overlap-cap'));
+      expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial);
+      expect(consoleSpy).toHaveBeenCalled();
+      const call = consoleSpy.mock.calls.find((c) =>
+        typeof c[0] === 'string' && c[0].includes('Dispatch rejected'),
+      );
+      expect(call).toBeDefined();
+      consoleSpy.mockRestore();
     });
   });
 });

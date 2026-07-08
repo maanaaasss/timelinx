@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
-import { useEngine, useSelectedClipIds } from '@timelinx/react';
+import { useEngine, useSelectedClipIds, useClipEffects } from '@timelinx/react';
 import { createEffect, toEffectId } from '@timelinx/core';
-import type { Effect, ClipId, TrackId } from '@timelinx/core';
+import type { ClipId } from '@timelinx/core';
 
 const EFFECT_TYPES = [
   { type: 'blur', label: 'Blur' },
@@ -12,39 +12,16 @@ const EFFECT_TYPES = [
   { type: 'colorCorrect', label: 'Color Correct' },
 ];
 
-function findClipTrackMap(engine: ReturnType<typeof useEngine>) {
-  const state = engine.getState();
-  const map = new Map<string, { trackId: TrackId; clip: Effect['id'] extends string ? import('@timelinx/core').Clip : never }>();
-  for (const track of state.timeline.tracks) {
-    for (const clip of track.clips) {
-      map.set(clip.id, { trackId: track.id as TrackId, clip: clip as never });
-    }
-  }
-  return map;
-}
-
 export function EffectsPanel() {
   const engine = useEngine();
   const selectedClipIds = useSelectedClipIds(engine);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
 
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
-
-  let clip: import('@timelinx/core').Clip | null = null;
-  let trackId: TrackId | null = null;
-  if (selectedClipId) {
-    const map = findClipTrackMap(engine);
-    const entry = map.get(selectedClipId);
-    if (entry) {
-      clip = entry.clip;
-      trackId = entry.trackId;
-    }
-  }
-
-  const effects: readonly Effect[] = clip?.effects ?? [];
+  const effects = useClipEffects(engine, selectedClipId ?? '');
 
   const handleAddEffect = useCallback((effectType: string) => {
-    if (!selectedClipId || !trackId) return;
+    if (!selectedClipId) return;
     const effect = createEffect(
       toEffectId(`effect-${Date.now()}`),
       effectType,
@@ -57,7 +34,7 @@ export function EffectsPanel() {
       operations: [{ type: 'ADD_EFFECT', clipId: selectedClipId as ClipId, effect }],
     });
     setAddMenuOpen(false);
-  }, [engine, selectedClipId, trackId]);
+  }, [engine, selectedClipId]);
 
   const handleRemoveEffect = useCallback((effectId: string) => {
     if (!selectedClipId) return;

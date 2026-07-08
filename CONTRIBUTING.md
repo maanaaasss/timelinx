@@ -264,6 +264,10 @@ Fixes #87
    ```
    Select the affected package(s), the bump type (patch/minor/major), and provide a summary.
 
+### Definition of Done
+
+Work is **not considered done** until it is committed, pushed, and passing CI on a real PR. Local-only verification is a checkpoint, not a finish line. Every verified fix or completed phase must result in a commit and push within the same session — do not leave verified work sitting uncommitted locally.
+
 ### PR Requirements
 
 | Requirement | Enforced By |

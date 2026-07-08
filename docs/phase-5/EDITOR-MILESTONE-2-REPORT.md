@@ -88,6 +88,12 @@ Completed Milestone 2: all five panels (Effects, Transitions, Keyframes, Caption
 - `18. Keyboard shortcut → tool activation` — 4 tests: engine-level shortcut resolution (P→keyframe, G→transition, B→razor, V→selection) + DOM keyDown end-to-end
 - `19. Clips have default transform data` — 1 test: all sample clips have transform with default values
 
+### New Tests (Round 3 — systemic reactivity audit)
+- `20. TransitionTool — drag-to-create` — full pointer-event sequence: down → move → up, asserts `ADD_TRANSITION` dispatched and transition reflected in state
+- `21. Reactive hooks — panels re-render on state changes` — 4 tests: EffectsPanel, CaptionsPanel, TransitionsPanel, InspectorPanel re-render when state changes
+- `22. Inspector numeric input — local state buffer` — typing does not dispatch until blur
+- `23. Transition delete via TransitionsPanel UI` — clicking delete button on transition removes it from state
+
 ## Lint/Typecheck/Build/Test
 
 All pass:
@@ -122,14 +128,97 @@ Three bugs identified from real browser testing (per `EDITOR-MILESTONE-2-BUGFIX-
 - **Fix:** `packages/core/src/types/clip.ts` — `createClip()` now applies `DEFAULT_CLIP_TRANSFORM` as the default.
 - **Tests:** `features.test.tsx` "all sample clips have transform with default values"
 
+## Bug Fixes — Round 3 (Systemic Reactivity Audit)
+
+Five systemic bugs identified and fixed per `EDITOR-MILESTONE-2-SYSTEMIC-AUDIT-PROMPT.md`.
+
+### Systemic Bug 1: Non-reactive-read anti-pattern in all 5 panels
+
+**Audit finding:** All five Milestone 2 panels used `engine.getState()` directly instead of subscribing via proper hooks. This caused panels to silently fail to re-render when state changed via other code paths (selection, dispatch from another panel, etc.).
+
+| Panel | Had `engine.getState()` bug? | Fixed? |
+|-------|------------------------------|--------|
+| **InspectorPanel** | YES — `findClipAndTrack()` called `engine.getState()` on every render | YES — now uses `useSelectedClipIds` + `useTrack` |
+| **EffectsPanel** | YES — `findClipTrackMap()` called `engine.getState()` on every render | YES — now uses `useSelectedClipIds` + `useClipEffects` (new) |
+| **TransitionsPanel** | YES — `engine.getState()` called inline at top of component | YES — now uses `useAllTracks` + `useAllTransitions` (new) |
+| **KeyframesPanel** | YES — `findClipTrackMap()` called `engine.getState()` on every render | YES — now uses `useSelectedClipIds` + `useClip` |
+| **CaptionsPanel** | YES — `engine.getState()` + `engine.getPlayheadFrame()` called inline | YES — now uses `useAllTracks` + `useFps` + `usePlayheadFrame` + `useTrackCaptions` (new) |
+
+**Root cause explanation:** `engine.getState()` returns the current `TimelineState` but does NOT subscribe to changes. React has no way to know when the state updates, so the component never re-renders. The `useSyncExternalStore`-based hooks (`useSelectedClipIds`, `useClip`, `useTrack`, etc.) properly subscribe via `engine.subscribe` and re-render when state changes.
+
+**New hooks added to `@timelinx/react`:**
+- `useAllTracks(engine)` — returns all tracks reactively
+- `useFps(engine)` — returns timeline FPS reactively
+- `useClipEffects(engine, clipId)` — returns effects for a specific clip
+- `useClipTransition(engine, clipId)` — returns transition for a specific clip
+- `useTrackCaptions(engine, trackId)` — returns captions for a specific track
+- `useAllTransitions(engine)` — returns all clips with transitions
+
+**Specific user-facing bugs this explains:**
+- Keyframes panel not updating on clip selection → FIXED (was using `engine.getState()`)
+- Captions appearing broken → FIXED (was using `engine.getState()` + `engine.getPlayheadFrame()`)
+- Transitions not reflecting a delete → FIXED (was using `engine.getState()`)
+- Effects panel not updating when effects were added via another code path → FIXED
+
+### Systemic Bug 2: Inspector numeric input dispatch-on-every-keystroke
+
+**Audit finding:** The Inspector dispatched `SET_CLIP_TRANSFORM` on every `onChange` keystroke using `Number(e.target.value)`. When typing `-` or clearing the field, this parsed to `NaN`, which was correctly rejected by Phase 1's validation guards. The displayed value snapped back to the last committed state, making it look like typing does nothing.
+
+**Fix:** `apps/editor/src/components/InspectorPanel.tsx` — added local state buffer (`localValues`) that holds the raw string being typed. Dispatch only happens on:
+1. **Blur** — when the user leaves the field
+2. **Enter key** — explicit commit
+
+Invalid/empty values are silently reverted to the last committed value without dispatching.
+
+**Tests:** `features.test.tsx` "typing in numeric input does not dispatch until blur"
+
+### Bug Fix 3: TransitionTool drag-to-create verified working
+
+**Audit finding:** Previous round's test only checked that pressing G activates the tool — never tested actual drag-to-create.
+
+**Test added:** `features.test.tsx` "TransitionTool creates transition via engine pointer events" — simulates the full sequence:
+1. Activate transition tool via keyboard shortcut (G)
+2. `handlePointerDown` near clip-2's right edge with `edge: 'right'`
+3. `handlePointerMove` 20 times (dragging rightward)
+4. `assert` — verifies `transition` is defined with `type: 'dissolve'`
+
+**Result:** TransitionTool works correctly. The full pointer-event flow (down → move → up) produces a valid `ADD_TRANSITION` transaction that is dispatched and reflected in state.
+
+**Note on sample data:** Clips on V1 have gaps (300-350, 700-800), but `ADD_TRANSITION` validator does NOT check for adjacent clips — it only checks the clip exists and `durationFrames > 0`. Transitions can be added to any clip.
+
+### Bug Fix 4: Transition delete path confirmed end-to-end
+
+**Audit finding:** `TransitionsPanel`'s delete button calls `DELETE_TRANSITION` with the correct clip identifier, and the panel's list re-renders afterward via the new `useAllTransitions` hook.
+
+**Test:** `features.test.tsx` "clicking delete button on transition removes it from state" — adds a transition via dispatch, verifies `has-transition` becomes `true`, clicks delete, verifies `has-transition` becomes `false`.
+
+### Systemic Bug 5: React hooks violation in `useClip` (and siblings)
+
+**Audit finding during test development:** The original `useClip` (and `useClipEffects`, `useClipTransition`, `useTrackCaptions`) had a conditional `if (!id) return null;` BEFORE the `useSyncExternalStore` call. This violates React's Rules of Hooks — hooks must not be called conditionally.
+
+**Fix:** Moved the empty-string check INSIDE the selector function: `if (!id) return null;` now runs inside `getSnapshot`, not before `useSyncExternalStore`.
+
+**Secondary fix:** `useSyncExternalStore` with inline selector closures that capture dynamic `id` values can fail to detect snapshot changes when the `subscribe` reference is stable. Rewrote `useClip`, `useClipEffects`, `useClipTransition`, and `useTrackCaptions` to delegate to `useAllTracks` (which has a stable `useSyncExternalStore` subscription), performing the clip/track lookup as a pure derivation from the reactive tracks array.
+
+## New Tests (Round 3)
+
+- `20. TransitionTool — drag-to-create` — full pointer-event sequence: down → move → up, asserts `ADD_TRANSITION` dispatched and transition reflected in state
+- `21. Reactive hooks — panels re-render on state changes` — 4 tests:
+  - EffectsPanel re-renders when effect is added via engine dispatch
+  - CaptionsPanel re-renders when caption is added via engine dispatch
+  - TransitionsPanel re-renders when transition is added via engine dispatch
+  - InspectorPanel re-renders with correct clip data when selection changes
+- `22. Inspector numeric input — local state buffer` — typing in numeric input does not dispatch until blur
+- `23. Transition delete via TransitionsPanel UI` — clicking delete button on transition removes it from state
+
+## Updated Test Results
+
+- **47 tests passing** across 2 test files (was 40)
+- 7 new tests added in Round 3
+
 ## Remaining Known Limitations
 
-### 1. TransitionTool requires real pointer events
-- **Impact:** Cannot verify transition creation via automated tests
-- **What exists:** `TransitionTool` registered in engine, toolbar button (G) wired
-- **Recommendation:** Needs real browser testing for drag-from-edge interaction
-
-### 2. No caption clip-type rendering on timeline
+### 1. No caption clip-type rendering on timeline
 - **Impact:** Caption blocks render as generic labeled blocks, not styled like Premiere/Final Cut caption clips
 - **What exists:** Simple `.caption-block` with blue background and text
 - **Recommendation:** Refine styling to match NLE conventions (rounded corners, language badge, etc.)

@@ -1,18 +1,7 @@
 import { useState, useCallback } from 'react';
-import { useEngine, useSelectedClipIds, usePlayheadFrame } from '@timelinx/react';
+import { useEngine, useSelectedClipIds, usePlayheadFrame, useClip } from '@timelinx/react';
 import { toKeyframeId, LINEAR_EASING } from '@timelinx/core';
-import type { ClipId, TrackId, Clip, Effect, Keyframe } from '@timelinx/core';
-
-function findClipTrackMap(engine: ReturnType<typeof useEngine>) {
-  const state = engine.getState();
-  const map = new Map<string, { trackId: TrackId; clip: Clip }>();
-  for (const track of state.timeline.tracks) {
-    for (const clip of track.clips) {
-      map.set(clip.id, { trackId: track.id as TrackId, clip });
-    }
-  }
-  return map;
-}
+import type { ClipId, Effect, Keyframe } from '@timelinx/core';
 
 export function KeyframesPanel() {
   const engine = useEngine();
@@ -21,13 +10,7 @@ export function KeyframesPanel() {
   const [selectedEffectIdx, setSelectedEffectIdx] = useState(0);
 
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
-
-  let clip: Clip | null = null;
-  if (selectedClipId) {
-    const map = findClipTrackMap(engine);
-    const entry = map.get(selectedClipId);
-    if (entry) clip = entry.clip;
-  }
+  const clip = useClip(selectedClipId ?? '');
 
   const effects: readonly Effect[] = clip?.effects ?? [];
   const selectedEffect = effects[selectedEffectIdx] ?? null;

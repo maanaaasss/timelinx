@@ -203,6 +203,10 @@ export class TimelineEngine {
       return { accepted: false, reason: 'INVARIANT_VIOLATED', message: err instanceof Error ? err.message : 'coreDispatch threw' };
     }
     if (!result.accepted) {
+      console.error(
+        `[TimelineEngine] Dispatch rejected: ${result.reason} — ${result.message}`,
+        { transactionId: transaction.id, label: transaction.label, reason: result.reason },
+      );
       return result;
     }
 
