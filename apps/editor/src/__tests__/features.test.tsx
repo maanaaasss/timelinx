@@ -31,6 +31,7 @@ import {
   toKeyframeId,
   LINEAR_EASING,
   SelectionTool,
+  type TimelineFrame,
 } from '@timelinx/core';
 import React from 'react';
 
@@ -1745,12 +1746,12 @@ describe('Editor — Feature Verification', () => {
       const tool = new SelectionTool();
       const ctx = {
         state: stateBefore,
-        snapIndex: null,
+        snapIndex: { points: [], builtAt: Date.now(), enabled: false },
         pixelsPerFrame: 0.5,
         modifiers: { shift: false, alt: false, ctrl: false, meta: false },
         frameAtX: (x: number) => toFrame(Math.round(x / 0.5)),
         trackAtY: () => null,
-        snap: (frame: unknown) => frame,
+        snap: (frame: TimelineFrame) => frame,
       };
 
       // Pointer down on caption
