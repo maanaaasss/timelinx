@@ -336,7 +336,7 @@ describe('handleKeyDown', () => {
     const engine = makeEngine(); // NoOpTool.onKeyDown returns null
     const listener = vi.fn();
     engine.subscribe(listener);
-    engine.handleKeyDown(makeKeyEvent('z'), noModifiers);
+    engine.handleKeyDown(makeKeyEvent('a'), noModifiers);
     expect(listener).not.toHaveBeenCalled();
   });
 
