@@ -2,6 +2,7 @@ import { useTrack, useProvisional } from '@timelinx/react';
 import type { Clip, Caption } from '@timelinx/core';
 import { ClipView } from './ClipView';
 import { GhostClip } from './GhostClip';
+import { GhostCaption } from './GhostCaption';
 
 interface TrackViewProps {
   trackId: string;
@@ -35,12 +36,18 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
 
   const ghostMap = new Map<string, Clip>();
   const targetedIds = new Set<string>();
+  const ghostCaptions: Caption[] = [];
   if (provisional && provisional.clips.length > 0) {
     for (const c of provisional.clips) {
       if (c.trackId === trackId) {
         ghostMap.set(c.id, c as Clip);
         targetedIds.add(c.id);
       }
+    }
+  }
+  if (provisional && provisional.captions && provisional.captions.length > 0) {
+    for (const c of provisional.captions) {
+      ghostCaptions.push(c);
     }
   }
 
@@ -75,6 +82,9 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
         ))}
         {captions.map((caption) => (
           <CaptionBlock key={caption.id} caption={caption} ppf={ppf} trackId={trackId} />
+        ))}
+        {ghostCaptions.map((ghost) => (
+          <GhostCaption key={`ghost-${ghost.id}`} caption={ghost} ppf={ppf} />
         ))}
       </div>
     </div>

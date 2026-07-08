@@ -13,7 +13,7 @@
 import type { TimelineFrame }            from '../types/frame';
 import type { TrackId }                  from '../types/track';
 import type { ClipId, Clip }             from '../types/clip';
-import type { CaptionId }                from '../types/caption';
+import type { CaptionId, Caption }      from '../types/caption';
 import type { TimelineState }            from '../types/state';
 import type { Transaction }              from '../types/operations';
 import type { SnapIndex } from '../snap-index';
@@ -94,6 +94,7 @@ export type RubberBandRegion = {
  *  can distinguish provisional from committed Clip[] arrays. */
 export type ProvisionalState = {
   readonly clips:        readonly Clip[];
+  readonly captions?:    readonly Caption[];  // ghost captions during drag
   readonly rubberBand?:  RubberBandRegion;  // populated during rubber-band select drag
   readonly isProvisional: true;
 };

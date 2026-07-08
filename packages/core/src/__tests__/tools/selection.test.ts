@@ -649,4 +649,36 @@ describe('SelectionTool — caption drag', () => {
     tool.onPointerMove(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(500), x: 50 }), ctx);
     expect(tool.getCursor(ctx)).toBe('grabbing');
   });
+
+  it('returns provisional ghost caption during drag', () => {
+    const state = makeStateWithCaption();
+    const ctx = makeCtx(state);
+    const tool = new SelectionTool();
+
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0 }), ctx);
+    const provisional = tool.onPointerMove(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(500), x: 50 }), ctx);
+
+    expect(provisional).not.toBeNull();
+    expect(provisional!.isProvisional).toBe(true);
+    expect(provisional!.clips).toHaveLength(0);
+    expect(provisional!.captions).toHaveLength(1);
+    expect(provisional!.captions![0].id).toBe(toCaptionId('cap-1'));
+    expect(Number(provisional!.captions![0].startFrame)).toBe(500);
+    expect(Number(provisional!.captions![0].endFrame)).toBe(590);
+  });
+
+  it('shift-click toggles caption selection', () => {
+    const state = makeStateWithCaption();
+    const ctx = makeCtx(state);
+    const tool = new SelectionTool();
+
+    // First click selects
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0, shiftKey: false }), ctx);
+    expect(tool.getCaptionSelection().size).toBe(1);
+    expect(tool.getCaptionSelection().has(toCaptionId('cap-1'))).toBe(true);
+
+    // Shift-click deselects
+    tool.onPointerDown(makeEv({ clipId: null, captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1'), frame: toFrame(0), x: 0, shiftKey: true }), ctx);
+    expect(tool.getCaptionSelection().size).toBe(0);
+  });
 });

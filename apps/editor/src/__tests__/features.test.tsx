@@ -1791,5 +1791,41 @@ describe('Editor — Feature Verification', () => {
       expect(Number(captionAfter!.startFrame)).toBe(400);
       expect(Number(captionAfter!.endFrame)).toBe(490); // 400 + 90
     });
+
+    it('SelectionTool returns provisional ghost caption during drag', () => {
+      const engine = createEditorEngine();
+      const stateBefore = engine.getState();
+
+      const tool = new SelectionTool();
+      const ctx = {
+        state: stateBefore,
+        snapIndex: { points: [], builtAt: Date.now(), enabled: false },
+        pixelsPerFrame: 0.5,
+        modifiers: { shift: false, alt: false, ctrl: false, meta: false },
+        frameAtX: (x: number) => toFrame(Math.round(x / 0.5)),
+        trackAtY: () => null,
+        snap: (frame: TimelineFrame) => frame,
+      };
+
+      // Pointer down on caption
+      tool.onPointerDown({
+        frame: toFrame(0), trackId: toTrackId('s1'), clipId: null,
+        captionId: toCaptionId('cap-1'), x: 0, y: 50, buttons: 1,
+        shiftKey: false, altKey: false, metaKey: false,
+      }, ctx);
+
+      // Drag right — should return provisional ghost
+      const provisional = tool.onPointerMove({
+        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
+        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 1,
+        shiftKey: false, altKey: false, metaKey: false,
+      }, ctx);
+
+      expect(provisional).not.toBeNull();
+      expect(provisional!.isProvisional).toBe(true);
+      expect(provisional!.clips).toHaveLength(0);
+      expect(provisional!.captions).toHaveLength(1);
+      expect(provisional!.captions![0].id).toBe(toCaptionId('cap-1'));
+    });
   });
 });

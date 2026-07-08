@@ -370,6 +370,20 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Ghost caption during drag */
+.caption-block.ghost {
+  opacity: 0.7;
+  border: 2px dashed rgba(100, 150, 255, 0.8);
+  background: rgba(100, 150, 255, 0.2);
+  pointer-events: none;
+}
+
+/* Selected caption */
+.caption-block.selected {
+  border: 2px solid rgba(100, 200, 255, 0.9);
+  box-shadow: 0 0 8px rgba(100, 200, 255, 0.5);
+}
+
 /* Playhead */
 .playhead {
   position: absolute;
