@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from '../App';
 import { createEditorEngine } from '../createEditorEngine';
@@ -1267,19 +1267,19 @@ describe('Editor — Feature Verification', () => {
       const rightEdgePx = Number(clip2!.timelineEnd) * pixelsPerFrame;
 
       engine.handlePointerDown(
-        { x: rightEdgePx - 2, y: 100, clientX: rightEdgePx - 2, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+        { x: rightEdgePx - 2, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
         { shift: false, alt: false, ctrl: false, meta: false },
       );
 
       for (let i = 0; i < 20; i++) {
         engine.handlePointerMove(
-          { x: rightEdgePx + i * 5, y: 100, clientX: rightEdgePx + i * 5, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+          { x: rightEdgePx + i * 5, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 1, frame: clip2!.timelineEnd },
           { shift: false, alt: false, ctrl: false, meta: false },
         );
       }
 
       engine.handlePointerUp(
-        { x: rightEdgePx + 100, y: 100, clientX: rightEdgePx + 100, clientY: 100, clipId: 'clip-2', trackId: 'v1', edge: 'right', shift: false, alt: false, ctrl: false, meta: false, frame: clip2!.timelineEnd },
+        { x: rightEdgePx + 100, y: 100, clipId: toClipId('clip-2'), trackId: toTrackId('v1'), edge: 'right', shiftKey: false, altKey: false, metaKey: false, buttons: 0, frame: clip2!.timelineEnd },
         { shift: false, alt: false, ctrl: false, meta: false },
       );
 
@@ -1716,7 +1716,7 @@ describe('Editor — Feature Verification', () => {
       fireEvent.click(screen.getByTestId('add-overlap-cap'));
       expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial);
       expect(consoleSpy).toHaveBeenCalled();
-      const call = consoleSpy.mock.calls.find((c) =>
+      const call = consoleSpy.mock.calls.find((c: unknown[]) =>
         typeof c[0] === 'string' && c[0].includes('Dispatch rejected'),
       );
       expect(call).toBeDefined();
