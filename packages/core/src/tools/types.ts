@@ -13,6 +13,7 @@
 import type { TimelineFrame }            from '../types/frame';
 import type { TrackId }                  from '../types/track';
 import type { ClipId, Clip }             from '../types/clip';
+import type { CaptionId, Caption }      from '../types/caption';
 import type { TimelineState }            from '../types/state';
 import type { Transaction }              from '../types/operations';
 import type { SnapIndex } from '../snap-index';
@@ -53,6 +54,7 @@ export type TimelinePointerEvent = {
   readonly frame:    TimelineFrame;
   readonly trackId:  TrackId | null;
   readonly clipId:   ClipId  | null;  // clip under cursor at event time, if any
+  readonly captionId: CaptionId | null; // caption under cursor at event time, if any
   readonly x:        number;          // client pixels (for snap radius math)
   readonly y:        number;
   readonly buttons:  number;          // same as PointerEvent.buttons
@@ -92,6 +94,7 @@ export type RubberBandRegion = {
  *  can distinguish provisional from committed Clip[] arrays. */
 export type ProvisionalState = {
   readonly clips:        readonly Clip[];
+  readonly captions?:    readonly Caption[];  // ghost captions during drag
   readonly rubberBand?:  RubberBandRegion;  // populated during rubber-band select drag
   readonly isProvisional: true;
 };

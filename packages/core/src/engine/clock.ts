@@ -1,5 +1,5 @@
 /**
- * Clock abstraction — Phase 6 Step 1
+ * Clock abstraction
  *
  * Allows PlayheadController to run without real rAF (swapped for mock in tests).
  */

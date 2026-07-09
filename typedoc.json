@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["packages/core/src/public-api.ts"],
+  "out": "docs/api/core",
+  "tsconfig": "packages/core/tsconfig.json",
+  "name": "@timelinx/core",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeNotDocumented": true
+}

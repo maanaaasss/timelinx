@@ -35,6 +35,7 @@ function makePointerEv(x: number): TimelinePointerEvent {
     frame: {} as TimelinePointerEvent['frame'],
     trackId: null,
     clipId: null,
+    captionId: null,
     x,
     y: 0,
     buttons: 1,

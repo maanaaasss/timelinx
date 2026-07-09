@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["packages/react/src/index.ts"],
+  "out": "docs/api/react",
+  "tsconfig": "packages/react/tsconfig.json",
+  "name": "@timelinx/react",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "excludeNotDocumented": false
+}

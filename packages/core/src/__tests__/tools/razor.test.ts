@@ -144,6 +144,7 @@ function makeEv(overrides: {
   frame?:    TimelineFrame;
   trackId?:  TrackId | null;
   clipId?:   ClipId  | null;
+  captionId?: import('@timelinx/core').CaptionId | null;
   x?: number; y?: number; buttons?: number;
   shiftKey?: boolean; altKey?: boolean; metaKey?: boolean;
 } = {}): TimelinePointerEvent {
@@ -151,6 +152,7 @@ function makeEv(overrides: {
     frame:    overrides.frame   ?? toFrame(0),
     trackId:  overrides.trackId ?? T1_ID,
     clipId:   overrides.clipId  ?? null,
+    captionId: overrides.captionId ?? null,
     x:        overrides.x       ?? 0,
     y:        overrides.y       ?? 24,
     buttons:  overrides.buttons ?? 1,

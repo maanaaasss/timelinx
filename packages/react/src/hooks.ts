@@ -29,6 +29,12 @@ import {
   useChange,
   usePlaybackEngine,
   useSelectedClipIds,
+  useAllTracks,
+  useFps,
+  useClipEffects,
+  useClipTransition,
+  useTrackCaptions,
+  useAllTransitions,
 } from './hooks/index';
 
 export {
@@ -47,6 +53,12 @@ export {
   useChange,
   usePlaybackEngine,
   useSelectedClipIds,
+  useAllTracks,
+  useFps,
+  useClipEffects,
+  useClipTransition,
+  useTrackCaptions,
+  useAllTransitions,
 };
 
 // ---------------------------------------------------------------------------
@@ -121,6 +133,30 @@ export function useCanRedo(): boolean {
 
 export function useProvisional(): ProvisionalState | null {
   return useProvisionalEngine(useTimelineContext());
+}
+
+export function useAllTracksContext(): ReturnType<typeof useAllTracks> {
+  return useAllTracks(useTimelineContext());
+}
+
+export function useFpsContext(): ReturnType<typeof useFps> {
+  return useFps(useTimelineContext());
+}
+
+export function useClipEffectsContext(clipId: ClipId | string): ReturnType<typeof useClipEffects> {
+  return useClipEffects(useTimelineContext(), clipId);
+}
+
+export function useClipTransitionContext(clipId: ClipId | string): ReturnType<typeof useClipTransition> {
+  return useClipTransition(useTimelineContext(), clipId);
+}
+
+export function useTrackCaptionsContext(trackId: TrackId | string): ReturnType<typeof useTrackCaptions> {
+  return useTrackCaptions(useTimelineContext(), trackId);
+}
+
+export function useAllTransitionsContext(): ReturnType<typeof useAllTransitions> {
+  return useAllTransitions(useTimelineContext());
 }
 
 // ---------------------------------------------------------------------------

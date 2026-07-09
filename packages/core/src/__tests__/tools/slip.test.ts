@@ -89,12 +89,14 @@ function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): To
 
 function makeEv(overrides: {
   frame?: TimelineFrame; trackId?: TrackId | null; clipId?: ClipId | null;
+  captionId?: import('@timelinx/core').CaptionId | null;
   x?: number; y?: number;
 } = {}): TimelinePointerEvent {
   return {
     frame:    overrides.frame   ?? toFrame(0),
     trackId:  overrides.trackId ?? TRACK_ID,
     clipId:   overrides.clipId  ?? null,
+    captionId: overrides.captionId ?? null,
     x:        overrides.x       ?? 0,
     y:        overrides.y       ?? 24,
     buttons:  1,

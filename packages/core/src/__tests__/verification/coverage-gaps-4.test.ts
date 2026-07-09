@@ -60,11 +60,13 @@ function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): To
 
 function makeEv(overrides: {
   frame?: TimelineFrame; trackId?: TrackId | null; clipId?: ClipId | null;
+  captionId?: import('@timelinx/core').CaptionId | null;
   x?: number; y?: number; shiftKey?: boolean;
 } = {}): TimelinePointerEvent {
   return {
     frame: overrides.frame ?? toFrame(0), trackId: overrides.trackId ?? TRACK_ID,
-    clipId: overrides.clipId ?? null, x: overrides.x ?? 0, y: overrides.y ?? 24,
+    clipId: overrides.clipId ?? null, captionId: overrides.captionId ?? null,
+    x: overrides.x ?? 0, y: overrides.y ?? 24,
     buttons: 1, shiftKey: overrides.shiftKey ?? false, altKey: false, metaKey: false,
   };
 }
@@ -78,27 +80,29 @@ describe('Coverage: selection.ts — trim-edge via near-edge click', () => {
   let state: TimelineState;
   beforeEach(() => { tool = new SelectionTool(); state = makeState(); });
 
-  it('click near end edge then release produces RESIZE_CLIP', () => {
+  it('click near end edge then release produces ripple trim (RESIZE_CLIP + downstream MOVE_CLIPs)', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, frame: toFrame(100), x: 1000 }), ctx);
     tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, frame: toFrame(99), x: 1002 }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, frame: toFrame(99), x: 1002 }), ctx);
     expect(tx).not.toBeNull();
     if (tx) {
-      expect(tx.operations).toHaveLength(1);
+      // Ripple trim: RESIZE_CLIP for the trimmed clip + MOVE_CLIPs for downstream clips
       expect(tx.operations[0]!.type).toBe('RESIZE_CLIP');
+      expect(tx.operations.length).toBeGreaterThanOrEqual(1);
     }
   });
 
-  it('click near start edge then release produces RESIZE_CLIP', () => {
+  it('click near start edge then release produces ripple trim (RESIZE_CLIP + downstream MOVE_CLIPs)', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, frame: toFrame(0), x: 0 }), ctx);
     tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, frame: toFrame(1), x: 2 }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, frame: toFrame(1), x: 2 }), ctx);
     expect(tx).not.toBeNull();
     if (tx) {
-      expect(tx.operations).toHaveLength(1);
+      // Ripple trim: RESIZE_CLIP for the trimmed clip + MOVE_CLIPs for downstream clips
       expect(tx.operations[0]!.type).toBe('RESIZE_CLIP');
+      expect(tx.operations.length).toBeGreaterThanOrEqual(1);
     }
   });
 

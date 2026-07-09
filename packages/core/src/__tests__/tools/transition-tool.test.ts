@@ -86,6 +86,7 @@ function makeEv(overrides: Partial<TimelinePointerEvent> & { x?: number } = {}):
     frame: toFrame(Math.floor(x / PIXELS_PER_FRAME)),
     trackId: TRACK_ID,
     clipId: null,
+    captionId: null,
     x,
     y: 24,
     buttons: overrides.buttons ?? 1,

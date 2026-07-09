@@ -264,6 +264,10 @@ Fixes #87
    ```
    Select the affected package(s), the bump type (patch/minor/major), and provide a summary.
 
+### Definition of Done
+
+Work is **not considered done** until it is committed, pushed, and passing CI on a real PR. Local-only verification is a checkpoint, not a finish line. Every verified fix or completed phase must result in a commit and push within the same session — do not leave verified work sitting uncommitted locally.
+
 ### PR Requirements
 
 | Requirement | Enforced By |
@@ -300,6 +304,19 @@ Releases are automated via [Changesets](https://changesets.dev/) and GitHub Acti
 3. Version bumps follow semantic versioning: `patch` for fixes, `minor` for features, `major` for breaking changes.
 
 **Do not manually version or publish packages.** The automated pipeline handles this.
+
+### Workspace Dependencies and Publishing
+
+Internal packages use `workspace:*` for inter-package dependencies. This is safe **only** because `pnpm publish` (and `pnpm changeset publish`) automatically rewrites `workspace:*` to real version ranges at publish time. A plain `npm publish` would publish with `workspace:*` literally in `package.json`, which is invalid for consumers.
+
+**Critical constraint:** If you change an internal dependency string from a version range (e.g., `^1.0.0-beta.1`) to `workspace:*`, you must ensure the package is published via the automated pipeline (`pnpm changeset publish`), not via `npm publish`. The automated pipeline handles the rewrite correctly.
+
+**Why `workspace:*` is used:** When `@timelinx/react` depends on `@timelinx/core` via `workspace:*`, pnpm resolves to the local workspace copy during development. If a version range like `^1.0.0-beta.1` is used instead, pnpm may install a stale registry copy in the pnpm store, causing TypeScript to resolve against outdated declaration files (this exact issue caused the `beta.1` republish).
+
+**If you encounter stale type errors** after adding exports to `@timelinx/core`:
+1. First try `rm -rf node_modules/.pnpm/@timelinx+core@*` and `pnpm install`
+2. If that doesn't work, rebuild core: `pnpm --filter @timelinx/core build`
+3. Only change `workspace:*` as a last resort, and document why
 
 ---
 

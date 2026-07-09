@@ -60,6 +60,7 @@ function makePointerEvent(frame = 0): TimelinePointerEvent {
     frame:    toFrame(frame),
     trackId:  null,
     clipId:   null,
+    captionId: null,
     x:        0,
     y:        0,
     buttons:  1,
@@ -336,7 +337,7 @@ describe('handleKeyDown', () => {
     const engine = makeEngine(); // NoOpTool.onKeyDown returns null
     const listener = vi.fn();
     engine.subscribe(listener);
-    engine.handleKeyDown(makeKeyEvent('z'), noModifiers);
+    engine.handleKeyDown(makeKeyEvent('a'), noModifiers);
     expect(listener).not.toHaveBeenCalled();
   });
 

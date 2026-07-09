@@ -1,0 +1,769 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>TimelineEngine | @timelinx/core - v1.0.0-beta.1</title><meta name="description" content="Documentation for @timelinx/core"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="../index.html" class="title">@timelinx/core - v1.0.0-beta.1</a>
+<div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+<li><a href="" aria-current="page">TimelineEngine</a></li></ul>
+<h1>Class TimelineEngine</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>TimelineEngine - The main timeline editing engine</p>
+<p>Provides a high-level API for timeline editing with built-in
+undo/redo, validation, and state management.</p>
+</div></section><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L94">engine/timeline-engine.ts:94</a></li></ul></aside>
+<section class="tsd-panel-group tsd-index-group">
+<section class="tsd-panel tsd-index-panel">
+<details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h5 class="tsd-index-heading uppercase">Index</h5></summary>
+<div class="tsd-accordion-details">
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading tsd-anchor-link" id="constructors">Constructors<a href="#constructors" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-index-list"><a href="#constructor" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a>
+</div></section>
+<section class="tsd-index-section">
+<h3 class="tsd-index-heading tsd-anchor-link" id="methods">Methods<a href="#methods" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-index-list"><a href="#addclip" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>add<wbr/>Clip</span></a>
+<a href="#addtrack" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>add<wbr/>Track</span></a>
+<a href="#canredo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>can<wbr/>Redo</span></a>
+<a href="#canundo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>can<wbr/>Undo</span></a>
+<a href="#findclipbyid" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Clip<wbr/>By<wbr/>Id</span></a>
+<a href="#findtrackbyid" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Track<wbr/>By<wbr/>Id</span></a>
+<a href="#getallclips" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>All<wbr/>Clips</span></a>
+<a href="#getalltracks" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>All<wbr/>Tracks</span></a>
+<a href="#getasset" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Asset</span></a>
+<a href="#getclipsatframe" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>At<wbr/>Frame</span></a>
+<a href="#getclipsinrange" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>In<wbr/>Range</span></a>
+<a href="#getclipsontrack" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>On<wbr/>Track</span></a>
+<a href="#getstate" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>State</span></a>
+<a href="#insertedit" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>insert<wbr/>Edit</span></a>
+<a href="#insertmove" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>insert<wbr/>Move</span></a>
+<a href="#moveclip" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Clip</span></a>
+<a href="#movecliptotrack" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Clip<wbr/>To<wbr/>Track</span></a>
+<a href="#movetrack" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Track</span></a>
+<a href="#redo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>redo</span></a>
+<a href="#registerasset" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>register<wbr/>Asset</span></a>
+<a href="#removeclip" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>remove<wbr/>Clip</span></a>
+<a href="#removetrack" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>remove<wbr/>Track</span></a>
+<a href="#resizeclip" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>resize<wbr/>Clip</span></a>
+<a href="#rippledelete" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Delete</span></a>
+<a href="#ripplemove" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Move</span></a>
+<a href="#rippletrim" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Trim</span></a>
+<a href="#settimelineduration" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Timeline<wbr/>Duration</span></a>
+<a href="#settimelinename" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Timeline<wbr/>Name</span></a>
+<a href="#settrackheight" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Track<wbr/>Height</span></a>
+<a href="#subscribe" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>subscribe</span></a>
+<a href="#toggletracklock" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Lock</span></a>
+<a href="#toggletrackmute" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Mute</span></a>
+<a href="#toggletracksolo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Solo</span></a>
+<a href="#trimclip" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>trim<wbr/>Clip</span></a>
+<a href="#undo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>undo</span></a>
+</div></section></div></details></section></section>
+<details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h2 class="tsd-anchor-link" id="constructors-1">Constructors<a href="#constructors-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
+<section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="constructor"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="constructortimelineengine"><span class="tsd-signature-keyword">new</span> <span class="tsd-kind-constructor-signature">TimelineEngine</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">initialState</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimelineState</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">historyLimit</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="" class="tsd-signature-type tsd-kind-class">TimelineEngine</a><a href="#constructortimelineengine" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Create a new timeline engine</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">initialState</span>: <span class="tsd-signature-type">TimelineState</span></span>
+<div class="tsd-comment tsd-typography"><p>Initial timeline state</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">historyLimit</span>: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 50</span></span>
+<div class="tsd-comment tsd-typography"><p>Maximum number of undo steps (default: 50)</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">TimelineEngine</a></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L104">engine/timeline-engine.ts:104</a></li></ul></aside></div></li></ul></section></section></details>
+<details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
+<section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="addclip"><span>add<wbr/>Clip</span><a href="#addclip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="addclip-1"><span class="tsd-kind-call-signature">addClip</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">clip</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#addclip-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Add a clip to a track</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track to add to</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">clip</span>: <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a></span>
+<div class="tsd-comment tsd-typography"><p>Clip to add</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L197">engine/timeline-engine.ts:197</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="addtrack"><span>add<wbr/>Track</span><a href="#addtrack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="addtrack-1"><span class="tsd-kind-call-signature">addTrack</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">track</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Track</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#addtrack-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Add a track</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">track</span>: <span class="tsd-signature-type">Track</span></span>
+<div class="tsd-comment tsd-typography"><p>Track to add</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L307">engine/timeline-engine.ts:307</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="canredo"><span>can<wbr/>Redo</span><a href="#canredo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="canredo-1"><span class="tsd-kind-call-signature">canRedo</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><a href="#canredo-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Check if redo is available</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><p>true if redo is available</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L502">engine/timeline-engine.ts:502</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="canundo"><span>can<wbr/>Undo</span><a href="#canundo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="canundo-1"><span class="tsd-kind-call-signature">canUndo</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><a href="#canundo-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Check if undo is available</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><p>true if undo is available</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L493">engine/timeline-engine.ts:493</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="findclipbyid"><span>find<wbr/>Clip<wbr/>By<wbr/>Id</span><a href="#findclipbyid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="findclipbyid-1"><span class="tsd-kind-call-signature">findClipById</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span><a href="#findclipbyid-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Find a clip by ID</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>Clip ID</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span></h4><p>The clip, or undefined if not found</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L514">engine/timeline-engine.ts:514</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="findtrackbyid"><span>find<wbr/>Track<wbr/>By<wbr/>Id</span><a href="#findtrackbyid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="findtrackbyid-1"><span class="tsd-kind-call-signature">findTrackById</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Track</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span><a href="#findtrackbyid-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Find a track by ID</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>Track ID</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Track</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span></h4><p>The track, or undefined if not found</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L524">engine/timeline-engine.ts:524</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getallclips"><span>get<wbr/>All<wbr/>Clips</span><a href="#getallclips" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getallclips-1"><span class="tsd-kind-call-signature">getAllClips</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span><a href="#getallclips-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get all clips in the timeline</p>
+</div>
+<h4 class="tsd-returns-title">Returns <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span></h4><p>Array of all clips</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L564">engine/timeline-engine.ts:564</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getalltracks"><span>get<wbr/>All<wbr/>Tracks</span><a href="#getalltracks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getalltracks-1"><span class="tsd-kind-call-signature">getAllTracks</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">Track</span><span class="tsd-signature-symbol">[]</span><a href="#getalltracks-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get all tracks in the timeline</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">Track</span><span class="tsd-signature-symbol">[]</span></h4><p>Array of all tracks</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L573">engine/timeline-engine.ts:573</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getasset"><span>get<wbr/>Asset</span><a href="#getasset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getasset-1"><span class="tsd-kind-call-signature">getAsset</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">assetId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Asset</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span><a href="#getasset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get an asset by ID</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">assetId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>Asset ID</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Asset</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">undefined</span></h4><p>The asset, or undefined if not found</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L184">engine/timeline-engine.ts:184</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getclipsatframe"><span>get<wbr/>Clips<wbr/>At<wbr/>Frame</span><a href="#getclipsatframe" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getclipsatframe-1"><span class="tsd-kind-call-signature">getClipsAtFrame</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">f</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span><a href="#getclipsatframe-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get all clips at a specific frame</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">f</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span></h4><p>Array of clips at that frame</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L544">engine/timeline-engine.ts:544</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getclipsinrange"><span>get<wbr/>Clips<wbr/>In<wbr/>Range</span><a href="#getclipsinrange" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getclipsinrange-1"><span class="tsd-kind-call-signature">getClipsInRange</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">start</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">end</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span><a href="#getclipsinrange-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get all clips in a frame range</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">start</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>Start frame</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">end</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>End frame</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span></h4><p>Array of clips in the range</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L555">engine/timeline-engine.ts:555</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getclipsontrack"><span>get<wbr/>Clips<wbr/>On<wbr/>Track</span><a href="#getclipsontrack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getclipsontrack-1"><span class="tsd-kind-call-signature">getClipsOnTrack</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span><a href="#getclipsontrack-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get all clips on a track</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>Track ID</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">[]</span></h4><p>Array of clips on the track</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L534">engine/timeline-engine.ts:534</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="getstate"><span>get<wbr/>State</span><a href="#getstate" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="getstate-1"><span class="tsd-kind-call-signature">getState</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimelineState</span><a href="#getstate-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Get the current timeline state</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">TimelineState</span></h4><p>Current timeline state</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L155">engine/timeline-engine.ts:155</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="insertedit"><span>insert<wbr/>Edit</span><a href="#insertedit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="insertedit-1"><span class="tsd-kind-call-signature">insertEdit</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">clip</span><span class="tsd-signature-symbol">:</span> <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">atFrame</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#insertedit-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Insert edit - insert clip and shift subsequent clips right</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track to insert into</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">clip</span>: <a href="../types/Clip.html" class="tsd-signature-type tsd-kind-type-alias">Clip</a></span>
+<div class="tsd-comment tsd-typography"><p>Clip to insert</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">atFrame</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>Frame to insert at</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L622">engine/timeline-engine.ts:622</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="insertmove"><span>insert<wbr/>Move</span><a href="#insertmove" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="insertmove-1"><span class="tsd-kind-call-signature">insertMove</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newStart</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#insertmove-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Insert move - move clip and shift destination clips right</p>
+<p>This moves a clip to a new position without closing the gap at source:</p>
+<ul>
+<li>Leaves gap at the source position</li>
+<li>Pushes all clips at destination right to make space</li>
+<li>All operations are atomic (single undo entry)</li>
+</ul>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to move</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newStart</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New start frame for the clip</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L670">engine/timeline-engine.ts:670</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="moveclip"><span>move<wbr/>Clip</span><a href="#moveclip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="moveclip-1"><span class="tsd-kind-call-signature">moveClip</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newStart</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#moveclip-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Move a clip to a new timeline position</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to move</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newStart</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New timeline start frame</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L232">engine/timeline-engine.ts:232</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="movecliptotrack"><span>move<wbr/>Clip<wbr/>To<wbr/>Track</span><a href="#movecliptotrack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="movecliptotrack-1"><span class="tsd-kind-call-signature">moveClipToTrack</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">targetTrackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#movecliptotrack-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Move a clip to a different track</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to move</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">targetTrackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the target track</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L288">engine/timeline-engine.ts:288</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="movetrack"><span>move<wbr/>Track</span><a href="#movetrack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="movetrack-1"><span class="tsd-kind-call-signature">moveTrack</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newIndex</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#movetrack-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Move a track to a new position</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track to move</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newIndex</span>: <span class="tsd-signature-type">number</span></span>
+<div class="tsd-comment tsd-typography"><p>New index position</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L342">engine/timeline-engine.ts:342</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="redo"><span>redo</span><a href="#redo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="redo-1"><span class="tsd-kind-call-signature">redo</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><a href="#redo-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Redo the last undone action</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><p>true if redo was performed</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L479">engine/timeline-engine.ts:479</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="registerasset"><span>register<wbr/>Asset</span><a href="#registerasset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="registerasset-1"><span class="tsd-kind-call-signature">registerAsset</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">asset</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Asset</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#registerasset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Register an asset</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">asset</span>: <span class="tsd-signature-type">Asset</span></span>
+<div class="tsd-comment tsd-typography"><p>Asset to register</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L167">engine/timeline-engine.ts:167</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="removeclip"><span>remove<wbr/>Clip</span><a href="#removeclip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="removeclip-1"><span class="tsd-kind-call-signature">removeClip</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#removeclip-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Remove a clip</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to remove</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L214">engine/timeline-engine.ts:214</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="removetrack"><span>remove<wbr/>Track</span><a href="#removetrack" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="removetrack-1"><span class="tsd-kind-call-signature">removeTrack</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#removetrack-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Remove a track</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track to remove</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L324">engine/timeline-engine.ts:324</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="resizeclip"><span>resize<wbr/>Clip</span><a href="#resizeclip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="resizeclip-1"><span class="tsd-kind-call-signature">resizeClip</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newStart</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newEnd</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#resizeclip-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Resize a clip</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to resize</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newStart</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New timeline start frame</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newEnd</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New timeline end frame</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L251">engine/timeline-engine.ts:251</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="rippledelete"><span>ripple<wbr/>Delete</span><a href="#rippledelete" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="rippledelete-1"><span class="tsd-kind-call-signature">rippleDelete</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#rippledelete-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Ripple delete - delete clip and shift subsequent clips left</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to delete</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L585">engine/timeline-engine.ts:585</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="ripplemove"><span>ripple<wbr/>Move</span><a href="#ripplemove" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="ripplemove-1"><span class="tsd-kind-call-signature">rippleMove</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newStart</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#ripplemove-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Ripple move - move clip and shift surrounding clips to accommodate</p>
+<p>This moves a clip to a new position while maintaining timeline continuity:</p>
+<ul>
+<li>Closes the gap at the source position</li>
+<li>Makes space at the destination position</li>
+<li>All operations are atomic (single undo entry)</li>
+</ul>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to move</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newStart</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New start frame for the clip</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L645">engine/timeline-engine.ts:645</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="rippletrim"><span>ripple<wbr/>Trim</span><a href="#rippletrim" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="rippletrim-1"><span class="tsd-kind-call-signature">rippleTrim</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newEnd</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#rippletrim-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Ripple trim - trim clip end and shift subsequent clips</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to trim</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newEnd</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New end frame for the clip</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L603">engine/timeline-engine.ts:603</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="settimelineduration"><span>set<wbr/>Timeline<wbr/>Duration</span><a href="#settimelineduration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="settimelineduration-1"><span class="tsd-kind-call-signature">setTimelineDuration</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">duration</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#settimelineduration-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Set timeline duration</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">duration</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New duration in frames</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L430">engine/timeline-engine.ts:430</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="settimelinename"><span>set<wbr/>Timeline<wbr/>Name</span><a href="#settimelinename" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="settimelinename-1"><span class="tsd-kind-call-signature">setTimelineName</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#settimelinename-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Set timeline name</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">name</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>New timeline name</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L447">engine/timeline-engine.ts:447</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="settrackheight"><span>set<wbr/>Track<wbr/>Height</span><a href="#settrackheight" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="settrackheight-1"><span class="tsd-kind-call-signature">setTrackHeight</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">height</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#settrackheight-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Set track height</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">height</span>: <span class="tsd-signature-type">number</span></span>
+<div class="tsd-comment tsd-typography"><p>New height in pixels</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L411">engine/timeline-engine.ts:411</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="subscribe"><span>subscribe</span><a href="#subscribe" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="subscribe-1"><span class="tsd-kind-call-signature">subscribe</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">listener</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">state</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimelineState</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><a href="#subscribe-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Subscribe to state changes</p>
+<p>The listener will be called whenever the timeline state changes,
+with the new state passed as an argument.
+This is used by framework adapters (e.g., React) to trigger re-renders.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">listener</span>: <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">state</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TimelineState</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></span>
+<div class="tsd-comment tsd-typography"><p>Function to call on state changes, receives new state</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">()</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></h4><p>Unsubscribe function</p>
+
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-example">
+<h4 class="tsd-anchor-link" id="example">Example<a href="#example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><pre><code class="typescript"><span class="hl-6">const</span><span class="hl-1"> </span><span class="hl-7">unsubscribe</span><span class="hl-1"> = </span><span class="hl-4">engine</span><span class="hl-1">.</span><span class="hl-0">subscribe</span><span class="hl-1">((</span><span class="hl-4">state</span><span class="hl-1">) </span><span class="hl-6">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-4">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-2">&#39;State changed:&#39;</span><span class="hl-1">, </span><span class="hl-4">state</span><span class="hl-1">);</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-5">// Later...</span><br/><span class="hl-0">unsubscribe</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+</div></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L130">engine/timeline-engine.ts:130</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="toggletracklock"><span>toggle<wbr/>Track<wbr/>Lock</span><a href="#toggletracklock" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="toggletracklock-1"><span class="tsd-kind-call-signature">toggleTrackLock</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#toggletracklock-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Toggle track lock</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L376">engine/timeline-engine.ts:376</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="toggletrackmute"><span>toggle<wbr/>Track<wbr/>Mute</span><a href="#toggletrackmute" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="toggletrackmute-1"><span class="tsd-kind-call-signature">toggleTrackMute</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#toggletrackmute-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Toggle track mute</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L359">engine/timeline-engine.ts:359</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="toggletracksolo"><span>toggle<wbr/>Track<wbr/>Solo</span><a href="#toggletracksolo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="toggletracksolo-1"><span class="tsd-kind-call-signature">toggleTrackSolo</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">trackId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#toggletracksolo-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Toggle track solo</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">trackId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the track</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L393">engine/timeline-engine.ts:393</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="trimclip"><span>trim<wbr/>Clip</span><a href="#trimclip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="trimclip-1"><span class="tsd-kind-call-signature">trimClip</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">clipId</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newMediaIn</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">newMediaOut</span><span class="tsd-signature-symbol">:</span> <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span><a href="#trimclip-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Trim a clip (change media bounds)</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">clipId</span>: <span class="tsd-signature-type">string</span></span>
+<div class="tsd-comment tsd-typography"><p>ID of the clip to trim</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newMediaIn</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New media in frame</p>
+</div></li>
+<li><span><span class="tsd-kind-parameter">newMediaOut</span>: <a href="../types/Frame.html" class="tsd-signature-type tsd-kind-type-alias">Frame</a></span>
+<div class="tsd-comment tsd-typography"><p>New media out frame</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">accepted</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">errors</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">code</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">}</span></h4><p>Dispatch result</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L270">engine/timeline-engine.ts:270</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="undo"><span>undo</span><a href="#undo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures">
+<li class="">
+<div class="tsd-signature tsd-anchor-link" id="undo-1"><span class="tsd-kind-call-signature">undo</span><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><a href="#undo-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Undo the last action</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><p>true if undo was performed</p>
+<aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/maanaaasss/timelinx/blob/d187cde84d60ce40c1af356ea159d9183993eb0d/packages/core/src/engine/timeline-engine.ts#L465">engine/timeline-engine.ts:465</a></li></ul></aside></div></li></ul></section></section></details></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details">
+<details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Constructors</summary>
+<div><a href="#constructor"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a></div></details>
+<details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary>
+<div><a href="#addclip"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>add<wbr/>Clip</span></a><a href="#addtrack"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>add<wbr/>Track</span></a><a href="#canredo"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>can<wbr/>Redo</span></a><a href="#canundo"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>can<wbr/>Undo</span></a><a href="#findclipbyid"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Clip<wbr/>By<wbr/>Id</span></a><a href="#findtrackbyid"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>find<wbr/>Track<wbr/>By<wbr/>Id</span></a><a href="#getallclips"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>All<wbr/>Clips</span></a><a href="#getalltracks"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>All<wbr/>Tracks</span></a><a href="#getasset"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Asset</span></a><a href="#getclipsatframe"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>At<wbr/>Frame</span></a><a href="#getclipsinrange"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>In<wbr/>Range</span></a><a href="#getclipsontrack"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>Clips<wbr/>On<wbr/>Track</span></a><a href="#getstate"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>get<wbr/>State</span></a><a href="#insertedit"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>insert<wbr/>Edit</span></a><a href="#insertmove"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>insert<wbr/>Move</span></a><a href="#moveclip"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Clip</span></a><a href="#movecliptotrack"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Clip<wbr/>To<wbr/>Track</span></a><a href="#movetrack"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>move<wbr/>Track</span></a><a href="#redo"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>redo</span></a><a href="#registerasset"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>register<wbr/>Asset</span></a><a href="#removeclip"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>remove<wbr/>Clip</span></a><a href="#removetrack"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>remove<wbr/>Track</span></a><a href="#resizeclip"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>resize<wbr/>Clip</span></a><a href="#rippledelete"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Delete</span></a><a href="#ripplemove"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Move</span></a><a href="#rippletrim"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>ripple<wbr/>Trim</span></a><a href="#settimelineduration"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Timeline<wbr/>Duration</span></a><a href="#settimelinename"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Timeline<wbr/>Name</span></a><a href="#settrackheight"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>set<wbr/>Track<wbr/>Height</span></a><a href="#subscribe"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>subscribe</span></a><a href="#toggletracklock"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Lock</span></a><a href="#toggletrackmute"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Mute</span></a><a href="#toggletracksolo"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>toggle<wbr/>Track<wbr/>Solo</span></a><a href="#trimclip"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>trim<wbr/>Clip</span></a><a href="#undo"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>undo</span></a></div></details></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="../modules.html">@timelinx/core - v1.0.0-beta.1</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>

@@ -62,6 +62,12 @@ export {
   useClipWithEngine,
   useProvisionalWithEngine,
   useSelectedClipIds,
+  useAllTracks,
+  useFps,
+  useClipEffects,
+  useClipTransition,
+  useTrackCaptions,
+  useAllTransitions,
 } from './hooks';
 export type { UsePlayheadResult } from './hooks';
 
