@@ -51,6 +51,8 @@ export type EngineSnapshot = {
   readonly change: StateChange;
   /** Currently selected clip IDs. */
   readonly selectedClipIds: ReadonlySet<string>;
+  /** Currently selected caption IDs. */
+  readonly selectedCaptionIds: ReadonlySet<string>;
 };
 
 export const DEFAULT_PLAYHEAD_STATE: PlayheadState = {

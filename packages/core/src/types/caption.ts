@@ -38,4 +38,6 @@ export type Caption = {
   readonly language: string; // BCP-47: 'en-US', 'fr-FR'
   readonly style: CaptionStyle;
   readonly burnIn: boolean;
+  /** Track ID for ghost captions returned by SelectionTool. Not persisted. */
+  readonly _trackId?: string;
 };

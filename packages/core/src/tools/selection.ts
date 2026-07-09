@@ -348,14 +348,16 @@ export class SelectionTool implements ITool {
       const newEnd = (clampedStart + duration) as TimelineFrame;
 
       // Create ghost caption at preview position
+      const origCaption = track?.captions.find((c) => c.id === this.dragCaptionId);
       const ghostCaption: Caption = {
         id: this.dragCaptionId,
-        text: '',  // text not needed for ghost positioning
+        text: origCaption?.text ?? '',
         startFrame: clampedStart,
         endFrame: newEnd,
-        language: 'en-US',
-        style: { fontFamily: 'Arial', fontSize: 14, color: '#fff', backgroundColor: '#000', hAlign: 'center', vAlign: 'bottom' },
-        burnIn: false,
+        language: origCaption?.language ?? 'en-US',
+        style: origCaption?.style ?? { fontFamily: 'Arial', fontSize: 14, color: '#fff', backgroundColor: '#000', hAlign: 'center', vAlign: 'bottom' },
+        burnIn: origCaption?.burnIn ?? false,
+        _trackId: this.dragCaptionTrackId,
       };
 
       return {

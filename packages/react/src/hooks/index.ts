@@ -231,6 +231,16 @@ export function useSelectedClipIds(engine: TimelineEngine): ReadonlySet<string> 
   );
 }
 
+// useSelectedCaptionIds — re-renders when caption selection changes
+
+export function useSelectedCaptionIds(engine: TimelineEngine): ReadonlySet<string> {
+  return useSyncExternalStore(
+    engine.subscribe,
+    () => engine.getSnapshot().selectedCaptionIds ?? EMPTY_SELECTION,
+    () => getServerSnapshot(engine, (snap) => snap.selectedCaptionIds ?? EMPTY_SELECTION),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // useAllTracks — returns all tracks reactively
 // ---------------------------------------------------------------------------
