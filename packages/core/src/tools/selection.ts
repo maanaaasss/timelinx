@@ -349,7 +349,7 @@ export class SelectionTool implements ITool {
 
       // Create ghost caption at preview position
       const origCaption = track?.captions.find((c) => c.id === this.dragCaptionId);
-      const ghostCaption: Caption & { readonly _trackId?: TrackId } = {
+      const ghostCaption: Caption = {
         id: this.dragCaptionId,
         text: origCaption?.text ?? '',
         startFrame: clampedStart,

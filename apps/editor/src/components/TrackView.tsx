@@ -58,7 +58,7 @@ export function TrackView({ trackId, ppf, selectedClipIds, selectedCaptionIds }:
   }
   if (provisional && provisional.captions && provisional.captions.length > 0) {
     for (const c of provisional.captions) {
-      const ghostTrackId = (c as any)._trackId as string | undefined;
+      const ghostTrackId = c._trackId;
       if (ghostTrackId === trackId || !ghostTrackId) {
         ghostCaptions.push(c);
         targetedCaptionIds.add(c.id);
