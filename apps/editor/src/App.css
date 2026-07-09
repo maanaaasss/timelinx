@@ -296,9 +296,7 @@ body {
   user-select: none;
 }
 
-.clip:active {
-  cursor: grabbing;
-}
+
 
 .clip.video {
   background: linear-gradient(135deg, var(--clip-video), #2a5db0);
@@ -343,23 +341,22 @@ body {
   pointer-events: none;
 }
 
-/* Caption blocks on subtitle tracks */
+/* Caption blocks on subtitle tracks — positioned identically to .clip */
 .caption-block {
   position: absolute;
-  top: 2px;
-  height: calc(100% - 4px);
+  top: 4px;
+  bottom: 4px;
   background: rgba(100, 150, 255, 0.35);
   border: 1px solid rgba(100, 150, 255, 0.6);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: grab;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  user-select: none;
 }
 
-.caption-block:active {
-  cursor: grabbing;
-}
+
 
 .caption-text {
   padding: 0 6px;
@@ -368,6 +365,23 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.caption-info {
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caption-duration {
+  padding: 0 6px;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Ghost caption during drag */
@@ -382,6 +396,11 @@ body {
 .caption-block.selected {
   border: 2px solid rgba(100, 200, 255, 0.9);
   box-shadow: 0 0 8px rgba(100, 200, 255, 0.5);
+}
+
+/* Targeted caption (being dragged) */
+.caption-block.targeted {
+  box-shadow: 0 0 0 2px var(--warning), 0 0 8px rgba(255, 170, 74, 0.3);
 }
 
 /* Playhead */

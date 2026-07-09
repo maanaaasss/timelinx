@@ -62,6 +62,7 @@ export {
   useClipWithEngine,
   useProvisionalWithEngine,
   useSelectedClipIds,
+  useSelectedCaptionIds,
   useAllTracks,
   useFps,
   useClipEffects,

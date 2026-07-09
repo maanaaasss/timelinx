@@ -112,6 +112,7 @@ export class TimelineEngine {
   private _playheadFrame: TimelineFrame = toFrame(0);
   /** Selection state (set of clip IDs). */
   private _selectedClipIds: ReadonlySet<string> = new Set();
+  private _selectedCaptionIds: ReadonlySet<string> = new Set();
 
   constructor(options: TimelineEngineOptions) {
     this.options = options;
@@ -284,6 +285,10 @@ export class TimelineEngine {
     if (typeof (tool as ITool & { getSelection?: () => ReadonlySet<string> }).getSelection === 'function') {
       const toolSelection = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
       this._selectedClipIds = new Set(toolSelection);
+    }
+    if (typeof (tool as ITool & { getCaptionSelection?: () => ReadonlySet<string> }).getCaptionSelection === 'function') {
+      const captionSelection = (tool as ITool & { getCaptionSelection: () => ReadonlySet<string> }).getCaptionSelection();
+      this._selectedCaptionIds = new Set(captionSelection);
     }
   }
 
@@ -463,6 +468,7 @@ export class TimelineEngine {
       playhead: playheadState,
       change,
       selectedClipIds: this._selectedClipIds,
+      selectedCaptionIds: this._selectedCaptionIds,
     };
   }
 

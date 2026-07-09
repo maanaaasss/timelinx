@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTrack, useProvisional } from '@timelinx/react';
 import type { Clip, Caption } from '@timelinx/core';
 import { ClipView } from './ClipView';
@@ -8,14 +9,16 @@ interface TrackViewProps {
   trackId: string;
   ppf: number;
   selectedClipIds: ReadonlySet<string>;
+  selectedCaptionIds: ReadonlySet<string>;
 }
 
-function CaptionBlock({ caption, ppf, trackId }: { caption: Caption; ppf: number; trackId: string }) {
+const CaptionBlock = React.memo(function CaptionBlock({ caption, ppf, trackId, isSelected, isTargeted }: { caption: Caption; ppf: number; trackId: string; isSelected: boolean; isTargeted: boolean }) {
   const left = Number(caption.startFrame) * ppf;
   const width = Math.max(40, (Number(caption.endFrame) - Number(caption.startFrame)) * ppf);
+  const duration = Number(caption.endFrame) - Number(caption.startFrame);
   return (
     <div
-      className="caption-block"
+      className={`caption-block${isSelected ? ' selected' : ''}${isTargeted ? ' targeted' : ''}`}
       data-caption-id={caption.id}
       data-track-id={trackId}
       style={{
@@ -23,12 +26,19 @@ function CaptionBlock({ caption, ppf, trackId }: { caption: Caption; ppf: number
         width,
       }}
     >
-      <div className="caption-text">{caption.text}</div>
+      {width > 40 && (
+        <div className="caption-info">{caption.text}</div>
+      )}
+      {width > 80 && (
+        <div className="caption-duration">
+          {duration}fr @ {String(caption.startFrame)}
+        </div>
+      )}
     </div>
   );
-}
+});
 
-export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
+export function TrackView({ trackId, ppf, selectedClipIds, selectedCaptionIds }: TrackViewProps) {
   const track = useTrack(trackId);
   const provisional = useProvisional();
 
@@ -37,6 +47,7 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
   const ghostMap = new Map<string, Clip>();
   const targetedIds = new Set<string>();
   const ghostCaptions: Caption[] = [];
+  const targetedCaptionIds = new Set<string>();
   if (provisional && provisional.clips.length > 0) {
     for (const c of provisional.clips) {
       if (c.trackId === trackId) {
@@ -47,7 +58,11 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
   }
   if (provisional && provisional.captions && provisional.captions.length > 0) {
     for (const c of provisional.captions) {
-      ghostCaptions.push(c);
+      const ghostTrackId = (c as any)._trackId as string | undefined;
+      if (ghostTrackId === trackId || !ghostTrackId) {
+        ghostCaptions.push(c);
+        targetedCaptionIds.add(c.id);
+      }
     }
   }
 
@@ -81,7 +96,14 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
           <GhostClip key={`ghost-${ghost.id}`} clip={ghost} ppf={ppf} trackType={trackTypeClass} />
         ))}
         {captions.map((caption) => (
-          <CaptionBlock key={caption.id} caption={caption} ppf={ppf} trackId={trackId} />
+          <CaptionBlock
+            key={caption.id}
+            caption={caption}
+            ppf={ppf}
+            trackId={trackId}
+            isSelected={selectedCaptionIds.has(caption.id)}
+            isTargeted={targetedCaptionIds.has(caption.id)}
+          />
         ))}
         {ghostCaptions.map((ghost) => (
           <GhostCaption key={`ghost-${ghost.id}`} caption={ghost} ppf={ppf} />

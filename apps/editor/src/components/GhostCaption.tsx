@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Caption } from '@timelinx/core';
 
 interface GhostCaptionProps {
@@ -5,9 +6,10 @@ interface GhostCaptionProps {
   ppf: number;
 }
 
-export function GhostCaption({ caption, ppf }: GhostCaptionProps) {
+export const GhostCaption = React.memo(function GhostCaption({ caption, ppf }: GhostCaptionProps) {
   const left = Number(caption.startFrame) * ppf;
   const width = Math.max(40, (Number(caption.endFrame) - Number(caption.startFrame)) * ppf);
+  const duration = Number(caption.endFrame) - Number(caption.startFrame);
 
   return (
     <div
@@ -17,7 +19,14 @@ export function GhostCaption({ caption, ppf }: GhostCaptionProps) {
         width,
       }}
     >
-      <span className="caption-text">Preview</span>
+      {width > 40 && (
+        <div className="caption-info">{caption.text || 'Preview'}</div>
+      )}
+      {width > 80 && (
+        <div className="caption-duration">
+          {duration}fr @ {String(caption.startFrame)}
+        </div>
+      )}
     </div>
   );
-}
+});
