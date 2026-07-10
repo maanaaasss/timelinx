@@ -1,3 +1,10 @@
+/**
+ * DEPRECATED — Not used by the editor as of the text-clip pivot.
+ *
+ * Text clips now render via ClipView/GhostClip like any other clip.
+ * Retained for reference only.
+ */
+
 import React from 'react';
 import type { Caption } from '@timelinx/core';
 

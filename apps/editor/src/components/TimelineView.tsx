@@ -4,7 +4,6 @@ import {
   useTimeline,
   useTrackIds,
   useSelectedClipIds,
-  useSelectedCaptionIds,
   usePlayheadFrame,
   useToolRouter,
 } from '@timelinx/react';
@@ -20,7 +19,6 @@ export function TimelineView() {
   const timeline = useTimeline();
   const trackIds = useTrackIds();
   const selectedClipIds = useSelectedClipIds(engine);
-  const selectedCaptionIds = useSelectedCaptionIds(engine);
   const playheadFrame = usePlayheadFrame(engine);
   const containerRef = useRef<HTMLDivElement>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
@@ -122,7 +120,6 @@ export function TimelineView() {
               trackId={id}
               ppf={ppf}
               selectedClipIds={selectedClipIds}
-              selectedCaptionIds={selectedCaptionIds}
             />
           ))}
           <Playhead frame={playheadFrame} ppf={ppf} />

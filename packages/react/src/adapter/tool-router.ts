@@ -78,7 +78,9 @@ function convertPointerEventFromSnapshot(
   let edge: 'left' | 'right' | 'none' = 'none';
   let clipEl: HTMLElement | null = null;
 
-  let el: HTMLElement | null = snap.target as HTMLElement | null;
+  const targetEl = snap.target as HTMLElement | null;
+
+  let el: HTMLElement | null = targetEl;
   const container = snap.currentTarget as HTMLElement | null;
   while (el && el !== container) {
     if (!clipId && el.dataset.clipId) {

@@ -32,6 +32,7 @@ import type { ClipId, Clip } from '../types/clip';
 import type { TrackId }      from '../types/track';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction }   from '../types/operations';
+import type { CaptionId, Caption } from '../types/caption';
 import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
@@ -124,6 +125,12 @@ export class RazorTool implements ITool {
   /** ClipId hit at onPointerDown. null if clicking empty space or for shift+all. */
   private pendingClipId: ClipId        | null = null;
 
+  /** CaptionId hit at onPointerDown. */
+  private pendingCaptionId: CaptionId  | null = null;
+
+  /** TrackId of the caption hit at onPointerDown. */
+  private pendingCaptionTrackId: TrackId | null = null;
+
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
@@ -136,14 +143,16 @@ export class RazorTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
 
+  supportsCaptions(): boolean { return true; }
+
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
-    // Snap the frame at click time, excluding the clicked clip's own edges
-    // (snapping to its own start/end would produce a zero-duration half)
     const exclusion = event.clipId !== null ? [event.clipId] : [];
     this.pendingFrame  = ctx.snap(event.frame, exclusion);
     this.pendingClipId = event.clipId;
+    this.pendingCaptionId = event.captionId;
+    this.pendingCaptionTrackId = event.trackId;
   }
 
   // ── ITool: onPointerMove ──────────────────────────────────────────────────
@@ -160,12 +169,52 @@ export class RazorTool implements ITool {
     // Capture instance state before resetting (pattern from SelectionTool)
     const atFrame     = this.pendingFrame;
     const clipId      = this.pendingClipId;
+    const captionId   = this.pendingCaptionId;
+    const captionTrackId = this.pendingCaptionTrackId;
 
     // Reset immediately — onPointerUp must never leave stale state
     this.pendingFrame  = null;
     this.pendingClipId = null;
+    this.pendingCaptionId = null;
+    this.pendingCaptionTrackId = null;
 
     if (atFrame === null) return null;
+
+    // ── Caption slice ────────────────────────────────────────────────────
+    if (captionId != null && captionTrackId != null) {
+      const track = ctx.state.timeline.tracks.find((t) => t.id === captionTrackId);
+      const caption = track?.captions.find((c) => c.id === captionId);
+      if (!caption) return null;
+
+      const start = caption.startFrame as number;
+      const end = caption.endFrame as number;
+      const frame = atFrame as number;
+
+      // Reject if at boundary — would produce zero-duration half
+      if (frame <= start || frame >= end) return null;
+
+      const left: Caption = {
+        ...caption,
+        id: generateId() as CaptionId,
+        endFrame: frame as TimelineFrame,
+      };
+      const right: Caption = {
+        ...caption,
+        id: generateId() as CaptionId,
+        startFrame: frame as TimelineFrame,
+      };
+
+      return {
+        id: txId(),
+        label: 'Razor Caption',
+        timestamp: Date.now(),
+        operations: [
+          { type: 'DELETE_CAPTION', captionId: caption.id, trackId: captionTrackId },
+          { type: 'ADD_CAPTION', caption: left, trackId: captionTrackId },
+          { type: 'ADD_CAPTION', caption: right, trackId: captionTrackId },
+        ],
+      };
+    }
 
     // ── Shift+click: slice ALL clips at atFrame across ALL tracks ──────────
     if (ctx.modifiers.shift) {
@@ -173,13 +222,13 @@ export class RazorTool implements ITool {
     }
 
     // ── Single clip slice ──────────────────────────────────────────────────
-    if (clipId === null) return null;   // clicked empty space, no shift
+    if (clipId == null) return null;
 
     const clip = findClipById(ctx.state, clipId);
     if (!clip) return null;
 
     const sliced = computeSlice(clip, atFrame);
-    if (!sliced) return null;   // atFrame at boundary — would produce zero-duration half
+    if (!sliced) return null;
 
     return {
       id:        txId(),

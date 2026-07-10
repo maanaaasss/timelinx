@@ -173,6 +173,10 @@ export type { CaptionId, CaptionStyle, Caption } from './types/caption';
 export { toCaptionId } from './types/caption';
 export { parseSRT, parseVTT, subtitleImportToOps, defaultCaptionStyle } from './engine/subtitle-import';
 
+// Generator types (for INSERT_GENERATOR operations)
+export type { GeneratorId, GeneratorType, Generator } from './types/generator';
+export { toGeneratorId } from './types/generator';
+
 // Phase 2 tools (default set for React TimelineEngine)
 export { SelectionTool } from './tools/selection';
 export { RazorTool } from './tools/razor';

@@ -223,6 +223,8 @@ export class SelectionTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead'];
   }
 
+  supportsCaptions(): boolean { return true; }
+
   // ── ITool: onPointerDown ────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
@@ -261,7 +263,9 @@ export class SelectionTool implements ITool {
       // Caption drag — find the caption on the track
       const track = ctx.state.timeline.tracks.find((t) => t.id === event.trackId);
       const caption = track?.captions.find((c) => c.id === event.captionId);
-      if (!caption) return;
+      if (!caption) {
+        return;
+      }
 
       // Handle caption selection
       if (event.shiftKey) {
@@ -493,20 +497,23 @@ export class SelectionTool implements ITool {
       const clampedStart = validCaptionStart(ctx.state, otherCaptions, snappedStart, duration);
       const clampedEnd = (clampedStart + duration) as TimelineFrame;
 
-      if (clampedStart === savedCaptionOrigStart) return null; // no movement
+      if (clampedStart === savedCaptionOrigStart) {
+        return null; // no movement
+      }
 
-      return {
+      const captionTx = {
         id: txId(),
-        label: 'Move Caption',
+        label: 'Move Caption' as const,
         timestamp: Date.now(),
         operations: [{
-          type: 'EDIT_CAPTION',
+          type: 'EDIT_CAPTION' as const,
           captionId: savedCaptionId,
           trackId: savedCaptionTrackId,
           startFrame: clampedStart,
           endFrame: clampedEnd,
         }],
       };
+      return captionTx;
     }
 
     if (previousMode !== 'drag-clip') return null;

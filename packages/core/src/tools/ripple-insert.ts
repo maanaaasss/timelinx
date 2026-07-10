@@ -43,6 +43,7 @@ import type { TimelineFrame }                from '../types/frame';
 import type { OperationPrimitive, Transaction } from '../types/operations';
 import type { TimelineState }                from '../types/state';
 import type { Asset }                        from '../types/asset';
+import type { Caption }                      from '../types/caption';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -117,12 +118,25 @@ function computeRippleInsertOps(
     .filter(c => c.timelineStart >= dropFrame)
     .sort((a, b) => b.timelineStart - a.timelineStart);  // RIGHT-TO-LEFT — +delta rule
 
+  // Captions whose startFrame >= dropFrame are pushed right (same rule)
+  const rightCaptions = (track?.captions ?? [])
+    .filter(c => c.startFrame >= dropFrame)
+    .sort((a, b) => b.startFrame - a.startFrame);  // RIGHT-TO-LEFT — +delta rule
+
   return [
     // MOVE_CLIPs first — rightmost moves into empty space first
     ...rightClips.map(c => ({
       type:             'MOVE_CLIP' as const,
       clipId:            c.id,
       newTimelineStart: (c.timelineStart + insertDuration) as TimelineFrame,
+    })),
+    // EDIT_CAPTIONs — shift captions right in the same pass
+    ...rightCaptions.map(c => ({
+      type:       'EDIT_CAPTION' as const,
+      captionId:  c.id,
+      trackId:    targetTrackId,
+      startFrame: (c.startFrame + insertDuration) as TimelineFrame,
+      endFrame:   (c.endFrame   + insertDuration) as TimelineFrame,
     })),
     // INSERT_CLIP last — [dropFrame, dropFrame+insertDuration) is now vacant
     { type: 'INSERT_CLIP' as const, clip: insertClip, trackId: targetTrackId },
@@ -180,6 +194,8 @@ export class RippleInsertTool implements ITool {
   getSnapCandidateTypes(): readonly SnapPointType[] {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
+
+  supportsCaptions(): boolean { return true; }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 

@@ -8,7 +8,7 @@ import {
   frameRate,
   createEffect,
   toEffectId,
-  toCaptionId,
+  toGeneratorId,
 } from '@timelinx/core';
 import { TimelineEngine } from '@timelinx/react';
 
@@ -78,10 +78,10 @@ export function createEditorEngine() {
     type: 'audio',
   });
 
-  const subtitleTrack = createTrack({
+  const titleTrack = createTrack({
     id: 's1',
-    name: 'S1 — Captions',
-    type: 'subtitle',
+    name: 'S1 — Titles',
+    type: 'video',
   });
 
   const clip1 = createClip({
@@ -172,7 +172,7 @@ export function createEditorEngine() {
       { type: 'ADD_TRACK', track: videoTrack1 },
       { type: 'ADD_TRACK', track: videoTrack2 },
       { type: 'ADD_TRACK', track: audioTrack },
-      { type: 'ADD_TRACK', track: subtitleTrack },
+      { type: 'ADD_TRACK', track: titleTrack },
     ],
   });
 
@@ -191,32 +191,32 @@ export function createEditorEngine() {
   });
 
   engine.dispatch({
-    id: 'init-captions',
-    label: 'Initialize captions',
+    id: 'init-titles',
+    label: 'Initialize title clips',
     timestamp: Date.now(),
     operations: [
       {
-        type: 'ADD_CAPTION',
-        trackId: 's1' as import('@timelinx/core').TrackId,
-        caption: {
-          id: toCaptionId('cap-1'),
-          text: 'Welcome to TimelineX Editor',
-          startFrame: toFrame(0),
-          endFrame: toFrame(90),
-          language: 'en-US',
-          burnIn: false,
+        type: 'INSERT_GENERATOR',
+        trackId: titleTrack.id,
+        atFrame: toFrame(0),
+        generator: {
+          id: toGeneratorId('gen-title-1'),
+          type: 'text',
+          params: { text: 'Welcome to TimelineX Editor' },
+          duration: toFrame(90),
+          name: 'Welcome to TimelineX Editor',
         },
       },
       {
-        type: 'ADD_CAPTION',
-        trackId: 's1' as import('@timelinx/core').TrackId,
-        caption: {
-          id: toCaptionId('cap-2'),
-          text: 'This is the reference timeline editor',
-          startFrame: toFrame(120),
-          endFrame: toFrame(240),
-          language: 'en-US',
-          burnIn: false,
+        type: 'INSERT_GENERATOR',
+        trackId: titleTrack.id,
+        atFrame: toFrame(120),
+        generator: {
+          id: toGeneratorId('gen-title-2'),
+          type: 'text',
+          params: { text: 'This is the reference timeline editor' },
+          duration: toFrame(120),
+          name: 'This is the reference timeline editor',
         },
       },
     ],

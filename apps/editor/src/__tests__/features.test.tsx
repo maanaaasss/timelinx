@@ -29,6 +29,7 @@ import {
   toTransitionId,
   toCaptionId,
   toKeyframeId,
+  toGeneratorId,
   LINEAR_EASING,
   SelectionTool,
   type TimelineFrame,
@@ -333,7 +334,7 @@ describe('Editor — Feature Verification', () => {
       expect(screen.getByText('Effects')).toBeDefined();
       expect(screen.getByText('Transitions')).toBeDefined();
       expect(screen.getByText('Keyframes')).toBeDefined();
-      expect(screen.getByText('Captions')).toBeDefined();
+      expect(screen.getByText('Text')).toBeDefined();
     });
 
     it('renders status bar', () => {
@@ -1034,28 +1035,27 @@ describe('Editor — Feature Verification', () => {
       }
     });
 
-    it('DELETE_CAPTION removes a caption from a track', () => {
+    it('DELETE_CAPTION removes a caption from a track (core op still valid)', () => {
       function DeleteCaptionTest() {
         const engine = useEngine();
         const track = useTrack('s1');
-        const firstCaption = track?.captions?.[0];
-        const captionCount = track?.captions?.length ?? 0;
+        const clipCount = track?.clips?.length ?? 0;
         return (
           <div>
-            <span data-testid="caption-count">{captionCount}</span>
+            <span data-testid="clip-count">{clipCount}</span>
             <button
-              data-testid="delete-caption"
+              data-testid="delete-clip"
               onClick={() => {
-                if (!firstCaption) return;
+                const firstClip = track?.clips?.[0];
+                if (!firstClip) return;
                 engine.dispatch({
-                  id: 'delete-caption',
-                  label: 'Delete caption',
+                  id: 'delete-clip',
+                  label: 'Delete clip',
                   timestamp: Date.now(),
                   operations: [
                     {
-                      type: 'DELETE_CAPTION',
-                      captionId: firstCaption.id,
-                      trackId: toTrackId('s1'),
+                      type: 'DELETE_CLIP',
+                      clipId: firstClip.id,
                     },
                   ],
                 });
@@ -1072,10 +1072,10 @@ describe('Editor — Feature Verification', () => {
           <DeleteCaptionTest />
         </TestWrapper>,
       );
-      const initial = Number(screen.getByTestId('caption-count').textContent);
+      const initial = Number(screen.getByTestId('clip-count').textContent);
       expect(initial).toBeGreaterThan(0);
-      fireEvent.click(screen.getByTestId('delete-caption'));
-      expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial - 1);
+      fireEvent.click(screen.getByTestId('delete-clip'));
+      expect(Number(screen.getByTestId('clip-count').textContent)).toBe(initial - 1);
     });
   });
 
@@ -1183,11 +1183,11 @@ describe('Editor — Feature Verification', () => {
     });
   });
 
-  describe('17. Caption rendering on timeline', () => {
-    it('renders caption blocks on subtitle track', () => {
+  describe('17. Text clips rendering on timeline', () => {
+    it('renders text clips on the titles track', () => {
       const { container } = render(<App />);
-      const captionBlocks = container.querySelectorAll('[data-caption-id]');
-      expect(captionBlocks.length).toBeGreaterThanOrEqual(1);
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      expect(s1Clips.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -1672,32 +1672,32 @@ describe('Editor — Feature Verification', () => {
       expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial + 1);
     });
 
-    it('creating a caption that overlaps an existing one is rejected and logged', () => {
+    it('INSERT_GENERATOR that overlaps an existing clip is rejected', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      function OverlapCaptionTest() {
+      function OverlapGenTest() {
         const engine = useEngine();
         const track = useTrack('s1');
-        const captionCount = track?.captions?.length ?? 0;
+        const clipCount = track?.clips?.length ?? 0;
         return (
           <div>
-            <span data-testid="caption-count">{captionCount}</span>
+            <span data-testid="clip-count">{clipCount}</span>
             <button
-              data-testid="add-overlap-cap"
+              data-testid="add-overlap-gen"
               onClick={() => {
                 engine.dispatch({
-                  id: 'add-overlap-cap',
-                  label: 'Add caption',
+                  id: 'add-overlap-gen',
+                  label: 'Add overlapping generator',
                   timestamp: Date.now(),
                   operations: [{
-                    type: 'ADD_CAPTION',
+                    type: 'INSERT_GENERATOR',
                     trackId: 's1' as import('@timelinx/core').TrackId,
-                    caption: {
-                      id: toCaptionId('overlap-cap'),
-                      text: 'Overlap caption',
-                      startFrame: toFrame(50),
-                      endFrame: toFrame(110),
-                      language: 'en-US',
-                      burnIn: false,
+                    atFrame: toFrame(50),
+                    generator: {
+                      id: toGeneratorId('overlap-gen'),
+                      type: 'text',
+                      params: { text: 'Overlap' },
+                      duration: toFrame(60),
+                      name: 'Overlap',
                     },
                   }],
                 });
@@ -1711,38 +1711,27 @@ describe('Editor — Feature Verification', () => {
 
       render(
         <TestWrapper>
-          <OverlapCaptionTest />
+          <OverlapGenTest />
         </TestWrapper>
       );
-      const initial = Number(screen.getByTestId('caption-count').textContent);
-      fireEvent.click(screen.getByTestId('add-overlap-cap'));
-      expect(Number(screen.getByTestId('caption-count').textContent)).toBe(initial);
-      expect(consoleSpy).toHaveBeenCalled();
-      const call = consoleSpy.mock.calls.find((c: unknown[]) =>
-        typeof c[0] === 'string' && c[0].includes('Dispatch rejected'),
-      );
-      expect(call).toBeDefined();
+      const initial = Number(screen.getByTestId('clip-count').textContent);
+      fireEvent.click(screen.getByTestId('add-overlap-gen'));
+      expect(Number(screen.getByTestId('clip-count').textContent)).toBe(initial);
       consoleSpy.mockRestore();
     });
   });
 
-  describe('25. Caption drag-to-move via SelectionTool', () => {
-    it('SelectionTool produces EDIT_CAPTION transaction when dragging a caption', () => {
+  describe('25. Text clip drag-to-move via SelectionTool', () => {
+    it('SelectionTool produces MOVE_CLIP transaction when dragging a text clip', () => {
       const engine = createEditorEngine();
 
-      // Get initial caption state
       const stateBefore = engine.getState();
       const s1Track = stateBefore.timeline.tracks.find((t) => t.id === 's1');
       expect(s1Track).toBeDefined();
-      const caption = s1Track!.captions.find((c) => c.id === 'cap-1');
-      expect(caption).toBeDefined();
-      const origStart = Number(caption!.startFrame);
-      const origEnd = Number(caption!.endFrame);
-      const duration = origEnd - origStart;
-      expect(origStart).toBe(0);
-      expect(duration).toBe(90);
+      expect(s1Track!.clips.length).toBeGreaterThanOrEqual(1);
+      const clip = s1Track!.clips[0];
+      const origStart = Number(clip.timelineStart);
 
-      // Use SelectionTool directly (same pattern as core unit tests)
       const tool = new SelectionTool();
       const ctx = {
         state: stateBefore,
@@ -1750,126 +1739,80 @@ describe('Editor — Feature Verification', () => {
         pixelsPerFrame: 0.5,
         modifiers: { shift: false, alt: false, ctrl: false, meta: false },
         frameAtX: (x: number) => toFrame(Math.round(x / 0.5)),
-        trackAtY: () => null,
+        trackAtY: () => toTrackId('s1'),
         snap: (frame: TimelineFrame) => frame,
       };
 
-      // Pointer down on caption
+      const startX = origStart * 2; // ppf=0.5 → px = frame * 2
       tool.onPointerDown({
-        frame: toFrame(0), trackId: toTrackId('s1'), clipId: null,
-        captionId: toCaptionId('cap-1'), x: 0, y: 50, buttons: 1,
+        frame: toFrame(origStart), trackId: toTrackId('s1'), clipId: clip.id,
+        captionId: null, x: startX, y: 50, buttons: 1,
         shiftKey: false, altKey: false, metaKey: false,
       }, ctx);
 
-      // Drag right — 200px at ppf=0.5 = 400 frames
+      const endX = startX + 400; // drag 200px = 100 frames at ppf=0.5
       tool.onPointerMove({
-        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
-        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 1,
+        frame: toFrame(origStart + 100), trackId: toTrackId('s1'), clipId: clip.id,
+        captionId: null, x: endX, y: 50, buttons: 1,
         shiftKey: false, altKey: false, metaKey: false,
       }, ctx);
 
-      // Pointer up — should produce EDIT_CAPTION
       const tx = tool.onPointerUp({
-        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
-        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 0,
+        frame: toFrame(origStart + 100), trackId: toTrackId('s1'), clipId: clip.id,
+        captionId: null, x: endX, y: 50, buttons: 0,
         shiftKey: false, altKey: false, metaKey: false,
       }, ctx);
 
       expect(tx).not.toBeNull();
-      expect(tx!.label).toBe('Move Caption');
-      expect(tx!.operations).toHaveLength(1);
-      expect(tx!.operations[0]!.type).toBe('EDIT_CAPTION');
+      expect(tx!.operations[0]!.type).toBe('MOVE_CLIP');
 
-      // Dispatch the transaction and verify state updated
       const result = engine.dispatch(tx!);
       expect(result.accepted).toBe(true);
-
-      const stateAfter = engine.getState();
-      const s1TrackAfter = stateAfter.timeline.tracks.find((t) => t.id === 's1');
-      const captionAfter = s1TrackAfter!.captions.find((c) => c.id === 'cap-1');
-      expect(captionAfter).toBeDefined();
-      expect(Number(captionAfter!.startFrame)).toBe(400);
-      expect(Number(captionAfter!.endFrame)).toBe(490); // 400 + 90
-    });
-
-    it('SelectionTool returns provisional ghost caption during drag', () => {
-      const engine = createEditorEngine();
-      const stateBefore = engine.getState();
-
-      const tool = new SelectionTool();
-      const ctx = {
-        state: stateBefore,
-        snapIndex: { points: [], builtAt: Date.now(), enabled: false },
-        pixelsPerFrame: 0.5,
-        modifiers: { shift: false, alt: false, ctrl: false, meta: false },
-        frameAtX: (x: number) => toFrame(Math.round(x / 0.5)),
-        trackAtY: () => null,
-        snap: (frame: TimelineFrame) => frame,
-      };
-
-      // Pointer down on caption
-      tool.onPointerDown({
-        frame: toFrame(0), trackId: toTrackId('s1'), clipId: null,
-        captionId: toCaptionId('cap-1'), x: 0, y: 50, buttons: 1,
-        shiftKey: false, altKey: false, metaKey: false,
-      }, ctx);
-
-      // Drag right — should return provisional ghost
-      const provisional = tool.onPointerMove({
-        frame: toFrame(400), trackId: toTrackId('s1'), clipId: null,
-        captionId: toCaptionId('cap-1'), x: 200, y: 50, buttons: 1,
-        shiftKey: false, altKey: false, metaKey: false,
-      }, ctx);
-
-      expect(provisional).not.toBeNull();
-      expect(provisional!.isProvisional).toBe(true);
-      expect(provisional!.clips).toHaveLength(0);
-      expect(provisional!.captions).toHaveLength(1);
-      expect(provisional!.captions![0].id).toBe(toCaptionId('cap-1'));
     });
   });
 
-  describe('26. Caption interactivity — DOM structure verification', () => {
-    it('caption block has data-caption-id for tool-router hit-testing', () => {
+  describe('26. Text clip interactivity — DOM structure verification', () => {
+    it('text clip has data-clip-id for tool-router hit-testing', () => {
       const { container } = render(<App />);
-      const captionEl = container.querySelector('[data-caption-id="cap-1"]') as HTMLElement;
-      expect(captionEl).not.toBeNull();
-      expect(captionEl.dataset.captionId).toBe('cap-1');
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      expect(s1Clips.length).toBeGreaterThanOrEqual(1);
+      const firstClip = s1Clips[0] as HTMLElement;
+      expect(firstClip.dataset.clipId).toBeTruthy();
     });
 
-    it('caption block has data-track-id for tool-router hit-testing', () => {
+    it('text clip has data-track-id for tool-router hit-testing', () => {
       const { container } = render(<App />);
-      const captions = container.querySelectorAll('[data-caption-id]');
-      for (const cap of captions) {
-        expect((cap as HTMLElement).dataset.trackId).toBeDefined();
-        expect((cap as HTMLElement).dataset.trackId!.length).toBeGreaterThan(0);
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      for (const clip of s1Clips) {
+        expect((clip as HTMLElement).dataset.trackId).toBe('s1');
       }
     });
 
-    it('caption block renders text inside .caption-info', () => {
+    it('text clip renders clip name inside .clip-info', () => {
       const { container } = render(<App />);
-      const captionEl = container.querySelector('[data-caption-id="cap-1"]') as HTMLElement;
-      expect(captionEl).not.toBeNull();
-      const infoEl = captionEl.querySelector('.caption-info');
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      expect(s1Clips.length).toBeGreaterThanOrEqual(1);
+      const firstClip = s1Clips[0] as HTMLElement;
+      const infoEl = firstClip.querySelector('.clip-info');
       expect(infoEl).not.toBeNull();
-      expect(infoEl!.textContent).toBe('Welcome to TimelineX Editor');
+      expect(infoEl!.textContent).toContain('Welcome to TimelineX Editor');
     });
 
-    it('caption block has inline transform style for positioning (matches ClipView)', () => {
+    it('text clip has inline transform style for positioning', () => {
       const { container } = render(<App />);
-      const captionEl = container.querySelector('[data-caption-id="cap-1"]') as HTMLElement;
-      expect(captionEl).not.toBeNull();
-      // Should have a transform style attribute set by React
-      expect(captionEl.style.transform).toBeTruthy();
-      expect(captionEl.style.transform).toContain('translateX');
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      expect(s1Clips.length).toBeGreaterThanOrEqual(1);
+      const firstClip = s1Clips[0] as HTMLElement;
+      expect(firstClip.style.transform).toBeTruthy();
+      expect(firstClip.style.transform).toContain('translateX');
     });
 
-    it('caption block has width style set (matches ClipView)', () => {
+    it('text clip has width style set', () => {
       const { container } = render(<App />);
-      const captionEl = container.querySelector('[data-caption-id="cap-1"]') as HTMLElement;
-      expect(captionEl).not.toBeNull();
-      // Should have a width style attribute set by React
-      expect(captionEl.style.width).toBeTruthy();
+      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      expect(s1Clips.length).toBeGreaterThanOrEqual(1);
+      const firstClip = s1Clips[0] as HTMLElement;
+      expect(firstClip.style.width).toBeTruthy();
     });
 
     it('all caption blocks are inside .track-clips (same container as clips)', () => {

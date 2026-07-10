@@ -306,6 +306,7 @@ export function applyOperation(
         timelineEnd: (op.atFrame + op.generator.duration) as TimelineFrame,
         mediaIn: 0 as TimelineFrame,
         mediaOut: op.generator.duration,
+        name: op.generator.name,
       });
       const nextRegistry = new Map(state.assetRegistry);
       nextRegistry.set(genAsset.id, genAsset);

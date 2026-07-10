@@ -11,7 +11,7 @@ describe('Editor App', () => {
   it('displays the header', () => {
     render(<App />);
     expect(screen.getByText('TimelineX Editor')).toBeInTheDocument();
-    expect(screen.getByText('Milestone 2 — Effects, Transitions, Keyframes, Captions')).toBeInTheDocument();
+    expect(screen.getByText('Milestone 2 — Effects, Transitions, Keyframes, Text Clips')).toBeInTheDocument();
   });
 
   it('displays toolbar with tool buttons', () => {
@@ -40,7 +40,7 @@ describe('Editor App', () => {
     expect(screen.getByText('Effects')).toBeInTheDocument();
     expect(screen.getByText('Transitions')).toBeInTheDocument();
     expect(screen.getByText('Keyframes')).toBeInTheDocument();
-    expect(screen.getByText('Captions')).toBeInTheDocument();
+    expect(screen.getByText('Text')).toBeInTheDocument();
   });
 
   it('displays status bar', () => {
