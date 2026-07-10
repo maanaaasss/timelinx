@@ -305,12 +305,12 @@ export class TimelineEngine {
       // Gesture tool: active tool if it supports captions, else SelectionTool
       if (typeof activeTool.supportsCaptions === 'function' && activeTool.supportsCaptions()) {
         this._captionGestureTool = activeTool;
-        try { activeTool.onPointerDown(event, ctx); } catch (_e) { /* ignore */ }
+        try { activeTool.onPointerDown(event, ctx); } catch { /* ignore */ }
       } else {
         const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
         this._captionGestureTool = selectionTool ?? activeTool;
         if (selectionTool) {
-          try { selectionTool.onPointerDown(event, ctx); } catch (_e) { /* ignore */ }
+          try { selectionTool.onPointerDown(event, ctx); } catch { /* ignore */ }
         }
       }
       console.log('[CAP-D] down:', { active: activeTool.id, gesture: this._captionGestureTool?.id ?? null, captionId: event.captionId });
