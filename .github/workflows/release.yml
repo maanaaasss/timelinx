@@ -55,5 +55,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          # NODE_AUTH_TOKEN is intentionally omitted to allow npm OIDC trusted publishing.
-          # npm uses the GitHub OIDC id-token when no explicit auth token is set.
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
