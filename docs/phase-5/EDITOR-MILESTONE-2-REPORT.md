@@ -547,3 +547,10 @@ Text clips on S1 track render via `ClipView` as regular clips. Select, drag, tri
 ### Real Browser Note
 
 The automated tests confirm engine logic and DOM structure. Actual pointer-based interaction (select, drag, split, delete text clips in a real browser) should "just work" given that text clips go through the exact same proven pipeline as video/audio clips. If it doesn't, that would mean the premise was wrong at the tool-router or CSS layer — report specifically what broke rather than assuming success.
+
+## Definition of Done
+
+- [x] Branch `text-clip-pivot` created and pushed to `origin`
+- [x] PR [#18](https://github.com/maanaaasss/timelinx/pull/18) opened
+- [x] CI status: **PASS** — [`Build & Test`](https://github.com/maanaaasss/timelinx/actions/runs/29081044588/job/86323711950) (1m33s)
+- [x] DTS build issue: confirmed pre-existing — `TS5055` error reproduces identically on clean tree (before any pivot changes). Same stale-`.d.ts`-in-dist tsup quirk, not a regression.
