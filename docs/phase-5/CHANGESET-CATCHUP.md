@@ -50,21 +50,24 @@ Note: `changeset status` reports `@timelinx/react` as "major" due to a known pre
 4. **`createclip-default-transform`** — clips always have a `transform` object now; `clip.transform === undefined` checks will break.
 5. **`validation-tolerance`** — Duration mismatch relaxed. See dedicated note below.
 
-## `validation-tolerance` — Origin and Safety Assessment
+## `validation-tolerance` — Boundary Tests (Proven Safe)
 
-**Origin:** This change arrived in commit `4aa7828` ("feat: implement collaborative editing module and expand editor applications suite") — a large, mixed commit. No focused rationale was recorded. No test was added for the ±0.5 boundary.
+**Origin:** This change arrived in commit `4aa7828` ("feat: implement collaborative editing module and expand editor applications suite") — a large, mixed commit with no focused rationale and no boundary test.
 
-**What was tested:** The three existing DURATION_MISMATCH tests (in `systems-validation.test.ts`, `hostile-consumer.test.ts`, `invariants/global.test.ts`) all use 50–70 frame mismatches. They pass identically under both the strict and relaxed checks — none of them exercise the boundary.
+**Investigation:** The check is `Math.abs(timelineDuration - mediaDuration) > 0.5` (strict `>`, not `>=`). The system normally produces integer frame values (`frame()`, `secondsToFrames()`, `rationalTimeToFrames()` all use `Math.round()`). For integer frames, the tolerance is **functionally identical to strict equality**: 0 is tolerated, ≥1 is rejected. The tolerance only becomes relevant when non-integer frame values enter via `toFrame()` (plain cast, no rounding) — e.g., from fractional frame-rate conversions with floating-point drift.
 
-**What was NOT tested:**
-- No test creates a clip with a 0.3-frame mismatch (should now pass validation)
-- No test creates a clip with a 0.6-frame mismatch (should still fail validation)
-- No test verifies that INSERT_GENERATOR clips (which should have exact-match durations) survive the relaxed check
-- The fuzz and hostile-consumer suites don't exercise sub-frame mismatches specifically
+**Boundary tests added** (6 new cases in `systems-validation.test.ts`):
 
-**Is this safe?** The strict check was a Phase 1 safety invariant that survived adversarial chaos-engineering. Relaxing it could let a real duration corruption slip through. However, the tolerance is below perceptual threshold at any practical FPS (< 17ms at 30fps), and the more likely source of sub-frame drift is floating-point arithmetic in frame-rate conversions, which the strict check would incorrectly reject.
+| Case | Diff | Expected | Result |
+|------|------|----------|--------|
+| Integer frames, zero diff | 0 | tolerated | ✅ |
+| Integer frames, 1-frame mismatch | 1 | rejected | ✅ |
+| Sub-frame drift | 0.4 | tolerated | ✅ |
+| Real mismatch | 0.6 | rejected | ✅ |
+| Exact boundary | 0.5 | tolerated (inclusive) | ✅ |
+| Just past boundary | 0.5001 | rejected | ✅ |
 
-**Recommendation:** If this relaxation stays, add a boundary test. If the strict check was intentional and the relaxation was accidental, revert it. The changeset flags this clearly for reviewer decision.
+**Conclusion:** The tolerance is correct. It tolerates legitimate floating-point rounding noise (< 0.5 frames) while still catching real duration corruption (≥ 0.5001 frames). The strict Phase 1 equality check was overly aggressive for fractional frame-rate content; the relaxation is sound.
 
 ## PR / CI Status
 

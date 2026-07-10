@@ -148,6 +148,80 @@ describe('validateClip', () => {
     expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
   });
 
+  // ── DURATION_MISMATCH boundary tests (±0.5 frame tolerance) ──────────────
+  //
+  // The check is: Math.abs(timelineDuration - mediaDuration) > 0.5
+  // Boundary is INCLUSIVE: exactly 0.5 is tolerated, > 0.5 is rejected.
+  //
+  // IMPORTANT: For integer frame values (which the system normally produces
+  // via frame(), secondsToFrames(), rationalTimeToFrames() — all use Math.round),
+  // the difference is always an integer, so the tolerance is functionally identical
+  // to strict equality: 0 is tolerated, ≥1 is rejected.
+  //
+  // The tolerance only becomes relevant when non-integer frame values enter the
+  // system through toFrame() (which is a plain cast, no rounding). This can happen
+  // with fractional frame-rate conversions where floating-point arithmetic produces
+  // sub-frame drift. The tests below use toFrame() with fractional values to verify
+  // the boundary is correct in both directions.
+
+  it('DURATION_MISMATCH: integer frames — zero difference is tolerated', () => {
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 100 });
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(true);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+  });
+
+  it('DURATION_MISMATCH: integer frames — 1-frame mismatch is rejected', () => {
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99 });
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+  });
+
+  it('DURATION_MISMATCH: sub-frame drift of 0.4 frames is tolerated', () => {
+    // Simulates floating-point rounding from fractional frame-rate conversion:
+    // e.g., a 100-frame clip at 29.97fps whose media duration drifts 0.4 frames
+    // due to seconds→frames rounding at a different rate.
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99.6 });
+    // timelineDuration = 100, mediaDuration = 99.6, diff = 0.4
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(true);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+  });
+
+  it('DURATION_MISMATCH: 0.6-frame mismatch is rejected', () => {
+    // Just past the ±0.5 tolerance — a real mismatch, not rounding noise.
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99.4 });
+    // timelineDuration = 100, mediaDuration = 99.4, diff = 0.6
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+  });
+
+  it('DURATION_MISMATCH: exactly ±0.5 frames is tolerated (inclusive boundary)', () => {
+    // Confirms the boundary is strictly > 0.5 (not >=), so 0.5 is tolerated.
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99.5 });
+    // timelineDuration = 100, mediaDuration = 99.5, diff = 0.5
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(true);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+  });
+
+  it('DURATION_MISMATCH: just past boundary (0.5001) is rejected', () => {
+    // Verifies the strict > 0.5 cutoff, not >=.
+    const state = makeState();
+    const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99.4999 });
+    // timelineDuration = 100, mediaDuration = 99.4999, diff = 0.5001
+    const result = validateClip(state, clip);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+  });
+
   it('collects multiple errors', () => {
     const state = makeState();
     // Valid asset, but timeline bounds inverted, mediaIn negative, mediaOut <= mediaIn
