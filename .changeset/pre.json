@@ -10,5 +10,23 @@
     "@timelinx/react": "1.0.0-beta.3",
     "@timelinx/ui": "1.0.0-beta.1"
   },
-  "changesets": []
+  "changesets": [
+    "add-caption-and-generator-exports",
+    "add-caption-tool-support",
+    "add-react-hooks",
+    "add-subpath-exports",
+    "clip-update-perf",
+    "createclip-default-transform",
+    "deprecate-provisional-manager",
+    "dispatch-freeze-state",
+    "fix-insert-generator-name",
+    "fix-tool-router-null-target",
+    "keyboard-handler-null-engine",
+    "keyframe-tool-auto-create-effect",
+    "react-caption-gesture-routing",
+    "react-error-boundaries",
+    "selection-ripple-trim-default",
+    "tool-router-destroy",
+    "validation-tolerance"
+  ]
 }
