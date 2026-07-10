@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/react",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0",
   "description": "React adapter for @timelinx/core. Hooks, context, and tool routing for building timeline editors.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -28,7 +28,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "@timelinx/core": ">=1.0.0-beta.1",
+    "@timelinx/core": ">=1.0.0",
     "react": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
@@ -53,7 +53,14 @@
     "typescript-eslint": "^8.33.0",
     "vitest": "^2.1.8"
   },
-  "keywords": ["timeline", "react", "nle", "video-editor", "hooks", "typescript"],
+  "keywords": [
+    "timeline",
+    "react",
+    "nle",
+    "video-editor",
+    "hooks",
+    "typescript"
+  ],
   "author": "Timeline Contributors",
   "license": "MIT",
   "bugs": {

@@ -1,11 +1,103 @@
 # Changelog
 
+## 1.0.0
+
+### Minor Changes
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Add caption types and subtitle import to the public API:
+
+  - Types: `CaptionId`, `CaptionStyle`, `Caption`
+  - Functions: `toCaptionId`, `parseSRT`, `parseVTT`, `subtitleImportToOps`, `defaultCaptionStyle`
+
+  These were previously internal-only. Exporting them enables consumers to work with caption data and subtitle import without reaching into internal paths.
+
+  Also add generator types to the public API:
+
+  - Types: `GeneratorId`, `GeneratorType`, `Generator`
+  - Functions: `toGeneratorId`
+
+  Required for dispatching `INSERT_GENERATOR` operations from consumer code (e.g., text clip creation in the editor).
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Add caption support to `SelectionTool`, `RazorTool`, `RippleDeleteTool`, `RippleTrimTool`, and `RollTrimTool`:
+
+  - **SelectionTool**: new `drag-caption` mode for moving captions via pointer drag, with snap-to-edges, ghost preview, collision avoidance, and shift-click multi-selection
+  - **RazorTool**: clicking a caption with the razor tool slices it into two halves at the click point
+  - **RippleDeleteTool**: deleting a caption ripples all subsequent captions leftward to close the gap
+  - **RippleTrimTool**: trimming a caption's edge via drag, with ripple behavior for subsequent captions
+  - **RollTrimTool**: rolling the trim boundary between adjacent captions
+
+  New `ITool` interface method: `supportsCaptions?(): boolean` — when a tool declares this, the engine routes caption pointer events to it instead of always routing to `SelectionTool`.
+
+  Also adds `findClipWithTrack(state, clipId)` to the query surface — a utility that returns the clip, its parent track, and the track index in one call.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Add new sub-path exports for better code organization:
+
+  - `@timelinx/core/serialization` — timeline serialization (`serializeTimeline`, `deserializeTimeline`), OTIO import/export, EDL export, AAF export, FCP XML export, project model
+  - `@timelinx/core/media` — subtitle import (`parseSRT`, `parseVTT`), marker search (`findMarkersByColor`, `findMarkersByLabel`), thumbnail cache/queue, worker contracts
+
+  These exports are moved from the main `@timelinx/core` entry point to dedicated sub-paths. The main entry point retains all tool, clip, track, effect, and keyframe APIs.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - `KeyframeTool`: clicking on a clip that has no effects now auto-creates a default `brightness` effect and adds a keyframe to it, instead of silently doing nothing. The transaction includes both `ADD_EFFECT` and `ADD_KEYFRAME` operations. This removes the friction of having to manually add an effect before placing keyframes.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`bebe6f7`](https://github.com/maanaaasss/timelinx/commit/bebe6f7566d8366c044a0e2ff191b9dac8e962e3) Thanks [@maanaaasss](https://github.com/maanaaasss)! - SelectionTool edge-drag behavior change: dragging a clip edge now defaults to **ripple trim** instead of simple resize.
+
+  **Before:** Edge-drag produced a single `RESIZE_CLIP` operation — only the dragged clip changed size.
+
+  **After:** Edge-drag produces `RESIZE_CLIP` + N×`MOVE_CLIP` for every downstream clip. Trimming a clip's end pushes all clips to its right rightward; trimming a start pulls all clips to its left leftward.
+
+  **Roll trim:** Alt/Option+edge-drag gives the previous behavior at cut points between adjacent clips (both clips resize to maintain adjacency, no downstream shift).
+
+  This changes existing behavior for any consumer already using SelectionTool's edge-drag. If you relied on edge-drag only resizing the target clip, add Alt/Option to the gesture.
+
+### Patch Changes
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Performance improvements to clip and marker operations:
+
+  - `updateClip` (both `apply.ts` and `clip-operations.ts`) now only re-sorts the track's clip array when position-affecting fields (`timelineStart`/`timelineEnd`) actually changed — metadata-only updates skip the sort entirely
+  - `shiftLinkedMarkers` now returns early when no markers reference the clip being moved, avoiding an unnecessary `map` allocation
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`bebe6f7`](https://github.com/maanaaasss/timelinx/commit/bebe6f7566d8366c044a0e2ff191b9dac8e962e3) Thanks [@maanaaasss](https://github.com/maanaaasss)! - `createClip()` now always applies `DEFAULT_CLIP_TRANSFORM` when no `transform` is provided, instead of omitting the field. Previously, clips created without an explicit `transform` had no `transform` property at all (`clip.transform === undefined`). Now every clip has a `transform` object with default values (`{ positionX: 0, positionY: 0, scaleX: 1, scaleY: 1, rotation: 0, opacity: 1, anchorX: 0.5, anchorY: 0.5 }`).
+
+  This affects any code doing `clip.transform === undefined` checks, JSON serialization comparison, or referential equality checks on the transform field of freshly-created clips.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Deprecate `ProvisionalManager` wrapper type and its helper functions (`createProvisionalManager`, `setProvisional`, `clearProvisional`). Use `ProvisionalState | null` directly instead. The functions still work but are marked `@deprecated`. The `resolveClip` function now accepts the new type signature.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - `dispatch()` now returns a **frozen** `TimelineState`:
+
+  - The returned state, timeline, tracks, and clips are all `Object.freeze()`-d — attempting to mutate them throws in strict mode, catching accidental in-place modifications
+  - The `assetRegistry` Map is wrapped in a read-only proxy that throws on `.set()`, `.delete()`, `.clear()` calls
+  - Shared references between successive states are preserved (no deep clone), so React hook memoization (`Object.is` comparison) continues to work correctly
+
+  This is a **behavior change**: code that previously mutated dispatch results will now throw. All mutations should go through `dispatch()` + operations.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Fix `INSERT_GENERATOR`: the clip created by `applyOperation` now receives `name: op.generator.name` instead of `null`. Generator-backed clips (text, solid color, etc.) now display their generator name on the timeline instead of a generated ID like `gen-clip-gen-title-1`.
+
+  Also adds exhaustive `default` case to the `applyOperation` switch — unhandled operation types now throw at runtime instead of silently falling through.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - `KeyboardHandler` constructor now accepts `PlaybackEngine | null` instead of requiring a non-null engine. The handler silently no-ops transport actions (play/pause, seek, jog) when the engine is null, instead of throwing. This fixes a crash when constructing `TimelineEngine` without a `PlaybackEngine`.
+
+- [#19](https://github.com/maanaaasss/timelinx/pull/19) [`351fd1d`](https://github.com/maanaaasss/timelinx/commit/351fd1d8b93eec03e3ec468bbe103b315a402328) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Relax `validateClip` duration-mismatch check from exact equality (`timelineDuration !== mediaDuration`) to ±0.5 frame tolerance (`Math.abs(timelineDuration - mediaDuration) > 0.5`). Boundary is **inclusive**: exactly 0.5 is tolerated, > 0.5 is rejected.
+
+  **Why this is safe (now proven with boundary tests):**
+
+  The system normally produces integer frame values — `frame()`, `secondsToFrames()`, `rationalTimeToFrames()` all use `Math.round()`. For integer frames, the tolerance is functionally identical to strict equality: 0 is tolerated, ≥1 is rejected. No existing behavior changes.
+
+  The tolerance becomes relevant only when non-integer frame values enter via `toFrame()` (a plain cast, no rounding) — e.g., from fractional frame-rate conversions where floating-point arithmetic produces sub-frame drift. The tolerance correctly:
+
+  - **Tolerates** 0.4-frame drift (below threshold, legitimate rounding noise)
+  - **Rejects** 0.6-frame mismatch (above threshold, real duration corruption)
+  - **Tolerates** exactly 0.5 (inclusive boundary, confirmed by test)
+  - **Rejects** 0.5001 (exclusive cutoff, confirmed by test)
+
+  Boundary tests added to `src/__tests__/systems-validation.test.ts` (6 new cases).
+
 All notable changes to `@webpacked-timeline/core` are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [1.0.0-beta.1] - 2026-03-07
 
 ### Added
+
 - Core state model: `Timeline`, `Track`, `Clip`, `Asset` with branded IDs (`ClipId`, `TrackId`, `AssetId`, `TimelineFrame`, `FrameRate`)
 - Factory functions: `createTimeline`, `createTrack`, `createClip`, `createAsset`, `createTimelineState`
 - Frame utilities: `toFrame`, `frameRate`, `framesToTimecode`, `framesToSeconds`, `secondsToFrames`, `FrameRates`, drop-frame support
