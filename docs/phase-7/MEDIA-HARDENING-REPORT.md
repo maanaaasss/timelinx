@@ -189,7 +189,26 @@ The worker client classes (`ThumbnailWorkerClient`, `WaveformWorkerClient`) now 
 
 ---
 
-## 6. Definition of Done
+## 6. Function Coverage Decrease — Explained
+
+Function coverage went from 82.35% (94 tests) to 80.64% (125 tests), a 1.71pp decrease.
+
+**Root cause:** Before this round, the worker modules (`thumbnail-worker.ts`, `waveform-worker.ts`) had 0% statement coverage but reported 100% function coverage. This is a v8 coverage artifact — when zero functions in a file are invoked, v8 counts the function coverage as 100% (empty denominator). After adding 31 worker tests that actually call `WaveformWorkerClient` and `ThumbnailWorkerClient` methods, v8 now measures ~29 real functions across both worker files. The effective function coverage of those worker functions is ~78%, which drags the overall number down slightly despite being strictly more information.
+
+**Per-file function coverage (before → after):**
+
+| File | Before | After | Delta | Explanation |
+|---|---|---|---|---|
+| `thumbnail-worker.ts` | 100% | 80% | -20pp | `createThumbnailWorker()` not called (requires real Worker context) |
+| `waveform-worker.ts` | 100% | 76.92% | -23.08pp | `createWaveformWorker()` not called (requires real Worker context) |
+| `thumbnail-extractor.ts` | 92.30% | 91.66% | -0.64pp | New `getVideoElement` throws early in Node.js |
+| All other files | unchanged | unchanged | — | — |
+
+This is the same pattern as the WebGL compositor's statement coverage dip: new code was measured for the first time, revealing paths that are unreachable in Node.js. Not a regression — an improvement in measurement fidelity.
+
+---
+
+## 7. Definition of Done
 
 | Criterion | Status |
 |---|---|
@@ -197,3 +216,8 @@ The worker client classes (`ThumbnailWorkerClient`, `WaveformWorkerClient`) now 
 | Typecheck passes | ✅ `tsc --noEmit` clean |
 | Lint passes | ✅ Only warnings in test files (expected `as any`) |
 | No regressions | ✅ All original tests still pass |
+| Branch | `fix/media-web-hardening` |
+| Commit | `15591f7` |
+| Pushed | ✅ `origin/fix/media-web-hardening` |
+| PR | [#28](https://github.com/maanaaasss/timelinx/pull/28) |
+| CI | ✅ [Build & Test — pass](https://github.com/maanaaasss/timelinx/actions/runs/29098679945/job/86381639286) (1m56s) |
