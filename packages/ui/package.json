@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/ui",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "private": true,
   "description": "Modern browser-native React timeline UI. Drop-in components built on @timelinx/core and @timelinx/react.",
   "type": "module",
@@ -32,8 +32,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@timelinx/core": ">=1.0.0-beta.1",
-    "@timelinx/react": ">=1.0.0-beta.1",
+    "@timelinx/core": ">=1.0.0",
+    "@timelinx/react": ">=1.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
