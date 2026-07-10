@@ -1,0 +1,14 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@timelinx/editor": "0.0.0",
+    "@timelinx/ai": "1.0.0-beta.1",
+    "@timelinx/collab": "1.0.0-beta.1",
+    "@timelinx/core": "1.0.0-beta.1",
+    "@timelinx/media-web": "1.0.0-beta.1",
+    "@timelinx/react": "1.0.0-beta.3",
+    "@timelinx/ui": "1.0.0-beta.1"
+  },
+  "changesets": []
+}
