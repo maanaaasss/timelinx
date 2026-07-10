@@ -49,5 +49,5 @@ Note: `changeset status` reports `@timelinx/react` as "major" due to a known pre
 ## PR / CI Status
 
 - Branch: `changeset-catchup`
-- PR: **PENDING** — to be created after commit
-- CI: **PENDING**
+- PR: [#19](https://github.com/maanaaasss/timelinx/pull/19)
+- CI: **PASS** ([`Build & Test`](https://github.com/maanaaasss/timelinx/actions/runs/29083416012/job/86331372090) — 1m56s)
