@@ -17,7 +17,7 @@ export type WebCodecsDecoderConfig = {
   codec?: string;
   /** Hardware acceleration preference. Default: 'prefer-hardware'. */
   hardwareAcceleration?: HardwareAcceleration;
-  /** Number of concurrent decoders. Default: 4. */
+  /** Reserved for future concurrent decoder pool. Currently unused. */
   concurrency?: number;
 };
 

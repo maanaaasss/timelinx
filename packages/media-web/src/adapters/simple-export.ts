@@ -234,13 +234,13 @@ export class SimpleExportAdapter {
     quality: number = 0.92,
   ): Promise<Blob | null> {
     return new Promise((resolve, reject) => {
-      if (canvas instanceof HTMLCanvasElement) {
+      if (typeof HTMLCanvasElement !== 'undefined' && canvas instanceof HTMLCanvasElement) {
         canvas.toBlob(
           (blob) => resolve(blob),
           `image/${format}`,
           quality,
         );
-      } else if (canvas instanceof OffscreenCanvas) {
+      } else if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
         canvas.convertToBlob({
           type: `image/${format}`,
           quality,

@@ -239,7 +239,14 @@ export class WaveformWorkerClient {
     const job = this.activeJobs.get(jobId);
     if (job) {
       this.activeJobs.delete(jobId);
-      // Would send cancel message to worker
+      // Send cancel message to all workers (they'll ignore unknown requestIds)
+      const cancelMsg: WaveformWorkerMessage = {
+        type: 'cancel',
+        requestId: jobId,
+      };
+      for (const worker of this.workers) {
+        worker.postMessage(cancelMsg);
+      }
     }
   }
 

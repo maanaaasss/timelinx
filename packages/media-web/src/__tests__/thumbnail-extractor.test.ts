@@ -1,5 +1,32 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { ThumbnailExtractorAdapter } from '../adapters/thumbnail-extractor';
+
+// Mock OffscreenCanvas for Node.js environment
+beforeAll(() => {
+  if (typeof globalThis.OffscreenCanvas === 'undefined') {
+    (globalThis as any).OffscreenCanvas = class OffscreenCanvas {
+      width: number;
+      height: number;
+      constructor(width: number, height: number) {
+        this.width = width;
+        this.height = height;
+      }
+      getContext(type: string) {
+        if (type === '2d') {
+          return {
+            fillStyle: '',
+            fillRect: () => {},
+            font: '',
+            textAlign: '',
+            textBaseline: '',
+            fillText: () => {},
+          };
+        }
+        return null;
+      }
+    };
+  }
+});
 
 describe('ThumbnailExtractorAdapter', () => {
   let adapter: ThumbnailExtractorAdapter;

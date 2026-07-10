@@ -66,6 +66,8 @@ export class WebGLCompositorAdapter {
   private positionBuffer: WebGLBuffer | null = null;
   private texCoordBuffer: WebGLBuffer | null = null;
   private pixelBuffer: Uint8Array | null = null;
+  private uniformLocations: Map<string, WebGLUniformLocation | null> = new Map();
+  private attribLocations: Map<string, number> = new Map();
 
   constructor(config: WebGLCompositorConfig) {
     this.config = {
@@ -110,12 +112,16 @@ export class WebGLCompositorAdapter {
 
     if (!vertexShader || !fragmentShader) {
       console.error('Failed to compile shaders');
+      this.gl = null;
       return;
     }
 
     // Create program
     const program = gl.createProgram();
-    if (!program) return;
+    if (!program) {
+      this.gl = null;
+      return;
+    }
 
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
@@ -123,10 +129,17 @@ export class WebGLCompositorAdapter {
 
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error('Failed to link program:', gl.getProgramInfoLog(program));
+      this.gl = null;
       return;
     }
 
     this.program = program;
+
+    // Cache uniform and attribute locations
+    this.uniformLocations.set('u_texture', gl.getUniformLocation(program, 'u_texture'));
+    this.uniformLocations.set('u_opacity', gl.getUniformLocation(program, 'u_opacity'));
+    this.attribLocations.set('a_position', gl.getAttribLocation(program, 'a_position'));
+    this.attribLocations.set('a_texCoord', gl.getAttribLocation(program, 'a_texCoord'));
 
     // Create buffers
     this.positionBuffer = gl.createBuffer();
@@ -228,53 +241,54 @@ export class WebGLCompositorAdapter {
     const texture = gl.createTexture();
     if (!texture) return;
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    try {
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    // Upload frame data (placeholder - would use actual frame bitmap)
-    const size = frame.width * frame.height * 4;
-    if (!this.pixelBuffer || this.pixelBuffer.length !== size) {
-      this.pixelBuffer = new Uint8Array(size);
+      // Upload frame data (placeholder - would use actual frame bitmap)
+      const size = frame.width * frame.height * 4;
+      if (!this.pixelBuffer || this.pixelBuffer.length !== size) {
+        this.pixelBuffer = new Uint8Array(size);
+      }
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        frame.width,
+        frame.height,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        this.pixelBuffer,
+      );
+
+      // Bind texture to texture unit 0
+      gl.uniform1i(this.uniformLocations.get('u_texture') ?? null, 0);
+
+      // Set uniforms
+      gl.uniform1f(this.uniformLocations.get('u_opacity') ?? null, opacity * transform.opacity.value);
+
+      // Set position buffer
+      const positionLocation = this.attribLocations.get('a_position') ?? -1;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+      // Set texCoord buffer
+      const texCoordLocation = this.attribLocations.get('a_texCoord') ?? -1;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
+      gl.enableVertexAttribArray(texCoordLocation);
+      gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+
+      // Draw
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    } finally {
+      // Always clean up texture, even if an error occurs mid-draw
+      gl.deleteTexture(texture);
     }
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      frame.width,
-      frame.height,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this.pixelBuffer,
-    );
-
-    // Bind texture to texture unit 0
-    gl.uniform1i(gl.getUniformLocation(this.program, 'u_texture'), 0);
-
-    // Set uniforms
-    const opacityLocation = gl.getUniformLocation(this.program, 'u_opacity');
-    gl.uniform1f(opacityLocation, opacity * transform.opacity.value);
-
-    // Set position buffer
-    const positionLocation = gl.getAttribLocation(this.program, 'a_position');
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-    // Set texCoord buffer
-    const texCoordLocation = gl.getAttribLocation(this.program, 'a_texCoord');
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoordBuffer);
-    gl.enableVertexAttribArray(texCoordLocation);
-    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-
-    // Draw
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    // Cleanup texture
-    gl.deleteTexture(texture);
   }
 
   /**
@@ -307,9 +321,11 @@ export class WebGLCompositorAdapter {
     this.config.width = width;
     this.config.height = height;
 
-    if (this.config.canvas instanceof HTMLCanvasElement) {
+    if (typeof HTMLCanvasElement !== 'undefined' && this.config.canvas instanceof HTMLCanvasElement) {
       this.config.canvas.width = width;
       this.config.canvas.height = height;
+    } else if (typeof OffscreenCanvas !== 'undefined' && this.config.canvas instanceof OffscreenCanvas) {
+      console.warn('WebGLCompositor.resize: OffscreenCanvas cannot be resized after creation. Create a new compositor instead.');
     }
   }
 

@@ -63,9 +63,14 @@ export class WebAudioWaveformAdapter {
    */
   private async getAudioContext(): Promise<AudioContext> {
     if (!this.audioContext || this.audioContext.state === 'closed') {
-      this.audioContext = new AudioContext({
-        sampleRate: this.config.sampleRate,
-      });
+      try {
+        this.audioContext = new AudioContext({
+          sampleRate: this.config.sampleRate,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Failed to create AudioContext: ${message}`);
+      }
     }
     if (this.audioContext.state === 'suspended') {
       await this.audioContext.resume();
@@ -172,14 +177,21 @@ export class WebAudioWaveformAdapter {
     sampleRate: number,
   ): WaveformPeak[] {
     const peaks: WaveformPeak[] = [];
-    const samplesPerPeak = Math.floor(rawData.length / totalPeaks);
 
-    for (let i = 0; i < totalPeaks; i++) {
+    if (rawData.length === 0 || totalPeaks === 0) {
+      return peaks;
+    }
+
+    // Clamp totalPeaks to rawData.length to avoid samplesPerPeak === 0
+    const effectivePeaks = Math.min(totalPeaks, rawData.length);
+    const samplesPerPeak = Math.max(1, Math.floor(rawData.length / effectivePeaks));
+
+    for (let i = 0; i < effectivePeaks; i++) {
       const start = i * samplesPerPeak;
       const end = Math.min(start + samplesPerPeak, rawData.length);
 
-      let min = Infinity;
-      let max = -Infinity;
+      let min = rawData[start] ?? 0;
+      let max = min;
       let sumSquares = 0;
 
       for (let j = start; j < end; j++) {
@@ -189,7 +201,8 @@ export class WebAudioWaveformAdapter {
         sumSquares += sample * sample;
       }
 
-      const rms = Math.sqrt(sumSquares / (end - start));
+      const count = end - start;
+      const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
 
       peaks.push({ min, max, rms });
     }

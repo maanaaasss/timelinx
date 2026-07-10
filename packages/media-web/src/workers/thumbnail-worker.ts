@@ -184,6 +184,12 @@ export type ThumbnailWorkerClientConfig = {
   poolSize?: number;
   /** Maximum queue size. Default: 1000. */
   maxQueueSize?: number;
+  /** Called when a thumbnail result is received. */
+  onResult?: (result: ThumbnailResult) => void;
+  /** Called when a worker error is received. */
+  onError?: (requestId: string, message: string) => void;
+  /** Called on progress updates. */
+  onProgress?: (requestId: string, progress: number) => void;
 };
 
 /**
@@ -195,6 +201,9 @@ export class ThumbnailWorkerClient {
   private queue: ThumbnailQueueEntry[] = [];
   private processing: Map<string, ThumbnailQueueEntry> = new Map();
   private nextWorkerIndex: number = 0;
+  private onResult: ((result: ThumbnailResult) => void) | undefined;
+  private onError: ((requestId: string, message: string) => void) | undefined;
+  private onProgress: ((requestId: string, progress: number) => void) | undefined;
 
   constructor(config: ThumbnailWorkerClientConfig) {
     this.config = {
@@ -202,6 +211,9 @@ export class ThumbnailWorkerClient {
       poolSize: config.poolSize ?? 2,
       maxQueueSize: config.maxQueueSize ?? 1000,
     };
+    this.onResult = config.onResult;
+    this.onError = config.onError;
+    this.onProgress = config.onProgress;
 
     for (let i = 0; i < (this.config.poolSize ?? 2); i++) {
       const worker = new Worker(config.workerUrl, { type: 'module' });
@@ -248,8 +260,20 @@ export class ThumbnailWorkerClient {
       (entry) => `${entry.request.clipId}-${entry.request.mediaFrame}` !== key,
     );
 
-    // Cancel if processing
-    this.processing.delete(key);
+    // Cancel if processing — send cancel message to the worker
+    const entry = this.processing.get(key);
+    if (entry) {
+      this.processing.delete(key);
+      // Find which worker was processing this and send cancel
+      const cancelMsg: ThumbnailWorkerMessage = {
+        type: 'cancel',
+        clipId,
+        mediaFrame,
+      };
+      for (const worker of this.workers) {
+        worker.postMessage(cancelMsg);
+      }
+    }
   }
 
   /**
@@ -286,10 +310,14 @@ export class ThumbnailWorkerClient {
       const { clipId, mediaFrame } = event.data.payload;
       const key = `${clipId}-${mediaFrame}`;
       this.processing.delete(key);
+      this.onResult?.(event.data.payload);
       this.processQueue();
     } else if (type === 'error') {
       this.processing.delete(event.data.requestId);
+      this.onError?.(event.data.requestId, event.data.message);
       this.processQueue();
+    } else if (type === 'progress') {
+      this.onProgress?.(event.data.requestId, event.data.progress);
     }
   }
 
