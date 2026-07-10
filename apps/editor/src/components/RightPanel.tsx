@@ -3,14 +3,14 @@ import { InspectorPanel } from './InspectorPanel';
 import { EffectsPanel } from './EffectsPanel';
 import { TransitionsPanel } from './TransitionsPanel';
 import { KeyframesPanel } from './KeyframesPanel';
-import { CaptionsPanel } from './CaptionsPanel';
+import { TextPanel } from './TextPanel';
 
 const TABS = [
   { id: 'inspector', label: 'Inspector' },
   { id: 'effects', label: 'Effects' },
   { id: 'transitions', label: 'Transitions' },
   { id: 'keyframes', label: 'Keyframes' },
-  { id: 'captions', label: 'Captions' },
+  { id: 'text', label: 'Text' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -36,7 +36,7 @@ export function RightPanel() {
         {activeTab === 'effects' && <EffectsPanel />}
         {activeTab === 'transitions' && <TransitionsPanel />}
         {activeTab === 'keyframes' && <KeyframesPanel />}
-        {activeTab === 'captions' && <CaptionsPanel />}
+        {activeTab === 'text' && <TextPanel />}
       </div>
     </div>
   );

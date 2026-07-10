@@ -113,6 +113,8 @@ export class TimelineEngine {
   /** Selection state (set of clip IDs). */
   private _selectedClipIds: ReadonlySet<string> = new Set();
   private _selectedCaptionIds: ReadonlySet<string> = new Set();
+  /** Tool currently handling a caption gesture (click/drag on caption). */
+  private _captionGestureTool: ITool | null = null;
 
   constructor(options: TimelineEngineOptions) {
     this.options = options;
@@ -286,18 +288,39 @@ export class TimelineEngine {
       const toolSelection = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
       this._selectedClipIds = new Set(toolSelection);
     }
-    if (typeof (tool as ITool & { getCaptionSelection?: () => ReadonlySet<string> }).getCaptionSelection === 'function') {
-      const captionSelection = (tool as ITool & { getCaptionSelection: () => ReadonlySet<string> }).getCaptionSelection();
+    // Caption selection is always maintained by SelectionTool
+    const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
+    const captionTool = selectionTool ?? tool;
+    if (typeof (captionTool as ITool & { getCaptionSelection?: () => ReadonlySet<string> }).getCaptionSelection === 'function') {
+      const captionSelection = (captionTool as ITool & { getCaptionSelection: () => ReadonlySet<string> }).getCaptionSelection();
       this._selectedCaptionIds = new Set(captionSelection);
     }
   }
 
   handlePointerDown(event: TimelinePointerEvent, modifiers: Modifiers): void {
+    const activeTool = getActiveTool(this.toolRegistry);
     const ctx = this.buildToolContext(modifiers);
-    try {
-      getActiveTool(this.toolRegistry).onPointerDown(event, ctx);
-    } catch (err) {
-      try { this.options.onError?.(err, 'onPointerDown'); } catch (_) { console.error('onError callback threw', _); }
+
+    if (event.captionId != null) {
+      // Gesture tool: active tool if it supports captions, else SelectionTool
+      if (typeof activeTool.supportsCaptions === 'function' && activeTool.supportsCaptions()) {
+        this._captionGestureTool = activeTool;
+        try { activeTool.onPointerDown(event, ctx); } catch { /* ignore */ }
+      } else {
+        const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
+        this._captionGestureTool = selectionTool ?? activeTool;
+        if (selectionTool) {
+          try { selectionTool.onPointerDown(event, ctx); } catch { /* ignore */ }
+        }
+      }
+      console.log('[CAP-D] down:', { active: activeTool.id, gesture: this._captionGestureTool?.id ?? null, captionId: event.captionId });
+    } else {
+      this._captionGestureTool = null;
+      try {
+        activeTool.onPointerDown(event, ctx);
+      } catch (err) {
+        try { this.options.onError?.(err, 'onPointerDown'); } catch (_) { console.error('onError callback threw', _); }
+      }
     }
     this._syncSelectionFromTool();
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
@@ -306,9 +329,10 @@ export class TimelineEngine {
 
   handlePointerMove(event: TimelinePointerEvent, modifiers: Modifiers): void {
     const ctx = this.buildToolContext(modifiers);
+    const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
     let provisional: ReturnType<ITool['onPointerMove']> = null;
     try {
-      provisional = getActiveTool(this.toolRegistry).onPointerMove(event, ctx);
+      provisional = tool.onPointerMove(event, ctx);
     } catch (err) {
       try { this.options.onError?.(err, 'onPointerMove'); } catch (_) { console.error('onError callback threw', _); }
     }
@@ -330,8 +354,8 @@ export class TimelineEngine {
       this.notifyProvisional();
     } else {
       // Idle hover — only check cursor, skip full rebuild if cursor unchanged
-      const activeTool = getActiveTool(this.toolRegistry);
-      const newCursor = activeTool?.getCursor(ctx) ?? 'default';
+      const hoverTool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+      const newCursor = hoverTool?.getCursor(ctx) ?? 'default';
       if (newCursor !== this.snapshot.cursor) {
         // Cursor changed (e.g., moved from clip body to edge) — need to notify
         this.rebuildSnapshot(EMPTY_STATE_CHANGE);
@@ -344,12 +368,15 @@ export class TimelineEngine {
   handlePointerUp(event: TimelinePointerEvent, modifiers: Modifiers): void {
     this.provisional = clearProvisional(this.provisional);
     const ctx = this.buildToolContext(modifiers);
+    const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
     let tx: Transaction | null = null;
     try {
-      tx = getActiveTool(this.toolRegistry).onPointerUp(event, ctx);
+      tx = tool.onPointerUp(event, ctx);
     } catch (err) {
       try { this.options.onError?.(err, 'onPointerUp'); } catch (_) { console.error('onError callback threw', _); }
     }
+    this._captionGestureTool = null;
+    console.log('[CAP-D] up:', { toolId: tool.id, captionId: event.captionId, tx: tx?.label ?? null });
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -362,10 +389,12 @@ export class TimelineEngine {
   /** Option Y: cursor left timeline mid-drag — cancel tool gesture and clear provisional. */
   handlePointerLeave(_event: TimelinePointerEvent): void {
     try {
-      getActiveTool(this.toolRegistry).onCancel();
+      const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+      tool.onCancel();
     } catch (err) {
       try { this.options.onError?.(err, 'onCancel'); } catch (_) { console.error('onError callback threw', _); }
     }
+    this._captionGestureTool = null;
     this._syncSelectionFromTool();
     this.provisional = clearProvisional(this.provisional);
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
@@ -539,7 +568,7 @@ export class TimelineEngine {
    * Keeps the tool's internal Set in sync with external API calls.
    */
   private _writeSelectionToTool(ids: ReadonlySet<string>): void {
-    const tool = getActiveTool(this.toolRegistry);
+    const tool = this.toolRegistry.tools.get(toToolId('selection')) ?? getActiveTool(this.toolRegistry);
     if (typeof (tool as ITool & { clearSelection?: () => void }).clearSelection === 'function') {
       (tool as ITool & { clearSelection: () => void }).clearSelection();
       // SelectionTool.clearSelection() clears the set; we can't add back via public API

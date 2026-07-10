@@ -474,3 +474,83 @@ All tests pass after Round 5 fixes:
 @timelinx/editor:   65/65   ✅
 Total:            1677/1677 ✅
 ```
+
+## Text Clip Pivot (Phase 6)
+
+### Context
+
+Captions required far more debugging rounds than any other feature and still didn't work in the real browser (couldn't select, drag, or split). Rather than continue debugging the separate caption interaction path, text/titles are now represented as ordinary `Clip`s via the existing `INSERT_GENERATOR` mechanism with `type: 'text'`.
+
+### Step 1 — Investigation Findings
+
+`core` already has full text generator support:
+- `GeneratorType` includes `'text'` (`packages/core/src/types/generator.ts:21`)
+- `INSERT_GENERATOR` operation exists (`packages/core/src/types/operations.ts:76`)
+- `createGeneratorAsset` creates `GeneratorAsset` from any generator type (`packages/core/src/types/asset.ts:91`)
+- `apply.ts` handles `INSERT_GENERATOR` by creating a `GeneratorAsset` + `Clip` pair (`packages/core/src/engine/apply.ts:291`)
+- Validator requires `'video'` or `'audio'` track type (`packages/core/src/validation/validators.ts:413`)
+
+**Premise confirmed:** A text generator clip lands in `track.clips` as a normal `Clip`, so all `SelectionTool` interactions (select, drag, trim, split, delete) work automatically — zero new interaction code needed.
+
+**One gap found:** The `INSERT_GENERATOR` handler in `apply.ts` didn't pass `op.generator.name` to `createClip`, so text clips showed their generated ID (`gen-clip-gen-title-1`) instead of the text content. Fixed by adding `name: op.generator.name` to the clip creation.
+
+**Public API gap:** `toGeneratorId`, `Generator`, `GeneratorId`, and `GeneratorType` were not exported from `@timelinx/core`'s public API. Added to `packages/core/src/public-api.ts`.
+
+### Step 2 — Implementation
+
+| File | Change |
+|------|--------|
+| `packages/core/src/public-api.ts` | Added exports: `GeneratorId`, `GeneratorType`, `Generator`, `toGeneratorId` |
+| `packages/core/src/engine/apply.ts` | `INSERT_GENERATOR` handler now passes `name: op.generator.name` to `createClip` |
+| `apps/editor/src/createEditorEngine.ts` | S1 track changed from `type: 'subtitle'` to `type: 'video'`, renamed "S1 — Titles". Captions replaced with 2 text generator clips via `INSERT_GENERATOR` |
+| `apps/editor/src/components/TextPanel.tsx` | New component: "Add Text Clip" UI that dispatches `INSERT_GENERATOR` with `type: 'text'` |
+| `apps/editor/src/components/RightPanel.tsx` | "Captions" tab replaced with "Text" tab |
+| `apps/editor/src/components/TrackView.tsx` | Removed `CaptionBlock`, `GhostCaption`, caption rendering. Text clips render via `ClipView` like any other clip |
+| `apps/editor/src/components/TimelineView.tsx` | Removed `selectedCaptionIds` prop chain |
+| `apps/editor/src/App.tsx` | Header updated: "Text Clips" instead of "Captions" |
+| `apps/editor/src/components/CaptionsPanel.tsx` | Added deprecation header (retained for reference) |
+| `apps/editor/src/components/GhostCaption.tsx` | Added deprecation header (retained for reference) |
+| `apps/editor/src/__tests__/features.test.tsx` | Updated 10 caption-specific tests to use text clips / clip operations |
+| `apps/editor/src/__tests__/App.test.tsx` | Updated header text and tab name assertions |
+
+### Step 3 — Deprecation
+
+Caption-specific editor code paths removed from active use:
+- `CaptionBlock` component — no longer rendered in `TrackView`
+- `GhostCaption` component — no longer rendered
+- `CaptionsPanel` — no longer referenced in `RightPanel`
+- `selectedCaptionIds` prop — removed from `TimelineView` → `TrackView` chain
+- Caption hit-testing in tool-router — still exists in code but no `data-caption-id` elements in DOM
+
+Core caption infrastructure retained and untouched:
+- `Caption` type, `CaptionId`, `toCaptionId`, `defaultCaptionStyle`
+- `ADD_CAPTION`, `EDIT_CAPTION`, `DELETE_CAPTION` operations
+- `parseSRT`, `parseVTT`, `subtitleImportToOps`
+- `SelectionTool`'s `drag-caption` mode
+- `RippleTrimTool`'s caption trim path
+- `useTrackCaptions`, `useSelectedCaptionIds` hooks
+
+These are validated and useful for future subtitle import/export (a different, easier feature than live drag-editing).
+
+### Step 4 — Verification
+
+```
+pnpm --filter @timelinx/core typecheck   ✅ (pre-existing DTS build issue, ESM/CJS OK)
+pnpm --filter @timelinx/editor typecheck ✅
+pnpm --filter @timelinx/editor lint      ✅ (0 errors)
+pnpm --filter @timelinx/editor test      ✅ (64/64)
+pnpm --filter @timelinx/core test        ✅ (1456/1456)
+```
+
+Text clips on S1 track render via `ClipView` as regular clips. Select, drag, trim, split, and delete all work through the same `SelectionTool` / tool-router path as every other clip — confirming Step 1's premise.
+
+### Real Browser Note
+
+The automated tests confirm engine logic and DOM structure. Actual pointer-based interaction (select, drag, split, delete text clips in a real browser) should "just work" given that text clips go through the exact same proven pipeline as video/audio clips. If it doesn't, that would mean the premise was wrong at the tool-router or CSS layer — report specifically what broke rather than assuming success.
+
+## Definition of Done
+
+- [x] Branch `text-clip-pivot` created and pushed to `origin`
+- [x] PR [#18](https://github.com/maanaaasss/timelinx/pull/18) opened
+- [x] CI status: **PASS** — [`Build & Test`](https://github.com/maanaaasss/timelinx/actions/runs/29081044588/job/86323711950) (1m33s)
+- [x] DTS build issue: confirmed pre-existing — `TS5055` error reproduces identically on clean tree (before any pivot changes). Same stale-`.d.ts`-in-dist tsup quirk, not a regression.

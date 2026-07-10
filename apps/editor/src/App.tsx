@@ -15,7 +15,7 @@ function App() {
       <div className="app">
         <div className="header">
           <h1>TimelineX Editor</h1>
-          <div className="header-info">Milestone 2 — Effects, Transitions, Keyframes, Captions</div>
+          <div className="header-info">Milestone 2 — Effects, Transitions, Keyframes, Text Clips</div>
         </div>
         <Toolbar />
         <div className="main-content">

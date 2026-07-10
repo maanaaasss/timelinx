@@ -52,3 +52,5 @@ coverage/
 # Stryker mutation testing
 packages/core/reports/
 packages/core/stryker.log
+graphify-out/
+CODEBASE_CONTEXT.md

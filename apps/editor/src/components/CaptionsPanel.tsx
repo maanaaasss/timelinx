@@ -1,3 +1,15 @@
+/**
+ * DEPRECATED — Not used by the editor as of the text-clip pivot.
+ *
+ * Captions are now represented as ordinary Clips via INSERT_GENERATOR
+ * with generator type 'text', inheriting all proven clip interactions
+ * (select/drag/trim/split) from SelectionTool without custom code.
+ *
+ * This file is retained for reference; core's ADD/EDIT/DELETE_CAPTION
+ * operations and Caption type remain validated and available for
+ * future subtitle import/export (a different feature from live editing).
+ */
+
 import { useState, useCallback } from 'react';
 import { useEngine, useAllTracks, useFps, usePlayheadFrame, useTrackCaptions } from '@timelinx/react';
 import { toCaptionId, defaultCaptionStyle } from '@timelinx/core';

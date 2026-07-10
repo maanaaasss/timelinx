@@ -142,6 +142,10 @@ export interface ITool {
    *  Used by ctx.snap() to filter the snap index automatically. */
   getSnapCandidateTypes(): readonly SnapPointType[];
 
+  /** Whether this tool can interact with captions (cut, trim, etc.).
+   *  When false and a caption is clicked, the engine routes to SelectionTool. */
+  supportsCaptions?(): boolean;
+
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void;
 
   /** Return ProvisionalState for ghost rendering.
