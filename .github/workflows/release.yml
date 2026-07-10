@@ -55,4 +55,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          # npm auth uses GitHub OIDC trusted publishing (no NODE_AUTH_TOKEN).
+          # Each package must be configured on npmjs.com → Settings → Publishing access
+          # → Configure trusted publishing → link to maanaaasss/timelinx + release.yml
