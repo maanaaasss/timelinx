@@ -90,8 +90,21 @@ export class ThumbnailExtractorAdapter {
     }
 
     // Create canvas for the thumbnail
-    const width = request.width || this.config.defaultWidth!;
-    const height = request.height || this.config.defaultHeight!;
+    const width = request.width ?? this.config.defaultWidth!;
+    const height = request.height ?? this.config.defaultHeight!;
+
+    // Dimension sanity check to prevent OOM from absurd allocations
+    const MAX_DIMENSION = 8192;
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      throw new Error(
+        `Thumbnail dimensions ${width}x${height} exceed maximum ${MAX_DIMENSION}x${MAX_DIMENSION}`,
+      );
+    }
+    if (width <= 0 || height <= 0) {
+      throw new Error(
+        `Thumbnail dimensions must be positive, got ${width}x${height}`,
+      );
+    }
 
     let canvas: OffscreenCanvas | HTMLCanvasElement;
     if (typeof OffscreenCanvas !== 'undefined') {
@@ -101,8 +114,7 @@ export class ThumbnailExtractorAdapter {
       canvas.width = width;
       canvas.height = height;
     } else {
-      // Fallback for Node.js: create a minimal object
-      canvas = { width, height, getContext: () => null } as unknown as HTMLCanvasElement;
+      throw new Error('ThumbnailExtractorAdapter requires OffscreenCanvas or a DOM environment');
     }
 
     // Draw a placeholder
@@ -192,19 +204,10 @@ export class ThumbnailExtractorAdapter {
    * Add an entry to the cache with LRU eviction.
    */
   private addToCache(key: string, canvas: OffscreenCanvas | HTMLCanvasElement): void {
-    // Evict oldest if at capacity
+    // Evict oldest if at capacity — Map maintains insertion order, so first key is oldest
     if (this.cache.size >= this.config.cacheSize!) {
-      let oldestKey: string | null = null;
-      let oldestTimestamp = Infinity;
-
-      for (const [k, v] of this.cache) {
-        if (v.timestamp < oldestTimestamp) {
-          oldestTimestamp = v.timestamp;
-          oldestKey = k;
-        }
-      }
-
-      if (oldestKey) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey !== undefined) {
         this.cache.delete(oldestKey);
       }
     }
