@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/core",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Headless TypeScript engine for professional NLE timeline editing. Framework-agnostic, fully tested.",
   "type": "module",
   "main": "./dist/index.cjs",

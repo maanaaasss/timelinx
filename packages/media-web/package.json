@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/media-web",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "private": true,
   "description": "Web-native media adapters for @timelinx/core — WebCodecs, WebAudio, thumbnails, export",
   "type": "module",
@@ -32,7 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@timelinx/core": ">=1.0.0-beta.1"
+    "@timelinx/core": ">=1.0.0-beta.2"
   },
   "devDependencies": {
     "@timelinx/core": "workspace:*",
