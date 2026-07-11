@@ -1,0 +1,344 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Editor UI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-utilities">
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            editor: {
+              bg: '#1c1f26',
+              sidebar: '#14151a',
+              panel: '#23262f',
+              border: '#333842',
+              text: '#9ca3af',
+              textActive: '#ffffff',
+              accent: '#3b82f6',
+              track: {
+                bg: '#1e2128',
+                video: '#374151',
+                audio: '#3b82f6',
+                effect: '#10b981',
+                music: '#6366f1',
+                yellow: '#eab308',
+                green: '#22c55e'
+              }
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-200 h-screen p-8 flex items-center justify-center font-sans antialiased text-sm">
+<!-- BEGIN: Main Editor Window -->
+<div class="bg-editor-bg text-editor-text w-full max-w-[1400px] h-full max-h-[900px] rounded-3xl shadow-2xl overflow-hidden flex ring-1 ring-gray-800">
+<!-- BEGIN: Left Sidebar -->
+<aside class="w-24 bg-editor-sidebar border-r border-editor-border flex flex-col items-center py-4 space-y-2 overflow-y-auto no-scrollbar shrink-0">
+<!-- Tool Buttons -->
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-editor-panel text-editor-textActive mb-2">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Media</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Video</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Photo</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Audio</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Text</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Transitions</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Effect</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Sticker</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Adjustment</span>
+</button>
+<div class="flex-grow"></div>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors mt-auto">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Settings</span>
+</button>
+</aside>
+<!-- END: Left Sidebar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- BEGIN: Top Navigation Bar -->
+<header class="h-14 border-b border-editor-border flex items-center justify-between px-6 shrink-0">
+<div class="flex items-center space-x-2 text-editor-text">
+<svg class="w-5 h-5 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Uploaded</span>
+</div>
+<div class="flex items-center space-x-2 text-editor-textActive cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-medium">Video Popular Vlog_Duplicate</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<button class="bg-editor-panel hover:bg-gray-700 text-white px-4 py-1.5 rounded-lg border border-editor-border flex items-center space-x-2 text-sm transition-colors">
+<span class="">Export</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</header>
+<!-- END: Top Navigation Bar -->
+<!-- BEGIN: Workspace Split Area -->
+<div class="flex-1 flex min-h-0">
+<!-- BEGIN: Media Browser -->
+<div class="w-80 border-r border-editor-border flex flex-col bg-editor-bg shrink-0">
+<!-- Media Toolbar -->
+<div class="p-4 flex items-center justify-between border-b border-editor-border/50"><button class="flex items-center space-x-2 bg-editor-panel border border-editor-border px-4 py-1.5 rounded-lg hover:bg-gray-700 transition-colors text-white text-xs font-medium shadow-sm">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Upload</span>
+</button>
+<div class="flex items-center space-x-1.5">
+<button class="p-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors" title="Grid View">
+<svg class="w-4 h-4 text-editor-textActive" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="flex items-center space-x-1 px-2 py-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors text-xs text-editor-text">
+<span class="">Sort</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="flex items-center space-x-1 px-2 py-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors text-xs text-editor-text">
+<span class="">All</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div></div>
+<!-- Media Grid -->
+<div class="flex-1 p-4 overflow-y-auto no-scrollbar grid grid-cols-2 content-start gap-4"><!-- Media Item 1 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+    <div class="absolute bottom-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-mono">00:05</div>
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_009388290</p>
+</div>
+<!-- Media Item 2 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+    <div class="absolute bottom-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-mono">00:12</div>
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_993882920</p>
+</div>
+<!-- Media Item 3 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_839038129</p>
+</div>
+<!-- Media Item 4 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_120934560</p>
+</div>
+<!-- Media Item 5 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_772390127</p>
+</div>
+<!-- Media Item 6 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_119922883</p>
+</div></div>
+</div>
+<!-- END: Media Browser -->
+<!-- BEGIN: Video Preview Player -->
+<div class="flex-1 flex flex-col bg-[#14151a] relative min-w-0">
+<!-- Main Player Area -->
+<div class="flex-1 p-6 flex items-center justify-center relative">
+<!-- Left toolbar in player -->
+<div class="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-4 bg-editor-panel/50 p-2 rounded-xl border border-white/10 backdrop-blur-sm z-10">
+<div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+<div class="w-1.5 h-1.5 bg-white rounded-full"></div>
+<div class="w-1.5 h-32 bg-gray-600 rounded-full relative">
+<div class="absolute top-0 left-0 w-full h-1/2 bg-[#a3e635] rounded-full"></div>
+</div>
+<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div class="relative w-full max-w-4xl aspect-[21/9] bg-black rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10">
+<img alt="Video preview" class="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+</div>
+</div>
+<!-- Player Controls -->
+<div class="h-14 border-t border-editor-border flex items-center justify-between px-6 bg-editor-bg shrink-0"><div class="flex items-center space-x-1 text-sm font-mono cursor-pointer hover:text-white transition-colors"><span class="text-editor-textActive">450</span><span class="text-gray-500">/3254</span><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><div class="flex items-center space-x-6 text-editor-textActive"><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="flex items-center space-x-4 text-editor-text"><button class="hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div></div>
+</div>
+<!-- END: Video Preview Player -->
+</div>
+<!-- END: Workspace Split Area -->
+<!-- BEGIN: Timeline Area -->
+<div class="h-80 border-t border-editor-border bg-editor-bg flex flex-col shrink-0 relative">
+<!-- Timeline Header/Tools -->
+<div class="h-12 border-b border-editor-border bg-[#191b21] flex items-center justify-between px-6 z-20 shrink-0"><div class="flex items-center space-x-4 text-editor-text"><div class="flex items-center space-x-2 mr-2"><button class="p-1.5 hover:text-white transition-colors" title="Undo"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Redo"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="h-6 w-px bg-editor-border mr-2"></div><button class="p-1.5 hover:text-white transition-colors" title="Trim"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Ripple Trim"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Slice"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Hand"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0V12m-3 .5a3 3 0 006 0V6a1.5 1.5 0 113 0v10.5a4.5 4.5 0 11-9 0V11.5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="flex items-center space-x-6 text-editor-text"><div class="flex items-center space-x-3"><button class="hover:text-white p-1.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="h-6 w-px bg-editor-border"></div><div class="flex items-center space-x-3"><div class="flex items-center space-x-1.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="text-xs font-medium">Sound</span></div><div class="flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><input type="range" class="w-24 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-editor-accent" min="0" max="100" value="50"></div></div></div></div><div class="flex border-b border-editor-border/50 text-editor-text bg-editor-bg z-20 h-6 text-[10px]">
+
+<!-- Time Ruler -->
+<div class="flex-1 relative flex items-end px-4 text-[10px] text-gray-500 bg-editor-bg overflow-hidden ml-48">
+<div class="flex justify-between w-full">
+<span class="">03:00:00:00</span>
+<span class="">03:00:10:00</span>
+<span class="">03:00:20:00</span>
+<span class="">03:00:30:00</span>
+<span class="">03:00:40:00</span>
+<span class="">03:00:50:00</span>
+<span class="">03:00:60:00</span>
+</div>
+<!-- Ticks would go here -->
+</div>
+</div>
+<!-- Main Timeline Tracks -->
+<div class="flex-1 flex overflow-y-auto no-scrollbar relative">
+<!-- Track Headers (Left fixed) -->
+<div class="border-r border-editor-border/50 flex flex-col shrink-0 bg-editor-bg z-10 sticky left-0 w-48">
+<!-- Track Header 1 (Video) -->
+<div class="h-16 border-b border-editor-border/30 flex items-center px-4 space-x-3 text-editor-text justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 2 (Audio) -->
+<div class="h-10 flex items-center px-4 space-x-3 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 3 (Effect 1) -->
+<div class="h-10 flex items-center px-4 space-x-3 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 4 (Effect 2) -->
+<div class="h-10 flex items-center px-4 space-x-3 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Layers panel simulation -->
+
+<div class="h-10 flex items-center px-4 space-x-3 text-editor-text border-b border-editor-border/50 justify-center"><svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div></div>
+<!-- Tracks Content (Right scrollable) -->
+<div class="flex-1 min-w-[800px] bg-editor-track-bg relative border-t border-transparent">
+<!-- Playhead Line -->
+<div class="absolute top-0 bottom-0 left-[45%] w-px bg-white z-30 pointer-events-none">
+<div class="w-2.5 h-2.5 rounded-full bg-white absolute -top-1 -left-[4px]"></div>
+</div>
+<!-- Track 1: Video -->
+<div class="h-16 border-b border-editor-border/20 flex items-center px-2 py-1 space-x-1">
+<!-- Video Block 1 -->
+<div class="h-full w-24 bg-gray-800 rounded flex overflow-hidden opacity-50"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Original Sound</div>
+<!-- Video Block 2 -->
+<div class="h-full w-48 bg-gray-800 rounded flex overflow-hidden opacity-50"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Original Sound</div>
+<!-- Active Video Block -->
+<div class="h-full w-64 bg-gray-800 rounded-md flex overflow-hidden ring-2 ring-yellow-400 relative z-20 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+<!-- Handle L -->
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-yellow-400 flex items-center justify-center cursor-ew-resize border-b">
+<svg class="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<!-- Content -->
+<div class="flex flex-1 overflow-hidden ml-2 mr-2 border-b border-editor-border/30">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+</div>
+<!-- Handle R -->
+<div class="absolute right-0 top-0 bottom-0 w-2 bg-yellow-400 flex items-center justify-center cursor-ew-resize border-b border-editor-border/30">
+<svg class="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+</div>
+<!-- Video Block 4 -->
+<div class="h-full flex-1 max-w-xs bg-gray-800 rounded flex overflow-hidden opacity-50">
+<img class="h-full object-cover grayscale shrink-0 opacity-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 100%;">
+</div>
+</div>
+<!-- Track 2: Audio (Blue) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<!-- Audio Block 1 -->
+<div class="absolute left-2 w-[60%] h-8 bg-editor-track-audio rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Black White Effect</div>
+<!-- Audio Block 2 -->
+<div class="absolute left-[62%] w-[25%] h-8 bg-[#5b5fd8] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Block Flashes</div>
+</div>
+<!-- Track 3: Effect (Green/Olive) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<div class="absolute left-2 w-[22%] h-8 bg-editor-track-effect/80 border border-editor-track-effect rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Pull In Effect</div>
+<div class="absolute left-[25%] w-[38%] h-8 bg-[#7a8b30] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm">
+<svg class="w-4 h-4 mr-2 shrink-0 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                  Block Flashes
+                </div>
+<div class="absolute left-[65%] w-[15%] h-8 bg-[#7a8b30] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm">
+<svg class="w-4 h-4 mr-2 shrink-0 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                  Block Flashes
+                </div>
+</div>
+<!-- Track 4: Effect 2 (Green) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<div class="absolute left-[28%] w-[60%] h-8 bg-editor-track-effect/80 border border-editor-track-effect rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Calm Relaxing Ambient bed</div>
+</div>
+<!-- Track 5: Music (Purple) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative">
+<div class="absolute left-2 w-[85%] h-8 bg-editor-track-music rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm">
+<svg class="w-4 h-4 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                  Calm Relaxing Ambient bed
+                </div>
+</div>
+</div>
+</div>
+<!-- Bottom Timeline Toolbar -->
+
+</div>
+<!-- END: Timeline Area -->
+</main>
+<!-- END: Main Content Area -->
+</div>
+<!-- END: Main Editor Window -->
+
+
+
+
+</body></html>

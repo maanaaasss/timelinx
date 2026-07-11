@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timelinex Editor — Stitch Mockup Port</title>
+  <link rel="stylesheet" href="../src/presets/dark-pro.css">
+  <link rel="stylesheet" href="../src/styles/structure.css">
+  <style>
+    /* ── Page wrapper ── */
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f1014;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Editor shell ── */
+    .editor-shell {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      max-width: 1400px;
+      max-height: 900px;
+      background: var(--bg-app);
+      color: var(--text-secondary);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      outline: 1px solid var(--border-default);
+    }
+
+    /* ── Sidebar ── */
+    .editor-sidebar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 96px;
+      padding: 16px 0;
+      gap: 8px;
+      overflow-y: auto;
+      flex-shrink: 0;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-default);
+    }
+    .editor-sidebar::-webkit-scrollbar { display: none; }
+    .editor-sidebar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .sidebar-tool-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      gap: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-tool-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
+    .sidebar-tool-btn.active { background: var(--bg-surface); color: var(--text-primary); }
+    .sidebar-tool-btn svg { width: 20px; height: 20px; }
+    .sidebar-tool-btn span { font-size: 10px; font-weight: 500; }
+    .sidebar-spacer { flex: 1; }
+
+    /* ── Main content area ── */
+    .editor-main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ── Top navigation bar ── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-default);
+      flex-shrink: 0;
+      background: var(--bg-panel);
+    }
+    .top-nav-left { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+    .top-nav-left svg { width: 20px; height: 20px; cursor: pointer; }
+    .top-nav-left svg:hover { color: var(--text-primary); }
+    .top-nav-left span { margin-left: 16px; }
+    .top-nav-center { display: flex; align-items: center; gap: 8px; color: var(--text-primary); cursor: pointer; }
+    .top-nav-center svg { width: 20px; height: 20px; }
+    .top-nav-center span { font-weight: 500; }
+    .top-nav-center .chevron { width: 16px; height: 16px; }
+    .top-nav-right { display: flex; align-items: center; }
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .export-btn:hover { background: var(--bg-hover); }
+    .export-btn svg { width: 16px; height: 16px; }
+
+    /* ── Workspace split area ── */
+    .workspace-split {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── Media browser ── */
+    .media-browser {
+      width: 320px;
+      border-right: 1px solid var(--border-default);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-app);
+      flex-shrink: 0;
+    }
+    .media-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border-faint);
+    }
+    .media-upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: var(--shadow-xs);
+      transition: background 0.15s;
+    }
+    .media-upload-btn:hover { background: var(--bg-hover); }
+    .media-upload-btn svg { width: 14px; height: 14px; }
+    .media-controls { display: flex; align-items: center; gap: 6px; }
+    .media-control-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .media-control-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .media-control-btn svg { width: 14px; height: 14px; }
+
+    /* ── Media grid ── */
+    .media-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      align-content: start;
+    }
+    .media-grid::-webkit-scrollbar { display: none; }
+    .media-grid { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .media-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 8px;
+      background: rgba(35,38,47,0.5);
+      border: 1px solid rgba(51,56,66,0.3);
+    }
+    .media-thumb {
+      aspect-ratio: 16/9;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .media-thumb:hover { border-color: var(--accent); }
+    .media-thumb-duration {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.60);
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: #fff;
+    }
+    .media-card-name {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+    }
+
+    /* ── Gradient placeholders ── */
+    .thumb-interview { background: linear-gradient(135deg, #2d1b4e 0%, #1a1033 40%, #3d2066 70%, #1a1033 100%), radial-gradient(ellipse at 50% 30%, rgba(218,165,140,0.3) 0%, transparent 60%); filter: grayscale(0.8) opacity(0.8); }
+    .thumb-cityscape { background: linear-gradient(180deg, #0a1628 0%, #162544 50%, #1a3a5c 100%), radial-gradient(circle at 20% 60%, rgba(255,200,100,0.15) 0%, transparent 40%), radial-gradient(circle at 70% 40%, rgba(100,180,255,0.1) 0%, transparent 40%); filter: grayscale(0.8) opacity(0.8); }
+    .thumb-hands { background: linear-gradient(135deg, #3d2b1f 0%, #2a1d13 40%, #4a3525 70%, #1a1008 100%), radial-gradient(ellipse at 40% 50%, rgba(210,160,100,0.2) 0%, transparent 50%); filter: grayscale(0.8) opacity(0.8); }
+    .thumb-graphic { background: conic-gradient(from 45deg at 50% 50%, #1e3a5f, #3b82f6, #6366f1, #a78bfa, #ec4899, #f59e0b, #10b981, #1e3a5f); filter: saturate(0.6) brightness(0.5) grayscale(0.8); }
+    .thumb-audio-wave { background: linear-gradient(180deg, #0a1a0a 0%, #0f2a0f 50%, #0a1a0a 100%), repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(34,197,94,0.3) 3px, rgba(34,197,94,0.3) 5px, transparent 5px, transparent 8px, rgba(34,197,94,0.15) 8px, rgba(34,197,94,0.15) 9px, transparent 9px, transparent 14px); filter: grayscale(0.8) opacity(0.8); }
+    .thumb-voiceover { background: linear-gradient(180deg, #1a1508 0%, #2a1f0d 50%, #1a1508 100%), repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(234,179,8,0.25) 4px, rgba(234,179,8,0.25) 6px, transparent 6px, transparent 10px, rgba(234,179,8,0.12) 10px, rgba(234,179,8,0.12) 11px, transparent 11px, transparent 16px); filter: grayscale(0.8) opacity(0.8); }
+
+    /* ── Video preview area ── */
+    .preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #14151a;
+      position: relative;
+      min-width: 0;
+    }
+    .preview-main {
+      flex: 1;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Volume bar */
+    .volume-bar {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(35,38,47,0.5);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+    .volume-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+    .volume-track { width: 6px; height: 128px; border-radius: 999px; background: #4b5563; position: relative; }
+    .volume-fill { position: absolute; top: 0; left: 0; width: 100%; height: 50%; border-radius: 999px; background: #a3e635; }
+    .volume-icon { color: #fff; }
+
+    /* Preview frame */
+    .preview-frame {
+      position: relative;
+      width: 100%;
+      max-width: 896px;
+      aspect-ratio: 21/9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      ring: 1px solid rgba(255,255,255,0.10);
+    }
+    .preview-frame-inner {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #0a1628 0%, #162544 40%, #1e3a5f 70%, #0a1628 100%);
+      filter: grayscale(0.8);
+    }
+
+    /* ── Player controls ── */
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 24px;
+      border-top: 1px solid var(--border-default);
+      background: var(--bg-panel);
+      flex-shrink: 0;
+    }
+    .player-position {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .player-position:hover { color: var(--text-primary); }
+    .player-position-current { color: var(--text-primary); }
+    .player-position-total { color: var(--text-tertiary); }
+    .player-position .chevron { width: 16px; height: 16px; color: var(--text-tertiary); }
+    .player-buttons { display: flex; align-items: center; gap: 24px; color: var(--text-primary); }
+    .player-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .player-btn:hover { color: var(--accent); }
+    .player-btn svg { width: 20px; height: 20px; }
+    .player-btn-play svg { width: 24px; height: 24px; }
+    .player-right { display: flex; align-items: center; gap: 16px; color: var(--text-secondary); }
+    .player-right-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .player-right-btn:hover { color: var(--text-primary); }
+    .player-right-btn svg { width: 20px; height: 20px; }
+
+    /* ── Timeline area ── */
+    .timeline-area {
+      height: 320px;
+      border-top: 1px solid var(--border-default);
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* Timeline toolbar */
+    .timeline-toolbar {
+      height: 48px;
+      border-bottom: 1px solid var(--border-default);
+      background: #191b21;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+    .tl-tools-left { display: flex; align-items: center; gap: 16px; color: var(--text-secondary); }
+    .tl-tools-group { display: flex; align-items: center; gap: 4px; }
+    .tl-sep { width: 1px; height: 20px; background: var(--border-subtle); margin: 0 4px; }
+    .tl-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    .tl-tool-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+    .tl-tool-btn.active { color: var(--accent); background: var(--accent-subtle); }
+    .tl-tool-btn svg { width: 20px; height: 20px; }
+
+    /* Time ruler */
+    .timeline-ruler-row {
+      display: flex;
+      flex: 1;
+      position: relative;
+    }
+    .timeline-track-headers {
+      width: 192px;
+      border-right: 1px solid var(--border-faint);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      background: var(--bg-panel);
+    }
+    .ruler-label-spacer {
+      height: 32px;
+      border-bottom: 1px solid var(--border-faint);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+    }
+    .ruler-label-spacer .timecode {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-mono);
+    }
+
+    /* Track headers */
+    .track-header {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-faint);
+      justify-content: center;
+    }
+    .track-header-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .track-header-btn:hover { color: var(--text-primary); }
+    .track-header-btn svg { width: 16px; height: 16px; }
+    .track-header-btn.muted { color: var(--text-disabled); }
+
+    /* Ruler */
+    .ruler-area {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 16px;
+      font-size: 10px;
+      color: var(--text-tertiary);
+      background: var(--bg-app);
+      overflow: hidden;
+      margin-left: 192px;
+    }
+    .ruler-ticks {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-family: var(--font-mono);
+    }
+
+    /* Track content area */
+    .tracks-scroll {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      position: relative;
+    }
+    .tracks-scroll::-webkit-scrollbar { display: none; }
+    .tracks-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Track rows */
+    .track-row {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      gap: 4px;
+      position: relative;
+      border-bottom: 1px solid rgba(51,56,66,0.20);
+    }
+    .track-content {
+      flex: 1;
+      min-width: 800px;
+      position: relative;
+    }
+
+    /* Playhead */
+    .playhead {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 45%;
+      width: 1px;
+      background: #fff;
+      z-index: 30;
+      pointer-events: none;
+    }
+    .playhead-handle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: -4px;
+      left: -4px;
+    }
+
+    /* ── Clip styles ── */
+    .clip {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+    .clip-dim { opacity: 0.5; }
+    .clip-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.20);
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .clip-icon svg { width: 14px; height: 14px; }
+    .clip-text {
+      font-size: 11px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Video clips */
+    .clip-video { background: #374151; }
+    .clip-audio { background: #3b82f6; }
+    .clip-effect { background: #10b981; }
+    .clip-music { background: #6366f1; }
+
+    /* Selected clip */
+    .clip-selected {
+      outline: 2px solid #eab308;
+      outline-offset: -2px;
+      box-shadow: 0 0 10px rgba(234,179,8,0.30);
+      z-index: 20;
+    }
+    .clip-selected .clip-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: #eab308;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: ew-resize;
+    }
+    .clip-handle-l { left: 0; }
+    .clip-handle-r { right: 0; }
+    .clip-handle svg { width: 8px; height: 8px; color: #000; }
+
+    /* Clip thumbnails in video track */
+    .clip-thumbs {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      margin: 0 8px;
+      border-bottom: 1px solid rgba(51,56,66,0.30);
+    }
+    .clip-thumb-segment {
+      height: 100%;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #2d1b4e 0%, #1a1033 40%, #3d2066 70%, #1a1033 100%);
+      filter: grayscale(0.8) opacity(0.8);
+    }
+
+    /* Audio waveform overlay */
+    .audio-waveform {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: repeating-linear-gradient(
+        90deg,
+        transparent 0px, transparent 2px,
+        rgba(59,130,246,0.3) 2px, rgba(59,130,246,0.3) 3px,
+        transparent 3px, transparent 5px,
+        rgba(59,130,246,0.6) 5px, rgba(59,130,246,0.6) 6px,
+        transparent 6px, transparent 9px
+      );
+      mask-image: linear-gradient(180deg, transparent 16%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.5) 70%, transparent 84%);
+      border-radius: inherit;
+    }
+
+    /* Effect indicator strips */
+    .effect-strips {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      height: 4px;
+      gap: 1px;
+    }
+    .effect-strip { flex: 1; border-radius: 0 0 2px 2px; }
+    .effect-strip-blue { background: #3b82f6; }
+    .effect-strip-yellow { background: #eab308; }
+    .effect-strip-green { background: #10b981; }
+    .effect-strip-purple { background: #6366f1; }
+  </style>
+</head>
+<body>
+  <div class="editor-shell">
+    <!-- BEGIN: Left Sidebar -->
+    <aside class="editor-sidebar">
+      <button class="sidebar-tool-btn active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>Media</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        <span>Video</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span>Photo</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span>Audio</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        <span>Text</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        <span>Transitions</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        <span>Effect</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Sticker</span>
+      </button>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        <span>Adjustment</span>
+      </button>
+      <div class="sidebar-spacer"></div>
+      <button class="sidebar-tool-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+    </aside>
+    <!-- END: Left Sidebar -->
+
+    <!-- BEGIN: Main Content Area -->
+    <main class="editor-main">
+      <!-- Top Navigation Bar -->
+      <header class="top-nav">
+        <div class="top-nav-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          <span>Uploaded</span>
+        </div>
+        <div class="top-nav-center">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          <span>Video Popular Vlog_Duplicate</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="top-nav-right">
+          <button class="export-btn">
+            <span>Export</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Workspace Split Area -->
+      <div class="workspace-split">
+        <!-- BEGIN: Media Browser -->
+        <div class="media-browser">
+          <div class="media-toolbar">
+            <button class="media-upload-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload</span>
+            </button>
+            <div class="media-controls">
+              <button class="media-control-btn" title="Grid view">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              </button>
+              <button class="media-control-btn">
+                <span>Sort</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+              </button>
+              <button class="media-control-btn">
+                <span>All</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="media-grid">
+            <div class="media-card">
+              <div class="media-thumb thumb-interview"><div class="media-thumb-duration">00:05</div></div>
+              <div class="media-card-name">Vid_009388290</div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb thumb-cityscape"><div class="media-thumb-duration">00:12</div></div>
+              <div class="media-card-name">Vid_993882920</div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb thumb-hands"><div class="media-thumb-duration">00:08</div></div>
+              <div class="media-card-name">Vid_839038129</div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb thumb-graphic"><div class="media-thumb-duration">00:03</div></div>
+              <div class="media-card-name">Vid_120934560</div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb thumb-audio-wave"><div class="media-thumb-duration">01:24</div></div>
+              <div class="media-card-name">Vid_772390127</div>
+            </div>
+            <div class="media-card">
+              <div class="media-thumb thumb-voiceover"><div class="media-thumb-duration">00:47</div></div>
+              <div class="media-card-name">Vid_119922883</div>
+            </div>
+          </div>
+        </div>
+        <!-- END: Media Browser -->
+
+        <!-- BEGIN: Video Preview Player -->
+        <div class="preview-area">
+          <div class="preview-main">
+            <div class="volume-bar">
+              <div class="volume-dot"></div>
+              <div class="volume-dot"></div>
+              <div class="volume-track"><div class="volume-fill" style="height: 50%"></div></div>
+              <svg class="volume-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+            </div>
+            <div class="preview-frame">
+              <div class="preview-frame-inner"></div>
+            </div>
+          </div>
+          <!-- Player Controls -->
+          <div class="player-controls">
+            <div class="player-position">
+              <span class="player-position-current">450</span>
+              <span class="player-position-total">/3254</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="player-buttons">
+              <button class="player-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg></button>
+              <button class="player-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button class="player-btn player-btn-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+              <button class="player-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+              <button class="player-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg></button>
+            </div>
+            <div class="player-right">
+              <button class="player-right-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg></button>
+              <button class="player-right-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <!-- END: Video Preview Player -->
+      </div>
+
+      <!-- BEGIN: Timeline Area -->
+      <div class="timeline-area">
+        <!-- Timeline Header/Tools -->
+        <div class="timeline-toolbar">
+          <div class="tl-tools-left">
+            <div class="tl-tools-group">
+              <button class="tl-tool-btn" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg></button>
+              <button class="tl-tool-btn" title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"/></svg></button>
+            </div>
+            <div class="tl-sep"></div>
+            <button class="tl-tool-btn active" title="Trim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></button>
+            <button class="tl-tool-btn" title="Ripple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></button>
+            <button class="tl-tool-btn" title="Slice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></button>
+            <button class="tl-tool-btn" title="Hand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 00-4 0v1M14 10V4a2 2 0 00-4 0v6M10 9.5V4a2 2 0 00-4 0v10"/><path d="M18 11a2 2 0 014 0v3a8 8 0 01-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 012.83-2.82L7 15"/></svg></button>
+          </div>
+          <div class="tl-tools-left">
+            <div class="tl-tools-group">
+              <button class="tl-tool-btn" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+            <div class="tl-sep"></div>
+            <div class="tl-tools-group" style="gap: 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+              <span style="font-size: 12px; font-weight: 500; color: var(--text-secondary);">Sound</span>
+            </div>
+            <div class="tl-tools-group" style="gap: 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+              <input type="range" style="width: 96px; height: 4px; accent-color: var(--accent);" min="0" max="100" value="50">
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Ruler + Tracks -->
+        <div class="timeline-ruler-row">
+          <!-- Track Headers -->
+          <div class="timeline-track-headers">
+            <div class="ruler-label-spacer">
+              <span class="timecode">03:00:00:00</span>
+            </div>
+            <!-- Video Track -->
+            <div class="track-header" style="height: 64px;">
+              <button class="track-header-btn" title="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></button>
+              <button class="track-header-btn" title="Video"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></button>
+              <button class="track-header-btn muted" title="Hide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button>
+            </div>
+            <!-- Audio Track -->
+            <div class="track-header" style="height: 40px;">
+              <button class="track-header-btn" title="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></button>
+              <button class="track-header-btn muted" title="Hide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button>
+            </div>
+            <!-- Effect Track 1 -->
+            <div class="track-header" style="height: 40px;">
+              <button class="track-header-btn" title="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></button>
+              <button class="track-header-btn" title="Effect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></button>
+              <button class="track-header-btn" title="Eye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+            </div>
+            <!-- Effect Track 2 -->
+            <div class="track-header" style="height: 40px;">
+              <button class="track-header-btn" title="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></button>
+              <button class="track-header-btn" title="Effect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></button>
+              <button class="track-header-btn" title="Eye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+            </div>
+            <!-- Music Track -->
+            <div class="track-header" style="height: 40px;">
+              <button class="track-header-btn" title="Lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg></button>
+              <button class="track-header-btn" title="Audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></button>
+              <button class="track-header-btn" title="Eye"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Ruler + Track Content -->
+          <div class="track-content">
+            <!-- Ruler -->
+            <div class="ruler-area">
+              <div class="ruler-ticks">
+                <span>03:00:00:00</span>
+                <span>03:00:10:00</span>
+                <span>03:00:20:00</span>
+                <span>03:00:30:00</span>
+                <span>03:00:40:00</span>
+                <span>03:00:50:00</span>
+                <span>03:00:60:00</span>
+              </div>
+              <!-- Playhead -->
+              <div class="playhead">
+                <div class="playhead-handle"></div>
+              </div>
+            </div>
+
+            <!-- Track Rows -->
+            <div class="tracks-scroll">
+              <!-- Track 1: Video (64px) -->
+              <div class="track-row" style="height: 64px;">
+                <div class="clip clip-video clip-dim" style="width: 96px;">
+                  <div class="clip-thumbs">
+                    <div class="clip-thumb-segment" style="width: 100%; opacity: 0.5"></div>
+                  </div>
+                </div>
+                <div class="clip clip-video clip-dim" style="width: 192px;">
+                  <div class="clip-thumbs">
+                    <div class="clip-thumb-segment" style="width: 33%; opacity: 0.5"></div>
+                    <div class="clip-thumb-segment" style="width: 33%; opacity: 0.5"></div>
+                    <div class="clip-thumb-segment" style="width: 34%; opacity: 0.5"></div>
+                  </div>
+                </div>
+                <!-- Selected clip -->
+                <div class="clip clip-video clip-selected" style="width: 256px; position: relative;">
+                  <div class="clip-handle clip-handle-l">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </div>
+                  <div class="clip-thumbs">
+                    <div class="clip-thumb-segment" style="width: 33%"></div>
+                    <div class="clip-thumb-segment" style="width: 33%"></div>
+                    <div class="clip-thumb-segment" style="width: 34%"></div>
+                  </div>
+                  <div class="clip-handle clip-handle-r">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </div>
+                <div class="clip clip-video clip-dim" style="width: 160px; flex: 1; max-width: 320px;">
+                  <div class="clip-thumbs">
+                    <div class="clip-thumb-segment" style="width: 100%; opacity: 0.5"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Track 2: Audio (40px) -->
+              <div class="track-row" style="height: 40px; position: relative;">
+                <div class="clip clip-audio" style="position: absolute; left: 8px; width: 60%; height: 32px; border-radius: 6px;">
+                  <div class="clip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg></div>
+                  <span class="clip-text">Black White Effect</span>
+                  <div class="audio-waveform"></div>
+                </div>
+                <div class="clip" style="position: absolute; left: 62%; width: 25%; height: 32px; border-radius: 6px; background: #5b5fd8;">
+                  <div class="clip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg></div>
+                  <span class="clip-text">Block Flashes</span>
+                </div>
+              </div>
+
+              <!-- Track 3: Effect (40px) -->
+              <div class="track-row" style="height: 40px; position: relative;">
+                <div class="clip clip-effect" style="position: absolute; left: 8px; width: 22%; height: 32px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.40);">
+                  <div class="clip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg></div>
+                  <span class="clip-text">Pull In Effect</span>
+                </div>
+                <div class="clip" style="position: absolute; left: 25%; width: 38%; height: 32px; border-radius: 6px; background: #7a8b30;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; flex-shrink: 0;"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span class="clip-text">Block Flashes</span>
+                </div>
+                <div class="clip" style="position: absolute; left: 65%; width: 15%; height: 32px; border-radius: 6px; background: #7a8b30;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; flex-shrink: 0;"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span class="clip-text">Block Flashes</span>
+                </div>
+              </div>
+
+              <!-- Track 4: Effect 2 (40px) -->
+              <div class="track-row" style="height: 40px; position: relative;">
+                <div class="clip clip-effect" style="position: absolute; left: 28%; width: 60%; height: 32px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.40);">
+                  <div class="clip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg></div>
+                  <span class="clip-text">Calm Relaxing Ambient bed</span>
+                </div>
+              </div>
+
+              <!-- Track 5: Music (40px) -->
+              <div class="track-row" style="height: 40px; position: relative;">
+                <div class="clip clip-music" style="position: absolute; left: 8px; width: 85%; height: 32px; border-radius: 6px;">
+                  <div class="clip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg></div>
+                  <span class="clip-text">Calm Relaxing Ambient bed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END: Timeline Area -->
+    </main>
+    <!-- END: Main Content Area -->
+  </div>
+</body>
+</html>

@@ -48,6 +48,13 @@
   --accent-glow:       rgba(245,158,11,0.25);
   --accent-on-fill:    #000000;
 
+  /* ── Selection — yellow for active/selected ── */
+  --selection:         #fbbf24;
+  --selection-ring:    rgba(251,191,36,0.50);
+  --selection-glow:    rgba(251,191,36,0.40);
+  --selection-handle:  #fbbf24;
+  --selection-on-fill: #000000;
+
   /* ── Semantic ── */
   --color-danger:      #ef4444;
   --color-danger-subtle: rgba(239,68,68,0.15);
@@ -72,6 +79,14 @@
   --track-image:       #c4b5fd;
   --track-image-bg:    rgba(196,181,253,0.12);
   --track-image-border: rgba(196,181,253,0.4);
+  --track-effect:      #34d399;
+  --track-effect-dim:  rgba(52,211,153,0.85);
+  --track-effect-bg:   rgba(52,211,153,0.12);
+  --track-effect-border: rgba(52,211,153,0.4);
+  --track-music:       #a78bfa;
+  --track-music-dim:   rgba(167,139,250,0.85);
+  --track-music-bg:    rgba(167,139,250,0.12);
+  --track-music-border: rgba(167,139,250,0.4);
 
   /* ── Playhead ── */
   --playhead-color:    #ef4444;

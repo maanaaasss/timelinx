@@ -51,6 +51,9 @@ export type { KeyframesPanelProps } from './components/keyframes-panel';
 export { InspectorPanel } from './components/inspector-panel';
 export type { InspectorPanelProps } from './components/inspector-panel';
 
+export { EffectsPanel } from './components/effects-panel';
+export type { EffectsPanelProps } from './components/effects-panel';
+
 export { AssetBin } from './components/asset-bin';
 export type { AssetBinProps } from './components/asset-bin';
 
@@ -59,6 +62,18 @@ export type { KeyboardShortcutsOverlayProps } from './components/keyboard-shortc
 
 export { CommandPalette } from './components/command-palette';
 export type { CommandPaletteProps } from './components/command-palette';
+
+export { StatusBar } from './components/status-bar';
+export type { StatusBarProps } from './components/status-bar';
+
+export { TabbedPanel } from './components/tabbed-panel';
+export type { TabbedPanelProps, TabDefinition } from './components/tabbed-panel';
+
+export { TextPanel } from './components/text-panel';
+export type { TextPanelProps } from './components/text-panel';
+
+export { CollapsibleSection } from './components/collapsible-section';
+export type { CollapsibleSectionProps } from './components/collapsible-section';
 
 // ── Context (for custom layouts) ───────────────────────────────────────────
 export {

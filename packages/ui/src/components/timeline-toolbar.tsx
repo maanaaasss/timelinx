@@ -101,7 +101,7 @@ export const TimelineToolbar = React.memo(function TimelineToolbar() {
       <div className="toolbar-info">
         <span className="toolbar-position timecode">
           {currentTimecode}
-          <span style={{ opacity: 0.3, margin: '0 6px' }}>/</span>
+          <span className="toolbar-sep-char">/</span>
           {durationTimecode}
         </span>
       </div>

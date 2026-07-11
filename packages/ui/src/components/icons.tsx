@@ -21,6 +21,7 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   MoveHorizontal,
+  type LucideIcon,
 } from 'lucide-react';
 
 export interface IconProps {
@@ -29,93 +30,36 @@ export interface IconProps {
   style?: React.CSSProperties;
 }
 
-export function IconPlus({ size = 14, className, style }: IconProps) {
-  return <Plus size={size} className={className} style={style} />;
+const SW = 1.75;
+
+function makeIcon(Icon: LucideIcon, opts?: { fill?: string }) {
+  return function IconComponent({ size = 14, className, style }: IconProps) {
+    return <Icon size={size} strokeWidth={SW} className={className} style={style} fill={opts?.fill ?? 'none'} />;
+  };
 }
 
-export function IconFilm({ size = 14, className, style }: IconProps) {
-  return <Film size={size} className={className} style={style} />;
-}
-
-export function IconHeadphones({ size = 14, className, style }: IconProps) {
-  return <Headphones size={size} className={className} style={style} />;
-}
-
-export function IconZoomIn({ size = 14, className, style }: IconProps) {
-  return <ZoomIn size={size} className={className} style={style} />;
-}
-
-export function IconZoomOut({ size = 14, className, style }: IconProps) {
-  return <ZoomOut size={size} className={className} style={style} />;
-}
-
-export function IconUndo({ size = 14, className, style }: IconProps) {
-  return <Undo2 size={size} className={className} style={style} />;
-}
-
-export function IconRedo({ size = 14, className, style }: IconProps) {
-  return <Redo2 size={size} className={className} style={style} />;
-}
-
-export function IconPlayerPlay({ size = 14, className, style }: IconProps) {
-  return <Play size={size} className={className} style={style} fill="currentColor" />;
-}
-
-export function IconPlayerPause({ size = 14, className, style }: IconProps) {
-  return <Pause size={size} className={className} style={style} fill="currentColor" />;
-}
-
-export function IconCursor({ size = 14, className, style }: IconProps) {
-  return <MousePointer2 size={size} className={className} style={style} />;
-}
-
-export function IconRazor({ size = 14, className, style }: IconProps) {
-  return <Scissors size={size} className={className} style={style} />;
-}
-
-export function IconHand({ size = 14, className, style }: IconProps) {
-  return <Hand size={size} className={className} style={style} />;
-}
-
-export function IconTrim({ size = 14, className, style }: IconProps) {
-  return <SplitSquareHorizontal size={size} className={className} style={style} />;
-}
-
-export function IconRoll({ size = 14, className, style }: IconProps) {
-  return <ArrowLeftRight size={size} className={className} style={style} />;
-}
-
-export function IconSlip({ size = 14, className, style }: IconProps) {
-  return <ArrowUpDown size={size} className={className} style={style} />;
-}
-
-export function IconSlide({ size = 14, className, style }: IconProps) {
-  return <MoveHorizontal size={size} className={className} style={style} />;
-}
-
-export function IconMusic({ size = 14, className, style }: IconProps) {
-  return <Music size={size} className={className} style={style} />;
-}
-
-export function IconVideo({ size = 14, className, style }: IconProps) {
-  return <Film size={size} className={className} style={style} />;
-}
-
-export function IconSubtitle({ size = 14, className, style }: IconProps) {
-  return <Subtitles size={size} className={className} style={style} />;
-}
-
-export function IconTitle({ size = 14, className, style }: IconProps) {
-  return <Type size={size} className={className} style={style} />;
-}
-
-export function IconTrash({ size = 14, className, style }: IconProps) {
-  return <Trash2 size={size} className={className} style={style} />;
-}
-
-export function IconGrip({ size = 14, className, style }: IconProps) {
-  return <GripVertical size={size} className={className} style={style} />;
-}
+export const IconPlus = makeIcon(Plus);
+export const IconFilm = makeIcon(Film);
+export const IconHeadphones = makeIcon(Headphones);
+export const IconZoomIn = makeIcon(ZoomIn);
+export const IconZoomOut = makeIcon(ZoomOut);
+export const IconUndo = makeIcon(Undo2);
+export const IconRedo = makeIcon(Redo2);
+export const IconPlayerPlay = makeIcon(Play, { fill: 'currentColor' });
+export const IconPlayerPause = makeIcon(Pause, { fill: 'currentColor' });
+export const IconCursor = makeIcon(MousePointer2);
+export const IconRazor = makeIcon(Scissors);
+export const IconHand = makeIcon(Hand);
+export const IconTrim = makeIcon(SplitSquareHorizontal);
+export const IconRoll = makeIcon(ArrowLeftRight);
+export const IconSlip = makeIcon(ArrowUpDown);
+export const IconSlide = makeIcon(MoveHorizontal);
+export const IconMusic = makeIcon(Music);
+export const IconVideo = makeIcon(Film);
+export const IconSubtitle = makeIcon(Subtitles);
+export const IconTitle = makeIcon(Type);
+export const IconTrash = makeIcon(Trash2);
+export const IconGrip = makeIcon(GripVertical);
 
 export const TOOL_ICONS: Record<string, React.ComponentType<IconProps>> = {
   selection: IconCursor,

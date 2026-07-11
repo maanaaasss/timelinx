@@ -1,9 +1,11 @@
-import React, { useState, useCallback } from 'react';
-import { useEngine } from '@timelinx/react';
+import React, { useCallback } from 'react';
+import { toMarkerId } from '@timelinx/core';
+import type { TimelineFrame, MarkerId } from '@timelinx/core';
+import { useEngine, useMarkers } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { frameToTimecode } from '../shared/time';
-import type { TimelineFrame, OperationPrimitive, MarkerId } from '@timelinx/core';
-import { toMarkerId } from '@timelinx/core';
+
+const MARKER_COLORS = ['#ff4a6a', '#4a9eff', '#4aff8a', '#ffaa4a', '#9b59b6', '#e74c3c'];
 
 export interface MarkersPanelProps {
   className?: string;
@@ -23,47 +25,59 @@ export const MarkersPanel = React.memo(function MarkersPanel({
   className,
 }: MarkersPanelProps) {
   const { engine } = useTimelineContext();
-  const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
+  const markers = useMarkers(engine) as unknown as Marker[];
 
-  const timeline = engine.getState().timeline;
-  const markers = (timeline.markers ?? []) as unknown as Marker[];
-  const fps = (timeline.fps as number) || 30;
-
-  const handleMarkerClick = useCallback((marker: Marker) => {
-    setSelectedMarkerId(marker.id);
-    // Seek to marker position
-    const frame = marker.type === 'point' ? marker.frame : marker.frameStart;
-    engine.seekTo((frame as number) as TimelineFrame);
-  }, [engine]);
-
-  const handleDeleteMarker = useCallback((markerId: string) => {
-    engine.dispatch({
-      id: `delete-marker-${Date.now()}`,
-      label: 'Delete marker',
-      timestamp: Date.now(),
-      operations: [{ type: 'DELETE_MARKER', markerId: markerId as MarkerId }],
-    });
-  }, [engine]);
+  const fps = Number(engine.getState().timeline.fps);
 
   const handleAddMarker = useCallback(() => {
-    const currentFrame = engine.getSnapshot().playhead.currentFrame;
-    const marker = {
-      type: 'point' as const,
-      id: toMarkerId(`marker-${Date.now()}`),
-      frame: currentFrame as TimelineFrame,
-      label: `Marker ${markers.length + 1}`,
-      color: '#FFD166',
-      scope: 'global' as const,
-      linkedClipId: null,
-    };
+    const playheadFrame = engine.getPlayheadFrame();
+    const id = toMarkerId(`marker-${Date.now()}`);
+    const color = MARKER_COLORS[markers.length % MARKER_COLORS.length];
 
     engine.dispatch({
       id: `add-marker-${Date.now()}`,
       label: 'Add marker',
       timestamp: Date.now(),
-      operations: [{ type: 'ADD_MARKER', marker }],
+      operations: [
+        {
+          type: 'ADD_MARKER',
+          marker: {
+            type: 'point',
+            id,
+            frame: playheadFrame,
+            label: `Marker ${markers.length + 1}`,
+            color,
+            scope: 'global' as const,
+            linkedClipId: null,
+          },
+        },
+      ],
     });
   }, [engine, markers.length]);
+
+  const handleJumpTo = useCallback(
+    (frame: number) => {
+      engine.seekTo(frame as TimelineFrame);
+    },
+    [engine],
+  );
+
+  const handleDelete = useCallback(
+    (markerId: string) => {
+      engine.dispatch({
+        id: `delete-marker-${Date.now()}`,
+        label: 'Delete marker',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'DELETE_MARKER',
+            markerId: markerId as MarkerId,
+          },
+        ],
+      });
+    },
+    [engine],
+  );
 
   const formatMarkerPosition = (marker: Marker): string => {
     if (marker.type === 'point') {
@@ -76,11 +90,14 @@ export const MarkersPanel = React.memo(function MarkersPanel({
     <div className={`markers-panel${className ? ` ${className}` : ''}`}>
       <div className="panel-header">
         <h3 className="panel-title">Markers</h3>
-        <button className="panel-action-btn" onClick={handleAddMarker} title="Add marker">
+        <button
+          className="panel-action-btn"
+          title="Add marker at playhead"
+          onClick={handleAddMarker}
+        >
           +
         </button>
       </div>
-
       <div className="panel-content">
         {markers.length === 0 ? (
           <div className="empty-state">
@@ -92,21 +109,24 @@ export const MarkersPanel = React.memo(function MarkersPanel({
             {markers.map((marker) => (
               <li
                 key={marker.id}
-                className={`marker-item${selectedMarkerId === marker.id ? ' selected' : ''}`}
-                onClick={() => handleMarkerClick(marker)}
+                className="marker-item"
+                onClick={() => handleJumpTo(marker.type === 'point' ? (marker.frame as number) : (marker.frameStart as number))}
               >
-                <div className="marker-color" style={{ background: marker.color }} />
+                <div
+                  className="marker-color"
+                  style={{ background: marker.color }}
+                />
                 <div className="marker-info">
                   <span className="marker-label">{marker.label}</span>
                   <span className="marker-timecode">{formatMarkerPosition(marker)}</span>
                 </div>
                 <button
                   className="marker-delete-btn"
+                  title="Delete marker"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteMarker(marker.id);
+                    handleDelete(marker.id);
                   }}
-                  title="Delete marker"
                 >
                   ×
                 </button>
