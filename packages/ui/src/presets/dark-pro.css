@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — Dark Pro Theme (Alternate)
-   
-   Deep dark with blue-shifted chrome. For users who
-   prefer dark interfaces.
+   @timelinx/ui — Dark Pro Preset
+
+   Professional dark interface ported from Stitch mockup.
+   Blue accent for UI chrome, reserved yellow for selection.
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
@@ -10,89 +10,125 @@
 :root {
   color-scheme: dark;
 
-  /* ── Surfaces ── */
-  --bg-canvas:         #0c0e14;
-  --bg-app:            #101218;
-  --bg-panel:          #161922;
-  --bg-surface:        #1a1e2a;
-  --bg-surface-raised: #1e2232;
-  --bg-surface-soft:   #1c2030;
-  --bg-subtle:         #14171f;
-  --bg-raised:         #1e2232;
+  /* ── Surfaces — mockup-matched depth system ── */
+  --bg-canvas:         #1c1f26;
+  --bg-app:            #1c1f26;
+  --bg-panel:          #14151a;
+  --bg-surface:        #23262f;
+  --bg-surface-raised: #2a2d37;
+  --bg-surface-soft:   #1e2128;
+  --bg-subtle:         #191b21;
+  --bg-raised:         #2a2d37;
   --bg-hover:          rgba(255,255,255,0.06);
-  --bg-active:         rgba(255,255,255,0.08);
-  --bg-overlay:        rgba(255,255,255,0.1);
-  --bg-input:          #12141c;
-  --bg-input-focus:    #1a1e2a;
+  --bg-active:         rgba(255,255,255,0.10);
+  --bg-overlay:        rgba(255,255,255,0.06);
+  --bg-input:          #191b21;
+  --bg-input-focus:    #23262f;
 
-  /* ── Borders ── */
-  --border-faint:      rgba(255,255,255,0.06);
-  --border-subtle:     rgba(255,255,255,0.09);
-  --border-default:    rgba(255,255,255,0.13);
-  --border-strong:     rgba(255,255,255,0.2);
+  /* ── Borders — mockup-matched ── */
+  --border-faint:      rgba(51,56,66,0.50);
+  --border-subtle:     #333842;
+  --border-default:    #333842;
+  --border-strong:     #434956;
   --border-focus:      var(--accent-500);
 
-  /* ── Text ── */
-  --text-primary:      #f0f0f3;
-  --text-secondary:    #8b8fa4;
-  --text-tertiary:     #5c6078;
-  --text-disabled:     #3a3e50;
-  --text-inverse:      #101218;
-  --text-mono:         #b0b4c8;
+  /* ── Text — mockup hierarchy ── */
+  --text-primary:      #ffffff;
+  --text-secondary:    #9ca3af;
+  --text-tertiary:     #6b7280;
+  --text-disabled:     #374151;
+  --text-inverse:      #1c1f26;
+  --text-mono:         #9ca3af;
 
-  /* ── Accent ── */
-  --accent:            #818cf8;
-  --accent-hover:      #a5b4fc;
-  --accent-active:     #6366f1;
-  --accent-subtle:     rgba(129,140,248,0.12);
-  --accent-border:     rgba(129,140,248,0.28);
-  --accent-glow:       rgba(129,140,248,0.18);
-  --accent-on-fill:    #1e1b4b;
+  /* ── Accent — bold saturated blue ── */
+  --accent-50:         #172554;
+  --accent-100:        #1e3a5f;
+  --accent-200:        #1d4ed8;
+  --accent-300:        #93c5fd;
+  --accent-400:        #60a5fa;
+  --accent-500:        #3b82f6;
+  --accent-600:        #2563eb;
 
-  /* ── Semantic ── */
-  --color-danger:      #f87171;
-  --color-danger-subtle: rgba(248,113,113,0.12);
-  --color-success:     #4ade80;
-  --color-success-subtle: rgba(74,222,128,0.12);
-  --color-warning:     #fbbf24;
-  --color-warning-subtle: rgba(251,191,36,0.12);
+  --accent:            var(--accent-500);
+  --accent-hover:      var(--accent-400);
+  --accent-active:     var(--accent-600);
+  --accent-subtle:     rgba(59,130,246,0.12);
+  --accent-border:     rgba(59,130,246,0.30);
+  --accent-glow:       rgba(59,130,246,0.20);
+  --accent-on-fill:    #ffffff;
 
-  /* ── Track types ── */
-  --track-video:       #60a5fa;
-  --track-video-dim:   rgba(96,165,250,0.75);
-  --track-video-bg:    rgba(96,165,250,0.1);
-  --track-video-border: rgba(96,165,250,0.25);
-  --track-audio:       #4ade80;
-  --track-audio-dim:   rgba(74,222,128,0.75);
-  --track-audio-bg:    rgba(74,222,128,0.1);
-  --track-audio-border: rgba(74,222,128,0.25);
-  --track-subtitle:    #fbbf24;
-  --track-subtitle-dim: rgba(251,191,36,0.75);
-  --track-subtitle-bg: rgba(251,191,36,0.1);
-  --track-subtitle-border: rgba(251,191,36,0.25);
-  --track-image:       #c4b5fd;
-  --track-image-bg:    rgba(196,181,253,0.1);
-  --track-image-border: rgba(196,181,253,0.25);
+  /* ── Selection — yellow for active/selected elements ── */
+  --selection:         #eab308;
+  --selection-ring:    rgba(234,179,8,0.40);
+  --selection-glow:    rgba(234,179,8,0.30);
+  --selection-handle:  #eab308;
+  --selection-on-fill: #000000;
 
-  /* ── Glow ── */
-  --glow-video:        rgba(96,165,250,0.2);
-  --glow-audio:        rgba(74,222,128,0.2);
-  --glow-subtitle:     rgba(251,191,36,0.2);
-  --glow-image:        rgba(196,181,253,0.2);
+  /* ── Semantic — refined, not garish ── */
+  --color-danger:      #ef4444;
+  --color-danger-subtle: rgba(239,68,68,0.12);
+  --color-success:     #22c55e;
+  --color-success-subtle: rgba(34,197,94,0.12);
+  --color-warning:     #f59e0b;
+  --color-warning-subtle: rgba(245,158,11,0.12);
 
-  /* ── Playhead ── */
-  --playhead-color:    #818cf8;
-  --playhead-shadow:   0 0 0 2px rgba(16,18,24,0.9), 0 0 12px rgba(129,140,248,0.3);
+  /* ── Track types — mockup-matched, clearly-differentiated ── */
+  --track-video:       #374151;
+  --track-video-dim:   rgba(55,65,81,0.70);
+  --track-video-bg:    rgba(55,65,81,0.20);
+  --track-video-border: rgba(55,65,81,0.40);
+  --track-audio:       #3b82f6;
+  --track-audio-dim:   rgba(59,130,246,0.70);
+  --track-audio-bg:    rgba(59,130,246,0.18);
+  --track-audio-border: rgba(59,130,246,0.40);
+  --track-subtitle:    #eab308;
+  --track-subtitle-dim: rgba(234,179,8,0.70);
+  --track-subtitle-bg: rgba(234,179,8,0.14);
+  --track-subtitle-border: rgba(234,179,8,0.35);
+  --track-image:       #a78bfa;
+  --track-image-bg:    rgba(167,139,250,0.14);
+  --track-image-border: rgba(167,139,250,0.35);
+  --track-effect:      #10b981;
+  --track-effect-dim:  rgba(16,185,129,0.70);
+  --track-effect-bg:   rgba(16,185,129,0.18);
+  --track-effect-border: rgba(16,185,129,0.40);
+  --track-music:       #6366f1;
+  --track-music-dim:   rgba(99,102,241,0.70);
+  --track-music-bg:    rgba(99,102,241,0.18);
+  --track-music-border: rgba(99,102,241,0.40);
 
-  /* ── Scrollbar ── */
+  /* ── Glow — subtle, not neon ── */
+  --glow-video:        rgba(55,65,81,0.15);
+  --glow-audio:        rgba(59,130,246,0.15);
+  --glow-subtitle:     rgba(234,179,8,0.15);
+  --glow-image:        rgba(167,139,250,0.15);
+  --glow-effect:       rgba(16,185,129,0.15);
+  --glow-music:        rgba(99,102,241,0.15);
+
+  /* ── Snap / Drop glow ── */
+  --tl-snap-color:     var(--accent-400);
+  --tl-snap-glow:      rgba(96,165,250,0.25);
+
+  /* ── Playhead — precise, visible ── */
+  --playhead-color:    #ffffff;
+  --playhead-shadow:   0 0 0 1px rgba(28,31,38,0.9), 0 0 8px rgba(255,255,255,0.20);
+
+  /* ── Scrollbar — minimal chrome ── */
   --scrollbar-track:   transparent;
-  --scrollbar-thumb:   rgba(255,255,255,0.1);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.18);
+  --scrollbar-thumb:   rgba(255,255,255,0.08);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.14);
 
-  /* ── Shadows ── */
-  --shadow-xs:         0 1px 2px rgba(0,0,0,0.2);
-  --shadow-sm:         0 1px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15);
-  --shadow-md:         0 4px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
-  --shadow-lg:         0 8px 24px rgba(0,0,0,0.35), 0 4px 8px rgba(0,0,0,0.2);
-  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.3);
+  /* ── Shadows — layered depth for dark surfaces ── */
+  --shadow-xs:         0 1px 2px rgba(0,0,0,0.30);
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-md:         0 4px 12px rgba(0,0,0,0.40), 0 2px 4px rgba(0,0,0,0.30);
+  --shadow-lg:         0 8px 24px rgba(0,0,0,0.50), 0 4px 8px rgba(0,0,0,0.35);
+  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.60), 0 8px 16px rgba(0,0,0,0.40);
+
+  /* ── Radius — shape hierarchy ── */
+  --radius-xs:         2px;
+  --radius-sm:         3px;
+  --radius-md:         5px;
+  --radius-lg:         8px;
+  --radius-xl:         12px;
 }

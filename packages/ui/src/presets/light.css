@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — Light Theme (Primary)
-   
+   @timelinx/ui — Light Theme
+
    Clean, spacious, approachable — inspired by
-   Linear, Figma, and Canva.
+   Linear, Figma, and Canva. Blue accent, yellow selection.
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
@@ -40,14 +40,21 @@
   --text-inverse:      #fafafa;
   --text-mono:         #52525b;
 
-  /* ── Accent ── */
-  --accent:            #6366f1;
-  --accent-hover:      #4f46e5;
-  --accent-active:     #4338ca;
-  --accent-subtle:     rgba(99,102,241,0.08);
-  --accent-border:     rgba(99,102,241,0.25);
-  --accent-glow:       rgba(99,102,241,0.12);
+  /* ── Accent — blue ── */
+  --accent:            #3b82f6;
+  --accent-hover:      #2563eb;
+  --accent-active:     #1d4ed8;
+  --accent-subtle:     rgba(59,130,246,0.10);
+  --accent-border:     rgba(59,130,246,0.30);
+  --accent-glow:       rgba(59,130,246,0.15);
   --accent-on-fill:    #ffffff;
+
+  /* ── Selection — yellow for active/selected ── */
+  --selection:         #eab308;
+  --selection-ring:    rgba(234,179,8,0.30);
+  --selection-glow:    rgba(234,179,8,0.20);
+  --selection-handle:  #eab308;
+  --selection-on-fill: #000000;
 
   /* ── Semantic ── */
   --color-danger:      #ef4444;
@@ -58,30 +65,40 @@
   --color-warning-subtle: rgba(245,158,11,0.08);
 
   /* ── Track types ── */
-  --track-video:       #3b82f6;
-  --track-video-dim:   rgba(59,130,246,0.7);
-  --track-video-bg:    rgba(59,130,246,0.08);
-  --track-video-border: rgba(59,130,246,0.2);
-  --track-audio:       #22c55e;
-  --track-audio-dim:   rgba(34,197,94,0.7);
-  --track-audio-bg:    rgba(34,197,94,0.08);
-  --track-audio-border: rgba(34,197,94,0.2);
-  --track-subtitle:    #f59e0b;
-  --track-subtitle-dim: rgba(245,158,11,0.7);
-  --track-subtitle-bg: rgba(245,158,11,0.08);
-  --track-subtitle-border: rgba(245,158,11,0.2);
+  --track-video:       #374151;
+  --track-video-dim:   rgba(55,65,81,0.7);
+  --track-video-bg:    rgba(55,65,81,0.08);
+  --track-video-border: rgba(55,65,81,0.2);
+  --track-audio:       #3b82f6;
+  --track-audio-dim:   rgba(59,130,246,0.7);
+  --track-audio-bg:    rgba(59,130,246,0.08);
+  --track-audio-border: rgba(59,130,246,0.2);
+  --track-subtitle:    #eab308;
+  --track-subtitle-dim: rgba(234,179,8,0.7);
+  --track-subtitle-bg: rgba(234,179,8,0.08);
+  --track-subtitle-border: rgba(234,179,8,0.2);
   --track-image:       #a78bfa;
   --track-image-bg:    rgba(167,139,250,0.08);
   --track-image-border: rgba(167,139,250,0.2);
+  --track-effect:      #10b981;
+  --track-effect-dim:  rgba(16,185,129,0.7);
+  --track-effect-bg:   rgba(16,185,129,0.08);
+  --track-effect-border: rgba(16,185,129,0.2);
+  --track-music:       #6366f1;
+  --track-music-dim:   rgba(99,102,241,0.7);
+  --track-music-bg:    rgba(99,102,241,0.08);
+  --track-music-border: rgba(99,102,241,0.2);
 
   /* ── Glow ── */
-  --glow-video:        rgba(59,130,246,0.15);
-  --glow-audio:        rgba(34,197,94,0.15);
-  --glow-subtitle:     rgba(245,158,11,0.15);
+  --glow-video:        rgba(55,65,81,0.15);
+  --glow-audio:        rgba(59,130,246,0.15);
+  --glow-subtitle:     rgba(234,179,8,0.15);
   --glow-image:        rgba(167,139,250,0.15);
+  --glow-effect:       rgba(16,185,129,0.15);
+  --glow-music:        rgba(99,102,241,0.15);
 
   /* ── Playhead ── */
-  --playhead-color:    #6366f1;
+  --playhead-color:    #3b82f6;
   --playhead-shadow:   0 0 0 2px rgba(255,255,255,0.9), 0 1px 4px rgba(0,0,0,0.15);
 
   /* ── Scrollbar ── */

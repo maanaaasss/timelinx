@@ -32,10 +32,10 @@ export const TimelineRuler = React.memo(function TimelineRuler({
   const duration = (timeline.duration as number) || 9000;
 
   const cssVars = useMemo(() => ({
-    bgColor: resolveCssVar('--bg-panel', '#0F0F13'),
-    textColor: resolveCssVar('--text-tertiary', '#8B8A9A'),
-    tickColor: resolveCssVar('--border-faint', 'rgba(255,255,255,0.04)'),
-    tickMajColor: resolveCssVar('--border-default', 'rgba(255,255,255,0.11)'),
+    bgColor: resolveCssVar('--bg-panel', '#ffffff'),
+    textColor: resolveCssVar('--text-tertiary', '#a1a1aa'),
+    tickColor: resolveCssVar('--border-faint', 'rgba(0,0,0,0.05)'),
+    tickMajColor: resolveCssVar('--border-default', 'rgba(0,0,0,0.12)'),
   }), []);
 
   useEffect(() => {

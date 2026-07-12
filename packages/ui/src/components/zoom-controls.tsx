@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { IconZoomIn, IconZoomOut } from './icons';
 
 export interface ZoomControlsProps {
@@ -12,19 +12,22 @@ export const ZoomControls = React.memo(function ZoomControls({
   onPpfChange,
   className,
 }: ZoomControlsProps) {
-  const zoom = Math.max(1, Math.min(100, Math.round(ppf)));
+  const min = 1;
+  const max = 100;
+  const zoom = Math.max(min, Math.min(max, Math.round(ppf)));
+  const fillPct = ((zoom - min) / (max - min)) * 100;
 
-  const handleZoomOut = () => {
-    onPpfChange(Math.max(1, ppf * 0.8));
-  };
+  const handleZoomOut = useCallback(() => {
+    onPpfChange(Math.max(min, ppf * 0.8));
+  }, [onPpfChange, ppf]);
 
-  const handleZoomIn = () => {
-    onPpfChange(Math.min(100, ppf * 1.25));
-  };
+  const handleZoomIn = useCallback(() => {
+    onPpfChange(Math.min(max, ppf * 1.25));
+  }, [onPpfChange, ppf]);
 
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     onPpfChange(parseFloat(e.target.value));
-  };
+  }, [onPpfChange]);
 
   return (
     <div className={`zoom-controls${className ? ` ${className}` : ''}`}>
@@ -34,11 +37,12 @@ export const ZoomControls = React.memo(function ZoomControls({
       <input
         type="range"
         className="zoom-slider"
-        min={1}
-        max={100}
+        min={min}
+        max={max}
         value={zoom}
         onChange={handleSliderChange}
         aria-label="Zoom level"
+        style={{ '--zoom-fill': `${fillPct}%` } as React.CSSProperties}
       />
       <span className="zoom-level">{zoom}x</span>
       <button className="tool-btn" title="Zoom in" onClick={handleZoomIn}>

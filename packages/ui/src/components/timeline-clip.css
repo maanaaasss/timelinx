@@ -4,3 +4,23 @@
 .tl-clip--video .clip-name { color: color-mix(in srgb, var(--track-video) 30%, var(--text-primary)); }
 .tl-clip--audio .clip-name { color: color-mix(in srgb, var(--track-audio) 25%, var(--text-primary)); }
 .tl-clip--subtitle .clip-name { color: color-mix(in srgb, var(--track-subtitle) 25%, var(--text-primary)); }
+
+/* Effect indicator strip — shows applied effects as colored bands */
+.clip-effect-strip {
+  position: absolute;
+  bottom: 0;
+  left: 3px;
+  right: 0;
+  height: 3px;
+  display: flex;
+  gap: 1px;
+  pointer-events: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+}
+
+.clip-effect-band {
+  flex: 1;
+  min-width: 0;
+  border-radius: 1px 1px 0 0;
+}

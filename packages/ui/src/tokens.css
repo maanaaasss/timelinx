@@ -38,22 +38,29 @@
   --text-inverse:      #fafafa;
   --text-mono:         #52525b;
 
-  /* ── Accent — vibrant indigo ── */
-  --accent-50:         #eef2ff;
-  --accent-100:        #e0e7ff;
-  --accent-200:        #c7d2fe;
-  --accent-300:        #a5b4fc;
-  --accent-400:        #818cf8;
-  --accent-500:        #6366f1;
-  --accent-600:        #4f46e5;
+  /* ── Accent — bold saturated blue ── */
+  --accent-50:         #eff6ff;
+  --accent-100:        #dbeafe;
+  --accent-200:        #bfdbfe;
+  --accent-300:        #93c5fd;
+  --accent-400:        #60a5fa;
+  --accent-500:        #3b82f6;
+  --accent-600:        #2563eb;
 
   --accent:            var(--accent-500);
   --accent-hover:      var(--accent-600);
-  --accent-active:     #4338ca;
-  --accent-subtle:     rgba(99,102,241,0.08);
-  --accent-border:     rgba(99,102,241,0.25);
-  --accent-glow:       rgba(99,102,241,0.12);
+  --accent-active:     #1d4ed8;
+  --accent-subtle:     rgba(59,130,246,0.10);
+  --accent-border:     rgba(59,130,246,0.30);
+  --accent-glow:       rgba(59,130,246,0.15);
   --accent-on-fill:    #ffffff;
+
+  /* ── Selection — reserved for active/selected elements ── */
+  --selection:         #eab308;
+  --selection-ring:    rgba(234,179,8,0.4);
+  --selection-glow:    rgba(234,179,8,0.3);
+  --selection-handle:  #eab308;
+  --selection-on-fill: #000000;
 
   /* ── Semantic ── */
   --color-danger:         #ef4444;
@@ -64,27 +71,37 @@
   --color-warning-subtle: rgba(245,158,11,0.08);
 
   /* ── Track types ── */
-  --track-video:         #3b82f6;
-  --track-video-dim:     rgba(59,130,246,0.7);
-  --track-video-bg:      rgba(59,130,246,0.08);
-  --track-video-border:  rgba(59,130,246,0.2);
-  --track-audio:         #22c55e;
-  --track-audio-dim:     rgba(34,197,94,0.7);
-  --track-audio-bg:      rgba(34,197,94,0.08);
-  --track-audio-border:  rgba(34,197,94,0.2);
+  --track-video:         #374151;
+  --track-video-dim:     rgba(55,65,81,0.7);
+  --track-video-bg:      rgba(55,65,81,0.14);
+  --track-video-border:  rgba(55,65,81,0.35);
+  --track-audio:         #3b82f6;
+  --track-audio-dim:     rgba(59,130,246,0.7);
+  --track-audio-bg:      rgba(59,130,246,0.14);
+  --track-audio-border:  rgba(59,130,246,0.35);
   --track-subtitle:      #f59e0b;
   --track-subtitle-dim:  rgba(245,158,11,0.7);
-  --track-subtitle-bg:   rgba(245,158,11,0.08);
-  --track-subtitle-border: rgba(245,158,11,0.2);
+  --track-subtitle-bg:   rgba(245,158,11,0.14);
+  --track-subtitle-border: rgba(245,158,11,0.35);
   --track-image:         #a78bfa;
-  --track-image-bg:      rgba(167,139,250,0.08);
-  --track-image-border:  rgba(167,139,250,0.2);
+  --track-image-bg:      rgba(167,139,250,0.14);
+  --track-image-border:  rgba(167,139,250,0.35);
+  --track-effect:        #10b981;
+  --track-effect-dim:    rgba(16,185,129,0.7);
+  --track-effect-bg:     rgba(16,185,129,0.14);
+  --track-effect-border: rgba(16,185,129,0.35);
+  --track-music:         #6366f1;
+  --track-music-dim:     rgba(99,102,241,0.7);
+  --track-music-bg:      rgba(99,102,241,0.14);
+  --track-music-border:  rgba(99,102,241,0.35);
 
   /* ── Glow values (subtle) ── */
-  --glow-video:     rgba(59,130,246,0.15);
-  --glow-audio:     rgba(34,197,94,0.15);
+  --glow-video:     rgba(55,65,81,0.15);
+  --glow-audio:     rgba(59,130,246,0.15);
   --glow-subtitle:  rgba(245,158,11,0.15);
   --glow-image:     rgba(167,139,250,0.15);
+  --glow-effect:    rgba(16,185,129,0.15);
+  --glow-music:     rgba(99,102,241,0.15);
 
   /* ── Typography ── */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -138,7 +155,7 @@
   --ring-surface: inset 0 0 0 1px var(--border-subtle);
   --ring-raised:  inset 0 0 0 1px var(--border-default);
   --ring-accent:  0 0 0 2px var(--accent-subtle);
-  --ring-focus:   0 0 0 2px rgba(99,102,241,0.25);
+  --ring-focus:   0 0 0 2px rgba(59,130,246,0.30);
 
   /* ── Micro-interactions ── */
   --ease-out:           cubic-bezier(0.16, 1, 0.3, 1);
@@ -157,12 +174,14 @@
   --scrollbar-thumb-hover: rgba(0,0,0,0.2);
 
   /* ── Timeline-specific ── */
-  --track-height:       54px;
+  --track-height:       48px;
+  --track-height-video: 64px;
+  --track-height-audio: 40px;
   --track-header-width: 168px;
   --ruler-height:       32px;
   --toolbar-height:     44px;
   --topbar-height:      48px;
-  --sidebar-width:      0px;
+  --sidebar-width:      96px;
   --playhead-color:     var(--accent-500);
   --playhead-shadow:    0 0 0 2px rgba(255,255,255,0.9), 0 1px 4px rgba(0,0,0,0.15);
   --clip-radius:        var(--radius-sm);
