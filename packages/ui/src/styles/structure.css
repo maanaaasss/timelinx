@@ -283,10 +283,11 @@
   position: sticky;
   top: 0;
   z-index: 25;
+  width: max-content;
+  min-width: 100%;
   height: var(--ruler-height);
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-faint);
-  overflow: hidden;
 }
 
 .timeline-track-canvas {
