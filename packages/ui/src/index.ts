@@ -36,6 +36,18 @@ export { DropZone } from './components/drop-zone';
 export type { DropZoneProps } from './components/drop-zone';
 
 // ── Panel Components ───────────────────────────────────────────────────────
+export { AssetBin } from './components/asset-bin';
+export type { AssetBinProps } from './components/asset-bin';
+
+export { Sidebar } from './components/sidebar';
+export type { SidebarProps } from './components/sidebar';
+
+export { TopNav } from './components/top-nav';
+export type { TopNavProps } from './components/top-nav';
+
+export { TransportControls } from './components/transport-controls';
+export type { TransportControlsProps } from './components/transport-controls';
+
 export { MarkersPanel } from './components/markers-panel';
 export type { MarkersPanelProps } from './components/markers-panel';
 
@@ -53,9 +65,6 @@ export type { InspectorPanelProps } from './components/inspector-panel';
 
 export { EffectsPanel } from './components/effects-panel';
 export type { EffectsPanelProps } from './components/effects-panel';
-
-export { AssetBin } from './components/asset-bin';
-export type { AssetBinProps } from './components/asset-bin';
 
 export { KeyboardShortcutsOverlay } from './components/keyboard-shortcuts-overlay';
 export type { KeyboardShortcutsOverlayProps } from './components/keyboard-shortcuts-overlay';
@@ -106,6 +115,13 @@ export {
   IconRoll,
   IconSlip,
   IconSlide,
+  IconSnap,
+  IconEye,
+  IconEyeOff,
+  IconLock,
+  IconUnlock,
+  IconVolume,
+  IconVolumeOff,
   TOOL_ICONS,
 } from './components/icons';
 

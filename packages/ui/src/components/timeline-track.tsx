@@ -1,8 +1,17 @@
 import React from 'react';
 import { useTimelineContext } from '../context/timeline-context';
 import { useTrackWithEngine } from '@timelinx/react';
-import { IconVideo, IconMusic, IconSubtitle } from './icons';
-import { Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import {
+  IconVideo,
+  IconMusic,
+  IconSubtitle,
+  IconLock,
+  IconUnlock,
+  IconVolume,
+  IconVolumeOff,
+  IconEye,
+  IconEyeOff,
+} from './icons';
 
 declare module '@timelinx/react' {
   interface TimelineEngine {
@@ -46,8 +55,7 @@ export const TimelineTrack = React.memo(function TimelineTrack({
   if (!track) return null;
 
   const IconComponent = getTrackIcon(track.type);
-  const VisibilityIcon = track.muted ? EyeOff : Eye;
-  const LockIcon = track.locked ? Lock : Unlock;
+  const isAudioTrack = track.type === 'audio';
 
   return (
     <div
@@ -64,25 +72,38 @@ export const TimelineTrack = React.memo(function TimelineTrack({
         </span>
         <span className="tl-track-label">{shortId}</span>
         <div className="tl-track-controls">
-          <button
-            className={`tl-ctrl-btn ${track.muted ? 'muted' : ''}`}
-            title={track.type === 'audio' ? 'Mute' : 'Hide'}
-            onClick={(e) => {
-              e.stopPropagation();
-              engine.toggleTrackMute(track.id);
-            }}
-          >
-            <VisibilityIcon size={12} />
-          </button>
+          {isAudioTrack ? (
+            <button
+              className={`tl-ctrl-btn ${track.muted ? 'muted' : ''}`}
+              title={track.muted ? 'Unmute' : 'Mute'}
+              onClick={(e) => {
+                e.stopPropagation();
+                engine.toggleTrackMute(track.id);
+              }}
+            >
+              {track.muted ? <IconVolumeOff size={12} /> : <IconVolume size={12} />}
+            </button>
+          ) : (
+            <button
+              className={`tl-ctrl-btn ${track.muted ? 'muted' : ''}`}
+              title={track.muted ? 'Show' : 'Hide'}
+              onClick={(e) => {
+                e.stopPropagation();
+                engine.toggleTrackMute(track.id);
+              }}
+            >
+              {track.muted ? <IconEyeOff size={12} /> : <IconEye size={12} />}
+            </button>
+          )}
           <button
             className={`tl-ctrl-btn ${track.locked ? 'locked' : ''}`}
-            title="Lock"
+            title={track.locked ? 'Unlock' : 'Lock'}
             onClick={(e) => {
               e.stopPropagation();
               engine.toggleTrackLock(track.id);
             }}
           >
-            <LockIcon size={12} />
+            {track.locked ? <IconLock size={12} /> : <IconUnlock size={12} />}
           </button>
         </div>
       </div>

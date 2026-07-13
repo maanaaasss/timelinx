@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   useActiveToolId,
   useIsPlaying,
@@ -20,9 +20,16 @@ import {
   IconRedo,
   IconPlayerPlay,
   IconPlayerPause,
+  IconSnap,
 } from './icons';
 
-export const TimelineToolbar = React.memo(function TimelineToolbar() {
+export interface TimelineToolbarProps {
+  className?: string;
+}
+
+export const TimelineToolbar = React.memo(function TimelineToolbar({
+  className,
+}: TimelineToolbarProps) {
   const { engine, ppf, setPpf } = useTimelineContext();
   const toolId = useActiveToolId(engine);
   const isPlaying = useIsPlaying(engine);
@@ -35,10 +42,36 @@ export const TimelineToolbar = React.memo(function TimelineToolbar() {
   const currentTimecode = frameToTimecode(frame as number, fps);
   const durationTimecode = frameToTimecode(duration, fps);
 
+  const togglePlay = useCallback(() => {
+    isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play();
+  }, [isPlaying, engine]);
+
   return (
-    <div className="timeline-toolbar" role="toolbar" aria-label="Timeline tools">
-      {/* Group 1: Selection tools */}
-      <div className="toolbar-group" role="radiogroup" aria-label="Editing tools">
+    <div className={`tl-toolbar${className ? ` ${className}` : ''}`} role="toolbar" aria-label="Timeline tools">
+      {/* Group 1: Undo/Redo */}
+      <div className="tl-tool-group">
+        <button
+          className="tool-btn"
+          title="Undo (Ctrl+Z)"
+          onClick={() => engine.undo()}
+          disabled={!history.canUndo}
+        >
+          <IconUndo size={15} />
+        </button>
+        <button
+          className="tool-btn"
+          title="Redo (Ctrl+Shift+Z)"
+          onClick={() => engine.redo()}
+          disabled={!history.canRedo}
+        >
+          <IconRedo size={15} />
+        </button>
+      </div>
+
+      <div className="tl-sep" />
+
+      {/* Group 2: Selection tools */}
+      <div className="tl-tool-group" role="radiogroup" aria-label="Editing tools">
         <button
           className={`tool-btn${toolId === 'selection' ? ' active' : ''}`}
           title="Select (V)"
@@ -56,6 +89,15 @@ export const TimelineToolbar = React.memo(function TimelineToolbar() {
           aria-checked={toolId === 'razor'}
         >
           <IconRazor size={15} />
+        </button>
+        <button
+          className={`tool-btn${toolId === 'ripple-trim' ? ' active' : ''}`}
+          title="Ripple Trim (T)"
+          onClick={() => engine.activateTool('ripple-trim')}
+          role="radio"
+          aria-checked={toolId === 'ripple-trim'}
+        >
+          <IconTrim size={15} />
         </button>
         <button
           className={`tool-btn${toolId === 'slip' ? ' active' : ''}`}
@@ -76,15 +118,6 @@ export const TimelineToolbar = React.memo(function TimelineToolbar() {
           <IconSlide size={15} />
         </button>
         <button
-          className={`tool-btn${toolId === 'ripple-trim' ? ' active' : ''}`}
-          title="Ripple (T)"
-          onClick={() => engine.activateTool('ripple-trim')}
-          role="radio"
-          aria-checked={toolId === 'ripple-trim'}
-        >
-          <IconTrim size={15} />
-        </button>
-        <button
           className={`tool-btn${toolId === 'hand' ? ' active' : ''}`}
           title="Hand (H)"
           onClick={() => engine.activateTool('hand')}
@@ -93,53 +126,36 @@ export const TimelineToolbar = React.memo(function TimelineToolbar() {
         >
           <IconHand size={15} />
         </button>
+        <button
+          className="tool-btn"
+          title="Snap"
+        >
+          <IconSnap size={15} />
+        </button>
       </div>
 
-      <div className="toolbar-sep" />
+      <div className="tl-sep" />
 
-      {/* Group 2: Position info */}
-      <div className="toolbar-info">
-        <span className="toolbar-position timecode">
-          {currentTimecode}
-          <span className="toolbar-sep-char">/</span>
-          {durationTimecode}
-        </span>
-      </div>
+      {/* Position display */}
+      <span className="toolbar-position">
+        <span>{currentTimecode}</span>
+        <span className="toolbar-sep-char">/</span>
+        <span>{durationTimecode}</span>
+      </span>
 
-      <div className="toolbar-spacer" />
+      <div className="tl-spacer" />
 
-      {/* Group 3: Zoom controls */}
+      {/* Zoom */}
       <ZoomControls ppf={ppf} onPpfChange={setPpf} />
 
-      <div className="toolbar-sep" />
+      <div className="tl-sep" />
 
-      {/* Group 4: Undo/Redo */}
-      <div className="toolbar-group">
-        <button
-          className="tool-btn"
-          title="Undo"
-          onClick={() => engine.undo()}
-          disabled={!history.canUndo}
-        >
-          <IconUndo size={15} />
-        </button>
-        <button
-          className="tool-btn"
-          title="Redo"
-          onClick={() => engine.redo()}
-          disabled={!history.canRedo}
-        >
-          <IconRedo size={15} />
-        </button>
-      </div>
-
-      <div className="toolbar-sep" />
-
-      {/* Group 5: Play/Pause */}
+      {/* Play in toolbar */}
       <button
         className={`tool-btn${isPlaying ? ' active' : ''}`}
         title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
-        onClick={() => (isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play())}
+        aria-pressed={isPlaying}
+        onClick={togglePlay}
       >
         {isPlaying ? <IconPlayerPause size={15} /> : <IconPlayerPlay size={15} />}
       </button>

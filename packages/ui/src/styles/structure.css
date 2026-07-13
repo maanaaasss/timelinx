@@ -11,7 +11,6 @@
 /* ── Editor shell ── */
 .timeline-editor {
   display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100%;
   min-height: 280px;
@@ -29,6 +28,45 @@
 }
 
 .timeline-editor * { box-sizing: border-box; }
+
+/* ── Main content area ── */
+.timeline-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Media browser ── */
+.timeline-media-browser {
+  width: 320px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+  overflow: hidden;
+}
+
+/* ── Preview area ── */
+.timeline-preview-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg-panel);
+}
+
+/* ── Timeline area ── */
+.timeline-area {
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-default);
+  background: var(--bg-app);
+}
 
 /* ── Toolbar ── */
 .tl-toolbar {
@@ -245,11 +283,10 @@
   position: sticky;
   top: 0;
   z-index: 25;
-  width: max-content;
-  min-width: 100%;
   height: var(--ruler-height);
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-faint);
+  overflow: hidden;
 }
 
 .timeline-track-canvas {
@@ -418,28 +455,39 @@
 }
 
 /* ── Clips ── */
-.tl-clip {
+.tl-clip-wrap {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  cursor: grab;
+  user-select: none;
+}
+
+.tl-clip-wrap:active {
+  cursor: grabbing;
+}
+
+.tl-clip-wrap.selected {
+  z-index: 10;
+}
+
+.tl-clip-wrap.selected .tl-clip {
+  border-color: var(--selection);
+  box-shadow: 0 0 0 2px var(--selection-ring), 0 0 10px var(--selection-glow), var(--shadow-sm);
+}
+
+.tl-clip {
+  position: relative;
   display: flex;
   align-items: center;
   min-width: 16px;
   padding: 0 var(--space-2);
   gap: 6px;
   overflow: hidden;
-  border-radius: var(--radius-sm);
-  cursor: grab;
-  user-select: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   transition:
-    transform var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out);
-}
-
-.tl-clip:active {
-  cursor: grabbing;
-  transform: scale(0.98);
 }
 
 .tl-clip--video {
@@ -478,23 +526,67 @@
   border-left: 3px solid var(--track-music);
 }
 
-/* Audio waveform bars — CSS-only */
-.tl-clip--audio::after {
-  content: '';
+/* Clip inner elements need z-index above thumbnails */
+.clip-type-icon,
+.clip-info,
+.clip-handle {
+  position: relative;
+  z-index: 1;
+}
+
+.tl-clip:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Clip filmstrip thumbnails ── */
+.clip-thumbnails {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.clip-thumb-frame {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  background:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(255,255,255,0.01) 40%,
+      rgba(0,0,0,0.05) 60%,
+      rgba(255,255,255,0.02) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(255,255,255,0.02) 8px,
+      rgba(255,255,255,0.02) 9px
+    );
+}
+
+.clip-thumb-frame:last-child {
+  border-right: none;
+}
+
+/* ── Clip waveform (audio) ── */
+.clip-waveform {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border-radius: inherit;
+  z-index: 0;
   background-image: repeating-linear-gradient(
     90deg,
     transparent 0px, transparent 2px,
-    var(--track-audio-border) 2px, var(--track-audio-border) 3px,
+    rgba(59,130,246,0.25) 2px, rgba(59,130,246,0.25) 3px,
     transparent 3px, transparent 5px,
-    var(--track-audio) 5px, var(--track-audio) 6px,
+    rgba(59,130,246,0.45) 5px, rgba(59,130,246,0.45) 6px,
     transparent 6px, transparent 9px,
-    var(--track-audio-border) 9px, var(--track-audio-border) 10px,
+    rgba(59,130,246,0.25) 9px, rgba(59,130,246,0.25) 10px,
     transparent 10px, transparent 13px,
-    var(--track-audio) 13px, var(--track-audio) 14px,
+    rgba(59,130,246,0.45) 13px, rgba(59,130,246,0.45) 14px,
     transparent 14px, transparent 16px
   );
   mask-image: linear-gradient(
@@ -506,14 +598,15 @@
   );
 }
 
-.tl-clip:hover {
-  box-shadow: var(--shadow-sm);
+/* ── Effect sub-rows ── */
+.clip-effect-row {
+  width: 100%;
+  border-radius: 0 0 var(--radius-xs) var(--radius-xs);
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
-.tl-clip.selected {
-  z-index: 10;
-  border-color: var(--selection);
-  box-shadow: 0 0 0 2px var(--selection-ring), 0 0 10px var(--selection-glow), var(--shadow-sm);
+.clip-effect-row.disabled {
+  opacity: 0.25;
 }
 
 .tl-clip.provisional {
@@ -600,6 +693,8 @@
   height: 100%;
   background: var(--bg-panel);
   user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ── Playhead ── */
@@ -616,31 +711,28 @@
 
 .tl-playhead-handle {
   position: absolute;
-  top: -6px;
+  top: -8px;
   left: 50%;
-  width: 12px;
-  height: 8px;
+  width: 14px;
+  height: 14px;
   transform: translateX(-50%);
   background: var(--playhead-color);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border-radius: var(--radius-full);
   box-shadow: var(--shadow-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tl-playhead-handle-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: rgba(0,0,0,0.4);
 }
 
 .tl-playhead--playing .tl-playhead {
   opacity: 0.85;
-}
-
-.tl-playhead-handle::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -4px;
-  width: 7px;
-  height: 7px;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--playhead-color);
-  border-right: 1px solid rgba(7,8,12,0.8);
-  border-bottom: 1px solid rgba(7,8,12,0.8);
 }
 
 /* ── Snap indicator ── */
@@ -789,7 +881,7 @@
   align-items: center;
   justify-content: space-between;
   height: var(--topbar-height);
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-6);
   border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
   background: var(--bg-panel);
@@ -847,10 +939,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--toolbar-height);
-  padding: 0 var(--space-4);
+  height: 56px;
+  padding: 0 var(--space-6);
   border-top: 1px solid var(--border-default);
-  background: var(--bg-panel);
+  background: var(--bg-app);
   flex-shrink: 0;
 }
 
@@ -871,7 +963,7 @@
 .transport-buttons {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-6);
   color: var(--text-primary);
 }
 
@@ -926,7 +1018,8 @@
    Left Sidebar (Icon + label stacked buttons)
    ============================================================ */
 
-.left-sidebar {
+.left-sidebar,
+.sidebar {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -937,6 +1030,12 @@
   flex-shrink: 0;
   background: var(--bg-panel);
   border-right: 1px solid var(--border-default);
+  scrollbar-width: none;
+}
+
+.left-sidebar::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-btn {
@@ -985,11 +1084,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-canvas);
+  flex: 1;
+  background: var(--bg-panel);
   border-bottom: 1px solid var(--border-faint);
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  padding: var(--space-6);
 }
 
 .preview-frame {
@@ -997,9 +1098,15 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 40px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, #0a1628 0%, #162544 50%, #1a3a5c 100%),
+    radial-gradient(circle at 20% 60%, rgba(255,200,100,0.15) 0%, transparent 40%),
+    radial-gradient(circle at 70% 40%, rgba(100,180,255,0.1) 0%, transparent 40%),
+    radial-gradient(circle at 40% 80%, rgba(255,150,50,0.1) 0%, transparent 30%);
 }
 
 .preview-label {
@@ -1078,6 +1185,14 @@
    Asset Bin — Thumbnail grid with toolbar
    ============================================================ */
 
+.asset-bin {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-app);
+  overflow: hidden;
+}
+
 .bin-header {
   display: flex;
   align-items: center;
@@ -1115,8 +1230,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-faint);
+  padding: var(--space-3) var(--space-3);
+  border-bottom: 1px solid rgba(var(--border-default-rgb, 51,56,66), 0.5);
   flex-shrink: 0;
 }
 
@@ -1170,7 +1285,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
-  padding: var(--space-2);
+  padding: var(--space-3);
   overflow-y: auto;
   flex: 1;
   align-content: start;

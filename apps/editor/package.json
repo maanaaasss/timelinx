@@ -15,6 +15,7 @@
   "dependencies": {
     "@timelinx/core": "workspace:*",
     "@timelinx/react": "workspace:*",
+    "@timelinx/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
