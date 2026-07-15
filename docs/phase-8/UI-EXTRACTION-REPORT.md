@@ -387,3 +387,60 @@ Full element-by-element comparison of showcase `index.html` against Stitch refer
 ### Note on Image Content
 
 The Stitch reference uses external `<img>` URLs (Google-hosted) for media thumbnails and video preview. The showcase intentionally replaces these with CSS gradient placeholders to avoid external dependencies. This is a deliberate design decision, not a visual mismatch — the gradients simulate the same dark, desaturated video-frame aesthetic.
+
+---
+
+## Pass 12 — Functional Feature Fixes (2026-07-13)
+
+### 1. Per-Clip Effect Layering (New Feature)
+
+**Root cause:** The `TimelineClip` component rendered a flat `<div>` with no awareness of effects. The `useClipEffects` hook existed in `@timelinx/react` but was never wired into the clip/track rendering pipeline. The `Clip` type has an optional `effects?: readonly Effect[]` field, but the UI ignored it entirely.
+
+**What was built:**
+- `TimelineClip` now reads `clip.effects` directly from the clip data (no extra hook needed — effects are already on the clip object passed as a prop).
+- Each effect renders as a thin colored sub-row beneath the main clip body, stacked vertically.
+- Effect colors come from a new shared utility `shared/effect-colors.ts` which maps effect types (`blur`, `brightness`, `contrast`, `saturation`, `hueRotate`, `colorCorrect`) to specific hex colors. This mapping was previously hardcoded as a local constant in `effects-panel.tsx` — now it's shared.
+- The clip wrapper (`.tl-clip-wrap`) is absolutely positioned and contains the main clip body + effect rows. The main clip body height is dynamically reduced when effects exist: `mainHeight = height - effectCount * EFFECT_ROW_HEIGHT - 2`.
+- Disabled effects render at 25% opacity; enabled at 70%.
+- A clip with 0 effects shows no extra rows. A clip with 4 effects shows 4 rows. Data-driven, not templated.
+- CSS classes: `.tl-clip-wrap`, `.clip-effect-row`, `.clip-effect-row.disabled`.
+
+**Files changed:**
+- `packages/ui/src/components/timeline-clip.tsx` — rewritten to render effect sub-rows
+- `packages/ui/src/shared/effect-colors.ts` — new shared color utility
+- `packages/ui/src/styles/structure.css` — new `.tl-clip-wrap`, `.clip-effect-row` styles
+- `packages/ui/src/components/effects-panel.tsx` — refactored to use shared `getEffectColor()`
+
+### 2. Preview Panel Regression
+
+**Root cause:** In the previous pass, the preview frame was changed from an atmospheric CSS gradient background to `background: #000` with a `<span className="preview-label">Preview</span>` text overlay. This was a regression introduced during the layout restructuring — the `preview-frame` class was rewritten to simplify it, and the atmospheric gradient (which simulates a dark cityscape with warm/cool light points) was replaced with a flat black background.
+
+**Fix:** Restored the atmospheric gradient on `.preview-frame`:
+```css
+background:
+  linear-gradient(180deg, #0a1628 0%, #162544 50%, #1a3a5c 100%),
+  radial-gradient(circle at 20% 60%, rgba(255,200,100,0.15) 0%, transparent 40%),
+  radial-gradient(circle at 70% 40%, rgba(100,180,255,0.1) 0%, transparent 40%),
+  radial-gradient(circle at 40% 80%, rgba(255,150,50,0.1) 0%, transparent 30%);
+```
+Also replaced the bare "Preview" text with the timecode overlay positioned at bottom-left, matching the reference's preview timecode placement.
+
+**Files changed:**
+- `packages/ui/src/styles/structure.css` — `.preview-frame` background restored
+- `packages/ui/src/components/timeline-editor.tsx` — preview content updated
+
+### 3. Timeline Clip Thumbnails
+
+**Root cause:** `TimelineClip` had zero thumbnail rendering code. It rendered only: type icon + clip name + timecode + trim handles. The filmstrip-style thumbnail treatment (tiled/repeated video-frame imagery across the clip width) existed only in the showcase HTML as inline `<img>` tags and was never ported to the React component. The `AssetBin` component had gradient placeholder thumbnails for its cards, but the timeline clips had no equivalent.
+
+**What was built:**
+- A `.clip-thumbnails` container renders inside each video/image clip, absolutely positioned to fill the clip body.
+- It tiles `Math.floor(width / 40)` thumbnail frames across the clip width, each as a `.clip-thumb-frame` div with a subtle CSS gradient simulating a dark video frame with tonal variation.
+- Each frame has a 1px right border for the filmstrip separation effect.
+- For audio clips, a `.clip-waveform` element renders the same repeating-gradient waveform pattern that was previously only on `.tl-clip--audio::after` (which has been removed in favor of the real element).
+- Clip inner elements (icon, name, timecode, handles) are given `z-index: 1` to render above the thumbnails.
+- The old `.tl-clip--audio::after` pseudo-element waveform was removed since it's now a real DOM element.
+
+**Files changed:**
+- `packages/ui/src/components/timeline-clip.tsx` — added thumbnail and waveform rendering
+- `packages/ui/src/styles/structure.css` — added `.clip-thumbnails`, `.clip-thumb-frame`, `.clip-waveform` styles; removed `.tl-clip--audio::after`

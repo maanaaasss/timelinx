@@ -1,7 +1,8 @@
 import React from 'react';
-import type { Clip } from '@timelinx/core';
+import type { Clip, Effect } from '@timelinx/core';
 import { IconVideo, IconMusic, IconSubtitle } from './icons';
 import { frameToTimecode } from '../shared/time';
+import { getEffectColor } from '../shared/effect-colors';
 
 export interface TimelineClipProps {
   clip: Clip;
@@ -24,6 +25,8 @@ function getClipIcon(trackType?: string) {
     default: return IconVideo;
   }
 }
+
+const EFFECT_ROW_HEIGHT = 6;
 
 export const TimelineClip = React.memo(function TimelineClip({
   clip,
@@ -48,40 +51,88 @@ export const TimelineClip = React.memo(function TimelineClip({
   const showMeta = width > 140;
   const showIcon = width > 50;
 
+  const effects: readonly Effect[] = clip.effects ?? [];
+  const effectCount = effects.length;
+  const mainHeight = effectCount > 0
+    ? height - effectCount * EFFECT_ROW_HEIGHT - 2
+    : height;
+
   return (
     <div
-      className={`tl-clip tl-clip--${trackType || 'video'} ${isSelected ? 'selected' : ''}${isProvisional ? ' provisional' : ''}${className ? ` ${className}` : ''}`}
+      className={`tl-clip-wrap${isSelected ? ' selected' : ''}`}
       data-clip-id={clip.id}
       data-track-id={trackId}
       style={{
+        position: 'absolute',
         left: `${start}px`,
         width: `${width}px`,
+        top: 0,
+        height: `${height}px`,
         ...style,
       }}
     >
+      {/* Trim handles at wrapper level so they span full height */}
       <div className="clip-handle clip-handle--left">
         <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-      </div>
-      {showIcon && (
-        <span className="clip-type-icon">
-          <IconComponent size={10} />
-        </span>
-      )}
-      <div className="clip-info">
-        {showName && <span className="clip-name">{clipName}</span>}
-        {showMeta && (
-          <span className="clip-timecode">
-            {frameToTimecode(clip.timelineStart as number, fps)}
-          </span>
-        )}
       </div>
       <div className="clip-handle clip-handle--right">
         <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </div>
+
+      {/* Main clip body */}
+      <div
+        className={`tl-clip tl-clip--${trackType || 'video'}${isProvisional ? ' provisional' : ''}${className ? ` ${className}` : ''}`}
+        style={{ height: `${mainHeight}px` }}
+      >
+        {/* Filmstrip thumbnails for video clips */}
+        {trackType !== 'audio' && trackType !== 'subtitle' && width > 30 && (
+          <div className="clip-thumbnails">
+            {Array.from({ length: Math.max(1, Math.floor(width / 40)) }, (_, i) => (
+              <div key={i} className="clip-thumb-frame" />
+            ))}
+          </div>
+        )}
+
+        {/* Audio waveform visualization */}
+        {(trackType === 'audio' || isAudio) && (
+          <div className="clip-waveform" />
+        )}
+
+        {showIcon && (
+          <span className="clip-type-icon">
+            <IconComponent size={10} />
+          </span>
+        )}
+        <div className="clip-info">
+          {showName && <span className="clip-name">{clipName}</span>}
+          {showMeta && (
+            <span className="clip-timecode">
+              {frameToTimecode(clip.timelineStart as number, fps)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Effect sub-rows */}
+      {effects.map((effect) => {
+        const color = getEffectColor(effect.effectType);
+        return (
+          <div
+            key={effect.id}
+            className={`clip-effect-row${effect.enabled ? '' : ' disabled'}`}
+            style={{
+              height: `${EFFECT_ROW_HEIGHT}px`,
+              background: color,
+              opacity: effect.enabled ? 0.7 : 0.25,
+            }}
+            title={`${effect.effectType}${effect.enabled ? '' : ' (disabled)'}`}
+          />
+        );
+      })}
     </div>
   );
 });

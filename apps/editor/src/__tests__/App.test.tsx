@@ -4,48 +4,39 @@ import App from '../App';
 
 describe('Editor App', () => {
   it('renders without crashing', () => {
-    render(<App />);
-    expect(screen.getByText('TimelineX Editor')).toBeDefined();
+    const { container } = render(<App />);
+    expect(container.querySelector('.timeline-editor')).not.toBeNull();
   });
 
-  it('displays the header', () => {
-    render(<App />);
-    expect(screen.getByText('TimelineX Editor')).toBeInTheDocument();
-    expect(screen.getByText('Milestone 2 — Effects, Transitions, Keyframes, Text Clips')).toBeInTheDocument();
+  it('renders the timeline editor shell', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('[role="application"]')).not.toBeNull();
   });
 
-  it('displays toolbar with tool buttons', () => {
+  it('renders sidebar buttons', () => {
     render(<App />);
-    expect(screen.getByText('V')).toBeInTheDocument();
-    expect(screen.getByText('B')).toBeInTheDocument();
-    expect(screen.getByText('R')).toBeInTheDocument();
+    expect(screen.getByText('Media')).toBeInTheDocument();
+    expect(screen.getByText('Video')).toBeInTheDocument();
+    expect(screen.getByText('Audio')).toBeInTheDocument();
   });
 
-  it('displays undo/redo buttons', () => {
+  it('renders the top nav project name', () => {
     render(<App />);
-    expect(screen.getByText('Undo')).toBeInTheDocument();
-    expect(screen.getByText('Redo')).toBeInTheDocument();
+    expect(screen.getByText('Video Popular Vlog_Duplicate')).toBeInTheDocument();
   });
 
-  it('displays track labels', () => {
-    render(<App />);
-    expect(screen.getByText('V1 — Main')).toBeInTheDocument();
-    expect(screen.getByText('V2 — Overlay')).toBeInTheDocument();
-    expect(screen.getByText('A1 — Music')).toBeInTheDocument();
+  it('renders transport controls', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('.transport-controls')).not.toBeNull();
   });
 
-  it('displays right panel with tabs', () => {
-    render(<App />);
-    expect(screen.getAllByText('Inspector').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Effects')).toBeInTheDocument();
-    expect(screen.getByText('Transitions')).toBeInTheDocument();
-    expect(screen.getByText('Keyframes')).toBeInTheDocument();
-    expect(screen.getByText('Text')).toBeInTheDocument();
+  it('renders the timeline toolbar', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('.tl-toolbar')).not.toBeNull();
   });
 
-  it('displays status bar', () => {
-    render(<App />);
-    expect(screen.getByText('Position:')).toBeInTheDocument();
-    expect(screen.getByText('Tool:')).toBeInTheDocument();
+  it('renders the timeline ruler', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('.timeline-ruler')).not.toBeNull();
   });
 });

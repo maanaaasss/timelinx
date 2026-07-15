@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import type { Asset, AssetId } from '@timelinx/core';
+import { Upload, Grid3X3, SlidersHorizontal, Filter } from 'lucide-react';
 
 const PLACEHOLDER_GRADIENTS: Record<string, string> = {
   video: 'bin-thumb--interview',
@@ -67,33 +68,20 @@ export const AssetBin = React.memo(function AssetBin({
     <div className={`asset-bin${className ? ` ${className}` : ''}`}>
       <div className="bin-toolbar">
         <button className="bin-upload-btn" onClick={handleImport} title="Import assets">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
+          <Upload size={14} />
           <span>Upload</span>
         </button>
         <div className="bin-controls">
           <button className="bin-control-btn" title="Grid view">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <rect x="14" y="14" width="7" height="7" />
-            </svg>
+            <Grid3X3 size={14} />
           </button>
           <button className="bin-control-btn" title="Sort">
             <span>Sort</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-            </svg>
+            <SlidersHorizontal size={10} />
           </button>
           <button className="bin-control-btn" title="Filter">
             <span>All</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
-            </svg>
+            <Filter size={10} />
           </button>
         </div>
       </div>

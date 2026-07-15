@@ -1,869 +1,336 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Timelinex Editor — Showcase</title>
-  <link rel="stylesheet" href="../src/presets/dark-pro.css">
-  <link rel="stylesheet" href="../src/styles/structure.css">
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-    body {
-      display: flex; align-items: center; justify-content: center;
-      background: #0a0b0e; font-family: var(--font-sans);
-      -webkit-font-smoothing: antialiased;
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Editor UI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-utilities">
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-    .editor-shell {
-      display: flex; width: 100%; height: 100%;
-      max-width: 1440px; max-height: 900px;
-      background: var(--bg-app); color: var(--text-secondary);
-      border-radius: 16px; overflow: hidden;
-      box-shadow: 0 32px 80px -16px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
     }
-    /* SIDEBAR */
-    .editor-sidebar {
-      display: flex; flex-direction: column; align-items: center;
-      width: 72px; padding: 12px 0; gap: 2px;
-      overflow-y: auto; flex-shrink: 0;
-      background: var(--bg-panel); border-right: 1px solid var(--border-default);
-    }
-    .editor-sidebar::-webkit-scrollbar { display: none; }
-    .sidebar-tool-btn {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      width: 52px; height: 52px; border: none; border-radius: 10px;
-      background: transparent; color: var(--text-tertiary); cursor: pointer; gap: 4px;
-      transition: background 0.15s, color 0.15s; position: relative;
-    }
-    .sidebar-tool-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
-    .sidebar-tool-btn.active { background: var(--accent-subtle); color: var(--accent); }
-    .sidebar-tool-btn.active::before {
-      content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 24px; background: var(--accent); border-radius: 0 3px 3px 0;
-    }
-    .sidebar-tool-btn svg { width: 18px; height: 18px; }
-    .sidebar-tool-btn span { font-size: 9px; font-weight: 500; letter-spacing: 0.2px; }
-    .sidebar-spacer { flex: 1; }
-    .sidebar-divider { width: 32px; height: 1px; background: var(--border-faint); margin: 4px 0; }
-    /* MAIN */
-    .editor-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-    /* TOP NAV */
-    .top-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      height: 48px; padding: 0 20px; border-bottom: 1px solid var(--border-default);
-      flex-shrink: 0; background: var(--bg-panel);
-    }
-    .top-nav-left { display: flex; align-items: center; gap: 6px; color: var(--text-tertiary); min-width: 160px; }
-    .nav-breadcrumb { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-tertiary); }
-    .nav-breadcrumb-sep { opacity: 0.4; }
-    .nav-breadcrumb span:last-child { color: var(--text-secondary); }
-    .nav-icon-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 28px; height: 28px; border: none; border-radius: 6px;
-      background: transparent; color: var(--text-tertiary); cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-    .nav-icon-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
-    .nav-icon-btn svg { width: 15px; height: 15px; }
-    .top-nav-center {
-      display: flex; align-items: center; gap: 6px; cursor: pointer;
-      padding: 4px 10px; border-radius: 8px; transition: background 0.15s;
-    }
-    .top-nav-center:hover { background: var(--bg-hover); }
-    .top-nav-center svg { width: 14px; height: 14px; color: var(--text-tertiary); }
-    .project-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-    .project-badge {
-      font-size: 10px; color: var(--text-tertiary); background: var(--bg-subtle);
-      border: 1px solid var(--border-faint); border-radius: 4px; padding: 1px 5px;
-    }
-    .chevron-icon { width: 14px; height: 14px; color: var(--text-tertiary); }
-    .top-nav-right { display: flex; align-items: center; gap: 8px; min-width: 160px; justify-content: flex-end; }
-    .export-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 14px; border: none; border-radius: 7px;
-      background: var(--accent); color: #fff; font-size: 12px; font-weight: 600;
-      cursor: pointer; transition: background 0.15s, transform 0.1s;
-      box-shadow: 0 2px 8px rgba(59,130,246,0.35);
-    }
-    .export-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .export-btn svg { width: 14px; height: 14px; }
-    /* WORKSPACE SPLIT */
-    .workspace-split { display: flex; flex: 1; min-height: 0; }
-    /* MEDIA BROWSER */
-    .media-browser {
-      width: 256px; border-right: 1px solid var(--border-default);
-      display: flex; flex-direction: column; background: var(--bg-panel); flex-shrink: 0;
-    }
-    .media-browser-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; border-bottom: 1px solid var(--border-faint);
-    }
-    .media-browser-title {
-      font-size: 11px; font-weight: 600; color: var(--text-secondary);
-      text-transform: uppercase; letter-spacing: 0.6px;
-    }
-    .media-toolbar {
-      display: flex; align-items: center; gap: 6px;
-      padding: 8px 10px; border-bottom: 1px solid var(--border-faint);
-    }
-    .media-upload-btn {
-      display: flex; align-items: center; gap: 5px; padding: 5px 10px;
-      border: 1px solid var(--border-subtle); border-radius: 6px;
-      background: var(--bg-surface); color: var(--text-primary);
-      font-size: 11px; font-weight: 500; cursor: pointer;
-      box-shadow: var(--shadow-xs); transition: background 0.15s;
-    }
-    .media-upload-btn:hover { background: var(--bg-hover); }
-    .media-upload-btn svg { width: 12px; height: 12px; }
-    .media-controls { display: flex; align-items: center; gap: 3px; margin-left: auto; }
-    .media-control-btn {
-      display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px;
-      border: 1px solid var(--border-faint); border-radius: 5px; background: transparent;
-      color: var(--text-tertiary); font-size: 10px; cursor: pointer;
-      transition: background 0.15s, color 0.15s;
-    }
-    .media-control-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
-    .media-control-btn svg { width: 11px; height: 11px; }
-    .media-search-wrap {
-      padding: 6px 10px; border-bottom: 1px solid var(--border-faint); position: relative;
-    }
-    .media-search-icon {
-      position: absolute; left: 19px; top: 50%; transform: translateY(-50%);
-      color: var(--text-tertiary); pointer-events: none;
-    }
-    .media-search-icon svg { width: 11px; height: 11px; }
-    .media-search {
-      width: 100%; padding: 5px 8px 5px 26px; border: 1px solid var(--border-faint);
-      border-radius: 6px; background: var(--bg-subtle); color: var(--text-secondary);
-      font-size: 11px; font-family: var(--font-sans); outline: none; box-sizing: border-box;
-      transition: border-color 0.15s;
-    }
-    .media-search::placeholder { color: var(--text-disabled); }
-    .media-search:focus { border-color: var(--accent); }
-    .media-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px; padding: 10px; overflow-y: auto; flex: 1; align-content: start;
-    }
-    .media-grid::-webkit-scrollbar { width: 3px; }
-    .media-grid::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
-    .media-card {
-      display: flex; flex-direction: column; gap: 4px; padding: 5px;
-      border-radius: 7px; background: var(--bg-surface);
-      border: 1px solid var(--border-faint); cursor: pointer;
-      transition: border-color 0.15s, transform 0.15s;
-    }
-    .media-card:hover { border-color: var(--border-subtle); transform: translateY(-1px); }
-    .media-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-subtle); }
-    .media-thumb { aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; position: relative; }
-    .media-thumb-overlay {
-      position: absolute; inset: 0; background: transparent; transition: background 0.15s;
-    }
-    .media-card:hover .media-thumb-overlay { background: rgba(59,130,246,0.08); }
-    .media-thumb-duration {
-      position: absolute; bottom: 4px; right: 4px; padding: 1px 5px;
-      border-radius: 3px; background: rgba(0,0,0,0.65);
-      font-size: 9px; font-family: var(--font-mono); color: #e5e7eb;
-    }
-    .media-thumb-type {
-      position: absolute; top: 4px; left: 4px; width: 16px; height: 16px;
-      border-radius: 3px; background: rgba(0,0,0,0.55);
-      display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.7);
-    }
-    .media-thumb-type svg { width: 9px; height: 9px; }
-    .media-card-name { font-size: 10px; font-weight: 500; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
-    .media-card-meta { font-size: 9px; color: var(--text-tertiary); padding: 0 2px; }
-    .thumb-interview { background: linear-gradient(145deg, #1a0f2e 0%, #2d1b4e 60%, #1a1033 100%); }
-    .thumb-cityscape { background: linear-gradient(180deg, #0a1628 0%, #162544 50%, #1e3a60 100%); }
-    .thumb-hands { background: linear-gradient(135deg, #2a1d13 0%, #3d2b1f 50%, #2a1508 100%); }
-    .thumb-graphic { background: conic-gradient(from 45deg at 50% 50%, #1e3a5f, #3b82f6, #6366f1, #a78bfa, #ec4899, #f59e0b, #10b981, #1e3a5f); filter: saturate(0.5) brightness(0.45); }
-    .thumb-audio { background: linear-gradient(180deg, #0a1a0a 0%, #0f2a0f 100%); }
-    .thumb-voiceover { background: linear-gradient(180deg, #1a1508 0%, #2a1f0d 100%); }
-    /* PREVIEW */
-    .preview-area { flex: 1; display: flex; flex-direction: column; background: #0e0f14; position: relative; min-width: 0; }
-    .preview-main { flex: 1; padding: 20px 16px 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-    .volume-bar {
-      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-      display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 6px;
-      background: rgba(20,22,30,0.7); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; backdrop-filter: blur(12px); z-index: 10;
-    }
-    .volume-icon-btn { color: rgba(255,255,255,0.45); cursor: pointer; background:none; border:none; padding:0; display:flex; align-items:center; }
-    .volume-icon-btn svg { width: 13px; height: 13px; }
-    .volume-icon-btn:hover { color: rgba(255,255,255,0.8); }
-    .volume-track { width: 4px; height: 100px; border-radius: 99px; background: rgba(255,255,255,0.1); position: relative; cursor: pointer; }
-    .volume-fill { position: absolute; bottom: 0; left: 0; width: 100%; border-radius: 99px; background: #a3e635; height: 70%; }
-    .volume-thumb { position: absolute; bottom: calc(70% - 5px); left: 50%; transform: translateX(-50%); width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.4); cursor: grab; }
-    .volume-label { font-size: 9px; font-family: var(--font-mono); color: rgba(255,255,255,0.3); }
-    .preview-frame { position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; box-shadow: 0 20px 60px -12px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.07); }
-    .preview-frame-inner { width: 100%; height: 100%; background: linear-gradient(180deg, #0a1628 0%, #162544 40%, #1e3a5f 70%, #0a1628 100%); }
-    .preview-safe-area { position: absolute; inset: 5%; border: 1px dashed rgba(255,255,255,0.1); border-radius: 2px; pointer-events: none; }
-    .preview-timecode-overlay { position: absolute; bottom: 10px; left: 12px; font-size: 11px; font-family: var(--font-mono); font-weight: 500; color: rgba(255,255,255,0.75); text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
-    .preview-res-badge { position: absolute; top: 10px; right: 10px; font-size: 9px; font-family: var(--font-mono); color: rgba(255,255,255,0.3); background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 3px; }
-    /* PLAYER CONTROLS */
-    .player-controls { display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 20px; border-top: 1px solid var(--border-default); background: var(--bg-panel); flex-shrink: 0; }
-    .player-left { display: flex; align-items: center; gap: 8px; min-width: 140px; }
-    .player-timecode { display: flex; align-items: center; gap: 3px; font-family: var(--font-mono); font-size: 12px; cursor: pointer; padding: 3px 8px; border-radius: 5px; background: var(--bg-subtle); transition: background 0.15s; }
-    .player-timecode:hover { background: var(--bg-hover); }
-    .player-timecode-current { color: var(--text-primary); font-weight: 500; }
-    .player-timecode-sep { color: var(--text-disabled); }
-    .player-timecode-total { color: var(--text-tertiary); }
-    .player-buttons { display: flex; align-items: center; gap: 20px; color: var(--text-primary); }
-    .player-btn { display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; color: inherit; cursor: pointer; padding: 0; transition: color 0.15s, transform 0.1s; border-radius: 4px; }
-    .player-btn:hover { color: var(--accent); }
-    .player-btn:active { transform: scale(0.9); }
-    .player-btn svg { width: 18px; height: 18px; }
-    .player-btn-play { width: 36px; height: 36px; background: var(--text-primary); color: var(--bg-app) !important; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: background 0.15s, transform 0.1s !important; }
-    .player-btn-play:hover { background: var(--accent) !important; transform: scale(1.06) !important; }
-    .player-btn-play svg { width: 16px; height: 16px; margin-left: 2px; }
-    .player-right { display: flex; align-items: center; gap: 12px; min-width: 140px; justify-content: flex-end; }
-    .player-right-btn { display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--text-tertiary); cursor: pointer; padding: 0; transition: color 0.15s; }
-    .player-right-btn:hover { color: var(--text-secondary); }
-    .player-right-btn svg { width: 16px; height: 16px; }
-    .player-speed-btn { font-size: 11px; font-family: var(--font-mono); font-weight: 600; color: var(--text-tertiary); padding: 2px 6px; border: 1px solid var(--border-faint); border-radius: 5px; background: var(--bg-subtle); cursor: pointer; transition: color 0.15s, border-color 0.15s; }
-    .player-speed-btn:hover { color: var(--text-secondary); border-color: var(--border-subtle); }
-    /* TIMELINE */
-    .timeline-area { height: 296px; border-top: 1px solid var(--border-default); background: var(--bg-app); display: flex; flex-direction: column; flex-shrink: 0; }
-    .timeline-toolbar { height: 44px; border-bottom: 1px solid var(--border-default); background: var(--bg-panel); display: flex; align-items: center; justify-content: space-between; padding: 0 14px; z-index: 20; flex-shrink: 0; gap: 6px; }
-    .tl-tools-left { display: flex; align-items: center; gap: 4px; }
-    .tl-tools-right { display: flex; align-items: center; gap: 4px; }
-    .tl-tools-group { display: flex; align-items: center; gap: 1px; }
-    .tl-sep { width: 1px; height: 18px; background: var(--border-faint); flex-shrink: 0; margin: 0 3px; }
-    .tl-tool-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: none; border-radius: 5px; background: transparent; color: var(--text-tertiary); cursor: pointer; transition: color 0.15s, background 0.15s; }
-    .tl-tool-btn:hover { color: var(--text-secondary); background: var(--bg-hover); }
-    .tl-tool-btn.active { color: var(--accent); background: var(--accent-subtle); }
-    .tl-tool-btn.danger:hover { color: var(--color-danger); background: var(--color-danger-subtle); }
-    .tl-tool-btn svg { width: 14px; height: 14px; }
-    .tl-tool-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); white-space: nowrap; }
-    .zoom-control { display: flex; align-items: center; gap: 4px; }
-    .zoom-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 1px solid var(--border-faint); border-radius: 4px; background: transparent; color: var(--text-tertiary); cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; }
-    .zoom-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
-    .zoom-btn svg { width: 11px; height: 11px; }
-    .zoom-slider-input { width: 70px; height: 3px; accent-color: var(--accent); cursor: pointer; }
-    .zoom-level-pill { font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); background: var(--bg-subtle); padding: 2px 5px; border-radius: 4px; min-width: 30px; text-align: center; }
-    /* TIMELINE BODY */
-    .timeline-body { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-    /* TRACK HEADERS COL */
-    .track-headers-col { width: 176px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--bg-panel); border-right: 1px solid var(--border-default); z-index: 10; }
-    .ruler-header-spacer { height: 28px; border-bottom: 1px solid var(--border-default); display: flex; align-items: center; padding: 0 10px; flex-shrink: 0; gap: 5px; }
-    .ruler-timecode { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); letter-spacing: 0.3px; }
-    .track-header-item { display: flex; align-items: center; padding: 0 8px 0 10px; gap: 7px; color: var(--text-tertiary); border-bottom: 1px solid var(--border-faint); position: relative; flex-shrink: 0; }
-    .track-header-item::before { content: ''; position: absolute; left: 0; top: 25%; bottom: 25%; width: 2px; border-radius: 0 2px 2px 0; }
-    .track-header-item.track-video::before { background: #374151; }
-    .track-header-item.track-audio::before { background: #3b82f6; }
-    .track-header-item.track-effect::before { background: #10b981; }
-    .track-header-item.track-music::before { background: #6366f1; }
-    .track-type-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; }
-    .track-video .track-type-icon { color: #374151; }
-    .track-audio .track-type-icon { color: #3b82f6; }
-    .track-effect .track-type-icon { color: #10b981; }
-    .track-music .track-type-icon { color: #6366f1; }
-    .track-type-icon svg { width: 12px; height: 12px; }
-    .track-label-info { flex: 1; min-width: 0; overflow: hidden; }
-    .track-label-name { font-size: 11px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .track-label-sub { font-size: 9px; color: var(--text-disabled); white-space: nowrap; }
-    .track-ctrl-btns { display: flex; align-items: center; gap: 1px; opacity: 0; transition: opacity 0.15s; }
-    .track-header-item:hover .track-ctrl-btns { opacity: 1; }
-    .track-ctrl-btn { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: none; background: transparent; color: var(--text-disabled); cursor: pointer; transition: color 0.15s; border-radius: 3px; }
-    .track-ctrl-btn:hover { color: var(--text-secondary); background: var(--bg-hover); }
-    .track-ctrl-btn.muted { color: var(--color-warning); }
-    .track-ctrl-btn.locked { color: var(--accent); }
-    .track-ctrl-btn svg { width: 11px; height: 11px; }
-    .add-track-btn { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 10px; margin: 6px 8px; border: 1px dashed var(--border-faint); border-radius: 6px; background: transparent; color: var(--text-disabled); font-size: 10px; font-family: var(--font-sans); cursor: pointer; transition: border-color 0.15s, color 0.15s, background 0.15s; }
-    .add-track-btn:hover { border-color: var(--border-subtle); color: var(--text-tertiary); background: var(--bg-hover); }
-    .add-track-btn svg { width: 11px; height: 11px; }
-    /* SCROLL WRAP */
-    .timeline-scroll-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-    /* RULER */
-    .ruler-row { height: 28px; border-bottom: 1px solid var(--border-default); background: var(--bg-panel); flex-shrink: 0; position: relative; overflow: hidden; }
-    .ruler-ticks { display: flex; align-items: flex-end; height: 100%; padding: 0 0; gap: 0; }
-    .ruler-tick-group { flex: 1; display: flex; flex-direction: column; align-items: flex-start; position: relative; }
-    .ruler-tick-group::before { content: ''; position: absolute; left: 0; bottom: 0; width: 1px; height: 6px; background: var(--border-faint); }
-    .ruler-tick-group.major::before { height: 11px; background: var(--border-subtle); }
-    .ruler-label { font-family: var(--font-mono); font-size: 9px; color: var(--text-disabled); white-space: nowrap; position: absolute; bottom: 13px; left: 3px; }
-    .ruler-tick-group.major .ruler-label { color: var(--text-tertiary); font-size: 9.5px; }
-    /* PLAYHEAD */
-    .playhead-line { position: absolute; top: 0; bottom: 0; left: 38%; width: 1px; background: #fff; z-index: 30; pointer-events: none; }
-    .playhead-head { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #fff; }
-    /* TRACKS */
-    .tracks-scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
-    .tracks-scroll-area::-webkit-scrollbar { width: 4px; }
-    .tracks-scroll-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 99px; }
-    .tracks-playhead-overlay { position: absolute; top: 0; bottom: 0; left: 38%; width: 1px; background: rgba(255,255,255,0.45); z-index: 25; pointer-events: none; }
-    .track-row { display: flex; align-items: center; border-bottom: 1px solid rgba(51,56,66,0.15); position: relative; }
-    .track-row:nth-child(even) { background: rgba(255,255,255,0.012); }
-    /* CLIPS */
-    .clip { border-radius: 4px; display: flex; align-items: center; overflow: hidden; position: absolute; top: 4px; bottom: 4px; cursor: grab; }
-    .clip:active { cursor: grabbing; }
-    .clip:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-    .clip-inner { display: flex; align-items: center; gap: 5px; padding: 0 7px; min-width: 0; flex: 1; overflow: hidden; position: relative; z-index: 2; }
-    .clip-icon-wrap { display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 3px; background: rgba(0,0,0,0.2); flex-shrink: 0; }
-    .clip-icon-wrap svg { width: 10px; height: 10px; }
-    .clip-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .clip-duration { font-size: 9px; font-family: var(--font-mono); color: rgba(255,255,255,0.38); margin-left: auto; flex-shrink: 0; }
-    .clip-video { background: rgba(55,65,81,0.65); border: 1px solid rgba(55,65,81,0.5); border-left: 3px solid #374151; }
-    .clip-video-dim { opacity: 0.55; }
-    .clip-audio { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.38); border-left: 3px solid #3b82f6; }
-    .clip-effect { background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.32); border-left: 3px solid #10b981; }
-    .clip-music { background: rgba(99,102,241,0.18); border: 1px solid rgba(99,102,241,0.38); border-left: 3px solid #6366f1; }
-    .clip-selected { outline: 2px solid #eab308; outline-offset: -1px; box-shadow: 0 0 14px rgba(234,179,8,0.25) !important; z-index: 20; }
-    .clip-handle { position: absolute; top: 0; bottom: 0; width: 7px; background: #eab308; display: flex; align-items: center; justify-content: center; cursor: ew-resize; opacity: 0; transition: opacity 0.15s; }
-    .clip-selected .clip-handle { opacity: 1; }
-    .clip-handle-l { left: 0; border-radius: 4px 0 0 4px; }
-    .clip-handle-r { right: 0; border-radius: 0 4px 4px 0; }
-    .clip-handle svg { width: 6px; height: 6px; color: rgba(0,0,0,0.6); }
-    .clip-thumbs-strip { position: absolute; inset: 0; display: flex; overflow: hidden; border-radius: inherit; opacity: 0.3; }
-    .clip-thumb-seg { flex-shrink: 0; height: 100%; }
-    .clip-thumb-a { background: linear-gradient(135deg, #2d1b4e 0%, #1a1033 40%, #3d2066 70%, #1a1033 100%); }
-    .clip-thumb-b { background: linear-gradient(135deg, #162544 0%, #0a1628 40%, #1e3a5f 70%, #0a1628 100%); }
-    .clip-thumb-c { background: linear-gradient(135deg, #2a1d13 0%, #3d2b1f 40%, #2a1508 70%); }
-    .audio-waveform-bg { position: absolute; inset: 0; pointer-events: none; background-image: repeating-linear-gradient(90deg, transparent 0px, transparent 2px, rgba(59,130,246,0.22) 2px, rgba(59,130,246,0.22) 3px, transparent 3px, transparent 5px, rgba(59,130,246,0.45) 5px, rgba(59,130,246,0.45) 6px, transparent 6px, transparent 9px); mask-image: linear-gradient(180deg, transparent 15%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.5) 70%, transparent 85%); border-radius: inherit; }
-    .clip-transition { position: absolute; top: 6px; bottom: 6px; width: 10px; background: rgba(163,230,53,0.25); border: 1px solid rgba(163,230,53,0.45); border-radius: 3px; z-index: 15; cursor: pointer; }
   </style>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            editor: {
+              bg: '#1c1f26',
+              sidebar: '#14151a',
+              panel: '#23262f',
+              border: '#333842',
+              text: '#9ca3af',
+              textActive: '#ffffff',
+              accent: '#3b82f6',
+              track: {
+                bg: '#1e2128',
+                video: '#374151',
+                audio: '#3b82f6',
+                effect: '#10b981',
+                music: '#6366f1',
+                yellow: '#eab308',
+                green: '#22c55e'
+              }
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
-<div class="editor-shell">
-
-  <!-- SIDEBAR -->
-  <aside class="editor-sidebar">
-    <button class="sidebar-tool-btn active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-      <span>Media</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-      <span>Video</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      <span>Photo</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      <span>Audio</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-      <span>Text</span>
-    </button>
-    <div class="sidebar-divider"></div>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-      <span>Trans.</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-      <span>Effect</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-      <span>Adjust</span>
-    </button>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      <span>Sticker</span>
-    </button>
-    <div class="sidebar-spacer"></div>
-    <div class="sidebar-divider"></div>
-    <button class="sidebar-tool-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      <span>Settings</span>
-    </button>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="editor-main">
-
-    <!-- TOP NAV -->
-    <header class="top-nav">
-      <div class="top-nav-left">
-        <button class="nav-icon-btn" title="Back">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
-        </button>
-        <div class="nav-breadcrumb">
-          <span>Projects</span>
-          <span class="nav-breadcrumb-sep">›</span>
-          <span>Vlog Series</span>
-        </div>
-      </div>
-      <div class="top-nav-center">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--text-tertiary);"><path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-        <span class="project-name">Popular Vlog Ep.03</span>
-        <span class="project-badge">Duplicate</span>
-        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="top-nav-right">
-        <button class="nav-icon-btn" title="Save (⌘S)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        </button>
-        <button class="nav-icon-btn" title="Share">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
-        <button class="export-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-          Export
-        </button>
-      </div>
-    </header>
-
-    <!-- WORKSPACE SPLIT -->
-    <div class="workspace-split">
-
-      <!-- MEDIA BROWSER -->
-      <div class="media-browser">
-        <div class="media-browser-header">
-          <span class="media-browser-title">Media</span>
-          <button class="nav-icon-btn" title="Close">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="media-toolbar">
-          <button class="media-upload-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Upload
-          </button>
-          <div class="media-controls">
-            <button class="media-control-btn" title="Grid">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            </button>
-            <button class="media-control-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
-              Sort
-            </button>
-          </div>
-        </div>
-        <div class="media-search-wrap">
-          <div class="media-search-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </div>
-          <input type="text" class="media-search" placeholder="Search clips…">
-        </div>
-        <div class="media-grid">
-          <div class="media-card selected">
-            <div class="media-thumb thumb-interview">
-              <div class="media-thumb-type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
-              <div class="media-thumb-overlay"></div>
-              <div class="media-thumb-duration">00:05</div>
-            </div>
-            <div class="media-card-name">Interview Scene</div>
-            <div class="media-card-meta">4K · H.264</div>
-          </div>
-          <div class="media-card">
-            <div class="media-thumb thumb-cityscape">
-              <div class="media-thumb-type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
-              <div class="media-thumb-overlay"></div>
-              <div class="media-thumb-duration">00:12</div>
-            </div>
-            <div class="media-card-name">City Timelapse</div>
-            <div class="media-card-meta">1080p · MP4</div>
-          </div>
-          <div class="media-card">
-            <div class="media-thumb thumb-hands">
-              <div class="media-thumb-type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
-              <div class="media-thumb-overlay"></div>
-              <div class="media-thumb-duration">00:08</div>
-            </div>
-            <div class="media-card-name">Closeup Hands</div>
-            <div class="media-card-meta">4K · MOV</div>
-          </div>
-          <div class="media-card">
-            <div class="media-thumb thumb-graphic">
-              <div class="media-thumb-type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
-              <div class="media-thumb-overlay"></div>
-              <div class="media-thumb-duration">00:03</div>
-            </div>
-            <div class="media-card-name">Graphic Intro</div>
-            <div class="media-card-meta">1080p · MP4</div>
-          </div>
-          <div class="media-card">
-            <div class="media-thumb thumb-audio" style="display:flex;align-items:center;justify-content:center;">
-              <div class="media-thumb-overlay"></div>
-              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(59,130,246,0.45)" stroke-width="1.5" width="26" height="26"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-              <div class="media-thumb-duration">01:24</div>
-            </div>
-            <div class="media-card-name">Ambient Bed</div>
-            <div class="media-card-meta">MP3 · 320kbps</div>
-          </div>
-          <div class="media-card">
-            <div class="media-thumb thumb-voiceover" style="display:flex;align-items:center;justify-content:center;">
-              <div class="media-thumb-overlay"></div>
-              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(234,179,8,0.45)" stroke-width="1.5" width="26" height="26"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
-              <div class="media-thumb-duration">00:47</div>
-            </div>
-            <div class="media-card-name">Voiceover.wav</div>
-            <div class="media-card-meta">WAV · 48kHz</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PREVIEW AREA -->
-      <div class="preview-area">
-        <div class="preview-main">
-          <div class="volume-bar">
-            <button class="volume-icon-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-            </button>
-            <div class="volume-track">
-              <div class="volume-fill"></div>
-              <div class="volume-thumb"></div>
-            </div>
-            <div class="volume-label">70%</div>
-          </div>
-          <div class="preview-frame">
-            <div class="preview-frame-inner"></div>
-            <div class="preview-safe-area"></div>
-            <div class="preview-timecode-overlay">00:01:23:14</div>
-            <div class="preview-res-badge">1920×1080</div>
-          </div>
-        </div>
-        <div class="player-controls">
-          <div class="player-left">
-            <div class="player-timecode">
-              <span class="player-timecode-current">00:01:23:14</span>
-              <span class="player-timecode-sep">/</span>
-              <span class="player-timecode-total">00:01:48:06</span>
-            </div>
-          </div>
-          <div class="player-buttons">
-            <button class="player-btn" title="Jump to start">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
-            </button>
-            <button class="player-btn" title="Step back (←)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button class="player-btn player-btn-play" title="Play/Pause (Space)">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-            <button class="player-btn" title="Step forward (→)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button class="player-btn" title="Jump to end">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-          <div class="player-right">
-            <button class="player-speed-btn">1×</button>
-            <button class="player-right-btn" title="Volume">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-            </button>
-            <button class="player-right-btn" title="Fullscreen">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TIMELINE AREA -->
-    <div class="timeline-area">
-      <!-- Timeline Toolbar -->
-      <div class="timeline-toolbar">
-        <div class="tl-tools-left">
-          <div class="tl-tools-group">
-            <button class="tl-tool-btn" title="Undo (⌘Z)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-            </button>
-            <button class="tl-tool-btn" title="Redo (⌘⇧Z)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"/></svg>
-            </button>
-          </div>
-          <div class="tl-sep"></div>
-          <div class="tl-tools-group">
-            <button class="tl-tool-btn active" title="Select (V)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-7 1-3 7z"/></svg>
-            </button>
-            <button class="tl-tool-btn" title="Ripple (R)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
-            </button>
-            <button class="tl-tool-btn" title="Razor (C)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
-            </button>
-            <button class="tl-tool-btn" title="Hand (H)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 00-4 0v1M14 10V4a2 2 0 00-4 0v6M10 9.5V4a2 2 0 00-4 0v10"/><path d="M18 11a2 2 0 014 0v3a8 8 0 01-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 012.83-2.82L7 15"/></svg>
-            </button>
-          </div>
-          <div class="tl-sep"></div>
-          <button class="tl-tool-btn danger" title="Delete (Del)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </button>
-          <div class="tl-sep"></div>
-          <button class="tl-tool-btn" title="Toggle audio">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-          </button>
-          <span class="tl-tool-label">Sound</span>
-        </div>
-        <div class="tl-tools-right">
-          <button class="tl-tool-btn active" title="Snap to grid">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
-          </button>
-          <div class="tl-sep"></div>
-          <div class="zoom-control">
-            <button class="zoom-btn" title="Zoom out (-)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            </button>
-            <input type="range" class="zoom-slider-input" min="10" max="200" value="75">
-            <button class="zoom-btn" title="Zoom in (+)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-            </button>
-            <span class="zoom-level-pill">75%</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Timeline Body -->
-      <div class="timeline-body">
-        <!-- Track Headers Column -->
-        <div class="track-headers-col">
-          <div class="ruler-header-spacer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="color:var(--text-disabled);flex-shrink:0;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span class="ruler-timecode">00:01:23:14</span>
-          </div>
-          <!-- Video track header -->
-          <div class="track-header-item track-video" style="height:68px;">
-            <div class="track-type-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-            </div>
-            <div class="track-label-info">
-              <div class="track-label-name">Video 1</div>
-              <div class="track-label-sub">4 clips · 1:48</div>
-            </div>
-            <div class="track-ctrl-btns">
-              <button class="track-ctrl-btn locked" title="Lock">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-              </button>
-              <button class="track-ctrl-btn" title="Mute audio">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-              </button>
-              <button class="track-ctrl-btn" title="Hide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <!-- Audio track header -->
-          <div class="track-header-item track-audio" style="height:44px;">
-            <div class="track-type-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            </div>
-            <div class="track-label-info">
-              <div class="track-label-name">Audio 1</div>
-              <div class="track-label-sub">2 clips</div>
-            </div>
-            <div class="track-ctrl-btns">
-              <button class="track-ctrl-btn muted" title="Unmute">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-              </button>
-              <button class="track-ctrl-btn" title="Hide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <!-- Effect 1 header -->
-          <div class="track-header-item track-effect" style="height:44px;">
-            <div class="track-type-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-            </div>
-            <div class="track-label-info">
-              <div class="track-label-name">Effect 1</div>
-              <div class="track-label-sub">3 clips</div>
-            </div>
-            <div class="track-ctrl-btns">
-              <button class="track-ctrl-btn" title="Hide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <!-- Effect 2 header -->
-          <div class="track-header-item track-effect" style="height:44px;">
-            <div class="track-type-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-            </div>
-            <div class="track-label-info">
-              <div class="track-label-name">Effect 2</div>
-              <div class="track-label-sub">1 clip</div>
-            </div>
-            <div class="track-ctrl-btns">
-              <button class="track-ctrl-btn" title="Hide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <!-- Music header -->
-          <div class="track-header-item track-music" style="height:44px;">
-            <div class="track-type-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-            </div>
-            <div class="track-label-info">
-              <div class="track-label-name">Music</div>
-              <div class="track-label-sub">1 clip</div>
-            </div>
-            <div class="track-ctrl-btns">
-              <button class="track-ctrl-btn" title="Mute">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-              </button>
-              <button class="track-ctrl-btn" title="Hide">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <button class="add-track-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Add Track
-          </button>
-        </div>
-
-        <!-- Ruler + Tracks scroll -->
-        <div class="timeline-scroll-wrap">
-          <!-- Time Ruler -->
-          <div class="ruler-row">
-            <div class="ruler-ticks">
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:10</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:15</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:20</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:25</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:30</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:35</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:40</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-              <div class="ruler-tick-group major"><span class="ruler-label">00:01:45</span></div>
-              <div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div><div class="ruler-tick-group"></div>
-            </div>
-            <!-- Playhead in ruler -->
-            <div class="playhead-line" style="left:38%;">
-              <div class="playhead-head"></div>
-            </div>
-          </div>
-
-          <!-- Tracks -->
-          <div class="tracks-scroll-area">
-            <div class="tracks-playhead-overlay"></div>
-
-            <!-- Track 1: Video -->
-            <div class="track-row" style="height:68px;">
-              <div class="clip clip-video clip-video-dim" style="left:0.5%;width:13%;">
-                <div class="clip-thumbs-strip"><div class="clip-thumb-seg clip-thumb-a" style="width:100%;"></div></div>
-                <div class="clip-inner"><div class="clip-label">Interview Scene</div></div>
-              </div>
-              <div class="clip clip-video clip-video-dim" style="left:14.5%;width:22%;">
-                <div class="clip-thumbs-strip">
-                  <div class="clip-thumb-seg clip-thumb-b" style="width:34%;"></div>
-                  <div class="clip-thumb-seg clip-thumb-a" style="width:33%;"></div>
-                  <div class="clip-thumb-seg clip-thumb-c" style="width:33%;"></div>
-                </div>
-                <div class="clip-inner"><div class="clip-label">City Timelapse</div></div>
-              </div>
-              <!-- Selected clip -->
-              <div class="clip clip-video clip-selected" style="left:37.5%;width:31%;position:absolute;top:4px;bottom:4px;">
-                <div class="clip-handle clip-handle-l">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </div>
-                <div class="clip-thumbs-strip">
-                  <div class="clip-thumb-seg clip-thumb-a" style="width:34%;"></div>
-                  <div class="clip-thumb-seg clip-thumb-c" style="width:33%;"></div>
-                  <div class="clip-thumb-seg clip-thumb-b" style="width:33%;"></div>
-                </div>
-                <div class="clip-inner">
-                  <div class="clip-label">Closeup Hands</div>
-                  <div class="clip-duration">0:08</div>
-                </div>
-                <div class="clip-transition" style="right:-5px;"></div>
-                <div class="clip-handle clip-handle-r">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-              </div>
-              <div class="clip clip-video clip-video-dim" style="left:69%;width:26%;">
-                <div class="clip-thumbs-strip"><div class="clip-thumb-seg clip-thumb-c" style="width:100%;"></div></div>
-                <div class="clip-inner"><div class="clip-label">Graphic Intro</div></div>
-              </div>
-            </div>
-
-            <!-- Track 2: Audio -->
-            <div class="track-row" style="height:44px;position:relative;">
-              <div class="clip clip-audio" style="left:1%;width:61%;">
-                <div class="audio-waveform-bg"></div>
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                  </div>
-                  <div class="clip-label">Black White Effect</div>
-                  <div class="clip-duration">0:58</div>
-                </div>
-              </div>
-              <div class="clip clip-audio" style="left:63%;width:27%;">
-                <div class="audio-waveform-bg"></div>
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                  </div>
-                  <div class="clip-label">Block Flashes</div>
-                  <div class="clip-duration">0:24</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Track 3: Effect 1 -->
-            <div class="track-row" style="height:44px;position:relative;">
-              <div class="clip clip-effect" style="left:1%;width:21%;">
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                  </div>
-                  <div class="clip-label">Pull In</div>
-                </div>
-              </div>
-              <div class="clip clip-effect" style="left:24%;width:37%;">
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                  </div>
-                  <div class="clip-label">Block Flashes</div>
-                </div>
-              </div>
-              <div class="clip clip-effect" style="left:64%;width:16%;">
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                  </div>
-                  <div class="clip-label">Flicker</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Track 4: Effect 2 -->
-            <div class="track-row" style="height:44px;position:relative;">
-              <div class="clip clip-effect" style="left:27%;width:61%;">
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
-                  </div>
-                  <div class="clip-label">Calm Relaxing Ambient</div>
-                  <div class="clip-duration">1:05</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Track 5: Music -->
-            <div class="track-row" style="height:44px;position:relative;">
-              <div class="clip clip-music" style="left:1%;width:86%;">
-                <div class="audio-waveform-bg" style="background-image:repeating-linear-gradient(90deg,transparent 0px,transparent 2px,rgba(99,102,241,0.22) 2px,rgba(99,102,241,0.22) 3px,transparent 3px,transparent 5px,rgba(99,102,241,0.45) 5px,rgba(99,102,241,0.45) 6px,transparent 6px,transparent 9px);"></div>
-                <div class="clip-inner">
-                  <div class="clip-icon-wrap">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
-                  </div>
-                  <div class="clip-label">Calm Relaxing Ambient bed</div>
-                  <div class="clip-duration">1:24</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- END TIMELINE AREA -->
-  </main>
+<body class="bg-gray-200 h-screen p-8 flex items-center justify-center font-sans antialiased text-sm">
+<!-- BEGIN: Main Editor Window -->
+<div class="bg-editor-bg text-editor-text w-full max-w-[1400px] h-full max-h-[900px] rounded-3xl shadow-2xl overflow-hidden flex ring-1 ring-gray-800">
+<!-- BEGIN: Left Sidebar -->
+<aside class="w-24 bg-editor-sidebar border-r border-editor-border flex flex-col items-center py-4 space-y-2 overflow-y-auto no-scrollbar shrink-0">
+<!-- Tool Buttons -->
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl bg-editor-panel text-editor-textActive mb-2">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Media</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Video</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Photo</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Audio</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Text</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Transitions</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Effect</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Sticker</span>
+</button>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Adjustment</span>
+</button>
+<div class="flex-grow"></div>
+<button class="flex flex-col items-center justify-center w-16 h-16 rounded-xl hover:bg-editor-panel transition-colors mt-auto">
+<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-xs">Settings</span>
+</button>
+</aside>
+<!-- END: Left Sidebar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- BEGIN: Top Navigation Bar -->
+<header class="h-14 border-b border-editor-border flex items-center justify-between px-6 shrink-0">
+<div class="flex items-center space-x-2 text-editor-text">
+<svg class="w-5 h-5 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 ml-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Uploaded</span>
 </div>
-</body>
-</html>
+<div class="flex items-center space-x-2 text-editor-textActive cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="font-medium">Video Popular Vlog_Duplicate</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<div>
+<button class="bg-editor-panel hover:bg-gray-700 text-white px-4 py-1.5 rounded-lg border border-editor-border flex items-center space-x-2 text-sm transition-colors">
+<span class="">Export</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</header>
+<!-- END: Top Navigation Bar -->
+<!-- BEGIN: Workspace Split Area -->
+<div class="flex-1 flex min-h-0">
+<!-- BEGIN: Media Browser -->
+<div class="w-80 border-r border-editor-border flex flex-col bg-editor-bg shrink-0">
+<!-- Media Toolbar -->
+<div class="p-4 flex items-center justify-between border-b border-editor-border/50"><button class="flex items-center space-x-2 bg-editor-panel border border-editor-border px-4 py-1.5 rounded-lg hover:bg-gray-700 transition-colors text-white text-xs font-medium shadow-sm">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="">Upload</span>
+</button>
+<div class="flex items-center space-x-1.5">
+<button class="p-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors" title="Grid View">
+<svg class="w-4 h-4 text-editor-textActive" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="flex items-center space-x-1 px-2 py-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors text-xs text-editor-text">
+<span class="">Sort</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="flex items-center space-x-1 px-2 py-1.5 bg-editor-panel border border-editor-border rounded-lg hover:bg-gray-700 transition-colors text-xs text-editor-text">
+<span class="">All</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div></div>
+<!-- Media Grid -->
+<div class="flex-1 p-4 overflow-y-auto no-scrollbar grid grid-cols-2 content-start gap-4"><!-- Media Item 1 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+    <div class="absolute bottom-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-mono">00:05</div>
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_009388290</p>
+</div>
+<!-- Media Item 2 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+    <div class="absolute bottom-1 right-1 bg-black/60 px-1.5 py-0.5 rounded text-[10px] text-white font-mono">00:12</div>
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_993882920</p>
+</div>
+<!-- Media Item 3 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_839038129</p>
+</div>
+<!-- Media Item 4 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_120934560</p>
+</div>
+<!-- Media Item 5 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_772390127</p>
+</div>
+<!-- Media Item 6 -->
+<div class="space-y-1.5 bg-editor-panel/50 p-1.5 rounded-lg border border-editor-border/30">
+  <div class="aspect-video bg-gray-800 rounded-md overflow-hidden border border-transparent hover:border-editor-accent cursor-pointer relative">
+    <img alt="Media clip" class="w-full h-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU">
+  </div>
+  <p class="text-[10px] text-gray-500 text-center truncate px-1">Vid_119922883</p>
+</div></div>
+</div>
+<!-- END: Media Browser -->
+<!-- BEGIN: Video Preview Player -->
+<div class="flex-1 flex flex-col bg-[#14151a] relative min-w-0">
+<!-- Main Player Area -->
+<div class="flex-1 p-6 flex items-center justify-center relative">
+<!-- Left toolbar in player -->
+
+<div class="relative w-full max-w-4xl aspect-[21/9] bg-black rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10">
+<img alt="Video preview" class="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChSO6faKR5KlabtFTyTuEItsf1YQdSibK3Zs4MXtfiSF9Uo8IZ-UHkk0eiCx1300ZZ1gxu8wK2GXR6f0UFhW63OgCL0Knfv604ggJDQ0z1cjAYsXe-IDjQTPTYNTn1sDKjThzOMvM6NUe1LJRBL5shFBTL4YjlkXPsBkmXKibzpyp8XWpJY1gTqIVyEkrnYTaw5f-0t3pnInSZoeK50579HQ8bQqBjdroaoLtEJz4czeAj4iDnUgjPvkX6WCMgw_n_awXG3hMxUa2eNg">
+</div>
+</div>
+<!-- Player Controls -->
+<div class="h-14 border-t border-editor-border flex items-center justify-between px-6 bg-editor-bg shrink-0"><div class="flex items-center space-x-1 text-sm font-mono cursor-pointer hover:text-white transition-colors"><span class="text-editor-textActive">00:15</span><span class="text-gray-500"> / 01:48</span><svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div><div class="flex items-center space-x-6 text-editor-textActive"><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-editor-accent transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 5l7 7-7 7M5 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="flex items-center space-x-4 text-editor-text"><button class="hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="hover:text-white transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div></div>
+</div>
+<!-- END: Video Preview Player -->
+</div>
+<!-- END: Workspace Split Area -->
+<!-- BEGIN: Timeline Area -->
+<div class="h-80 border-t border-editor-border bg-editor-bg flex flex-col shrink-0 relative">
+<!-- Timeline Header/Tools -->
+<div class="h-12 border-b border-editor-border bg-[#191b21] flex items-center justify-between px-6 z-20 shrink-0"><div class="flex items-center space-x-4 text-editor-text"><div class="flex items-center space-x-2 mr-2"><button class="p-1.5 hover:text-white transition-colors" title="Undo"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Redo"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="h-6 w-px bg-editor-border mr-2"></div><button class="p-1.5 hover:bg-editor-panel rounded-lg transition-colors group" title="Select"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-editor-text group-hover:text-editor-textActive"><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path><path d="m13 13 6 6"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Trim"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Ripple Trim"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Slice"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button><button class="p-1.5 hover:text-white transition-colors" title="Hand"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0V12m-3 .5a3 3 0 006 0V6a1.5 1.5 0 113 0v10.5a4.5 4.5 0 11-9 0V11.5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="flex items-center space-x-6 text-editor-text"><div class="flex items-center space-x-3"><button class="hover:text-white p-1.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button></div><div class="h-6 w-px bg-editor-border"></div></div></div><div class="flex border-b border-editor-border/50 text-editor-text bg-editor-bg z-20 h-6 text-[10px]">
+
+<!-- Time Ruler -->
+<div class="flex-1 relative flex items-end px-4 text-[10px] text-gray-500 bg-editor-bg overflow-hidden ml-32">
+<div class="flex justify-between w-full">
+<span class="">03:00:00:00</span>
+<span class="">03:00:10:00</span>
+<span class="">03:00:20:00</span>
+<span class="">03:00:30:00</span>
+<span class="">03:00:40:00</span>
+<span class="">03:00:50:00</span>
+<span class="">03:00:60:00</span>
+</div>
+</div>
+</div>
+<!-- Main Timeline Tracks -->
+<div class="flex-1 flex overflow-y-auto no-scrollbar relative">
+<!-- Track Headers (Left fixed) -->
+<div class="border-r border-editor-border/50 flex flex-col shrink-0 bg-editor-bg z-10 sticky left-0 w-32">
+<!-- Track Header 1 (Video) -->
+<div class="h-16 border-b border-editor-border/30 flex items-center px-2 space-x-2 text-editor-text justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 2 (Audio) -->
+<div class="h-10 flex items-center px-2 space-x-2 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 3 (Effect 1) -->
+<div class="h-10 flex items-center px-2 space-x-2 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Track Header 4 (Effect 2) -->
+<div class="h-10 flex items-center px-2 space-x-2 text-editor-text border-b border-editor-border/30 justify-center border-editor-border/50">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<!-- Layers panel simulation -->
+<div class="h-10 flex items-center px-2 space-x-2 text-editor-text border-b border-editor-border/50 justify-center">
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-4 h-4 cursor-pointer hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<!-- Tracks Content (Right scrollable) -->
+<div class="flex-1 min-w-[800px] bg-editor-track-bg relative border-t border-transparent">
+<!-- Playhead Line -->
+<div class="absolute top-0 bottom-0 left-[45%] w-px bg-white z-30 pointer-events-none">
+<div class="w-2.5 h-2.5 rounded-full bg-white absolute -top-1 -left-[4px]"></div>
+</div>
+<!-- Track 1: Video -->
+<div class="h-16 border-b border-editor-border/20 flex items-center px-2 py-1 space-x-1">
+<!-- Video Block 1 -->
+<div class="h-full w-24 bg-gray-800 rounded flex overflow-hidden opacity-50"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Original Sound</div>
+<!-- Video Block 2 -->
+<div class="h-full w-48 bg-gray-800 rounded flex overflow-hidden opacity-50"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Original Sound</div>
+<!-- Active Video Block -->
+<div class="h-full w-64 bg-gray-800 rounded-md flex overflow-hidden ring-2 ring-yellow-400 relative z-20 shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+<!-- Handle L -->
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-yellow-400 flex items-center justify-center cursor-ew-resize border-b">
+<svg class="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+<!-- Content -->
+<div class="flex flex-1 overflow-hidden ml-2 mr-2 border-b border-editor-border/30">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+<img class="h-full object-cover grayscale shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 33%;">
+</div>
+<!-- Handle R -->
+<div class="absolute right-0 top-0 bottom-0 w-2 bg-yellow-400 flex items-center justify-center cursor-ew-resize border-b border-editor-border/30">
+<svg class="w-2 h-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg>
+</div>
+</div>
+<!-- Video Block 4 -->
+<div class="h-full flex-1 max-w-xs bg-gray-800 rounded flex overflow-hidden opacity-50">
+<img class="h-full object-cover grayscale shrink-0 opacity-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWPeOnIg8ZI0Xw5LaizSRpQYeD07_AOl7oslMZGAEBUH8afo-OrsXuMAOSr0YkPzMuV_1A8iyJDDZoPFVrGlECQfcVgX_pcJ8mB0UzkhLtizoZclerc2NOuN__IR54yL0IWz2xBw53smVVImLnFtTjKElxqF5I7hiBS2eq1aVlu1TXCVbjmZE3e6QVUxXFJ96zMF0pnfEtYKrB5Z3SKhGUm22L86jKtOoYwob3TPzUcL0XeJJjrnQztKIG1J_rPrEKf4vYyXc3bLU" style="width: 100%;">
+</div>
+</div>
+<!-- Track 2: Audio (Blue) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<!-- Audio Block 1 -->
+<div class="absolute left-2 w-[60%] h-8 bg-editor-track-audio rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Black White Effect</div>
+<!-- Audio Block 2 -->
+<div class="absolute left-[62%] w-[25%] h-8 bg-[#5b5fd8] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Block Flashes</div>
+</div>
+<!-- Track 3: Effect (Green/Olive) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<div class="absolute left-2 w-[22%] h-8 bg-editor-track-effect/80 border border-editor-track-effect rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Pull In Effect</div>
+<div class="absolute left-[25%] w-[38%] h-8 bg-[#7a8b30] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="w-6 h-6 flex items-center justify-center bg-black/20 rounded mr-2 shrink-0"><svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Block Flashes</div>
+<div class="absolute left-[65%] w-[15%] h-8 bg-[#7a8b30] rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="w-6 h-6 flex items-center justify-center bg-black/20 rounded mr-2 shrink-0"><svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Block Flashes</div>
+</div>
+<!-- Track 4: Effect 2 (Green) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative border-b border-editor-border/20">
+<div class="absolute left-[28%] w-[60%] h-8 bg-editor-track-effect/80 border border-editor-track-effect rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="flex items-center justify-center w-6 h-6 rounded bg-black/20 mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Calm Relaxing Ambient bed</div>
+</div>
+<!-- Track 5: Music (Purple) -->
+<div class="h-10 flex items-center px-2 py-1 space-x-1 relative">
+<div class="absolute left-2 w-[85%] h-8 bg-editor-track-music rounded-md flex items-center px-3 text-white text-xs truncate shadow-sm"><div class="w-6 h-6 flex items-center justify-center bg-black/20 rounded mr-2 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>Calm Relaxing Ambient bed</div>
+</div>
+</div>
+</div>
+<!-- Bottom Timeline Toolbar -->
+
+</div>
+<!-- END: Timeline Area -->
+</main>
+<!-- END: Main Content Area -->
+</div>
+<!-- END: Main Editor Window -->
+
+
+
+
+
+
+
+
+</body></html>

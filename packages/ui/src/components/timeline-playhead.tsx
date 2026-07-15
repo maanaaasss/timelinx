@@ -30,7 +30,9 @@ export const TimelinePlayhead = React.memo(function TimelinePlayhead({
         ...style,
       }}
     >
-      <div className="tl-playhead-handle" />
+      <div className="tl-playhead-handle">
+        <div className="tl-playhead-handle-dot" />
+      </div>
     </div>
   );
 });

@@ -21,6 +21,13 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   MoveHorizontal,
+  Magnet,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
+  Volume2,
+  VolumeX,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -54,12 +61,19 @@ export const IconTrim = makeIcon(SplitSquareHorizontal);
 export const IconRoll = makeIcon(ArrowLeftRight);
 export const IconSlip = makeIcon(ArrowUpDown);
 export const IconSlide = makeIcon(MoveHorizontal);
+export const IconSnap = makeIcon(Magnet);
 export const IconMusic = makeIcon(Music);
 export const IconVideo = makeIcon(Film);
 export const IconSubtitle = makeIcon(Subtitles);
 export const IconTitle = makeIcon(Type);
 export const IconTrash = makeIcon(Trash2);
 export const IconGrip = makeIcon(GripVertical);
+export const IconEye = makeIcon(Eye);
+export const IconEyeOff = makeIcon(EyeOff);
+export const IconLock = makeIcon(Lock);
+export const IconUnlock = makeIcon(Unlock);
+export const IconVolume = makeIcon(Volume2);
+export const IconVolumeOff = makeIcon(VolumeX);
 
 export const TOOL_ICONS: Record<string, React.ComponentType<IconProps>> = {
   selection: IconCursor,

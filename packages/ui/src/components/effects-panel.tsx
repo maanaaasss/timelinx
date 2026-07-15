@@ -3,6 +3,7 @@ import { useEngine, useSelectedClipIds, useClipEffects } from '@timelinx/react';
 import { createEffect, toEffectId } from '@timelinx/core';
 import { useTimelineContext } from '../context/timeline-context';
 import { CollapsibleSection } from './collapsible-section';
+import { getEffectColor } from '../shared/effect-colors';
 import type { ClipId, EffectId } from '@timelinx/core';
 
 function EffectsIcon() {
@@ -17,12 +18,12 @@ function EffectsIcon() {
 }
 
 const EFFECT_TYPES = [
-  { type: 'blur', label: 'Blur', icon: '🌫', color: '#60a5fa' },
-  { type: 'brightness', label: 'Brightness', icon: '☀', color: '#fbbf24' },
-  { type: 'contrast', label: 'Contrast', icon: '◐', color: '#a78bfa' },
-  { type: 'saturation', label: 'Saturation', icon: '🎨', color: '#f472b6' },
-  { type: 'hueRotate', label: 'Hue Rotate', icon: '🔄', color: '#34d399' },
-  { type: 'colorCorrect', label: 'Color Correct', icon: '🎯', color: '#2dd4bf' },
+  { type: 'blur', label: 'Blur', icon: '🌫' },
+  { type: 'brightness', label: 'Brightness', icon: '☀' },
+  { type: 'contrast', label: 'Contrast', icon: '◐' },
+  { type: 'saturation', label: 'Saturation', icon: '🎨' },
+  { type: 'hueRotate', label: 'Hue Rotate', icon: '🔄' },
+  { type: 'colorCorrect', label: 'Color Correct', icon: '🎯' },
 ];
 
 export interface EffectsPanelProps {
@@ -111,7 +112,7 @@ export const EffectsPanel = React.memo(function EffectsPanel({
                 className="effect-menu-item"
                 onClick={() => handleAddEffect(et.type)}
               >
-                <span className="effect-menu-icon" style={{ color: et.color }}>{et.icon}</span>
+                <span className="effect-menu-icon" style={{ color: getEffectColor(et.type) }}>{et.icon}</span>
                 <span className="effect-menu-label">{et.label}</span>
               </button>
             ))}
@@ -126,17 +127,18 @@ export const EffectsPanel = React.memo(function EffectsPanel({
         ) : (
           <ul className="effects-list">
             {effects.map((effect) => {
+              const effectColor = getEffectColor(effect.effectType);
               const effectMeta = EFFECT_TYPES.find((et) => et.type === effect.effectType);
               return (
                 <li key={effect.id} className="effect-item">
                   <div
                     className="effect-icon-badge"
                     style={{
-                      background: `${effectMeta?.color ?? 'var(--bg-subtle)'}18`,
-                      borderColor: `${effectMeta?.color ?? 'var(--border-faint)'}40`,
+                      background: `${effectColor}18`,
+                      borderColor: `${effectColor}40`,
                     }}
                   >
-                    <span style={{ color: effectMeta?.color ?? 'var(--text-tertiary)' }}>
+                    <span style={{ color: effectColor }}>
                       {effectMeta?.icon ?? '◆'}
                     </span>
                   </div>

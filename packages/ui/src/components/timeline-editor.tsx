@@ -29,21 +29,14 @@ import { TimelineRuler } from './timeline-ruler';
 import { TimelineTrack } from './timeline-track';
 import { TimelineClip } from './timeline-clip';
 import { TimelinePlayhead } from './timeline-playhead';
+import { TimelineToolbar } from './timeline-toolbar';
 import { ZoomControls } from './zoom-controls';
 import { SnapIndicator } from './snap-indicator';
 import { DropZone } from './drop-zone';
-import {
-  IconCursor,
-  IconRazor,
-  IconSlip,
-  IconSlide,
-  IconTrim,
-  IconHand,
-  IconUndo,
-  IconRedo,
-  IconPlayerPlay,
-  IconPlayerPause,
-} from './icons';
+import { Sidebar } from './sidebar';
+import { TopNav } from './top-nav';
+import { TransportControls } from './transport-controls';
+import { AssetBin } from './asset-bin';
 import { frameToTimecode, getFriendlyTrackLabel } from '../shared/time';
 
 const DEFAULT_TRACK_HEIGHT_VIDEO = 80;
@@ -134,6 +127,12 @@ export interface TimelineEditorProps {
   className?: string;
   style?: React.CSSProperties;
   showToolbar?: boolean;
+  showSidebar?: boolean;
+  showTopNav?: boolean;
+  showTransportControls?: boolean;
+  showMediaBrowser?: boolean;
+  projectName?: string;
+  onExport?: () => void;
 }
 
 export function TimelineEditor({
@@ -145,6 +144,12 @@ export function TimelineEditor({
   className,
   style,
   showToolbar = true,
+  showSidebar = true,
+  showTopNav = true,
+  showTransportControls = true,
+  showMediaBrowser = true,
+  projectName,
+  onExport,
 }: TimelineEditorProps) {
   const hasContext = React.useContext(TimelineCtx) !== null;
 
@@ -155,6 +160,12 @@ export function TimelineEditor({
       className={className}
       style={style}
       showToolbar={showToolbar}
+      showSidebar={showSidebar}
+      showTopNav={showTopNav}
+      showTransportControls={showTransportControls}
+      showMediaBrowser={showMediaBrowser}
+      projectName={projectName}
+      onExport={onExport}
     />
   );
 
@@ -175,12 +186,24 @@ function EditorInner({
   className,
   style,
   showToolbar,
+  showSidebar,
+  showTopNav,
+  showTransportControls,
+  showMediaBrowser,
+  projectName,
+  onExport,
 }: {
   registerZoomHandler?: (handler: (ppf: number) => void) => void;
   onAssetDrop?: (drop: { assetId: string; trackId: string; frame: number }) => void;
   className?: string;
   style?: React.CSSProperties;
   showToolbar?: boolean;
+  showSidebar?: boolean;
+  showTopNav?: boolean;
+  showTransportControls?: boolean;
+  showMediaBrowser?: boolean;
+  projectName?: string;
+  onExport?: () => void;
 }) {
   const {
     engine,
@@ -206,6 +229,8 @@ function EditorInner({
 
   const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
   const [dropTarget, setDropTarget] = useState<{ trackId: string; frame: number } | null>(null);
+  const [timelineHeight, setTimelineHeight] = useState(320);
+  const timelineResizeRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
   const trackIds = useTrackIdsWithEngine(engine);
   const timeline = useTimelineWithEngine(engine);
@@ -222,18 +247,6 @@ function EditorInner({
   frameRef.current = frame;
   const durationFramesRef = useRef(timeline.duration as number);
   durationFramesRef.current = timeline.duration as number;
-
-  const zoomOut = useCallback(() => setPpf(Math.max(1, ppf * 0.8)), [ppf, setPpf]);
-  const zoomIn = useCallback(() => setPpf(Math.min(100, ppf * 1.25)), [ppf, setPpf]);
-  const zoom = Math.max(1, Math.min(100, Math.round(ppf)));
-  const onZoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPpf(parseFloat(e.target.value));
-  }, [setPpf]);
-  const undo = useCallback(() => engine.undo(), [engine]);
-  const redo = useCallback(() => engine.redo(), [engine]);
-  const togglePlay = useCallback(() => {
-    isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play();
-  }, [isPlaying, engine]);
 
   const fps = timeline.fps as number;
   const durationFrames = timeline.duration as number;
@@ -288,85 +301,6 @@ function EditorInner({
     [trackIds, getTrackHeight],
   );
 
-  const addTrack = useCallback(
-    (type: 'video' | 'audio') => {
-      const id = `track-${Date.now()}`;
-      const name =
-        type === 'video'
-          ? `Video ${trackIds.filter((t) => trackTypesMap.get(t) === 'video').length + 1}`
-          : `Audio ${trackIds.filter((t) => trackTypesMap.get(t) === 'audio').length + 1}`;
-      engine.dispatch({
-        id: txId(),
-        label: `Add ${type} track`,
-        timestamp: Date.now(),
-        operations: [{ type: 'ADD_TRACK', track: createTrack({ id, name, type }) }],
-      });
-      triggerUpdate();
-    },
-    [engine, trackIds, trackTypesMap, triggerUpdate],
-  );
-
-  const deleteTrack = useCallback(
-    (trackId: string) => {
-      engine.dispatch({
-        id: txId(),
-        label: 'Delete track',
-        timestamp: Date.now(),
-        operations: [{ type: 'DELETE_TRACK', trackId: toTrackId(trackId) }],
-      });
-      triggerUpdate();
-    },
-    [engine, triggerUpdate],
-  );
-
-  const addClip = useCallback(
-    (trackId: string) => {
-      const state = engine.getState();
-      const track = state.timeline.tracks.find((t: any) => (t.id as string) === trackId);
-      const lastClip = track?.clips.reduce(
-        (latest: any, c: any) =>
-          (c.timelineEnd as number) > ((latest?.timelineEnd as number) ?? 0) ? c : latest,
-        null as any,
-      );
-      const startFrame = lastClip ? (lastClip.timelineEnd as number) + 30 : 0;
-      const dur = 90;
-      const clipId = `clip-${Date.now()}`;
-      const assetId = `asset-${clipId}`;
-      const trackType = track?.type ?? 'video';
-      const mediaType = trackType === 'audio' ? 'audio' : 'video';
-
-      const asset = createAsset({
-        id: assetId,
-        name: `New ${mediaType} clip`,
-        mediaType: mediaType as any,
-        filePath: `generator://${assetId}`,
-        intrinsicDuration: toFrame(dur),
-        nativeFps: frameRate(fps),
-        sourceTimecodeOffset: toFrame(0),
-      });
-
-      const clip = createClip({
-        id: clipId,
-        assetId,
-        trackId,
-        timelineStart: toFrame(startFrame),
-        timelineEnd: toFrame(startFrame + dur),
-        mediaIn: toFrame(0),
-        mediaOut: toFrame(dur),
-        name: `New ${mediaType} clip`,
-      });
-
-      engine.dispatch({
-        id: txId(),
-        label: 'Add Clip',
-        timestamp: Date.now(),
-        operations: [{ type: 'INSERT_CLIP', clip, trackId: trackId as TrackId }],
-      });
-      triggerUpdate();
-    },
-    [engine, fps, triggerUpdate],
-  );
-
   const clipCounts = useMemo(() => {
     const map = new Map<string, number>();
     const state = engine.getState();
@@ -392,7 +326,6 @@ function EditorInner({
     registerZoomHandler?.(setPpf);
   }, [registerZoomHandler, setPpf]);
 
-  // Auto-focus the editor on mount so keyboard shortcuts work
   useEffect(() => {
     const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
     if (editorEl) {
@@ -400,7 +333,6 @@ function EditorInner({
     }
   }, []);
 
-  // Re-focus when clicking inside the editor area
   const handleEditorClick = useCallback(() => {
     const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
     if (editorEl && document.activeElement !== editorEl) {
@@ -423,13 +355,20 @@ function EditorInner({
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (!resizeDragRef.current) return;
-      const dy = e.clientY - resizeDragRef.current.startY;
-      const newH = Math.max(MIN_TRACK_HEIGHT, Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy));
-      setTrackHeights((prev) => ({ ...prev, [resizeDragRef.current!.trackId]: newH }));
+      if (resizeDragRef.current) {
+        const dy = e.clientY - resizeDragRef.current.startY;
+        const newH = Math.max(MIN_TRACK_HEIGHT, Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy));
+        setTrackHeights((prev) => ({ ...prev, [resizeDragRef.current!.trackId]: newH }));
+      }
+      if (timelineResizeRef.current) {
+        const dy = timelineResizeRef.current.startY - e.clientY;
+        const newH = Math.max(160, Math.min(600, timelineResizeRef.current.startHeight + dy));
+        setTimelineHeight(newH);
+      }
     };
     const onUp = () => {
       resizeDragRef.current = null;
+      timelineResizeRef.current = null;
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
@@ -713,225 +652,177 @@ function EditorInner({
       className={`timeline-editor${className ? ` ${className}` : ''}`}
       role="application"
       aria-label="Timeline editor"
-      style={{
-        ...style,
-      }}
+      style={style}
       onKeyDown={onKeyDown}
       onClick={handleEditorClick}
       tabIndex={0}
     >
-      {showToolbar && (
-        <div className="tl-toolbar">
-          {/* Group 1: edit tools */}
-          <div className="tl-tool-group">
-            <button
-              className={`tool-btn ${toolId === 'selection' ? 'active' : ''}`}
-              title="Select (V)"
-              aria-pressed={toolId === 'selection'}
-              onClick={() => engine.activateTool('selection')}
-            >
-              <IconCursor size={15} />
-            </button>
-            <button
-              className={`tool-btn ${toolId === 'razor' ? 'active' : ''}`}
-              title="Razor (C)"
-              aria-pressed={toolId === 'razor'}
-              onClick={() => engine.activateTool('razor')}
-            >
-              <IconRazor size={15} />
-            </button>
-            <button
-              className={`tool-btn ${toolId === 'slip' ? 'active' : ''}`}
-              title="Slip (S)"
-              aria-pressed={toolId === 'slip'}
-              onClick={() => engine.activateTool('slip')}
-            >
-              <IconSlip size={15} />
-            </button>
-            <button
-              className={`tool-btn ${toolId === 'slide' ? 'active' : ''}`}
-              title="Slide (Y)"
-              aria-pressed={toolId === 'slide'}
-              onClick={() => engine.activateTool('slide')}
-            >
-              <IconSlide size={15} />
-            </button>
-            <button
-              className={`tool-btn ${toolId === 'ripple-trim' ? 'active' : ''}`}
-              title="Ripple Trim (T)"
-              aria-pressed={toolId === 'ripple-trim'}
-              onClick={() => engine.activateTool('ripple-trim')}
-            >
-              <IconTrim size={15} />
-            </button>
-            <button
-              className={`tool-btn ${toolId === 'hand' ? 'active' : ''}`}
-              title="Hand (H)"
-              aria-pressed={toolId === 'hand'}
-              onClick={() => engine.activateTool('hand')}
-            >
-              <IconHand size={15} />
-            </button>
-          </div>
+      {/* Left Sidebar */}
+      {showSidebar && <Sidebar />}
 
-          <div className="tl-sep" />
+      {/* Main Content Area */}
+      <main className="timeline-main">
+        {/* Top Navigation Bar */}
+        {showTopNav && <TopNav projectName={projectName} onExport={onExport} />}
 
-          {/* Position display */}
-          <span className="toolbar-position">
-            {frameToTimecode(frame as number, fps)} / {frameToTimecode(durationFrames, fps)}
-          </span>
+        {/* Workspace Split: Media Browser + Preview */}
+        <div className="timeline-workspace-split">
+          {/* Media Browser */}
+          {showMediaBrowser && (
+            <div className="timeline-media-browser">
+              <AssetBin onAssetDrop={onAssetDrop} />
+            </div>
+          )}
 
-          <div className="tl-spacer" />
-
-          {/* Zoom */}
-          <ZoomControls ppf={ppf} onPpfChange={setPpf} />
-
-          <div className="tl-sep" />
-
-          {/* Undo/Redo */}
-          <div className="tl-tool-group">
-            <button className="tool-btn" title="Undo" onClick={undo} disabled={!history.canUndo}>
-              <IconUndo size={15} />
-            </button>
-            <button className="tool-btn" title="Redo" onClick={redo} disabled={!history.canRedo}>
-              <IconRedo size={15} />
-            </button>
-          </div>
-
-          <div className="tl-sep" />
-
-          {/* Play in toolbar */}
-          <button
-            className={`tool-btn ${isPlaying ? 'active' : ''}`}
-            title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
-            aria-pressed={isPlaying}
-            onClick={togglePlay}
-          >
-            {isPlaying ? <IconPlayerPause size={15} /> : <IconPlayerPlay size={15} />}
-          </button>
-        </div>
-      )}
-
-      <div className="timeline-workspace-split">
-        {/* ── Left: Track Labels ── */}
-        <div ref={labelColumnRef} className="timeline-label-column">
-          <div className="timeline-label-header">
-            <span className="timecode">
-              {frameToTimecode(frame as number, fps)}
-            </span>
-          </div>
-
-          {trackIds.map((tid, i) => {
-            const h = getTrackHeight(tid);
-            const type = trackTypesMap.get(tid) ?? 'video';
-            const friendlyLabel = getFriendlyTrackLabel(tid, type, trackIds, trackTypesMap);
-            const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
-            return (
-              <div key={tid} style={{ position: 'relative' }}>
-                {isSep && <div className="timeline-track-separator" />}
-                <TimelineTrack
-                  trackId={tid}
-                  shortId={friendlyLabel}
-                  height={h}
-                  clipCount={clipCounts.get(tid) ?? 0}
-                />
-                <div
-                  role="separator"
-                  aria-orientation="horizontal"
-                  aria-label={`Resize ${tid}`}
-                  tabIndex={0}
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: 4,
-                    cursor: 'row-resize',
-                    zIndex: 3,
-                  }}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    resizeDragRef.current = { trackId: tid, startY: e.clientY, startHeight: h };
-                  }}
-                />
+          {/* Video Preview + Transport Controls */}
+          <div className="timeline-preview-area">
+            <div className="preview-panel">
+              <div className="preview-frame" style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}>
+                <div className="preview-safe-area" />
+                <div className="preview-timecode" style={{ position: 'absolute', bottom: 8, left: 10 }}>
+                  {frameToTimecode(frame as number, fps)}
+                </div>
               </div>
-            );
-          })}
+            </div>
+            {showTransportControls && <TransportControls />}
+          </div>
         </div>
 
-        {/* ── Right: Scroll Area (Ruler & Tracks Canvas) ── */}
-        <div
-          ref={scrollContainerRef}
-          className="timeline-scroll-area"
-          onScroll={onScroll}
-        >
-          <div className="timeline-ruler-container">
-            <TimelineRuler totalWidth={timelineWidth} />
-          </div>
-
+        {/* Timeline Area */}
+        <div className="timeline-area" style={{ height: timelineHeight }}>
+          {/* Resize handle */}
           <div
-            ref={trackAreaRef}
-            className="timeline-track-canvas"
-            style={{
-              width: Math.max(timelineWidth, vpWidth),
-              minHeight: totalTrackHeight,
-              cursor:
-                toolId === 'hand'
-                  ? handDragRef.current
-                    ? 'grabbing'
-                    : 'grab'
-                  : cursor,
+            className="timeline-resize-handle"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.currentTarget.setPointerCapture?.(e.pointerId);
+              timelineResizeRef.current = { startY: e.clientY, startHeight: timelineHeight };
             }}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerLeave={onPointerLeave}
-            onDragOver={onDragOver}
-            onDragLeave={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget(null);
-            }}
-            onDrop={onDrop}
-          >
-            {trackIds.map((tid, i) => {
-              const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
-              return (
-                <React.Fragment key={tid}>
-                  {isSep && <div className="timeline-track-separator" />}
-                  <ClipRow
-                    trackId={tid}
+          />
+          {showToolbar && <TimelineToolbar />}
+
+          <div className="timeline-workspace-split">
+            {/* Left: Track Labels */}
+            <div ref={labelColumnRef} className="timeline-label-column">
+              <div className="timeline-label-header">
+                <span className="timecode">
+                  {frameToTimecode(frame as number, fps)}
+                </span>
+              </div>
+
+              {trackIds.map((tid, i) => {
+                const h = getTrackHeight(tid);
+                const type = trackTypesMap.get(tid) ?? 'video';
+                const friendlyLabel = getFriendlyTrackLabel(tid, type, trackIds, trackTypesMap);
+                const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
+                return (
+                  <div key={tid} style={{ position: 'relative' }}>
+                    {isSep && <div className="timeline-track-separator" />}
+                    <TimelineTrack
+                      trackId={tid}
+                      shortId={friendlyLabel}
+                      height={h}
+                      clipCount={clipCounts.get(tid) ?? 0}
+                    />
+                    <div
+                      role="separator"
+                      aria-orientation="horizontal"
+                      aria-label={`Resize ${tid}`}
+                      tabIndex={0}
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 4,
+                        cursor: 'row-resize',
+                        zIndex: 3,
+                      }}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                        resizeDragRef.current = { trackId: tid, startY: e.clientY, startHeight: h };
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right: Scroll Area (Ruler & Tracks Canvas) */}
+            <div
+              ref={scrollContainerRef}
+              className="timeline-scroll-area"
+              onScroll={onScroll}
+            >
+              <div className="timeline-ruler-container">
+                <TimelineRuler totalWidth={timelineWidth} />
+              </div>
+
+              <div
+                ref={trackAreaRef}
+                className="timeline-track-canvas"
+                style={{
+                  width: Math.max(timelineWidth, vpWidth),
+                  minHeight: totalTrackHeight,
+                  cursor:
+                    toolId === 'hand'
+                      ? handDragRef.current
+                        ? 'grabbing'
+                        : 'grab'
+                      : cursor,
+                }}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerLeave={onPointerLeave}
+                onDragOver={onDragOver}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget(null);
+                }}
+                onDrop={onDrop}
+              >
+                {trackIds.map((tid, i) => {
+                  const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
+                  return (
+                    <React.Fragment key={tid}>
+                      {isSep && <div className="timeline-track-separator" />}
+                      <ClipRow
+                        trackId={tid}
+                        ppf={ppf}
+                        provisional={provisional}
+                        selection={selection}
+                        toolId={toolId}
+                        height={getTrackHeight(tid)}
+                        fps={fps}
+                        startFrame={virtualWindow.startFrame as number}
+                        endFrame={virtualWindow.endFrame as number}
+                        trackType={trackTypesMap.get(tid)}
+                      />
+                    </React.Fragment>
+                  );
+                })}
+
+                <SnapIndicator
+                  frames={snapFrames}
+                  ppf={ppf}
+                  totalHeight={totalTrackHeight}
+                />
+
+                {dropTarget && (
+                  <DropZone
+                    frame={dropTarget.frame}
                     ppf={ppf}
-                    provisional={provisional}
-                    selection={selection}
-                    toolId={toolId}
-                    height={getTrackHeight(tid)}
+                    totalHeight={totalTrackHeight}
                     fps={fps}
-                    startFrame={virtualWindow.startFrame as number}
-                    endFrame={virtualWindow.endFrame as number}
-                    trackType={trackTypesMap.get(tid)}
                   />
-                </React.Fragment>
-              );
-            })}
+                )}
 
-            <SnapIndicator
-              frames={snapFrames}
-              ppf={ppf}
-              totalHeight={totalTrackHeight}
-            />
-
-            {dropTarget && (
-              <DropZone
-                frame={dropTarget.frame}
-                ppf={ppf}
-                totalHeight={totalTrackHeight}
-                fps={fps}
-              />
-            )}
-
-            <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />
+                <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
