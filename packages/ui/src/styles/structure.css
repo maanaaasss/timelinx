@@ -300,19 +300,22 @@
   overscroll-behavior: none;
 }
 
-.timeline-ruler-container {
-  flex-shrink: 0;
-  height: var(--ruler-height);
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-faint);
-  overflow: hidden;
-}
-
 .timeline-track-scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
   overscroll-behavior: none;
+}
+
+.timeline-ruler {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  height: var(--ruler-height);
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-faint);
+  user-select: none;
+  flex-shrink: 0;
 }
 
 .timeline-track-canvas {
@@ -719,15 +722,6 @@
 }
 
 .tl-clip-wrap.selected .clip-handle-icon { opacity: 1; }
-
-/* ── Ruler ── */
-.timeline-ruler {
-  height: 100%;
-  background: var(--bg-panel);
-  user-select: none;
-  position: relative;
-  overflow: hidden;
-}
 
 /* ── Playhead ── */
 .tl-playhead {

@@ -222,7 +222,6 @@ function EditorInner({
   const triggerUpdate = useCallback(() => forceUpdate((n) => n + 1), []);
 
   const trackAreaRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackScrollRef = useRef<HTMLDivElement>(null);
   const labelColumnRef = useRef<HTMLDivElement>(null);
   const handDragRef = useRef<{ startX: number; startScroll: number } | null>(null);
@@ -350,9 +349,6 @@ function EditorInner({
       if (trackScrollRef.current) {
         trackScrollRef.current.scrollLeft = newScroll;
       }
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = newScroll;
-      }
       setScrollLeft(newScroll);
     }
   }, [frame, vpWidth, setScrollLeft, ppfRef, scrollRef]);
@@ -455,8 +451,8 @@ function EditorInner({
         const maxScroll = Math.max(0, durationFrames * ppfRef.current - vpWidth);
         const newScroll = Math.max(0, Math.min(maxScroll, handDragRef.current.startScroll - dx));
         setScrollLeft(newScroll);
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollLeft = newScroll;
+        if (trackScrollRef.current) {
+          trackScrollRef.current.scrollLeft = newScroll;
         }
         return;
       }
@@ -605,10 +601,6 @@ function EditorInner({
       const maxScroll = Math.max(0, durationFrames * ppfRef.current - vpWidth);
       const clampedScroll = Math.min(sl, maxScroll);
       setScrollLeft(clampedScroll);
-      // Sync ruler horizontal scroll
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = clampedScroll;
-      }
       // Sync label column vertical scroll
       if (labelColumnRef.current) {
         labelColumnRef.current.scrollTop = e.currentTarget.scrollTop;
@@ -757,16 +749,14 @@ function EditorInner({
               })}
             </div>
 
-            {/* Right: Ruler (fixed) + Tracks (scrollable) */}
-            <div className="timeline-scroll-area" ref={scrollContainerRef}>
-              <div className="timeline-ruler-container">
-                <TimelineRuler totalWidth={timelineWidth} />
-              </div>
+            {/* Right: Tracks (scrollable, ruler sticky inside) */}
+            <div className="timeline-scroll-area">
               <div
                 className="timeline-track-scroll"
                 ref={trackScrollRef}
                 onScroll={onScroll}
               >
+              <TimelineRuler totalWidth={timelineWidth} />
               <div
                 ref={trackAreaRef}
                 className="timeline-track-canvas"
