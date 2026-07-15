@@ -11,5 +11,9 @@ class ResizeObserverMock {
 }
 
 if (typeof globalThis.ResizeObserver === 'undefined') {
-  (globalThis as any).ResizeObserver = ResizeObserverMock;
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    value: ResizeObserverMock,
+    writable: true,
+    configurable: true,
+  });
 }
