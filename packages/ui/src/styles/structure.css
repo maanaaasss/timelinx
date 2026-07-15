@@ -67,6 +67,7 @@
   border-top: 1px solid var(--border-default);
   background: var(--bg-app);
   position: relative;
+  overscroll-behavior: none;
 }
 
 .timeline-resize-handle {
@@ -273,6 +274,7 @@
   width: var(--track-header-width);
   flex-shrink: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg-panel);
   border-right: 1px solid var(--border-faint);
 }
@@ -295,6 +297,7 @@
   min-height: 0;
   background: var(--bg-canvas);
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .timeline-ruler-container {
@@ -309,6 +312,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: none;
 }
 
 .timeline-track-canvas {
