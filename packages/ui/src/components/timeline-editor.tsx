@@ -705,11 +705,7 @@ function EditorInner({
           <div className="timeline-workspace-split">
             {/* Left: Track Labels */}
             <div ref={labelColumnRef} className="timeline-label-column">
-              <div className="timeline-label-header">
-                <span className="timecode">
-                  {frameToTimecode(frame as number, fps)}
-                </span>
-              </div>
+              <div className="timeline-label-header" />
 
               {trackIds.map((tid, i) => {
                 const h = getTrackHeight(tid);
