@@ -288,23 +288,27 @@
 }
 
 .timeline-scroll-area {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
-  overflow: auto;
+  min-height: 0;
   background: var(--bg-canvas);
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 
 .timeline-ruler-container {
-  position: sticky;
-  top: 0;
-  z-index: 25;
-  width: max-content;
-  min-width: 100%;
+  flex-shrink: 0;
   height: var(--ruler-height);
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-faint);
+  overflow: hidden;
+}
+
+.timeline-track-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .timeline-track-canvas {

@@ -79,6 +79,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
         height,
         position: 'relative',
         cursor: 'ew-resize',
+        transform: `translateX(${-scrollLeft}px)`,
         ...style,
       }}
       onPointerDown={(e) => {
