@@ -71,6 +71,18 @@ export const TimelineClip = React.memo(function TimelineClip({
         ...style,
       }}
     >
+      {/* Trim handles at wrapper level so they span full height */}
+      <div className="clip-handle clip-handle--left">
+        <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </div>
+      <div className="clip-handle clip-handle--right">
+        <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </div>
+
       {/* Main clip body */}
       <div
         className={`tl-clip tl-clip--${trackType || 'video'}${isProvisional ? ' provisional' : ''}${className ? ` ${className}` : ''}`}
@@ -90,11 +102,6 @@ export const TimelineClip = React.memo(function TimelineClip({
           <div className="clip-waveform" />
         )}
 
-        <div className="clip-handle clip-handle--left">
-          <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </div>
         {showIcon && (
           <span className="clip-type-icon">
             <IconComponent size={10} />
@@ -107,11 +114,6 @@ export const TimelineClip = React.memo(function TimelineClip({
               {frameToTimecode(clip.timelineStart as number, fps)}
             </span>
           )}
-        </div>
-        <div className="clip-handle clip-handle--right">
-          <svg className="clip-handle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
         </div>
       </div>
 

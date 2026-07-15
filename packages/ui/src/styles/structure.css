@@ -667,6 +667,7 @@
   align-items: center;
   justify-content: center;
   transition: opacity var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+  z-index: 5;
 }
 
 .clip-handle--left  { left: -1px; }
@@ -680,14 +681,14 @@
   transition: opacity var(--duration-fast) var(--ease-out);
 }
 
-.tl-clip:hover .clip-handle,
-.tl-clip.selected .clip-handle { opacity: 1; }
+.tl-clip-wrap:hover .clip-handle,
+.tl-clip-wrap.selected .clip-handle { opacity: 1; }
 
-.tl-clip.selected .clip-handle {
+.tl-clip-wrap.selected .clip-handle {
   background: var(--selection-handle);
 }
 
-.tl-clip.selected .clip-handle-icon { opacity: 1; }
+.tl-clip-wrap.selected .clip-handle-icon { opacity: 1; }
 
 /* ── Ruler ── */
 .timeline-ruler {
