@@ -313,7 +313,7 @@
 
 .timeline-track-canvas {
   position: relative;
-  width: 100%;
+  min-width: 100%;
 }
 
 /* ── Tracks ── */
@@ -321,6 +321,7 @@
   display: flex;
   position: relative;
   border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
 }
 
 .tl-track-header {
@@ -482,8 +483,10 @@
   position: absolute;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   cursor: grab;
   user-select: none;
+  contain: layout size;
 }
 
 .tl-clip-wrap:active {
@@ -508,6 +511,7 @@
   gap: 6px;
   overflow: hidden;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  flex-shrink: 0;
   transition:
     box-shadow var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out);
