@@ -66,6 +66,23 @@
   flex-shrink: 0;
   border-top: 1px solid var(--border-default);
   background: var(--bg-app);
+  position: relative;
+}
+
+.timeline-resize-handle {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+  z-index: 30;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.timeline-resize-handle:hover,
+.timeline-resize-handle:active {
+  background: var(--accent);
 }
 
 /* ── Toolbar ── */

@@ -229,6 +229,8 @@ function EditorInner({
 
   const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
   const [dropTarget, setDropTarget] = useState<{ trackId: string; frame: number } | null>(null);
+  const [timelineHeight, setTimelineHeight] = useState(320);
+  const timelineResizeRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
   const trackIds = useTrackIdsWithEngine(engine);
   const timeline = useTimelineWithEngine(engine);
@@ -353,13 +355,20 @@ function EditorInner({
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
-      if (!resizeDragRef.current) return;
-      const dy = e.clientY - resizeDragRef.current.startY;
-      const newH = Math.max(MIN_TRACK_HEIGHT, Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy));
-      setTrackHeights((prev) => ({ ...prev, [resizeDragRef.current!.trackId]: newH }));
+      if (resizeDragRef.current) {
+        const dy = e.clientY - resizeDragRef.current.startY;
+        const newH = Math.max(MIN_TRACK_HEIGHT, Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy));
+        setTrackHeights((prev) => ({ ...prev, [resizeDragRef.current!.trackId]: newH }));
+      }
+      if (timelineResizeRef.current) {
+        const dy = timelineResizeRef.current.startY - e.clientY;
+        const newH = Math.max(160, Math.min(600, timelineResizeRef.current.startHeight + dy));
+        setTimelineHeight(newH);
+      }
     };
     const onUp = () => {
       resizeDragRef.current = null;
+      timelineResizeRef.current = null;
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', onUp);
@@ -680,7 +689,16 @@ function EditorInner({
         </div>
 
         {/* Timeline Area */}
-        <div className="timeline-area">
+        <div className="timeline-area" style={{ height: timelineHeight }}>
+          {/* Resize handle */}
+          <div
+            className="timeline-resize-handle"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.currentTarget.setPointerCapture?.(e.pointerId);
+              timelineResizeRef.current = { startY: e.clientY, startHeight: timelineHeight };
+            }}
+          />
           {showToolbar && <TimelineToolbar />}
 
           <div className="timeline-workspace-split">
