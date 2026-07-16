@@ -31,6 +31,8 @@ export function TrackView({ trackId, ppf, selectedClipIds }: TrackViewProps) {
       ? 'audio'
       : track.type === 'video'
       ? 'video'
+      : track.type === 'subtitle'
+      ? 'subtitle'
       : 'title';
 
   return (

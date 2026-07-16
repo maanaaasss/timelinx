@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useTimelineWithEngine, usePlayheadFrame } from '@timelinx/react';
+import { useTimelineWithEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { rulerTickInterval } from '../shared/time';
 import { toFrame } from '@timelinx/core';
@@ -17,7 +17,6 @@ export const TimelineRuler = React.memo(function TimelineRuler({
 }: TimelineRulerProps) {
   const { engine, ppf, scrollLeft, vpWidth, rulerHeight } = useTimelineContext();
   const timeline = useTimelineWithEngine(engine);
-  const playheadFrame = usePlayheadFrame(engine);
   const fps = (timeline.fps as number) || 30;
   const duration = (timeline.duration as number) || 9000;
   const height = rulerHeight || 28;
@@ -72,15 +71,6 @@ export const TimelineRuler = React.memo(function TimelineRuler({
     engine.seekTo(toFrame(frame));
   };
 
-  const currentTimecode = useMemo(() => {
-    const totalSeconds = Math.floor((playheadFrame as number) / fps);
-    const f = Math.round((playheadFrame as number) % fps);
-    const s = totalSeconds % 60;
-    const m = Math.floor(totalSeconds / 60) % 60;
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${pad(m)}:${pad(s)}:${pad(f)}`;
-  }, [playheadFrame, fps]);
-
   return (
     <div
       className={`timeline-ruler${className ? ` ${className}` : ''}`}
@@ -101,35 +91,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
         if (e.buttons & 1) handlePointer(e);
       }}
     >
-      {/* Current timecode at playhead position */}
-      <div
-        style={{
-          position: 'absolute',
-          left: (playheadFrame as number) * ppf,
-          top: 0,
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 8,
-          pointerEvents: 'none',
-          zIndex: 2,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 9,
-            fontWeight: 600,
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--text-primary)',
-            whiteSpace: 'nowrap',
-            background: 'var(--bg-panel)',
-            padding: '1px 4px',
-            borderRadius: 2,
-          }}
-        >
-          {currentTimecode}
-        </span>
-      </div>
+
       {ticks.map((tick, i) => (
         <React.Fragment key={i}>
           <div

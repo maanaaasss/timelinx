@@ -79,21 +79,31 @@
   --track-audio-dim:     rgba(59,130,246,0.7);
   --track-audio-bg:      rgba(59,130,246,0.14);
   --track-audio-border:  rgba(59,130,246,0.35);
+  --track-audio-solid:        #2563eb;
+  --track-audio-border-solid: #1d4ed8;
   --track-subtitle:      #f59e0b;
   --track-subtitle-dim:  rgba(245,158,11,0.7);
   --track-subtitle-bg:   rgba(245,158,11,0.14);
   --track-subtitle-border: rgba(245,158,11,0.35);
+  --track-subtitle-solid:        #d97706;
+  --track-subtitle-border-solid: #b45309;
   --track-image:         #a78bfa;
   --track-image-bg:      rgba(167,139,250,0.14);
   --track-image-border:  rgba(167,139,250,0.35);
+  --track-image-solid:        #7c3aed;
+  --track-image-border-solid: #6d28d9;
   --track-effect:        #10b981;
   --track-effect-dim:    rgba(16,185,129,0.7);
   --track-effect-bg:     rgba(16,185,129,0.14);
   --track-effect-border: rgba(16,185,129,0.35);
+  --track-effect-solid:        #059669;
+  --track-effect-border-solid: #047857;
   --track-music:         #6366f1;
   --track-music-dim:     rgba(99,102,241,0.7);
   --track-music-bg:      rgba(99,102,241,0.14);
   --track-music-border:  rgba(99,102,241,0.35);
+  --track-music-solid:        #4f46e5;
+  --track-music-border-solid: #4338ca;
 
   /* ── Glow values (subtle) ── */
   --glow-video:     rgba(55,65,81,0.15);
