@@ -16,6 +16,7 @@ export interface TimelineClipProps {
   fps?: number;
   className?: string;
   style?: React.CSSProperties;
+  thumbnails?: Map<string, string>;
 }
 
 function getClipIcon(trackType?: string) {
@@ -40,6 +41,7 @@ export const TimelineClip = React.memo(function TimelineClip({
   fps = 30,
   className,
   style,
+  thumbnails,
 }: TimelineClipProps) {
   const start = (clip.timelineStart as number) * ppf;
   const end = (clip.timelineEnd as number) * ppf;
@@ -56,6 +58,9 @@ export const TimelineClip = React.memo(function TimelineClip({
   const mainHeight = effectCount > 0
     ? height - effectCount * EFFECT_ROW_HEIGHT - 2
     : height;
+
+  const assetId = clip.assetId as string;
+  const thumbnail = thumbnails?.get(assetId);
 
   return (
     <div
@@ -91,9 +96,19 @@ export const TimelineClip = React.memo(function TimelineClip({
         {/* Filmstrip thumbnails for video clips */}
         {trackType !== 'audio' && trackType !== 'subtitle' && width > 30 && (
           <div className="clip-thumbnails">
-            {Array.from({ length: Math.max(1, Math.floor(width / 40)) }, (_, i) => (
-              <div key={i} className="clip-thumb-frame" />
-            ))}
+            {thumbnail ? (
+              Array.from({ length: Math.max(1, Math.floor(width / 40)) }, (_, i) => (
+                <div
+                  key={i}
+                  className="clip-thumb-frame clip-thumb-frame--real"
+                  style={{ backgroundImage: `url(${thumbnail})` }}
+                />
+              ))
+            ) : (
+              Array.from({ length: Math.max(1, Math.floor(width / 40)) }, (_, i) => (
+                <div key={i} className="clip-thumb-frame" />
+              ))
+            )}
           </div>
         )}
 

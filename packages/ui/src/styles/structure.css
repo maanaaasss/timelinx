@@ -651,6 +651,85 @@
   opacity: 0.25;
 }
 
+/* ── Real thumbnail frames (Phase 10) ── */
+.clip-thumb-frame--real {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ── Media Preview (Phase 10) ── */
+.media-preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+}
+
+.media-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+/* ── Asset bin drag-drop overlay (Phase 10) ── */
+.bin-drop-active {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.bin-drop-active::after {
+  content: 'Drop media files here';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--accent-rgb, 99,102,241), 0.12);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--accent);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.asset-bin {
+  position: relative;
+}
+
+/* ── Asset bin error messages (Phase 10) ── */
+.bin-errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.bin-error-msg {
+  font-size: 10px;
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Asset bin real thumbnail image (Phase 10) ── */
+.bin-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .tl-clip.provisional {
   opacity: 0.6;
   animation: tl-fadeIn var(--duration-base) var(--ease-out);

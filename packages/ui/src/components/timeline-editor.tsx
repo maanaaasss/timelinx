@@ -37,6 +37,8 @@ import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { TransportControls } from './transport-controls';
 import { AssetBin } from './asset-bin';
+import { MediaPreview } from './media-preview';
+import { MediaAssetsProvider, useMediaAssets } from '../context/media-assets-context';
 import { frameToTimecode, getFriendlyTrackLabel } from '../shared/time';
 
 const DEFAULT_TRACK_HEIGHT_VIDEO = 80;
@@ -62,6 +64,7 @@ const ClipRow = React.memo(function ClipRow({
   startFrame,
   endFrame,
   trackType,
+  thumbnails,
 }: {
   trackId: string;
   ppf: number;
@@ -73,6 +76,7 @@ const ClipRow = React.memo(function ClipRow({
   startFrame: number;
   endFrame: number;
   trackType?: string;
+  thumbnails?: Map<string, string>;
 }) {
   const { engine } = useTimelineContext();
   const track = useTrackWithEngine(engine, trackId);
@@ -110,6 +114,7 @@ const ClipRow = React.memo(function ClipRow({
               isProvisional={isGhost}
               trackType={trackType}
               fps={fps}
+              thumbnails={thumbnails}
             />
           );
         })}
@@ -170,12 +175,14 @@ export function TimelineEditor({
   );
 
   if (hasContext) {
-    return content;
+    return <MediaAssetsProvider>{content}</MediaAssetsProvider>;
   }
 
   return (
     <TimelineProvider engine={engine} initialPpf={initialPpf} onPpfChange={onPpfChange}>
-      {content}
+      <MediaAssetsProvider>
+        {content}
+      </MediaAssetsProvider>
     </TimelineProvider>
   );
 }
@@ -218,6 +225,8 @@ function EditorInner({
     labelWidth,
   } = useTimelineContext();
 
+  const mediaAssets = useMediaAssets();
+
   const [, forceUpdate] = useState(0);
   const triggerUpdate = useCallback(() => forceUpdate((n) => n + 1), []);
 
@@ -242,6 +251,7 @@ function EditorInner({
   const cursor = useCursor(engine);
   const virtualWindow = useVirtualWindow(engine, vpWidth, scrollLeft, ppf);
   const history = useHistory(engine);
+  const thumbnails = mediaAssets.getAllThumbnails();
 
   const frameRef = useRef(frame);
   frameRef.current = frame;
@@ -679,6 +689,7 @@ function EditorInner({
           <div className="timeline-preview-area">
             <div className="preview-panel">
               <div className="preview-frame" style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}>
+                <MediaPreview />
                 <div className="preview-safe-area" />
                 <div className="preview-timecode" style={{ position: 'absolute', bottom: 8, left: 10 }}>
                   {frameToTimecode(frame as number, fps)}
@@ -792,6 +803,7 @@ function EditorInner({
                         startFrame={virtualWindow.startFrame as number}
                         endFrame={virtualWindow.endFrame as number}
                         trackType={trackTypesMap.get(tid)}
+                        thumbnails={thumbnails}
                       />
                     </React.Fragment>
                   );

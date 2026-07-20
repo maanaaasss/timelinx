@@ -48,6 +48,9 @@ export type { TopNavProps } from './components/top-nav';
 export { TransportControls } from './components/transport-controls';
 export type { TransportControlsProps } from './components/transport-controls';
 
+export { MediaPreview } from './components/media-preview';
+export type { MediaPreviewProps } from './components/media-preview';
+
 export { MarkersPanel } from './components/markers-panel';
 export type { MarkersPanelProps } from './components/markers-panel';
 
@@ -97,6 +100,15 @@ export type {
   TimelineProviderProps,
 } from './context/timeline-context';
 
+export {
+  MediaAssetsProvider,
+  useMediaAssets,
+} from './context/media-assets-context';
+
+export type {
+  MediaAssetsContextValue,
+} from './context/media-assets-context';
+
 // ── Icons (for custom toolbars) ────────────────────────────────────────────
 export {
   IconPlus,
@@ -136,3 +148,20 @@ export {
 export { useTimelineRefs } from './shared/use-refs';
 export { clamp } from './shared/geometry';
 export { cn } from './shared/cn';
+
+export {
+  extractMetadata,
+  extractVideoMetadata,
+  extractAudioMetadata,
+  extractImageMetadata,
+  detectMediaType,
+} from './utils/media-import';
+
+export type {
+  MediaMetadata,
+  VideoMetadata,
+  AudioMetadata,
+  ImageMetadata,
+  ImportedMediaType,
+  ImportError,
+} from './utils/media-import';
