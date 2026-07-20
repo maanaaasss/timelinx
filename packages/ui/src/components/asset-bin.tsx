@@ -1,7 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { useEngine } from '@timelinx/react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useTimelineContext } from '../context/timeline-context';
+import { useMediaAssets } from '../context/media-assets-context';
+import { extractMetadata, detectMediaType } from '../utils/media-import';
 import type { Asset, AssetId } from '@timelinx/core';
+import { createAsset, toFrame, frameRate, toAssetId } from '@timelinx/core';
 import { Upload, Grid3X3, SlidersHorizontal, Filter } from 'lucide-react';
 
 const PLACEHOLDER_GRADIENTS: Record<string, string> = {
@@ -30,10 +32,16 @@ export const AssetBin = React.memo(function AssetBin({
   className,
 }: AssetBinProps) {
   const { engine } = useTimelineContext();
+  const mediaAssets = useMediaAssets();
   const [selectedAssetId, setSelectedAssetId] = useState<AssetId | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [importErrors, setImportErrors] = useState<Array<{ name: string; message: string }>>([]);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const state = engine.getState();
+  const fps = (state.timeline.fps as number) || 30;
   const assets = Array.from(state.assetRegistry.values());
 
   const filteredAssets = searchQuery
@@ -52,24 +60,129 @@ export const AssetBin = React.memo(function AssetBin({
     e.dataTransfer.effectAllowed = 'copy';
   }, []);
 
+  const importFiles = useCallback(async (files: FileList | File[]) => {
+    setIsImporting(true);
+    setImportErrors([]);
+    const errors: Array<{ name: string; message: string }> = [];
+
+    for (const file of Array.from(files)) {
+      const mediaType = detectMediaType(file);
+      if (mediaType === 'unsupported') {
+        errors.push({ name: file.name, message: `Unsupported file type: ${file.type || 'unknown'}` });
+        continue;
+      }
+
+      try {
+        const metadata = await extractMetadata(file);
+        const blobUrl = URL.createObjectURL(file);
+        const assetId = toAssetId(`asset-${crypto.randomUUID()}`);
+
+        const durationFrames = metadata.kind === 'image'
+          ? fps * 5  // Default 5 seconds for images
+          : Math.round(metadata.duration * fps);
+
+        const asset = createAsset({
+          id: assetId,
+          name: file.name,
+          mediaType: mediaType === 'image' ? 'video' : mediaType,
+          filePath: blobUrl,
+          intrinsicDuration: toFrame(Math.max(1, durationFrames)),
+          nativeFps: frameRate(fps),
+          sourceTimecodeOffset: toFrame(0),
+        });
+
+        const thumbnail = 'thumbnail' in metadata ? metadata.thumbnail : undefined;
+        mediaAssets.addImportedAsset(assetId, file, blobUrl, thumbnail);
+
+        const result = engine.dispatch({
+          id: `import-asset-${assetId}`,
+          label: `Import ${file.name}`,
+          timestamp: Date.now(),
+          operations: [{ type: 'REGISTER_ASSET', asset }],
+        });
+
+        if (!result.accepted) {
+          errors.push({ name: file.name, message: `Registration rejected: ${result.reason}` });
+          mediaAssets.removeImportedAsset(assetId);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        errors.push({ name: file.name, message });
+      }
+    }
+
+    setImportErrors(errors);
+    setIsImporting(false);
+  }, [engine, fps, mediaAssets]);
+
   const handleImport = useCallback(() => {
-    console.log('Import assets requested');
+    fileInputRef.current?.click();
   }, []);
 
-  const formatDuration = (duration: number, fps: number): string => {
-    const totalSeconds = Math.floor(duration / fps);
-    const frames = duration % fps;
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        importFiles(files);
+      }
+      e.target.value = '';
+    },
+    [importFiles],
+  );
+
+  const handleBinDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes('Files')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      setIsDragOver(true);
+    }
+  }, []);
+
+  const handleBinDragLeave = useCallback((e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleBinDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        importFiles(files);
+      }
+    },
+    [importFiles],
+  );
+
+  const formatDuration = (duration: number, nativeFps: number): string => {
+    const totalSeconds = Math.floor(duration / nativeFps);
     const seconds = totalSeconds % 60;
     const minutes = Math.floor(totalSeconds / 60) % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
   return (
-    <div className={`asset-bin${className ? ` ${className}` : ''}`}>
+    <div
+      className={`asset-bin${isDragOver ? ' bin-drop-active' : ''}${className ? ` ${className}` : ''}`}
+      onDragOver={handleBinDragOver}
+      onDragLeave={handleBinDragLeave}
+      onDrop={handleBinDrop}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="video/*,audio/*,image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+
       <div className="bin-toolbar">
-        <button className="bin-upload-btn" onClick={handleImport} title="Import assets">
+        <button className="bin-upload-btn" onClick={handleImport} title="Import assets" disabled={isImporting}>
           <Upload size={14} />
-          <span>Upload</span>
+          <span>{isImporting ? 'Importing...' : 'Upload'}</span>
         </button>
         <div className="bin-controls">
           <button className="bin-control-btn" title="Grid view">
@@ -86,6 +199,16 @@ export const AssetBin = React.memo(function AssetBin({
         </div>
       </div>
 
+      {importErrors.length > 0 && (
+        <div className="bin-errors">
+          {importErrors.map((err, i) => (
+            <div key={i} className="bin-error-msg">
+              {err.name}: {err.message}
+            </div>
+          ))}
+        </div>
+      )}
+
       {filteredAssets.length === 0 ? (
         <div className="empty-state" style={{ flex: 1 }}>
           {searchQuery ? (
@@ -99,24 +222,36 @@ export const AssetBin = React.memo(function AssetBin({
         </div>
       ) : (
         <div className="bin-grid">
-          {filteredAssets.map((asset, i) => (
-            <div
-              key={asset.id as string}
-              className={`bin-card${selectedAssetId === asset.id ? ' selected' : ''}`}
-              onClick={() => handleAssetClick(asset)}
-              draggable
-              onDragStart={(e) => handleDragStart(e, asset)}
-            >
-              <div className={`bin-thumb ${getPlaceholderClass(asset.mediaType, i)}`}>
-                <div className="bin-thumb-overlay">
-                  {formatDuration(asset.intrinsicDuration as number, (asset.nativeFps as number) || 30)}
+          {filteredAssets.map((asset, i) => {
+            const assetId = asset.id as string;
+            const thumbnail = mediaAssets.getThumbnail(assetId);
+            return (
+              <div
+                key={assetId}
+                className={`bin-card${selectedAssetId === asset.id ? ' selected' : ''}`}
+                onClick={() => handleAssetClick(asset)}
+                draggable
+                onDragStart={(e) => handleDragStart(e, asset)}
+              >
+                <div className={`bin-thumb${!thumbnail ? ` ${getPlaceholderClass(asset.mediaType, i)}` : ''}`}>
+                  {thumbnail && (
+                    <img
+                      className="bin-thumb-img"
+                      src={thumbnail}
+                      alt={asset.name}
+                      draggable={false}
+                    />
+                  )}
+                  <div className="bin-thumb-overlay">
+                    {formatDuration(asset.intrinsicDuration as number, (asset.nativeFps as number) || 30)}
+                  </div>
+                </div>
+                <div className="bin-card-info">
+                  <div className="bin-card-name">{asset.name}</div>
                 </div>
               </div>
-              <div className="bin-card-info">
-                <div className="bin-card-name">{asset.name}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -67,6 +67,7 @@
   border-top: 1px solid var(--border-default);
   background: var(--bg-app);
   position: relative;
+  overscroll-behavior: none;
 }
 
 .timeline-resize-handle {
@@ -273,6 +274,7 @@
   width: var(--track-header-width);
   flex-shrink: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background: var(--bg-panel);
   border-right: 1px solid var(--border-faint);
 }
@@ -288,28 +290,37 @@
 }
 
 .timeline-scroll-area {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
-  overflow: auto;
+  min-height: 0;
   background: var(--bg-canvas);
-  overscroll-behavior: contain;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
-.timeline-ruler-container {
+.timeline-track-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: none;
+}
+
+.timeline-ruler {
   position: sticky;
   top: 0;
   z-index: 25;
-  width: max-content;
-  min-width: 100%;
   height: var(--ruler-height);
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-faint);
+  user-select: none;
+  flex-shrink: 0;
 }
 
 .timeline-track-canvas {
   position: relative;
-  width: 100%;
+  min-width: 100%;
 }
 
 /* ── Tracks ── */
@@ -317,6 +328,7 @@
   display: flex;
   position: relative;
   border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
 }
 
 .tl-track-header {
@@ -439,6 +451,7 @@
 .tl-track-body {
   position: relative;
   flex: 1;
+  height: 100%;
   min-width: 0;
   overflow: hidden;
   background: var(--bg-surface);
@@ -477,8 +490,10 @@
   position: absolute;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   cursor: grab;
   user-select: none;
+  contain: layout size;
 }
 
 .tl-clip-wrap:active {
@@ -489,9 +504,11 @@
   z-index: 10;
 }
 
+/* Yellow selection border — mimics NLE trim selection */
 .tl-clip-wrap.selected .tl-clip {
-  border-color: var(--selection);
-  box-shadow: 0 0 0 2px var(--selection-ring), 0 0 10px var(--selection-glow), var(--shadow-sm);
+  border-color: var(--selection) !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 0 1px var(--selection-ring), 0 0 12px var(--selection-glow), var(--shadow-sm);
 }
 
 .tl-clip {
@@ -503,44 +520,51 @@
   gap: 6px;
   overflow: hidden;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  flex-shrink: 0;
   transition:
     box-shadow var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out);
 }
 
+/* Video: keep minimal/dark — thumbnails will fill this area later */
 .tl-clip--video {
   background: var(--track-video-bg);
   border: 1px solid var(--track-video-border);
   border-left: 3px solid var(--track-video);
 }
 
+/* Audio: solid color */
 .tl-clip--audio {
-  background: var(--track-audio-bg);
-  border: 1px solid var(--track-audio-border);
+  background: var(--track-audio-solid);
+  border: 1px solid var(--track-audio-border-solid);
   border-left: 3px solid var(--track-audio);
 }
 
+/* Subtitle / caption: solid color */
 .tl-clip--subtitle {
-  background: var(--track-subtitle-bg);
-  border: 1px solid var(--track-subtitle-border);
+  background: var(--track-subtitle-solid);
+  border: 1px solid var(--track-subtitle-border-solid);
   border-left: 3px solid var(--track-subtitle);
 }
 
+/* Image: solid color */
 .tl-clip--image {
-  background: var(--track-image-bg);
-  border: 1px solid var(--track-image-border);
+  background: var(--track-image-solid);
+  border: 1px solid var(--track-image-border-solid);
   border-left: 3px solid var(--track-image);
 }
 
+/* Effect: solid color */
 .tl-clip--effect {
-  background: var(--track-effect-bg);
-  border: 1px solid var(--track-effect-border);
+  background: var(--track-effect-solid);
+  border: 1px solid var(--track-effect-border-solid);
   border-left: 3px solid var(--track-effect);
 }
 
+/* Music: solid color */
 .tl-clip--music {
-  background: var(--track-music-bg);
-  border: 1px solid var(--track-music-border);
+  background: var(--track-music-solid);
+  border: 1px solid var(--track-music-border-solid);
   border-left: 3px solid var(--track-music);
 }
 
@@ -627,6 +651,85 @@
   opacity: 0.25;
 }
 
+/* ── Real thumbnail frames (Phase 10) ── */
+.clip-thumb-frame--real {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ── Media Preview (Phase 10) ── */
+.media-preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+}
+
+.media-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+/* ── Asset bin drag-drop overlay (Phase 10) ── */
+.bin-drop-active {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.bin-drop-active::after {
+  content: 'Drop media files here';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--accent-rgb, 99,102,241), 0.12);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--accent);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.asset-bin {
+  position: relative;
+}
+
+/* ── Asset bin error messages (Phase 10) ── */
+.bin-errors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.bin-error-msg {
+  font-size: 10px;
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Asset bin real thumbnail image (Phase 10) ── */
+.bin-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
 .tl-clip.provisional {
   opacity: 0.6;
   animation: tl-fadeIn var(--duration-base) var(--ease-out);
@@ -703,17 +806,14 @@
 
 .tl-clip-wrap.selected .clip-handle {
   background: var(--selection-handle);
+  width: 12px;
 }
 
-.tl-clip-wrap.selected .clip-handle-icon { opacity: 1; }
-
-/* ── Ruler ── */
-.timeline-ruler {
-  height: 100%;
-  background: var(--bg-panel);
-  user-select: none;
-  position: relative;
-  overflow: hidden;
+.tl-clip-wrap.selected .clip-handle-icon {
+  opacity: 1;
+  width: 10px;
+  height: 10px;
+  color: var(--selection-on-fill);
 }
 
 /* ── Playhead ── */

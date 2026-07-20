@@ -9,8 +9,24 @@ import {
   createEffect,
   toEffectId,
   toGeneratorId,
+  browserClock,
 } from '@timelinx/core';
+import type { PipelineConfig } from '@timelinx/core';
 import { TimelineEngine } from '@timelinx/react';
+
+const stubPipeline: PipelineConfig = {
+  videoDecoder: async (req) => ({
+    clipId: req.clipId,
+    mediaFrame: req.mediaFrame,
+    width: 1920,
+    height: 1080,
+    bitmap: null,
+  }),
+  compositor: async (req) => ({
+    timelineFrame: req.timelineFrame,
+    bitmap: null,
+  }),
+};
 
 export function createEditorEngine() {
   const assetVideo1 = createAsset({
@@ -161,6 +177,8 @@ export function createEditorEngine() {
 
   const engine = new TimelineEngine({
     initialState: state,
+    pipeline: stubPipeline,
+    clock: browserClock,
     onZoomChange: () => {},
   });
 

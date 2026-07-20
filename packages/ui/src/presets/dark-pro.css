@@ -81,21 +81,31 @@
   --track-audio-dim:   rgba(59,130,246,0.70);
   --track-audio-bg:    rgba(59,130,246,0.18);
   --track-audio-border: rgba(59,130,246,0.40);
+  --track-audio-solid:        #1d4ed8;
+  --track-audio-border-solid: #1e40af;
   --track-subtitle:    #eab308;
   --track-subtitle-dim: rgba(234,179,8,0.70);
   --track-subtitle-bg: rgba(234,179,8,0.14);
   --track-subtitle-border: rgba(234,179,8,0.35);
+  --track-subtitle-solid:        #a16207;
+  --track-subtitle-border-solid: #854d0e;
   --track-image:       #a78bfa;
   --track-image-bg:    rgba(167,139,250,0.14);
   --track-image-border: rgba(167,139,250,0.35);
+  --track-image-solid:        #6d28d9;
+  --track-image-border-solid: #5b21b6;
   --track-effect:      #10b981;
   --track-effect-dim:  rgba(16,185,129,0.70);
   --track-effect-bg:   rgba(16,185,129,0.18);
   --track-effect-border: rgba(16,185,129,0.40);
+  --track-effect-solid:        #047857;
+  --track-effect-border-solid: #065f46;
   --track-music:       #6366f1;
   --track-music-dim:   rgba(99,102,241,0.70);
   --track-music-bg:    rgba(99,102,241,0.18);
   --track-music-border: rgba(99,102,241,0.40);
+  --track-music-solid:        #3730a3;
+  --track-music-border-solid: #312e81;
 
   /* ── Glow — subtle, not neon ── */
   --glow-video:        rgba(55,65,81,0.15);

@@ -18,10 +18,12 @@
   --success: #4aff8a;
   --warning: #ffaa4a;
   --border: #2a2a4a;
-  --clip-video: #3a7bd5;
-  --clip-audio: #2ecc71;
-  --clip-title: #9b59b6;
-  --clip-selected: #4a9eff;
+  --clip-video: rgba(30, 30, 60, 0.55);
+  --clip-audio: #27ae60;
+  --clip-title: #8e44ad;
+  --clip-subtitle: #2471a3;
+  --clip-selected-border: #FFD700;
+  --clip-selected-shadow: rgba(255, 215, 0, 0.35);
   --track-height: 56px;
   --header-height: 48px;
   --toolbar-height: 44px;
@@ -289,37 +291,106 @@ body {
   top: 4px;
   bottom: 4px;
   border-radius: 4px;
+  border: 1.5px solid transparent;
   cursor: grab;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   user-select: none;
 }
 
+/* Inner content wrapper to clip text within rounded corners */
+.clip::before,
+.clip::after {
+  content: none;
+}
 
-
+/* Video clips: plain dark background, no color — thumbnails will fill later */
 .clip.video {
-  background: linear-gradient(135deg, var(--clip-video), #2a5db0);
+  background: #1c1c32;
+  border-color: #2e2e50;
 }
 
+/* Audio clips: solid green */
 .clip.audio {
-  background: linear-gradient(135deg, var(--clip-audio), #1fa855);
+  background: var(--clip-audio);
+  border-color: #1e8449;
 }
 
+/* Title / text clips: solid purple */
 .clip.title {
-  background: linear-gradient(135deg, var(--clip-title), #7a3d9e);
+  background: var(--clip-title);
+  border-color: #6c3483;
 }
 
+/* Subtitle clips: solid blue */
+.clip.subtitle {
+  background: var(--clip-subtitle);
+  border-color: #1a5276;
+}
+
+/* ── Selected state ── */
+/* Yellow border that mimics a video-editor selection */
 .clip.selected {
-  box-shadow: 0 0 0 2px var(--clip-selected), 0 0 8px rgba(74, 158, 255, 0.3);
+  border-color: var(--clip-selected-border);
+  box-shadow: 0 0 0 1px var(--clip-selected-border),
+              0 0 10px var(--clip-selected-shadow);
+  overflow: visible;
+  z-index: 10;
+}
+
+/* Left trim arrow handle */
+.clip.selected::before {
+  content: '◄';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 22px;
+  background: var(--clip-selected-border);
+  color: #1a1a1a;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px 0 0 3px;
+  pointer-events: none;
+  line-height: 1;
+  padding-bottom: 1px;
+  z-index: 11;
+}
+
+/* Right trim arrow handle */
+.clip.selected::after {
+  content: '►';
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 22px;
+  background: var(--clip-selected-border);
+  color: #1a1a1a;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 3px 3px 0;
+  pointer-events: none;
+  line-height: 1;
+  padding-bottom: 1px;
+  z-index: 11;
 }
 
 .clip.targeted {
-  box-shadow: 0 0 0 2px var(--warning), 0 0 8px rgba(255, 170, 74, 0.3);
+  border-color: var(--warning);
+  box-shadow: 0 0 0 1px var(--warning), 0 0 8px rgba(255, 170, 74, 0.3);
 }
 
+/* Clip inner text — clipped to prevent overflow onto handles */
 .clip-info {
-  padding: 2px 6px;
+  padding: 3px 18px 1px 8px;
   font-size: 11px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
@@ -329,16 +400,17 @@ body {
 }
 
 .clip-duration {
-  padding: 0 6px;
+  padding: 0 8px;
   font-size: 9px;
   color: rgba(255, 255, 255, 0.6);
   font-variant-numeric: tabular-nums;
 }
 
 .clip.ghost {
-  opacity: 0.7;
-  outline: 2px dashed rgba(255, 255, 255, 0.5);
+  opacity: 0.6;
+  outline: 2px dashed rgba(255, 255, 255, 0.4);
   pointer-events: none;
+  border-color: transparent;
 }
 
 /* Caption blocks on subtitle tracks — positioned identically to .clip */

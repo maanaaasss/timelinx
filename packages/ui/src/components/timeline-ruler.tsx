@@ -77,7 +77,9 @@ export const TimelineRuler = React.memo(function TimelineRuler({
       style={{
         width: totalWidth,
         height,
-        position: 'relative',
+        position: 'sticky',
+        top: 0,
+        zIndex: 25,
         cursor: 'ew-resize',
         ...style,
       }}
@@ -89,6 +91,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
         if (e.buttons & 1) handlePointer(e);
       }}
     >
+
       {ticks.map((tick, i) => (
         <React.Fragment key={i}>
           <div

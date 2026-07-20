@@ -37,6 +37,8 @@ import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { TransportControls } from './transport-controls';
 import { AssetBin } from './asset-bin';
+import { MediaPreview } from './media-preview';
+import { MediaAssetsProvider, useMediaAssets } from '../context/media-assets-context';
 import { frameToTimecode, getFriendlyTrackLabel } from '../shared/time';
 
 const DEFAULT_TRACK_HEIGHT_VIDEO = 80;
@@ -62,6 +64,7 @@ const ClipRow = React.memo(function ClipRow({
   startFrame,
   endFrame,
   trackType,
+  thumbnails,
 }: {
   trackId: string;
   ppf: number;
@@ -73,6 +76,7 @@ const ClipRow = React.memo(function ClipRow({
   startFrame: number;
   endFrame: number;
   trackType?: string;
+  thumbnails?: Map<string, string>;
 }) {
   const { engine } = useTimelineContext();
   const track = useTrackWithEngine(engine, trackId);
@@ -110,6 +114,7 @@ const ClipRow = React.memo(function ClipRow({
               isProvisional={isGhost}
               trackType={trackType}
               fps={fps}
+              thumbnails={thumbnails}
             />
           );
         })}
@@ -170,12 +175,14 @@ export function TimelineEditor({
   );
 
   if (hasContext) {
-    return content;
+    return <MediaAssetsProvider>{content}</MediaAssetsProvider>;
   }
 
   return (
     <TimelineProvider engine={engine} initialPpf={initialPpf} onPpfChange={onPpfChange}>
-      {content}
+      <MediaAssetsProvider>
+        {content}
+      </MediaAssetsProvider>
     </TimelineProvider>
   );
 }
@@ -218,11 +225,13 @@ function EditorInner({
     labelWidth,
   } = useTimelineContext();
 
+  const mediaAssets = useMediaAssets();
+
   const [, forceUpdate] = useState(0);
   const triggerUpdate = useCallback(() => forceUpdate((n) => n + 1), []);
 
   const trackAreaRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const trackScrollRef = useRef<HTMLDivElement>(null);
   const labelColumnRef = useRef<HTMLDivElement>(null);
   const handDragRef = useRef<{ startX: number; startScroll: number } | null>(null);
   const resizeDragRef = useRef<{ trackId: string; startY: number; startHeight: number } | null>(null);
@@ -242,6 +251,7 @@ function EditorInner({
   const cursor = useCursor(engine);
   const virtualWindow = useVirtualWindow(engine, vpWidth, scrollLeft, ppf);
   const history = useHistory(engine);
+  const thumbnails = mediaAssets.getAllThumbnails();
 
   const frameRef = useRef(frame);
   frameRef.current = frame;
@@ -311,7 +321,7 @@ function EditorInner({
   }, [trackIds, provisional, engine.getState().timeline.tracks]);
 
   useEffect(() => {
-    const el = scrollContainerRef.current;
+    const el = trackScrollRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -346,8 +356,8 @@ function EditorInner({
     const viewEnd = viewStart + vpWidth;
     if (playheadX > viewEnd - 80 || playheadX < viewStart + 20) {
       const newScroll = Math.max(0, playheadX - vpWidth * 0.2);
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = newScroll;
+      if (trackScrollRef.current) {
+        trackScrollRef.current.scrollLeft = newScroll;
       }
       setScrollLeft(newScroll);
     }
@@ -451,8 +461,8 @@ function EditorInner({
         const maxScroll = Math.max(0, durationFrames * ppfRef.current - vpWidth);
         const newScroll = Math.max(0, Math.min(maxScroll, handDragRef.current.startScroll - dx));
         setScrollLeft(newScroll);
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollLeft = newScroll;
+        if (trackScrollRef.current) {
+          trackScrollRef.current.scrollLeft = newScroll;
         }
         return;
       }
@@ -601,6 +611,7 @@ function EditorInner({
       const maxScroll = Math.max(0, durationFrames * ppfRef.current - vpWidth);
       const clampedScroll = Math.min(sl, maxScroll);
       setScrollLeft(clampedScroll);
+      // Sync label column vertical scroll
       if (labelColumnRef.current) {
         labelColumnRef.current.scrollTop = e.currentTarget.scrollTop;
       }
@@ -678,6 +689,7 @@ function EditorInner({
           <div className="timeline-preview-area">
             <div className="preview-panel">
               <div className="preview-frame" style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}>
+                <MediaPreview />
                 <div className="preview-safe-area" />
                 <div className="preview-timecode" style={{ position: 'absolute', bottom: 8, left: 10 }}>
                   {frameToTimecode(frame as number, fps)}
@@ -704,11 +716,7 @@ function EditorInner({
           <div className="timeline-workspace-split">
             {/* Left: Track Labels */}
             <div ref={labelColumnRef} className="timeline-label-column">
-              <div className="timeline-label-header">
-                <span className="timecode">
-                  {frameToTimecode(frame as number, fps)}
-                </span>
-              </div>
+              <div className="timeline-label-header" />
 
               {trackIds.map((tid, i) => {
                 const h = getTrackHeight(tid);
@@ -748,16 +756,14 @@ function EditorInner({
               })}
             </div>
 
-            {/* Right: Scroll Area (Ruler & Tracks Canvas) */}
-            <div
-              ref={scrollContainerRef}
-              className="timeline-scroll-area"
-              onScroll={onScroll}
-            >
-              <div className="timeline-ruler-container">
-                <TimelineRuler totalWidth={timelineWidth} />
-              </div>
-
+            {/* Right: Tracks (scrollable, ruler sticky inside) */}
+            <div className="timeline-scroll-area">
+              <div
+                className="timeline-track-scroll"
+                ref={trackScrollRef}
+                onScroll={onScroll}
+              >
+              <TimelineRuler totalWidth={timelineWidth} />
               <div
                 ref={trackAreaRef}
                 className="timeline-track-canvas"
@@ -797,6 +803,7 @@ function EditorInner({
                         startFrame={virtualWindow.startFrame as number}
                         endFrame={virtualWindow.endFrame as number}
                         trackType={trackTypesMap.get(tid)}
+                        thumbnails={thumbnails}
                       />
                     </React.Fragment>
                   );
@@ -818,6 +825,7 @@ function EditorInner({
                 )}
 
                 <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />
+              </div>
               </div>
             </div>
           </div>
