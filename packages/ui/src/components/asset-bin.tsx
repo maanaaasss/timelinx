@@ -3,7 +3,7 @@ import { useTimelineContext } from '../context/timeline-context';
 import { useMediaAssets } from '../context/media-assets-context';
 import { extractMetadata, detectMediaType } from '../utils/media-import';
 import type { Asset, AssetId } from '@timelinx/core';
-import { createAsset, toFrame, frameRate, toAssetId } from '@timelinx/core';
+import { createAsset, toFrame, frameRate, toAssetId, createClip } from '@timelinx/core';
 import { Upload, Grid3X3, SlidersHorizontal, Filter } from 'lucide-react';
 
 const PLACEHOLDER_GRADIENTS: Record<string, string> = {
@@ -53,7 +53,38 @@ export const AssetBin = React.memo(function AssetBin({
 
   const handleAssetClick = useCallback((asset: Asset) => {
     setSelectedAssetId(asset.id);
-  }, []);
+
+    const state = engine.getState();
+    const tracks = state.timeline.tracks;
+    const preferredType = asset.mediaType === 'audio' ? 'audio' : 'video';
+    const track = tracks.find((t) => t.type === preferredType) ?? tracks[0];
+    if (!track) return;
+
+    const duration = asset.intrinsicDuration as number;
+    const frame = engine.getPlayheadFrame() as number;
+    const clipId = `clip-${crypto.randomUUID()}`;
+
+    engine.dispatch({
+      id: `add-asset-${clipId}`,
+      label: `Add ${asset.name} to timeline`,
+      timestamp: Date.now(),
+      operations: [
+        {
+          type: 'INSERT_CLIP',
+          trackId: track.id,
+          clip: createClip({
+            id: clipId,
+            assetId: asset.id as string,
+            trackId: track.id,
+            timelineStart: toFrame(frame),
+            timelineEnd: toFrame(frame + duration),
+            mediaIn: toFrame(0),
+            mediaOut: toFrame(duration),
+          }),
+        },
+      ],
+    });
+  }, [engine]);
 
   const handleDragStart = useCallback((e: React.DragEvent, asset: Asset) => {
     e.dataTransfer.setData('application/x-timeline-asset', asset.id as string);

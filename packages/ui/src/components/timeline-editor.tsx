@@ -37,7 +37,9 @@ import { Sidebar } from './sidebar';
 import { TopNav } from './top-nav';
 import { TransportControls } from './transport-controls';
 import { AssetBin } from './asset-bin';
-import { MediaPreview } from './media-preview';
+import { CompositorPreview } from './canvas-compositor';
+import { ExportDialog } from './export-dialog';
+import { useExport } from '../hooks/use-export';
 import { MediaAssetsProvider, useMediaAssets } from '../context/media-assets-context';
 import { frameToTimecode, getFriendlyTrackLabel } from '../shared/time';
 
@@ -86,7 +88,15 @@ const ClipRow = React.memo(function ClipRow({
   const isAudio = track.type === 'audio';
 
   const provisionalClips = provisional?.clips ?? [];
-  const provisionalIds = new Set(provisionalClips.map((pc) => pc.id as string));
+  const provisionalById = new Map(provisionalClips.map((pc) => [pc.id as string, pc]));
+  const renderClips = clips.flatMap((clip) => {
+    const ghostClip = provisionalById.get(clip.id as string);
+    const candidate = ghostClip ?? clip;
+    const clipStart = candidate.timelineStart as number;
+    const clipEnd = candidate.timelineEnd as number;
+    if (clipEnd < startFrame || clipStart > endFrame) return [];
+    return [{ clip, ghostClip }];
+  });
 
   return (
     <div
@@ -97,11 +107,8 @@ const ClipRow = React.memo(function ClipRow({
       }}
     >
       <div className="tl-track-body">
-        {clips.map((clip) => {
-          const isGhost = provisionalIds.has(clip.id as string);
-          const ghostClip = isGhost
-            ? provisionalClips.find((pc) => pc.id === clip.id)
-            : null;
+        {renderClips.map(({ clip, ghostClip }) => {
+          const isGhost = ghostClip !== undefined;
           return (
             <TimelineClip
               key={clip.id as string}
@@ -227,6 +234,21 @@ function EditorInner({
 
   const mediaAssets = useMediaAssets();
 
+  // Export state
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportHook = useExport(engine, mediaAssets);
+
+  const handleExportOpen = useCallback(() => setExportOpen(true), []);
+  const handleExportClose = useCallback(() => {
+    if (exportHook.state.status !== 'encoding') {
+      setExportOpen(false);
+      // Reset state when closing after completion/error
+      if (exportHook.state.status === 'complete' || exportHook.state.status === 'error') {
+        // State resets automatically on next start
+      }
+    }
+  }, [exportHook.state.status]);
+
   const [, forceUpdate] = useState(0);
   const triggerUpdate = useCallback(() => forceUpdate((n) => n + 1), []);
 
@@ -290,12 +312,11 @@ function EditorInner({
 
   const trackTypesMap = useMemo(() => {
     const map = new Map<string, string>();
-    const state = engine.getState();
-    for (const t of state.timeline.tracks) {
+    for (const t of timeline.tracks) {
       map.set(t.id as string, t.type);
     }
     return map;
-  }, [trackIds, engine.getState().timeline.tracks]);
+  }, [timeline.tracks]);
 
   const getTrackHeight = useCallback(
     (trackId: string) => {
@@ -313,12 +334,11 @@ function EditorInner({
 
   const clipCounts = useMemo(() => {
     const map = new Map<string, number>();
-    const state = engine.getState();
-    for (const t of state.timeline.tracks) {
+    for (const t of timeline.tracks) {
       map.set(t.id as string, t.clips.length);
     }
     return map;
-  }, [trackIds, provisional, engine.getState().timeline.tracks]);
+  }, [timeline.tracks]);
 
   useEffect(() => {
     const el = trackScrollRef.current;
@@ -494,7 +514,6 @@ function EditorInner({
         return;
       }
       const evt = convertEvent(e);
-      engine.handlePointerUp(evt, extractModifiers(e));
       engine.handlePointerLeave(evt);
     },
     [engine, convertEvent],
@@ -674,7 +693,7 @@ function EditorInner({
       {/* Main Content Area */}
       <main className="timeline-main">
         {/* Top Navigation Bar */}
-        {showTopNav && <TopNav projectName={projectName} onExport={onExport} />}
+        {showTopNav && <TopNav projectName={projectName} onExport={() => { handleExportOpen(); onExport?.(); }} />}
 
         {/* Workspace Split: Media Browser + Preview */}
         <div className="timeline-workspace-split">
@@ -689,7 +708,7 @@ function EditorInner({
           <div className="timeline-preview-area">
             <div className="preview-panel">
               <div className="preview-frame" style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}>
-                <MediaPreview />
+                <CompositorPreview />
                 <div className="preview-safe-area" />
                 <div className="preview-timecode" style={{ position: 'absolute', bottom: 8, left: 10 }}>
                   {frameToTimecode(frame as number, fps)}
@@ -831,6 +850,16 @@ function EditorInner({
           </div>
         </div>
       </main>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={exportOpen}
+        onClose={handleExportClose}
+        exportState={exportHook.state}
+        onCancel={exportHook.cancelExport}
+        onStartExport={exportHook.startExport}
+        isSupported={exportHook.isSupported}
+      />
     </div>
   );
 }

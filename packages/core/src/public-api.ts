@@ -61,7 +61,7 @@ export type { MarkerId }  from './types/marker';
 export { toMarkerId }     from './types/marker';
 
 // Entity types
-export type { Asset, AssetStatus }              from './types/asset';
+export type { Asset, AssetStatus, FileAsset, GeneratorAsset } from './types/asset';
 export type { Clip }                            from './types/clip';
 export type { Track, TrackType }                from './types/track';
 export type { Timeline, SequenceSettings }      from './types/timeline';
@@ -223,6 +223,8 @@ export type {
   CompositeRequest,
   CompositeResult,
   Compositor,
+  ResolvedLayer,
+  ResolvedCompositeRequest,
   ThumbnailRequest,
   ThumbnailResult,
   ThumbnailProvider,

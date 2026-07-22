@@ -51,6 +51,12 @@ export type { TransportControlsProps } from './components/transport-controls';
 export { MediaPreview } from './components/media-preview';
 export type { MediaPreviewProps } from './components/media-preview';
 
+export { CompositorPreview } from './components/canvas-compositor';
+export type { CompositorPreviewProps } from './components/canvas-compositor';
+
+export { ExportDialog } from './components/export-dialog';
+export type { ExportDialogProps } from './components/export-dialog';
+
 export { MarkersPanel } from './components/markers-panel';
 export type { MarkersPanelProps } from './components/markers-panel';
 
@@ -165,3 +171,7 @@ export type {
   ImportedMediaType,
   ImportError,
 } from './utils/media-import';
+
+// ── Export (Phase 11) ────────────────────────────────────────────────────
+export { useExport } from './hooks/use-export';
+export type { ExportState, ExportStatus, UseExportReturn } from './hooks/use-export';
