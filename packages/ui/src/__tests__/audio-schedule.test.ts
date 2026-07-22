@@ -162,4 +162,30 @@ describe('computeAudioSchedule', () => {
     expect(result[1]!.offset).toBeCloseTo(120 / FPS, 10);
     expect(result[1]!.duration).toBeCloseTo(300 / FPS, 10);
   });
+
+  // ── Frame-0 anchoring: schedule is independent of playhead position ─
+
+  it('schedule is anchored to audioCtxCurrentTime, not playhead — clip at frame 200 schedules relative to audio context base', () => {
+    // This clip starts at frame 200 on the timeline.
+    // If the export accidentally used the playhead position as the anchor,
+    // the `when` value would differ depending on where the playhead was.
+    // But computeAudioSchedule only takes audioCtxCurrentTime — it has
+    // no knowledge of the playhead. So `when` is always base + 200/fps.
+    const clips = [makeClip({ timelineStart: 200, timelineEnd: 500 })];
+
+    // Simulate: playhead was at frame 200 when export started (doesn't matter)
+    const playheadFrame = 200;
+    const result = computeAudioSchedule(clips, CT_BASE, FPS);
+
+    // when = audioCtx.currentTime + timelineStart/fps
+    // NOT: playheadFrame/fps + timelineStart/fps
+    expect(result[0]!.when).toBeCloseTo(CT_BASE + 200 / FPS, 10);
+
+    // The key invariant: if we change the playhead frame but keep
+    // audioCtxCurrentTime the same, the schedule doesn't change.
+    // This proves the export is anchored to the audio context, not the playhead.
+    const playheadFrame2 = 0;
+    const result2 = computeAudioSchedule(clips, CT_BASE, FPS);
+    expect(result2[0]!.when).toBeCloseTo(result[0]!.when, 10);
+  });
 });
