@@ -1,7 +1,8 @@
 # Timelinx
 
 [![CI](https://github.com/maanaaasss/timelinx/actions/workflows/ci.yml/badge.svg)](https://github.com/maanaaasss/timelinx/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/@timelinx/core)](https://www.npmjs.com/package/@timelinx/core)
+[![npm version](https://img.shields.io/npm/v/@timelinx/core?label=@timelinx/core)](https://www.npmjs.com/package/@timelinx/core)
+[![npm version](https://img.shields.io/npm/v/@timelinx/react?label=@timelinx/react)](https://www.npmjs.com/package/@timelinx/react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Framework-agnostic TypeScript engine for professional NLE timeline editing, with React bindings for building browser-native video editors.
