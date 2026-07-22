@@ -63,6 +63,42 @@ A Canvas2D-based multi-layer compositor that replaces the single-`<video>` Media
 | `pnpm build` (all packages) | ✅ Pass |
 | `pnpm lint` (all packages) | ✅ Pass (0 new errors) |
 | `pnpm --filter @timelinx/core test` | ✅ 1462/1462 tests pass |
+| `pnpm --filter @timelinx/ui test` | ✅ 9/9 audio scheduling tests pass |
+
+## PR and CI
+
+- **PR**: [#32](https://github.com/maanaaasss/timelinx/pull/32) — `feature/phase-11-real-export`
+- **CI status**: `apps/editor` `features.test.tsx` > "renders clips in the DOM with data attributes" fails — **pre-existing on `main`** (confirmed by running the same test on latest `main` without this branch's changes). Virtual window clip count is environment-dependent in jsdom. Not caused by this PR.
+- **Core, React, MediaWeb, Collab, AI, UI**: all pass typecheck, lint, and tests.
+
+## Changeset
+
+Added `.changeset/phase-11-core-exports.md` (minor bump for `@timelinx/core`):
+- Exports `ResolvedLayer`, `ResolvedCompositeRequest`, `FileAsset`, `GeneratorAsset`
+- These are the types any host-side compositor or export implementation needs when branching on asset kind or consuming `resolveFrame()` output.
+
+## Audio Scheduling Tests
+
+`packages/ui/src/__tests__/audio-schedule.test.ts` — 9 tests covering `computeAudioSchedule()`:
+
+1. **Clip starting partway through**: frame 100 → `when = base + 100/fps` ✓
+2. **Clip with non-zero mediaIn**: `mediaIn=50` → `offset = 50/fps` ✓
+3. **Two overlapping clips**: independent schedules, no clobbering ✓
+4. **Clip ending before export end**: `duration` capped to clip span ✓
+5. **0 dB gain → linear 1.0** ✓
+6. **-6 dB gain → ~0.501** ✓
+7. **+6 dB gain → ~1.995** ✓
+8. **No audio properties → default gain 1.0** ✓
+9. **Complex scenario**: trimmed + offset + overlapping + gain ✓
+
+## Export Starts from Frame 0 — Confirmed
+
+The `ExportRunner.run()` method:
+1. Creates a **fresh `AudioContext`** — its `currentTime` starts at ~0, independent of any prior state
+2. Calls `engine.seekTo(toFrame(0))` — explicitly seeks playhead to frame 0
+3. Calls `engine.playbackEngine.play()` — starts playback from frame 0
+
+Audio scheduling is anchored to `audioCtx.currentTime`, not the playhead's prior position. Export correctness is independent of incidental UI state.
 
 ## Gaps and Known Limitations
 
