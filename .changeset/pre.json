@@ -23,6 +23,7 @@
     "fix-tool-router-null-target",
     "keyboard-handler-null-engine",
     "keyframe-tool-auto-create-effect",
+    "phase-11-core-exports",
     "react-caption-gesture-routing",
     "react-error-boundaries",
     "selection-ripple-trim-default",

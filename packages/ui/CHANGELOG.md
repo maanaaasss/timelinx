@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- Updated dependencies [[`bb0538a`](https://github.com/maanaaasss/timelinx/commit/bb0538a23ea8534f2868a71ee2c209c8428ac8c1)]:
+  - @timelinx/core@1.0.0-beta.3
+  - @timelinx/react@1.0.0-beta.5
+
 ## 1.0.0-beta.2
 
 ### Patch Changes
