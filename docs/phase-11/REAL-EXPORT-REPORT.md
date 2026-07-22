@@ -68,8 +68,9 @@ A Canvas2D-based multi-layer compositor that replaces the single-`<video>` Media
 ## PR and CI
 
 - **PR**: [#32](https://github.com/maanaaasss/timelinx/pull/32) — `feature/phase-11-real-export`
-- **CI status**: `apps/editor` `features.test.tsx` > "renders clips in the DOM with data attributes" fails — **pre-existing on `main`** (confirmed by running the same test on latest `main` without this branch's changes). Virtual window clip count is environment-dependent in jsdom. Not caused by this PR.
-- **Core, React, MediaWeb, Collab, AI, UI**: all pass typecheck, lint, and tests.
+- **CI status**: ✅ Green — all checks pass
+- **Fix included**: `apps/editor/src/__tests__/setup.ts` — `ResizeObserver` mock now fires callback with `width=4800` so virtual window covers all test fixture clips (was no-op `observe()`, causing `vpWidth` to stay at 1200px default)
+- **Core, React, MediaWeb, Collab, AI, Editor, UI**: all pass typecheck, lint, and tests.
 
 ## Changeset
 
