@@ -2257,3 +2257,187 @@
   font-size: 10px;
   color: var(--text-secondary);
 }
+
+/* ── Export Dialog (Phase 11) ── */
+
+.export-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.export-dialog {
+  background: var(--bg-panel, #1e2030);
+  border: 1px solid var(--border-faint, rgba(255,255,255,0.1));
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  width: 420px;
+  max-width: 90vw;
+  overflow: hidden;
+}
+
+.export-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border-faint, rgba(255,255,255,0.06));
+}
+
+.export-dialog-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0;
+}
+
+.export-dialog-close {
+  background: none;
+  border: none;
+  color: var(--text-tertiary, #888);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.export-dialog-close:hover { color: var(--text-primary, #fff); }
+
+.export-dialog-body {
+  padding: 20px;
+}
+
+.export-dialog-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.export-progress-status {
+  font-size: 13px;
+  color: var(--text-secondary, #aaa);
+  margin: 0;
+}
+
+.export-progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-sunken, rgba(255,255,255,0.08));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.export-progress-bar-fill {
+  height: 100%;
+  background: var(--accent, #5b7ff5);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+.export-progress-pct {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary, #fff);
+  margin: 0;
+  text-align: center;
+}
+
+.export-dialog-error { text-align: center; }
+
+.export-error-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f44;
+  margin: 0 0 8px;
+}
+
+.export-error-message {
+  font-size: 13px;
+  color: var(--text-secondary, #aaa);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.export-error-message code {
+  background: var(--bg-sunken, rgba(255,255,255,0.08));
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.export-dialog-complete { text-align: center; }
+
+.export-complete-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4caf50;
+  margin: 0 0 12px;
+}
+
+.export-download-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--accent, #5b7ff5);
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--radius-md, 6px);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.export-download-link:hover { opacity: 0.9; }
+
+.export-complete-hint {
+  font-size: 12px;
+  color: var(--text-tertiary, #777);
+  margin: 8px 0 0;
+}
+
+.export-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-faint, rgba(255,255,255,0.06));
+}
+
+.export-cancel-btn,
+.export-retry-btn,
+.export-close-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius-md, 6px);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  background: var(--bg-raised, rgba(255,255,255,0.06));
+  color: var(--text-primary, #fff);
+}
+
+.export-cancel-btn:hover,
+.export-retry-btn:hover,
+.export-close-btn:hover {
+  background: var(--bg-hover, rgba(255,255,255,0.1));
+}
+
+.export-cancel-btn {
+  background: rgba(244, 67, 54, 0.15);
+  border-color: rgba(244, 67, 54, 0.3);
+  color: #f44;
+}
+
+.export-cancel-btn:hover { background: rgba(244, 67, 54, 0.25); }
+
+.export-retry-btn {
+  background: var(--accent, #5b7ff5);
+  border-color: transparent;
+  color: #fff;
+}
+
+.export-retry-btn:hover { opacity: 0.9; }
