@@ -301,12 +301,12 @@ However, `renderImage()`, `renderVideo()`, and `renderGenerator()` all computed 
 
 ```typescript
 // BUG: dx/dy computed as if origin is still at (0, 0)
-const dx = (canvasW - dw) / 2;  // e.g. (1920 - 960) / 2 = 480
-const dy = (canvasH - dh) / 2;  // e.g. (1080 - 810) / 2 = 135
+const dx = (canvasW - dw) / 2;  // e.g. (1920 - 1440) / 2 = 240
+const dy = (canvasH - dh) / 2;  // e.g. (1080 - 1080) / 2 = 0
 ctx.drawImage(img, dx, dy, dw, dh);
 ```
 
-**Actual canvas position** of the drawn image: `(960 + 480, 540 + 135)` = **(1440, 675)** — that's in the bottom-right quadrant, with only a sliver visible on screen.
+**Actual canvas position** of the drawn image: `(960 + 240, 540 + 0)` = **(1200, 540)** — shifted right of center, with content clipped at the right edge.
 
 ### Diagnostic Values (for `IMG_3527.jpg` on Video 2, landscape ~4032×3024)
 
@@ -320,7 +320,7 @@ ctx.drawImage(img, dx, dy, dw, dh);
 | Drawn height (dh) | 1080 | 1080 |
 | drawImage dx | **-720** (centered at origin) | **240** (offset from origin) |
 | drawImage dy | **-540** (centered at origin) | **0** (offset from origin) |
-| Canvas position of drawn image | **(960, 540)** — centered | **(1440, 675)** — bottom-right |
+| Canvas position of drawn image | **(960, 540)** — centered | **(1200, 540)** — shifted right |
 
 Default transform values confirmed sensible:
 - `positionX=0, positionY=0` (no offset)
@@ -356,6 +356,10 @@ All three render functions (`renderImage`, `renderVideo`, `renderGenerator`) wer
 
 This is correct because `applyTransform()` already translates the context origin to `(canvasW/2, canvasH/2)` before any content is drawn. Drawing at `(-dw/2, -dh/2)` centers the content at the origin, which is the canvas center.
 
+### Export Impact
+
+`renderCompositorFrame()` is the shared render function used by both the live preview (`CompositorPreview`) and the export pipeline (`ExportRunner`). This means the double-centering bug was **not preview-only** — any video exported before this fix would have the same content-shoved-right problem baked into the output file. This is different from the earlier CSS/object-fit sizing issue, which only affected on-screen display and never touched exported bytes.
+
 ### Diagnostic Logging Added
 
 Temporary `[COMPOSITOR-DEBUG]` logging added to:
@@ -378,4 +382,3 @@ Manual browser check with the same clip (`IMG_3527.jpg` on Video 2):
 2. Image should be centered both horizontally and vertically
 3. No blue-tinted band on any edge
 4. Transforms (position, scale, rotation) from the Inspector should still work correctly on top of the default centering
-
