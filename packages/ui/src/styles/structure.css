@@ -668,10 +668,22 @@
   z-index: 0;
 }
 
+/* Phase 10 video-based preview — object-fit: contain works on <video> */
 .media-preview-video {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.media-preview-canvas {
+  /* Internal buffer is always 1920×1080; CSS display size is set via inline
+     styles computed by ResizeObserver to fit the container at the correct
+     aspect ratio (equivalent to object-fit: contain for <canvas>).
+     object-fit: contain does NOT apply to <canvas> elements. */
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
   border-radius: var(--radius-md);
 }
 

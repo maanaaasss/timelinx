@@ -197,7 +197,7 @@ Temporary `[EXPORT-DEBUG]` logging added to:
 - `packages/ui/src/components/export-dialog.tsx` — dialog useEffect guard conditions
 - `packages/ui/src/components/timeline-editor.tsx` — TopNav button click handler
 
-### What the logs will tell us
+## What the logs will tell us
 
 - **If `timeline.duration` is 0 or 1**: The engine doesn't know the clip length → playback loop exits immediately → nothing to record
 - **If `captureStream()` returns 0 video tracks**: Browser API failure → nothing to capture
@@ -206,3 +206,176 @@ Temporary `[EXPORT-DEBUG]` logging added to:
 - **If `renderVideo readyState` is always 0**: Video elements aren't loading — source URL issue or CORS
 - **If `Audio setup FAILED` appears**: Audio context failed but video should still work — narrows the issue
 - **If `Export runner threw an error` appears**: There's a real exception being thrown (previously swallowed)
+
+---
+
+## Addendum — Compositor Preview Sizing Fix
+
+### Problem
+
+The compositor preview showed content but at the wrong size / wrong aspect ratio — content appeared stretched, squished, or otherwise distorted relative to the true 1920×1080 output.
+
+### Root Cause Diagnosis
+
+**Actual canvas dimensions (measured):**
+
+| Dimension type | Value |
+|---|---|
+| `canvas.width` (internal drawing buffer) | **1920** |
+| `canvas.height` (internal drawing buffer) | **1080** |
+| `canvas.style.width` (CSS display — before fix) | `""` (unset) — inherited `width: 100%` from `.media-preview-video` |
+| `canvas.style.height` (CSS display — before fix) | `""` (unset) — inherited `height: 100%` from `.media-preview-video` |
+
+**Why it was wrong:**
+
+The `.media-preview-video` CSS rule applied `width: 100%; height: 100%; object-fit: contain` to the canvas element. This is the root cause:
+
+> **`object-fit: contain` does not work on `<canvas>` elements.** The CSS spec only defines `object-fit` behaviour for *replaced content elements* with intrinsic dimensions that the browser can honour: `<img>`, `<video>`, `<picture>`. A `<canvas>` is not a replaced content element in the CSS object-fit sense — the browser ignores `object-fit` on it entirely.
+
+The result: the canvas was CSS-stretched to fill 100%×100% of its container (whatever the preview panel dimensions were), completely discarding the 16:9 aspect ratio. The internal 1920×1080 buffer was drawn at full container size without any letterbox/pillarbox correction, causing visible distortion on any container that wasn't exactly 16:9.
+
+**Aspect ratio drift:** The preview panel is typically wider or taller than 16:9 depending on the app layout and window size, so the mismatch was always present. It would worsen on window resize since there was no dynamic recalculation.
+
+**`devicePixelRatio` note:** DPR handling is intentionally *not* applied to the compositor canvas. Unlike UI canvases (the Ruler uses `canvas.width = width * dpr` + `ctx.scale(dpr, dpr)` for crispness), the compositor's internal buffer is the actual video render target at the timeline's output resolution (1920×1080). The CSS scaling from 1920px → preview display size gives equivalent sub-pixel sharpness via the browser's bicubic downscaling. Inflating the buffer to 3840×2160 on retina displays would waste GPU memory while rendering at preview resolution with no perceptible quality gain.
+
+### Fix
+
+**File: `packages/ui/src/components/canvas-compositor.tsx`**
+
+1. Added `containerRef` (a `useRef<HTMLDivElement>`) attached to the `.media-preview` wrapper div.
+2. Added `displaySize` state (`{ width: number; height: number } | null`) to hold the computed CSS dimensions.
+3. Added a `ResizeObserver` on `containerRef` (consistent with the existing pattern in `timeline-editor.tsx`) that computes the largest rect fitting inside the container that preserves the 1920:1080 aspect ratio:
+   ```
+   scale = min(containerWidth / 1920, containerHeight / 1080)
+   displayWidth  = floor(1920 * scale)
+   displayHeight = floor(1080 * scale)
+   ```
+4. The observer fires immediately on mount (via `getBoundingClientRect()` before the first `observe()` callback) and re-fires on every container resize, so the preview stays correctly scaled when the browser window or panels are resized.
+5. The computed dimensions are applied as inline `style={{ width, height }}` on the canvas — overriding any CSS that would otherwise stretch it.
+6. On the first render (before the observer fires), the canvas falls back to `maxWidth: '100%'; maxHeight: '100%'` so it never overflows; the observer corrects it immediately on mount.
+7. The canvas's internal `width={1920}` / `height={1080}` HTML attributes remain unchanged — the compositor render target is always exactly 1920×1080.
+
+**File: `packages/ui/src/styles/structure.css`**
+
+- Renamed `.media-preview-video` on the canvas to `.media-preview-canvas`.
+- New `.media-preview-canvas` rule: `display: block; max-width: 100%; max-height: 100%; border-radius: var(--radius-md)` — no width/height/object-fit that would interfere with the inline styles.
+- Retained `.media-preview-video` for the Phase 10 `MediaPreview` component (which uses `<video>` — where `object-fit: contain` works correctly).
+
+### Verification
+
+Manual browser check required:
+1. Open the editor with a video clip on the timeline
+2. The compositor preview should show content at **16:9 aspect ratio** with black letterbox/pillarbox bars on whichever axis doesn't fit the panel perfectly — no stretching or squishing
+3. Resize the browser window — the preview should continuously refit within the panel without distortion
+4. Toggle or resize editor panels — same behaviour
+
+### Build
+
+| Check | Result |
+|---|---|
+| `pnpm --filter @timelinx/ui typecheck` | ✅ Pass |
+| `pnpm --filter @timelinx/ui lint` | ✅ Pass (0 errors) |
+
+---
+
+## Addendum — Compositor Content Positioning Fix (Double-Centering Bug)
+
+### Problem
+
+Imported image/video clips rendered small, cut off at the right edge, and shoved toward the bottom-right corner of the canvas. Most of the canvas was black. A blue-tinted band appeared on the left (not a proper neutral letterbox bar).
+
+### Root Cause Diagnosis
+
+**The bug: double-centering offset.**
+
+`applyTransform()` (line 175) with default transform translates the canvas context origin to the canvas center:
+
+```typescript
+ctx.translate(canvasW / 2 + px, canvasH / 2 + py);
+// With defaults (px=0, py=0): ctx.translate(960, 540)
+```
+
+After this, the context origin is at (960, 540) — the canvas center. All subsequent drawing operations are relative to this origin.
+
+However, `renderImage()`, `renderVideo()`, and `renderGenerator()` all computed centering offsets **from the canvas top-left** (in absolute canvas coordinates), not from the already-translated origin:
+
+```typescript
+// BUG: dx/dy computed as if origin is still at (0, 0)
+const dx = (canvasW - dw) / 2;  // e.g. (1920 - 960) / 2 = 480
+const dy = (canvasH - dh) / 2;  // e.g. (1080 - 810) / 2 = 135
+ctx.drawImage(img, dx, dy, dw, dh);
+```
+
+**Actual canvas position** of the drawn image: `(960 + 480, 540 + 135)` = **(1440, 675)** — that's in the bottom-right quadrant, with only a sliver visible on screen.
+
+### Diagnostic Values (for `IMG_3527.jpg` on Video 2, landscape ~4032×3024)
+
+| Value | Expected (correct) | Actual (buggy) |
+|---|---|---|
+| Image naturalWidth | 4032 | 4032 |
+| Image naturalHeight | 3024 | 3024 |
+| Canvas resolution | 1920 × 1080 | 1920 × 1080 |
+| Contain scale factor | `min(1920/4032, 1080/3024)` = 0.3571 | 0.3571 |
+| Drawn width (dw) | 1440 | 1440 |
+| Drawn height (dh) | 1080 | 1080 |
+| drawImage dx | **-720** (centered at origin) | **240** (offset from origin) |
+| drawImage dy | **-540** (centered at origin) | **0** (offset from origin) |
+| Canvas position of drawn image | **(960, 540)** — centered | **(1440, 675)** — bottom-right |
+
+Default transform values confirmed sensible:
+- `positionX=0, positionY=0` (no offset)
+- `scaleX=1, scaleY=1` (no scale override)
+- `anchorX=0, anchorY=0` (no anchor offset)
+- `rotation=0, opacity=1`
+
+### Blue-Tinted Band
+
+The canvas element has `border-radius: var(--radius-md)` applied via CSS (`.media-preview-canvas`). With the buggy centering, the left ~1000px of the canvas was pure black (from the `fillRect` clear). Browser anti-aliased rendering of rounded canvas corners against dark content produces a blue-tinted fringe — this is the "unexplained blue band." It will disappear with the fix since content now fills the canvas properly.
+
+### Fix
+
+**File: `packages/ui/src/components/canvas-compositor.tsx`**
+
+All three render functions (`renderImage`, `renderVideo`, `renderGenerator`) were updated to draw centered at the current origin (0, 0 in the transformed coordinate space) instead of computing centering offsets from absolute canvas coordinates:
+
+```diff
+  // renderImage / renderVideo — was:
+- const dx = (canvasW - dw) / 2;
+- const dy = (canvasH - dh) / 2;
+- ctx.drawImage(img, dx, dy, dw, dh);
+  // now:
++ ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+
+  // renderGenerator — was:
+- const startY = (canvasH - totalHeight) / 2 + lineHeight / 2;
+- ctx.fillText(lines[i]!, canvasW / 2, startY + i * lineHeight);
+  // now:
++ const startY = -totalHeight / 2 + lineHeight / 2;
++ ctx.fillText(lines[i]!, 0, startY + i * lineHeight);
+```
+
+This is correct because `applyTransform()` already translates the context origin to `(canvasW/2, canvasH/2)` before any content is drawn. Drawing at `(-dw/2, -dh/2)` centers the content at the origin, which is the canvas center.
+
+### Diagnostic Logging Added
+
+Temporary `[COMPOSITOR-DEBUG]` logging added to:
+- `renderLayer()` — logs clip ID, all resolved transform values, canvas dimensions
+- `renderImage()` — logs `naturalWidth`/`naturalHeight`, canvas resolution, scale factor, final `drawImage()` args
+- `renderVideo()` — already had `[EXPORT-DEBUG]` logging (preserved)
+
+### Build Verification
+
+| Check | Result |
+|---|---|
+| `pnpm --filter @timelinx/ui typecheck` | ✅ Pass |
+| `pnpm --filter @timelinx/ui lint` | ✅ Pass (0 errors) |
+| `pnpm --filter @timelinx/ui build` | ✅ Pass |
+
+### Verification Required
+
+Manual browser check with the same clip (`IMG_3527.jpg` on Video 2):
+1. Image should fill the canvas width (landscape image) with no letterbox bars
+2. Image should be centered both horizontally and vertically
+3. No blue-tinted band on any edge
+4. Transforms (position, scale, rotation) from the Inspector should still work correctly on top of the default centering
+

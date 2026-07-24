@@ -162,4 +162,18 @@ describe('computeAudioSchedule', () => {
     expect(result[1]!.offset).toBeCloseTo(120 / FPS, 10);
     expect(result[1]!.duration).toBeCloseTo(300 / FPS, 10);
   });
+
+  // ── Frame 0 guarantee: audio scheduling is independent of playhead ──
+
+  it('audio always starts from the export origin, not from a hypothetical playhead position', () => {
+    const clips = [makeClip({ timelineStart: 0, timelineEnd: 300 })];
+    const result = computeAudioSchedule(clips, CT_BASE, FPS);
+
+    // The first clip's audio is scheduled at audioCtxCurrentTime + 0,
+    // which is the export origin — the playhead position (e.g. frame 200)
+    // has no influence because computeAudioSchedule doesn't take playhead
+    // as input. The ExportRunner forces seekTo(0) before recording.
+    expect(result[0]!.when).toBeCloseTo(CT_BASE, 10);
+    expect(result[0]!.offset).toBeCloseTo(0, 10);
+  });
 });

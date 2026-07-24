@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
+import { toFrame } from '@timelinx/core';
 
 export interface CommandPaletteProps {
   isVisible: boolean;
@@ -48,10 +48,10 @@ export const CommandPalette = React.memo(function CommandPalette({
         }
       }
     }},
-    { id: 'seek-start', label: 'Go to start', category: 'Playback', shortcut: 'Home', action: () => engine.seekTo(0 as any) },
+    { id: 'seek-start', label: 'Go to start', category: 'Playback', shortcut: 'Home', action: () => engine.seekTo(toFrame(0)) },
     { id: 'seek-end', label: 'Go to end', category: 'Playback', shortcut: 'End', action: () => {
       const state = engine.getState();
-      engine.seekTo((state.timeline.duration as number - 1) as any);
+      engine.seekTo(toFrame(Math.max(0, (state.timeline.duration as number) - 1)));
     }},
 
     // Edit

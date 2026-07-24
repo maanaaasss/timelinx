@@ -5,7 +5,7 @@
  * and text clips with transforms and effects. Replaces the single-
  * <video> MediaPreview from Phase 10.
  */
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { usePlayheadFrame, useIsPlaying } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { useMediaAssets } from '../context/media-assets-context';
@@ -299,6 +299,21 @@ function renderLayer(
   ctx.save();
   applyTransform(ctx, layer.transform, canvasW, canvasH);
 
+  // Diagnostic: log transform values for first few frames
+  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+    const t = layer.transform;
+    console.log('[COMPOSITOR-DEBUG] clip:', layer.clipId, 'transform:', {
+      positionX: t.positionX.value,
+      positionY: t.positionY.value,
+      scaleX: t.scaleX.value,
+      scaleY: t.scaleY.value,
+      rotation: t.rotation.value,
+      anchorX: t.anchorX.value,
+      anchorY: t.anchorY.value,
+      opacity: t.opacity.value,
+    }, 'canvas:', canvasW, '×', canvasH);
+  }
+
   if (asset.kind === 'generator') {
     renderGenerator(ctx, asset as GeneratorAsset, canvasW, canvasH);
   } else {
@@ -311,7 +326,7 @@ function renderLayer(
 
     const fileAsset = asset as FileAsset;
     if (isImageSource(fileAsset, mediaAssets)) {
-      renderImage(ctx, pool, clip.id as string, src, canvasW, canvasH);
+      renderImage(ctx, pool, clip.id as string, src, canvasW, canvasH, _debugFrameCount);
     } else if (fileAsset.mediaType === 'video') {
       renderVideo(ctx, clip, pool, clip.id as string, src, canvasW, canvasH, fps, currentFrame, lastSeekRef, _debugFrameCount);
     } else if (fileAsset.mediaType === 'audio') {
@@ -352,15 +367,15 @@ function renderVideo(
 
   // Draw the video frame (may be stale if seek hasn't completed — acceptable for real-time)
   if (video.readyState >= 2) {
-    // Scale video to fit canvas while maintaining aspect ratio (contain)
+    // Scale video to fit canvas while preserving aspect ratio (contain).
+    // applyTransform() already translated the origin to the canvas center,
+    // so draw centered at the current origin (0,0 in this transformed space).
     const vw = video.videoWidth || canvasW;
     const vh = video.videoHeight || canvasH;
     const scale = Math.min(canvasW / vw, canvasH / vh);
     const dw = vw * scale;
     const dh = vh * scale;
-    const dx = (canvasW - dw) / 2;
-    const dy = (canvasH - dh) / 2;
-    ctx.drawImage(video, dx, dy, dw, dh);
+    ctx.drawImage(video, -dw / 2, -dh / 2, dw, dh);
   }
 }
 
@@ -371,18 +386,33 @@ function renderImage(
   src: string,
   canvasW: number,
   canvasH: number,
+  _debugFrameCount?: number,
 ): void {
   const img = pool.getImage(clipId, src);
   if (!pool.isImageReady(clipId)) return;
 
-  // Scale image to fit canvas (contain)
   const iw = img.naturalWidth || canvasW;
   const ih = img.naturalHeight || canvasH;
+
+  // Scale to fit canvas while preserving aspect ratio (contain).
+  // applyTransform() already translated the origin to the canvas center,
+  // so draw centered at the current origin (0,0 in this transformed space).
   const scale = Math.min(canvasW / iw, canvasH / ih);
   const dw = iw * scale;
   const dh = ih * scale;
-  const dx = (canvasW - dw) / 2;
-  const dy = (canvasH - dh) / 2;
+  const dx = -dw / 2;
+  const dy = -dh / 2;
+
+  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+    console.log('[COMPOSITOR-DEBUG] renderImage clip:', clipId, {
+      naturalWidth: img.naturalWidth,
+      naturalHeight: img.naturalHeight,
+      canvasW, canvasH,
+      scale: scale.toFixed(4),
+      drawImageArgs: { dx: dx.toFixed(1), dy: dy.toFixed(1), dw: dw.toFixed(1), dh: dh.toFixed(1) },
+    });
+  }
+
   ctx.drawImage(img, dx, dy, dw, dh);
 }
 
@@ -427,10 +457,12 @@ function renderGenerator(
 
     const lineHeight = fontSize * 1.3;
     const totalHeight = lines.length * lineHeight;
-    const startY = (canvasH - totalHeight) / 2 + lineHeight / 2;
+    // applyTransform() already translated origin to canvas center,
+    // so position relative to (0, 0).
+    const startY = -totalHeight / 2 + lineHeight / 2;
 
     for (let i = 0; i < lines.length; i++) {
-      ctx.fillText(lines[i]!, canvasW / 2, startY + i * lineHeight);
+      ctx.fillText(lines[i]!, 0, startY + i * lineHeight);
     }
 
     // Reset shadow
@@ -458,20 +490,62 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   const isPlaying = useIsPlaying(engine);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const poolRef = useRef<MediaElementPool>(new MediaElementPool());
   const lastSeekRef = useRef<Map<string, number>>(new Map());
   const rafRef = useRef<number>(0);
   const frameRef = useRef<number>(frame as number);
   frameRef.current = frame as number;
 
-  const canvasW = 1920;
-  const canvasH = 1080;
+  // The timeline's actual output resolution — internal canvas drawing buffer.
+  // This must NOT change based on container size; it is the compositor's render target.
+  const CANVAS_W = 1920;
+  const CANVAS_H = 1080;
+
+  // CSS display size for the canvas — recalculated to fit the container while
+  // preserving the 16:9 aspect ratio (equivalent to object-fit: contain).
+  // object-fit: contain does NOT work on <canvas>, only on <img> / <video>.
+  const [displaySize, setDisplaySize] = useState<{ width: number; height: number } | null>(null);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       poolRef.current.destroy();
     };
+  }, []);
+
+  // ResizeObserver: recalculate the canvas CSS display size whenever the
+  // preview container resizes, maintaining CANVAS_W:CANVAS_H aspect ratio.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const computeDisplaySize = (containerWidth: number, containerHeight: number) => {
+      const scaleW = containerWidth / CANVAS_W;
+      const scaleH = containerHeight / CANVAS_H;
+      const scale = Math.min(scaleW, scaleH);
+      setDisplaySize({
+        width: Math.floor(CANVAS_W * scale),
+        height: Math.floor(CANVAS_H * scale),
+      });
+    };
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        computeDisplaySize(entry.contentRect.width, entry.contentRect.height);
+      }
+    });
+    ro.observe(container);
+
+    // Also compute immediately from current dimensions (before first ResizeObserver fire)
+    const rect = container.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      computeDisplaySize(rect.width, rect.height);
+    }
+
+    return () => ro.disconnect();
+  // CANVAS_W / CANVAS_H are constants — no need to list as deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Build the render options once (stable refs)
@@ -506,13 +580,27 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     }
   }, [isPlaying, doRender, frame]);
 
+  // Build inline CSS style for the canvas element.
+  // - Internal buffer dimensions are always CANVAS_W × CANVAS_H (set via the
+  //   width/height HTML attributes above).
+  // - CSS display size is set via inline style so the canvas is drawn at the
+  //   correct aspect-ratio-preserving size within the container, letterboxed
+  //   or pillarboxed as needed.
+  // - When displaySize is not yet known (first render before ResizeObserver
+  //   fires) we fall back to max-width / max-height 100% so the canvas doesn't
+  //   overflow, then the observer immediately corrects it.
+  const canvasStyle: React.CSSProperties = displaySize
+    ? { width: displaySize.width, height: displaySize.height }
+    : { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' };
+
   return (
-    <div className={`media-preview${className ? ` ${className}` : ''}`}>
+    <div ref={containerRef} className={`media-preview${className ? ` ${className}` : ''}`}>
       <canvas
         ref={canvasRef}
-        width={canvasW}
-        height={canvasH}
-        className="media-preview-video"
+        width={CANVAS_W}
+        height={CANVAS_H}
+        className="media-preview-canvas"
+        style={canvasStyle}
       />
     </div>
   );
