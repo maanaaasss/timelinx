@@ -132,3 +132,77 @@ Build a timeline with:
   - Text overlay visible with correct position/scale
   - Blur effect visible
   - Audio playing in sync
+
+## Export Debug Logging — 0-Byte .webm Investigation
+
+### Problem
+Export completes successfully (progress reaches 100%, status shows "complete") but the resulting `.webm` file is 0 bytes and shows nothing when played.
+
+### Root cause (found via real console output)
+
+**`getSnapshot().playhead.currentFrame` is stale during export — always returns 0.**
+
+`PlayheadController.onFrame()` creates a **new state object** on every frame (`this.state = { ...this.state, currentFrame: toFrame(newFrame) }`). The React-side `TimelineEngine.buildSnapshot()` captures a reference to the state object at the time it's called. During normal preview playback this works because React re-renders (triggered by `useSyncExternalStore` + `notify()`) call `rebuildSnapshot()` on every frame, which re-reads the controller's current state.
+
+During export, the `ExportRunner` render loop reads `this.engine.getSnapshot().playhead.currentFrame` — but the snapshot is **never rebuilt** during the export loop (no React renders happen, no `rebuildSnapshot()` is called). The snapshot holds a reference to the **original** state object from before playback started, so `currentFrame` is always 0.
+
+This causes:
+1. The render loop draws the same frame 0 content on every iteration
+2. `captureStream()` sees a static canvas → `MediaRecorder` receives no meaningful video data
+3. `ondataavailable` fires once with `size: 0` at the end
+4. The resulting `.webm` blob is 0 bytes
+
+### Fix
+Read `currentFrame` directly from the playback controller's live state instead of the stale snapshot:
+
+```diff
+- const currentFrame = this.engine.getSnapshot().playhead.currentFrame as number;
++ const currentFrame =
++   this.engine.playbackEngine?.getState().currentFrame as number ??
++   this.engine.getSnapshot().playhead.currentFrame as number;
+```
+
+`PlaybackEngine.getState()` returns `this.controller.getState()` which returns `this.state` — the **current mutable reference**, not a stale snapshot copy.
+
+### Real console output
+
+```
+[EXPORT-DEBUG] Frame 3 — currentFrame: 0 progress: 0%
+[EXPORT-DEBUG]   Canvas pixel[0,0] RGBA: 1 1 0 255 (has content)
+[EXPORT-DEBUG]   MediaRecorder state: recording chunks so far: 0
+[EXPORT-DEBUG] Frame 30 — currentFrame: 0 progress: 0%
+[EXPORT-DEBUG]   Canvas pixel[0,0] RGBA: 1 1 0 255 (has content)
+[EXPORT-DEBUG]   MediaRecorder state: recording chunks so far: 0
+...repeats identically for 309 frames...
+[EXPORT-DEBUG] === Render loop ended ===
+[EXPORT-DEBUG] Total frames rendered by export loop: 309
+[EXPORT-DEBUG] Calling MediaRecorder.stop(). State before stop: recording
+[EXPORT-DEBUG] MediaRecorder onstart fired. State: inactive
+[EXPORT-DEBUG] ondataavailable — chunk size: 0 bytes, type: video/webm;codecs=vp9,opus
+[EXPORT-DEBUG] MediaRecorder stopped. Total chunks: 0
+[EXPORT-DEBUG] Total accumulated bytes across 0 chunks: 0 (0.00 MB)
+[EXPORT-DEBUG] *** CRITICAL: Blob is 0 bytes! MediaRecorder captured nothing. ***
+```
+
+Key signals:
+- `currentFrame: 0` on every frame — playhead never advances from the snapshot's perspective
+- `chunks so far: 0` throughout — MediaRecorder never receives data
+- Canvas has content (RGBA 1 1 0 255) — compositor IS drawing, but the same frame 0 content every time
+- `ondataavailable chunk size: 0` — confirms zero data captured
+
+### Debug instrumentation added
+Temporary `[EXPORT-DEBUG]` logging added to:
+- `packages/ui/src/hooks/use-export.ts` — every step of the export pipeline
+- `packages/ui/src/components/canvas-compositor.tsx` — video element ready state during compositor rendering
+- `packages/ui/src/components/export-dialog.tsx` — dialog useEffect guard conditions
+- `packages/ui/src/components/timeline-editor.tsx` — TopNav button click handler
+
+### What the logs will tell us
+
+- **If `timeline.duration` is 0 or 1**: The engine doesn't know the clip length → playback loop exits immediately → nothing to record
+- **If `captureStream()` returns 0 video tracks**: Browser API failure → nothing to capture
+- **If `ondataavailable` never fires or only fires with size 0**: MediaRecorder isn't receiving frames from the canvas stream
+- **If canvas pixel is always `[0,0,0,0]` or `[0,0,0,255]` (black)**: Compositor isn't drawing any content
+- **If `renderVideo readyState` is always 0**: Video elements aren't loading — source URL issue or CORS
+- **If `Audio setup FAILED` appears**: Audio context failed but video should still work — narrows the issue
+- **If `Export runner threw an error` appears**: There's a real exception being thrown (previously swallowed)

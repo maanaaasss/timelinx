@@ -20,7 +20,7 @@ import type {
   GeneratorAsset,
   FileAsset,
 } from '@timelinx/core';
-import { resolveFrame } from '@timelinx/core';
+import { resolveFrame, toFrame } from '@timelinx/core';
 import type { ResolvedLayer } from '@timelinx/core';
 
 // ---------------------------------------------------------------------------
@@ -68,6 +68,7 @@ class MediaElementPool {
   private imageElements = new Map<string, HTMLImageElement>();
   private imageLoaded = new Map<string, boolean>();
   private videoSrcMap = new Map<string, string>();
+  private imageSrcMap = new Map<string, string>();
 
   getVideo(clipId: string, src: string): HTMLVideoElement {
     let video = this.videoElements.get(clipId);
@@ -95,8 +96,10 @@ class MediaElementPool {
       this.imageElements.set(clipId, img);
       this.imageLoaded.set(clipId, false);
     }
-    if (!this.imageLoaded.get(clipId) && img.src !== src) {
+    if (this.imageSrcMap.get(clipId) !== src) {
+      this.imageLoaded.set(clipId, false);
       img.src = src;
+      this.imageSrcMap.set(clipId, src);
       img.onload = () => this.imageLoaded.set(clipId, true);
     }
     return img;
@@ -119,6 +122,7 @@ class MediaElementPool {
     }
     this.imageElements.clear();
     this.imageLoaded.clear();
+    this.imageSrcMap.clear();
   }
 }
 
@@ -147,6 +151,12 @@ function resolveAssetSrc(
   if (blobUrl) return blobUrl;
   const fileAsset = asset as FileAsset;
   return fileAsset.filePath || null;
+}
+
+function isImageSource(asset: FileAsset, mediaAssets: CompositorRenderOptions['mediaAssets']): boolean {
+  const file = mediaAssets.getFile(asset.id as string);
+  if (file?.type.startsWith('image/')) return true;
+  return /\.(avif|bmp|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(asset.filePath);
 }
 
 /**
@@ -219,6 +229,7 @@ function findClipAndTrack(
 export function renderCompositorFrame(
   options: CompositorRenderOptions,
   frame: number,
+  _debugFrameCount?: number,
 ): void {
   const { canvas, engine, mediaAssets, pool, lastSeekRef } = options;
   const ctx = canvas.getContext('2d');
@@ -237,14 +248,14 @@ export function renderCompositorFrame(
   // Resolve all visible layers at this frame
   const resolved = resolveFrame(
     state,
-    frame as any,
+    toFrame(frame),
     'full',
     { width: canvasW, height: canvasH },
   );
 
   // Draw layers bottom-to-top (trackIndex order — already sorted by resolveFrame)
   for (const layer of resolved.layers) {
-    renderLayer(ctx, layer, state, mediaAssets, pool, lastSeekRef, canvasW, canvasH, fps, frame);
+    renderLayer(ctx, layer, state, mediaAssets, pool, lastSeekRef, canvasW, canvasH, fps, frame, _debugFrameCount);
   }
 }
 
@@ -259,6 +270,7 @@ function renderLayer(
   canvasH: number,
   fps: number,
   currentFrame: number,
+  _debugFrameCount?: number,
 ): void {
   const found = findClipAndTrack(state, layer.clipId as string);
   if (!found) return;
@@ -298,12 +310,12 @@ function renderLayer(
     }
 
     const fileAsset = asset as FileAsset;
-    if (fileAsset.mediaType === 'video') {
-      renderVideo(ctx, clip, pool, clip.id as string, src, canvasW, canvasH, fps, currentFrame, lastSeekRef);
+    if (isImageSource(fileAsset, mediaAssets)) {
+      renderImage(ctx, pool, clip.id as string, src, canvasW, canvasH);
+    } else if (fileAsset.mediaType === 'video') {
+      renderVideo(ctx, clip, pool, clip.id as string, src, canvasW, canvasH, fps, currentFrame, lastSeekRef, _debugFrameCount);
     } else if (fileAsset.mediaType === 'audio') {
       // Audio clips have no visual representation — skip
-    } else {
-      renderImage(ctx, pool, clip.id as string, src, canvasW, canvasH);
     }
   }
 
@@ -322,6 +334,7 @@ function renderVideo(
   fps: number,
   currentFrame: number,
   lastSeekRef: Map<string, number>,
+  _debugFrameCount?: number,
 ): void {
   const video = pool.getVideo(clipId, src);
   const targetTime = clipMediaTime(clip, currentFrame, fps);
@@ -331,6 +344,10 @@ function renderVideo(
   if (Math.abs(targetTime - lastSeek) > 0.02 && targetTime >= 0) {
     video.currentTime = targetTime;
     lastSeekRef.set(clipId, targetTime);
+  }
+
+  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+    console.log('[EXPORT-DEBUG]   renderVideo clip:', clipId, 'targetTime:', targetTime.toFixed(3), 'readyState:', video.readyState, 'videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight, 'src:', src?.substring(0, 80));
   }
 
   // Draw the video frame (may be stale if seek hasn't completed — acceptable for real-time)
@@ -458,7 +475,7 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   }, []);
 
   // Build the render options once (stable refs)
-  const renderOptsRef = useRef<CompositorRenderOptions>(null as any);
+  const renderOptsRef = useRef<CompositorRenderOptions | null>(null);
   renderOptsRef.current = {
     canvas: canvasRef.current!,
     engine,
@@ -470,7 +487,7 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   // Render function — reads current frame from ref for rAF loop
   const doRender = useCallback(() => {
     const opts = renderOptsRef.current;
-    if (!opts.canvas) return;
+    if (!opts?.canvas) return;
     renderCompositorFrame(opts, frameRef.current);
   }, []);
 

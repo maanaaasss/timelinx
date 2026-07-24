@@ -238,7 +238,10 @@ function EditorInner({
   const [exportOpen, setExportOpen] = useState(false);
   const exportHook = useExport(engine, mediaAssets);
 
-  const handleExportOpen = useCallback(() => setExportOpen(true), []);
+  const handleExportOpen = useCallback(() => {
+    console.log('[EXPORT-DEBUG] handleExportOpen called — setting exportOpen = true');
+    setExportOpen(true);
+  }, []);
   const handleExportClose = useCallback(() => {
     if (exportHook.state.status !== 'encoding') {
       setExportOpen(false);
@@ -699,7 +702,7 @@ function EditorInner({
       {/* Main Content Area */}
       <main className="timeline-main">
         {/* Top Navigation Bar */}
-        {showTopNav && <TopNav projectName={projectName} onExport={() => { handleExportOpen(); onExport?.(); }} />}
+        {showTopNav && <TopNav projectName={projectName} onExport={() => { console.log('[EXPORT-DEBUG] TopNav onExport click handler fired'); handleExportOpen(); onExport?.(); }} />}
 
         {/* Workspace Split: Media Browser + Preview */}
         <div className="timeline-workspace-split">
