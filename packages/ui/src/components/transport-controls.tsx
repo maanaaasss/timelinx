@@ -14,6 +14,7 @@ import {
   Volume2,
   Maximize,
 } from 'lucide-react';
+import { toFrame } from '@timelinx/core';
 
 export interface TransportControlsProps {
   className?: string;
@@ -29,26 +30,27 @@ export const TransportControls = React.memo(function TransportControls({
 
   const fps = (timeline?.fps as number) || 30;
   const duration = (timeline?.duration as number) || 0;
+  const lastFrame = Math.max(0, duration - 1);
 
   const togglePlay = useCallback(() => {
     isPlaying ? engine.playbackEngine?.pause() : engine.playbackEngine?.play();
   }, [isPlaying, engine]);
 
   const skipBack = useCallback(() => {
-    engine.seekTo(0 as any);
+    engine.seekTo(toFrame(0));
   }, [engine]);
 
   const skipForward = useCallback(() => {
-    engine.seekTo(Math.max(0, duration - 1) as any);
-  }, [engine, duration]);
+    engine.seekTo(toFrame(lastFrame));
+  }, [engine, lastFrame]);
 
   const stepBack = useCallback(() => {
-    engine.seekTo(Math.max(0, (frame as number) - 1) as any);
+    engine.seekTo(toFrame(Math.max(0, (frame as number) - 1)));
   }, [engine, frame]);
 
   const stepForward = useCallback(() => {
-    engine.seekTo(Math.min(duration - 1, (frame as number) + 1) as any);
-  }, [engine, frame, duration]);
+    engine.seekTo(toFrame(Math.min(lastFrame, Math.max(0, (frame as number) + 1))));
+  }, [engine, frame, lastFrame]);
 
   const currentTimecode = frameToTimecode(frame as number, fps);
   const durationTimecode = frameToTimecode(duration, fps);

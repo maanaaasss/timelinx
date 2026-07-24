@@ -238,7 +238,10 @@ function EditorInner({
   const [exportOpen, setExportOpen] = useState(false);
   const exportHook = useExport(engine, mediaAssets);
 
-  const handleExportOpen = useCallback(() => setExportOpen(true), []);
+  const handleExportOpen = useCallback(() => {
+    console.log('[EXPORT-DEBUG] handleExportOpen called — setting exportOpen = true');
+    setExportOpen(true);
+  }, []);
   const handleExportClose = useCallback(() => {
     if (exportHook.state.status !== 'encoding') {
       setExportOpen(false);
@@ -252,6 +255,7 @@ function EditorInner({
   const [, forceUpdate] = useState(0);
   const triggerUpdate = useCallback(() => forceUpdate((n) => n + 1), []);
 
+  const editorRef = useRef<HTMLDivElement>(null);
   const trackAreaRef = useRef<HTMLDivElement>(null);
   const trackScrollRef = useRef<HTMLDivElement>(null);
   const labelColumnRef = useRef<HTMLDivElement>(null);
@@ -357,14 +361,11 @@ function EditorInner({
   }, [registerZoomHandler, setPpf]);
 
   useEffect(() => {
-    const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
-    if (editorEl) {
-      editorEl.focus({ preventScroll: true });
-    }
+    editorRef.current?.focus({ preventScroll: true });
   }, []);
 
   const handleEditorClick = useCallback(() => {
-    const editorEl = document.querySelector('.timeline-editor') as HTMLElement | null;
+    const editorEl = editorRef.current;
     if (editorEl && document.activeElement !== editorEl) {
       editorEl.focus({ preventScroll: true });
     }
@@ -572,7 +573,8 @@ function EditorInner({
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
-        engine.seekTo(toFrame(Math.min(durationFramesRef.current - 1, (frameRef.current as number) + step)));
+        const lastFrame = Math.max(0, durationFramesRef.current - 1);
+        engine.seekTo(toFrame(Math.min(lastFrame, Math.max(0, (frameRef.current as number) + step))));
         return;
       }
 
@@ -589,7 +591,7 @@ function EditorInner({
       }
       if (e.key === 'End') {
         e.preventDefault();
-        engine.seekTo(toFrame(durationFramesRef.current - 1));
+        engine.seekTo(toFrame(Math.max(0, durationFramesRef.current - 1)));
         return;
       }
 
@@ -650,13 +652,19 @@ function EditorInner({
       }
       el = el.parentElement;
     }
-    if (!trackId) return null;
+    if (!trackId) {
+      if (trackIds.length > 0) {
+        trackId = trackIds[0] as string;
+      } else {
+        return null;
+      }
+    }
     const rect = area.getBoundingClientRect();
     return {
       trackId,
-      frame: Math.max(0, Math.min(durationFrames - 1, Math.round((e.clientX - rect.left) / ppfRef.current))),
+      frame: Math.max(0, Math.round((e.clientX - rect.left) / ppfRef.current)),
     };
-  }, [durationFrames, ppfRef]);
+  }, [ppfRef, trackIds]);
 
   const onDragOver = useCallback((e: React.DragEvent) => {
     if (!onAssetDrop) return;
@@ -679,6 +687,7 @@ function EditorInner({
 
   return (
     <div
+      ref={editorRef}
       className={`timeline-editor${className ? ` ${className}` : ''}`}
       role="application"
       aria-label="Timeline editor"
@@ -693,7 +702,7 @@ function EditorInner({
       {/* Main Content Area */}
       <main className="timeline-main">
         {/* Top Navigation Bar */}
-        {showTopNav && <TopNav projectName={projectName} onExport={() => { handleExportOpen(); onExport?.(); }} />}
+        {showTopNav && <TopNav projectName={projectName} onExport={() => { console.log('[EXPORT-DEBUG] TopNav onExport click handler fired'); handleExportOpen(); onExport?.(); }} />}
 
         {/* Workspace Split: Media Browser + Preview */}
         <div className="timeline-workspace-split">

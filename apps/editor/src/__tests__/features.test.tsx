@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from '../App';
 import { createEditorEngine } from '../createEditorEngine';
+import { createDemoEngine } from '../createDemoEngine';
 import {
   TimelineProvider,
   useEngine,
@@ -30,14 +31,61 @@ import {
   toCaptionId,
   toKeyframeId,
   toGeneratorId,
+  toAssetId,
   LINEAR_EASING,
   SelectionTool,
   type TimelineFrame,
 } from '@timelinx/core';
 import React from 'react';
+import { useState, useCallback } from 'react';
+import { TimelineEditor } from '@timelinx/ui';
+import '@timelinx/ui/styles/tokens';
+import '@timelinx/ui/styles/presets/dark-pro';
+import '@timelinx/ui/styles/structure';
+
+function DemoApp() {
+  const [engine] = useState(() => createDemoEngine());
+  const handleAssetDrop = useCallback(
+    (drop: { assetId: string; trackId: string; frame: number }) => {
+      const state = engine.getState();
+      const asset = state.assetRegistry.get(toAssetId(drop.assetId));
+      if (!asset) return;
+      const duration = asset.intrinsicDuration as number;
+      const clipId = toClipId(`clip-drop-${Date.now()}`);
+      const clip = createClip({
+        id: clipId,
+        assetId: drop.assetId,
+        trackId: drop.trackId,
+        timelineStart: toFrame(drop.frame),
+        timelineEnd: toFrame(drop.frame + duration),
+        mediaIn: toFrame(0),
+        mediaOut: toFrame(duration),
+      });
+      engine.dispatch({
+        id: `drop-${clipId}`,
+        label: `Drop ${asset.name}`,
+        timestamp: Date.now(),
+        operations: [{ type: 'INSERT_CLIP', trackId: toTrackId(drop.trackId), clip }],
+      });
+    },
+    [engine],
+  );
+  return (
+    <TimelineEditor
+      engine={engine}
+      showSidebar={true}
+      showTopNav={true}
+      showTransportControls={true}
+      showMediaBrowser={true}
+      showToolbar={true}
+      projectName="Demo"
+      onAssetDrop={handleAssetDrop}
+    />
+  );
+}
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  const [engine] = React.useState(() => createEditorEngine());
+  const [engine] = React.useState(() => createDemoEngine());
   return <TimelineProvider engine={engine}>{children}</TimelineProvider>;
 }
 
@@ -95,13 +143,13 @@ describe('Editor — Feature Verification', () => {
 
   describe('2. Clip rendering', () => {
     it('renders clips in the DOM with data attributes', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const clips = container.querySelectorAll('[data-clip-id]');
       expect(clips.length).toBeGreaterThanOrEqual(6);
     });
 
     it('clips have correct data-track-id attributes', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const clip1 = container.querySelector('[data-clip-id="clip-1"]');
       expect(clip1).toBeDefined();
       expect(clip1?.getAttribute('data-track-id')).toBe('v1');
@@ -1189,7 +1237,7 @@ describe('Editor — Feature Verification', () => {
 
   describe('17. Text clips rendering on timeline', () => {
     it('renders text clips on the titles track', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(2);
     });
@@ -1257,7 +1305,7 @@ describe('Editor — Feature Verification', () => {
 
   describe('20. TransitionTool — drag-to-create (real behavior)', () => {
     it('TransitionTool creates transition via engine pointer events', () => {
-      const engine = createEditorEngine();
+      const engine = createDemoEngine();
 
       engine.handleKeyDown({ key: 'g', code: 'KeyG', shiftKey: false, altKey: false, metaKey: false, ctrlKey: false, repeat: false }, { shift: false, alt: false, ctrl: false, meta: false });
       expect(engine.getActiveToolId()).toBe('transition');
@@ -1726,7 +1774,7 @@ describe('Editor — Feature Verification', () => {
 
   describe('25. Text clip drag-to-move via SelectionTool', () => {
     it('SelectionTool produces MOVE_CLIP transaction when dragging a text clip', () => {
-      const engine = createEditorEngine();
+      const engine = createDemoEngine();
 
       const stateBefore = engine.getState();
       const s1Track = stateBefore.timeline.tracks.find((t) => t.id === 's1');
@@ -1776,7 +1824,7 @@ describe('Editor — Feature Verification', () => {
 
   describe('26. Text clip interactivity — DOM structure verification', () => {
     it('text clip has data-clip-id for tool-router hit-testing', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
@@ -1784,7 +1832,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('text clip has data-track-id for tool-router hit-testing', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       for (const clip of s1Clips) {
         expect((clip as HTMLElement).dataset.trackId).toBe('s1');
@@ -1792,7 +1840,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('text clip renders clip name inside .clip-info', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
@@ -1802,7 +1850,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('text clip has inline transform style for positioning', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
@@ -1812,7 +1860,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('text clip has width style set', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
@@ -1820,7 +1868,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('all caption blocks are inside .track-clips (same container as clips)', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const captions = container.querySelectorAll('[data-caption-id]');
       for (const cap of captions) {
         const parent = cap.parentElement;
@@ -1833,7 +1881,7 @@ describe('Editor — Feature Verification', () => {
     });
 
     it('caption blocks coexist with clip blocks in the same track container', () => {
-      const { container } = render(<App />);
+      const { container } = render(<DemoApp />);
       const trackBodies = container.querySelectorAll('.tl-track-body');
       let foundMixed = false;
       for (const tb of trackBodies) {

@@ -1,14 +1,9 @@
 import {
-  createAsset,
-  createClip,
   createTrack,
   createTimeline,
   createTimelineState,
   toFrame,
   frameRate,
-  createEffect,
-  toEffectId,
-  toGeneratorId,
   browserClock,
 } from '@timelinx/core';
 import type { PipelineConfig } from '@timelinx/core';
@@ -28,52 +23,17 @@ const stubPipeline: PipelineConfig = {
   }),
 };
 
+/**
+ * Creates a blank editor engine with empty tracks.
+ * No demo content — users import their own media via the Asset Bin.
+ * For demo/sample content, use createDemoEngine() instead.
+ */
 export function createEditorEngine() {
-  const assetVideo1 = createAsset({
-    id: 'asset-video-1',
-    name: 'Interview.mp4',
-    mediaType: 'video',
-    filePath: '/media/interview.mp4',
-    intrinsicDuration: toFrame(6000),
-    nativeFps: frameRate(30),
-    sourceTimecodeOffset: toFrame(0),
-  });
-
-  const assetVideo2 = createAsset({
-    id: 'asset-video-2',
-    name: 'B-Roll.mp4',
-    mediaType: 'video',
-    filePath: '/media/broll.mp4',
-    intrinsicDuration: toFrame(4500),
-    nativeFps: frameRate(30),
-    sourceTimecodeOffset: toFrame(0),
-  });
-
-  const assetAudio = createAsset({
-    id: 'asset-audio-1',
-    name: 'Music.wav',
-    mediaType: 'audio',
-    filePath: '/media/music.wav',
-    intrinsicDuration: toFrame(9000),
-    nativeFps: frameRate(30),
-    sourceTimecodeOffset: toFrame(0),
-  });
-
-  const assetTitle = createAsset({
-    id: 'asset-title-1',
-    name: 'Title Card.png',
-    mediaType: 'video',
-    filePath: '/media/title.png',
-    intrinsicDuration: toFrame(300),
-    nativeFps: frameRate(30),
-    sourceTimecodeOffset: toFrame(0),
-  });
-
   const timeline = createTimeline({
     id: 'tl-editor',
     name: 'Editor Timeline',
     fps: frameRate(30),
-    duration: toFrame(10800),
+    duration: toFrame(0),
   });
 
   const videoTrack1 = createTrack({
@@ -100,79 +60,9 @@ export function createEditorEngine() {
     type: 'video',
   });
 
-  const clip1 = createClip({
-    id: 'clip-1',
-    assetId: 'asset-video-1',
-    trackId: 'v1',
-    timelineStart: toFrame(0),
-    timelineEnd: toFrame(300),
-    mediaIn: toFrame(0),
-    mediaOut: toFrame(300),
-    effects: [
-      createEffect(toEffectId('fx-blur-1'), 'blur', 'preComposite', [
-        { key: 'intensity', value: 5 },
-      ]),
-    ],
-  });
-
-  const clip2 = createClip({
-    id: 'clip-2',
-    assetId: 'asset-video-1',
-    trackId: 'v1',
-    timelineStart: toFrame(350),
-    timelineEnd: toFrame(700),
-    mediaIn: toFrame(400),
-    mediaOut: toFrame(750),
-  });
-
-  const clip3 = createClip({
-    id: 'clip-3',
-    assetId: 'asset-video-2',
-    trackId: 'v1',
-    timelineStart: toFrame(800),
-    timelineEnd: toFrame(1200),
-    mediaIn: toFrame(0),
-    mediaOut: toFrame(400),
-  });
-
-  const clip4 = createClip({
-    id: 'clip-4',
-    assetId: 'asset-title-1',
-    trackId: 'v2',
-    timelineStart: toFrame(100),
-    timelineEnd: toFrame(250),
-    mediaIn: toFrame(0),
-    mediaOut: toFrame(150),
-  });
-
-  const clip5 = createClip({
-    id: 'clip-5',
-    assetId: 'asset-video-2',
-    trackId: 'v2',
-    timelineStart: toFrame(500),
-    timelineEnd: toFrame(750),
-    mediaIn: toFrame(100),
-    mediaOut: toFrame(350),
-  });
-
-  const clip6 = createClip({
-    id: 'clip-6',
-    assetId: 'asset-audio-1',
-    trackId: 'a1',
-    timelineStart: toFrame(0),
-    timelineEnd: toFrame(600),
-    mediaIn: toFrame(0),
-    mediaOut: toFrame(600),
-  });
-
   const state = createTimelineState({
     timeline,
-    assetRegistry: new Map([
-      [assetVideo1.id, assetVideo1],
-      [assetVideo2.id, assetVideo2],
-      [assetAudio.id, assetAudio],
-      [assetTitle.id, assetTitle],
-    ]),
+    assetRegistry: new Map(),
   });
 
   const engine = new TimelineEngine({
@@ -191,52 +81,6 @@ export function createEditorEngine() {
       { type: 'ADD_TRACK', track: videoTrack2 },
       { type: 'ADD_TRACK', track: audioTrack },
       { type: 'ADD_TRACK', track: titleTrack },
-    ],
-  });
-
-  engine.dispatch({
-    id: 'init-clips',
-    label: 'Initialize clips',
-    timestamp: Date.now(),
-    operations: [
-      { type: 'INSERT_CLIP', trackId: videoTrack1.id, clip: clip1 },
-      { type: 'INSERT_CLIP', trackId: videoTrack1.id, clip: clip2 },
-      { type: 'INSERT_CLIP', trackId: videoTrack1.id, clip: clip3 },
-      { type: 'INSERT_CLIP', trackId: videoTrack2.id, clip: clip4 },
-      { type: 'INSERT_CLIP', trackId: videoTrack2.id, clip: clip5 },
-      { type: 'INSERT_CLIP', trackId: audioTrack.id, clip: clip6 },
-    ],
-  });
-
-  engine.dispatch({
-    id: 'init-titles',
-    label: 'Initialize title clips',
-    timestamp: Date.now(),
-    operations: [
-      {
-        type: 'INSERT_GENERATOR',
-        trackId: titleTrack.id,
-        atFrame: toFrame(0),
-        generator: {
-          id: toGeneratorId('gen-title-1'),
-          type: 'text',
-          params: { text: 'Welcome to TimelineX Editor' },
-          duration: toFrame(90),
-          name: 'Welcome to TimelineX Editor',
-        },
-      },
-      {
-        type: 'INSERT_GENERATOR',
-        trackId: titleTrack.id,
-        atFrame: toFrame(120),
-        generator: {
-          id: toGeneratorId('gen-title-2'),
-          type: 'text',
-          params: { text: 'This is the reference timeline editor' },
-          duration: toFrame(120),
-          name: 'This is the reference timeline editor',
-        },
-      },
     ],
   });
 

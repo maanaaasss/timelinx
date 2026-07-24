@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { createEditorEngine } from './createEditorEngine';
+import { createDemoEngine } from './createDemoEngine';
 import { TimelineEditor } from '@timelinx/ui';
 import { createClip, toFrame, toClipId, toTrackId, toAssetId } from '@timelinx/core';
 import '@timelinx/ui/styles/tokens';
@@ -15,7 +16,18 @@ const globalStyle = `
 let _clipSeq = 0;
 
 function App() {
-  const [engine] = useState(() => createEditorEngine());
+  const [engine, setEngine] = useState(() => createEditorEngine());
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  const handleLoadDemo = useCallback(() => {
+    setEngine(createDemoEngine());
+    setIsDemoMode(true);
+  }, []);
+
+  const handleLoadBlank = useCallback(() => {
+    setEngine(createEditorEngine());
+    setIsDemoMode(false);
+  }, []);
 
   const handleAssetDrop = useCallback(
     (drop: { assetId: string; trackId: string; frame: number }) => {
@@ -38,12 +50,18 @@ function App() {
         mediaOut: toFrame(duration),
       });
 
+      const currentDuration = state.timeline.duration as number;
+      const newDuration = Math.max(currentDuration, endFrame);
+
       engine.dispatch({
         id: `drop-asset-${clipId}`,
         label: `Drop ${asset.name} onto timeline`,
         timestamp: Date.now(),
         operations: [
           { type: 'INSERT_CLIP', trackId: toTrackId(drop.trackId), clip },
+          ...(newDuration > currentDuration
+            ? [{ type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(newDuration) }]
+            : []),
         ],
       });
     },
@@ -53,7 +71,32 @@ function App() {
   return (
     <>
       <style>{globalStyle}</style>
-      <div style={{ width: '100vw', height: '100vh' }}>
+      <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+        <div style={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 1000,
+          display: 'flex',
+          gap: 6,
+        }}>
+          <button
+            onClick={isDemoMode ? handleLoadBlank : handleLoadDemo}
+            style={{
+              padding: '4px 10px',
+              fontSize: 11,
+              background: isDemoMode ? '#e74c3c' : '#2d72d2',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              opacity: 0.8,
+            }}
+            title={isDemoMode ? 'Switch to blank timeline' : 'Load demo content for testing'}
+          >
+            {isDemoMode ? '✕ Exit Demo' : '▶ Load Demo'}
+          </button>
+        </div>
         <TimelineEditor
           engine={engine}
           showSidebar={true}
@@ -62,7 +105,6 @@ function App() {
           showMediaBrowser={true}
           showToolbar={true}
           projectName="Video Popular Vlog_Duplicate"
-          onExport={() => console.log('Export clicked')}
           onAssetDrop={handleAssetDrop}
         />
       </div>

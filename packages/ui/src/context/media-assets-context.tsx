@@ -5,7 +5,7 @@
  * for imported media. Cannot live in core's asset registry because
  * core state must be serializable.
  */
-import React, { createContext, useContext, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useRef, useCallback, useEffect } from 'react';
 
 export interface MediaAssetsContextValue {
   /** Get the File object for an imported asset */
@@ -28,6 +28,18 @@ export function MediaAssetsProvider({ children }: { children: React.ReactNode })
   const filesRef = useRef(new Map<string, File>());
   const blobUrlsRef = useRef(new Map<string, string>());
   const thumbnailsRef = useRef(new Map<string, string>());
+
+  useEffect(() => {
+    const blobUrls = blobUrlsRef.current;
+    return () => {
+      for (const url of blobUrls.values()) {
+        URL.revokeObjectURL(url);
+      }
+      filesRef.current.clear();
+      blobUrls.clear();
+      thumbnailsRef.current.clear();
+    };
+  }, []);
 
   const getFile = useCallback(
     (assetId: string) => filesRef.current.get(assetId),

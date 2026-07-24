@@ -26,7 +26,9 @@ export function ExportDialog({
 }: ExportDialogProps) {
   // Auto-start export when dialog opens and browser is supported
   useEffect(() => {
+    console.log('[EXPORT-DEBUG] ExportDialog useEffect — isOpen:', isOpen, 'isSupported:', isSupported, 'status:', exportState.status);
     if (isOpen && isSupported && exportState.status === 'idle') {
+      console.log('[EXPORT-DEBUG] ExportDialog calling onStartExport()');
       onStartExport();
     }
   }, [isOpen, isSupported, exportState.status, onStartExport]);

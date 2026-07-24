@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useTimelineContext } from '../context/timeline-context';
 import { useMediaAssets } from '../context/media-assets-context';
 import { extractMetadata, detectMediaType } from '../utils/media-import';
@@ -40,9 +40,14 @@ export const AssetBin = React.memo(function AssetBin({
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const assetRegistry = useSyncExternalStore(
+    engine.subscribe,
+    () => engine.getSnapshot().state.assetRegistry,
+    () => engine.getSnapshot().state.assetRegistry,
+  );
   const state = engine.getState();
   const fps = (state.timeline.fps as number) || 30;
-  const assets = Array.from(state.assetRegistry.values());
+  const assets = Array.from(assetRegistry.values());
 
   const filteredAssets = searchQuery
     ? assets.filter((asset) =>
@@ -63,6 +68,10 @@ export const AssetBin = React.memo(function AssetBin({
     const duration = asset.intrinsicDuration as number;
     const frame = engine.getPlayheadFrame() as number;
     const clipId = `clip-${crypto.randomUUID()}`;
+    const endFrame = frame + duration;
+
+    const currentDuration = state.timeline.duration as number;
+    const newDuration = Math.max(currentDuration, endFrame);
 
     engine.dispatch({
       id: `add-asset-${clipId}`,
@@ -77,11 +86,14 @@ export const AssetBin = React.memo(function AssetBin({
             assetId: asset.id as string,
             trackId: track.id,
             timelineStart: toFrame(frame),
-            timelineEnd: toFrame(frame + duration),
+            timelineEnd: toFrame(endFrame),
             mediaIn: toFrame(0),
             mediaOut: toFrame(duration),
           }),
         },
+        ...(newDuration > currentDuration
+          ? [{ type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(newDuration) }]
+          : []),
       ],
     });
   }, [engine]);
