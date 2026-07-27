@@ -254,9 +254,9 @@ Test Files  7 passed (7)
 ### CI
 
 **PR #40:** https://github.com/maanaaasss/timelinx/pull/40
-**CI run:** https://github.com/maanaaasss/timelinx/actions/runs/30266211317
+**CI run:** https://github.com/maanaaasss/timelinx/actions/runs/30266316753
 
-> CI status will be updated once the run completes. All local verification is clean.
+✅ **CI passed** — `completed: success` (2m16s). The lint warnings shown in CI output are pre-existing unused-variable annotations in `@timelinx/core`'s test files, unrelated to this PR.
 
 ---
 
