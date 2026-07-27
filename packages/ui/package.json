@@ -1,7 +1,6 @@
 {
   "name": "@timelinx/ui",
-  "version": "1.0.0-beta.3",
-  "private": true,
+  "version": "1.0.0-beta.1",
   "description": "Modern browser-native React timeline UI. Drop-in components built on @timelinx/core and @timelinx/react.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,7 +24,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly --outDir dist && cp src/tokens.css dist/ && sed 's|@import .\\.\\./tokens\\.css.|@import \"./tokens.css\";|' src/styles/structure.css > dist/structure.css && mkdir -p dist/presets && cp src/presets/*.css dist/presets/",
+    "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist && cp src/tokens.css dist/ && sed 's|@import .\\.\\./tokens\\.css.|@import \"./tokens.css\";|' src/styles/structure.css > dist/structure.css && mkdir -p dist/presets && cp src/presets/*.css dist/presets/",
     "dev": "vite build --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -64,14 +63,20 @@
     "components",
     "typescript"
   ],
-  "author": "",
+  "author": "Timeline Contributors",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maanaaasss/timelinx/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/maanaaasss/timelinx",
     "directory": "packages/ui"
   },
   "homepage": "https://github.com/maanaaasss/timelinx/blob/main/packages/ui/README.md",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "lucide-react": "^1.21.0"
   }
