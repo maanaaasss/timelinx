@@ -1,5 +1,12 @@
 # @timelinx/editor
 
+## 0.0.1-beta.2
+
+### Patch Changes
+
+- Updated dependencies [[`9aae6d9`](https://github.com/maanaaasss/timelinx/commit/9aae6d9bb9bc76e85b4baf52ee34d9659543f10b)]:
+  - @timelinx/ui@1.0.0-beta.2
+
 ## 0.0.1-beta.1
 
 ### Patch Changes

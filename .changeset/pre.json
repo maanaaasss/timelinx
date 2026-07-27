@@ -28,6 +28,7 @@
     "react-error-boundaries",
     "selection-ripple-trim-default",
     "tool-router-destroy",
+    "ui-first-public-release",
     "validation-tolerance"
   ]
 }
