@@ -16,7 +16,7 @@ export interface TimelineClipProps {
   fps?: number;
   className?: string;
   style?: React.CSSProperties;
-  thumbnails?: Map<string, string>;
+  thumbnails?: ReadonlyMap<string, string>;
 }
 
 function getClipIcon(trackType?: string) {

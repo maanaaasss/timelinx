@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true

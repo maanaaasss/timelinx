@@ -5,7 +5,7 @@
  * Handles audio routing via Web Audio API, progress tracking, and
  * cancel/cleanup.
  */
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import type { Clip, FileAsset, TimelineState } from '@timelinx/core';
 import { toFrame } from '@timelinx/core';
@@ -47,16 +47,22 @@ function checkExportSupport(): boolean {
 }
 
 function getSupportedMimeType(hasAudio: boolean): string | null {
+  // T1-4: Include MP4 types so Safari (which only supports video/mp4) can export.
+  // WebM types are tried first because they produce smaller files in Chrome/Firefox.
   const types = hasAudio
     ? [
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp8,opus',
         'video/webm',
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        'video/mp4',
       ]
     : [
         'video/webm;codecs=vp9',
         'video/webm;codecs=vp8',
         'video/webm',
+        'video/mp4;codecs=avc1',
+        'video/mp4',
       ];
   for (const type of types) {
     if (MediaRecorder.isTypeSupported(type)) return type;
@@ -83,8 +89,9 @@ function collectAudioClips(
     if (track.type !== 'audio' || track.muted) continue;
     for (const clip of track.clips) {
       const asset = state.assetRegistry.get(clip.assetId);
-      if (!asset || asset.kind !== 'generator' && asset.mediaType !== 'audio') continue;
-      if (asset.kind === 'generator') continue;
+      // T2-1: Explicit parenthesization to avoid operator precedence ambiguity.
+      // Skip generator assets and non-audio file assets.
+      if (!asset || asset.kind === 'generator' || asset.mediaType !== 'audio') continue;
       const fileAsset = asset as FileAsset;
       const blobUrl = mediaAssets.getBlobUrl(asset.id as string);
       const src = blobUrl || fileAsset.filePath;
@@ -231,12 +238,12 @@ class ExportRunner {
   private audioSources: AudioBufferSourceNode[] = [];
   private stream: MediaStream | null = null;
   private cancelled = false;
+  // T1-2: Guard against double-cleanup (cancel() + .finally() both call cleanup())
+  private cleaned = false;
   private startTime = 0;
   private onProgress: (state: ExportState) => void;
-  private pendingAudioStarts: Array<{
-    buffer: AudioBuffer;
-    entry: AudioScheduleEntry;
-  }> = [];
+  // T0-5: Store loaded audio buffers for scheduling at start time (not load time)
+  private loadedAudioBuffers: Array<{ info: AudioClipInfo; buffer: AudioBuffer }> = [];
 
   constructor(
     engine: TimelineEngine,
@@ -251,24 +258,25 @@ class ExportRunner {
   async run(): Promise<void> {
     const state = this.engine.getState();
     const fps = (state.timeline.fps as number) || 30;
-    const timelineDurationFrames = (state.timeline.duration as number) || 1;
     const durationFrames = getExportDurationFrames(state);
 
-    console.log('[EXPORT-DEBUG] === Export pipeline starting ===');
-    console.log('[EXPORT-DEBUG] timeline.duration (frames):', timelineDurationFrames);
-    console.log('[EXPORT-DEBUG] export duration from content (frames):', durationFrames);
-    console.log('[EXPORT-DEBUG] timeline.fps:', fps);
-    console.log('[EXPORT-DEBUG] computed duration (seconds):', durationFrames / fps);
-    console.log('[EXPORT-DEBUG] track count:', state.timeline.tracks.length);
-    for (const track of state.timeline.tracks) {
-      console.log('[EXPORT-DEBUG]   track:', track.id, 'type:', track.type, 'clips:', track.clips.length, 'muted:', track.muted);
+    if (import.meta.env.DEV) {
+      const timelineDurationFrames = (state.timeline.duration as number) || 1;
+      console.log('[EXPORT-DEBUG] === Export pipeline starting ===');
+      console.log('[EXPORT-DEBUG] timeline.duration (frames):', timelineDurationFrames);
+      console.log('[EXPORT-DEBUG] export duration from content (frames):', durationFrames);
+      console.log('[EXPORT-DEBUG] timeline.fps:', fps);
+      console.log('[EXPORT-DEBUG] computed duration (seconds):', durationFrames / fps);
+      console.log('[EXPORT-DEBUG] track count:', state.timeline.tracks.length);
+      for (const track of state.timeline.tracks) {
+        console.log('[EXPORT-DEBUG]   track:', track.id, 'type:', track.type, 'clips:', track.clips.length, 'muted:', track.muted);
+      }
     }
 
     // 1. Create export canvas
     this.canvas = document.createElement('canvas');
     this.canvas.width = 1920;
     this.canvas.height = 1080;
-    console.log('[EXPORT-DEBUG] Export canvas created:', this.canvas.width, 'x', this.canvas.height);
 
     // 2. Set up canvas capture
     let videoStream = this.canvas.captureStream(0);
@@ -282,76 +290,53 @@ class ExportRunner {
         | (MediaStreamTrack & { requestFrame?: () => void })
         | undefined;
     }
-    console.log('[EXPORT-DEBUG] captureStream() returned. Video tracks:', videoStream.getVideoTracks().length);
-    console.log('[EXPORT-DEBUG] Canvas video track requestFrame supported:', Boolean(canvasVideoTrack?.requestFrame));
+    if (import.meta.env.DEV) {
+      console.log('[EXPORT-DEBUG] Export canvas:', this.canvas.width, 'x', this.canvas.height);
+      console.log('[EXPORT-DEBUG] captureStream video tracks:', videoStream.getVideoTracks().length);
+      console.log('[EXPORT-DEBUG] requestFrame supported:', Boolean(canvasVideoTrack?.requestFrame));
+    }
 
     // 3. Set up audio
+    // T0-5: Audio buffers are loaded here, but scheduling is deferred to
+    // startPendingAudio() (called after MediaRecorder.start()) so the
+    // schedule is computed using the actual AudioContext.currentTime at the
+    // moment recording begins, not the earlier load time. This eliminates
+    // the 50–500ms A/V sync offset caused by audio loading duration.
     let combinedStream: MediaStream = videoStream;
     let hasAudio = false;
     const audioClips = collectAudioClips(state, this.mediaAssets);
-    console.log('[EXPORT-DEBUG] Audio clips found for export:', audioClips.length);
     try {
       if (audioClips.length > 0) {
         this.audioCtx = new AudioContext();
         this.audioDest = this.audioCtx.createMediaStreamDestination();
-
         await this.audioCtx.resume?.();
-        console.log('[EXPORT-DEBUG] AudioContext created, state:', this.audioCtx.state, 'currentTime:', this.audioCtx.currentTime);
 
-        const loadedAudio: Array<{ info: AudioClipInfo; buffer: AudioBuffer }> = [];
         for (let i = 0; i < audioClips.length; i++) {
           const info = audioClips[i]!;
           const buffer = await loadAudioBuffer(this.audioCtx, info.src);
           if (buffer) {
-            loadedAudio.push({ info, buffer });
-            console.log('[EXPORT-DEBUG]   Loaded audio clip:', info.clip.id, 'duration:', buffer.duration, 'channels:', buffer.numberOfChannels);
-          } else {
-            console.warn('[EXPORT-DEBUG]   FAILED to load audio clip:', info.clip.id, 'src:', info.src);
+            this.loadedAudioBuffers.push({ info, buffer });
+            if (import.meta.env.DEV) {
+              console.log('[EXPORT-DEBUG] Loaded audio clip:', info.clip.id, 'duration:', buffer.duration);
+            }
+          } else if (import.meta.env.DEV) {
+            console.warn('[EXPORT-DEBUG] FAILED to load audio clip:', info.clip.id);
           }
         }
 
-        const schedule = computeAudioSchedule(
-          loadedAudio.map(({ info }) => info),
-          0,
-          fps,
-        );
-
-        for (let i = 0; i < loadedAudio.length; i++) {
-          const { buffer } = loadedAudio[i]!;
-          const entry = schedule[i]!;
-          const offset = Math.min(entry.offset, Math.max(0, buffer.duration));
-          const duration = Math.min(entry.duration, Math.max(0, buffer.duration - offset));
-          if (duration <= 0) continue;
-
-          this.pendingAudioStarts.push({
-            buffer,
-            entry: {
-              ...entry,
-              offset,
-              duration,
-            },
-          });
-        }
-
-        if (this.pendingAudioStarts.length > 0) {
+        if (this.loadedAudioBuffers.length > 0) {
           hasAudio = true;
-          console.log('[EXPORT-DEBUG] Audio scheduling complete. Audio tracks:', this.audioDest.stream.getAudioTracks().length);
-
-          // Combine video + audio streams
           const audioTracks = this.audioDest.stream.getAudioTracks();
           combinedStream = new MediaStream([
             ...videoStream.getVideoTracks(),
             ...audioTracks,
           ]);
-        } else {
-          console.log('[EXPORT-DEBUG] No playable audio loaded — recording video-only stream');
         }
-      } else {
-        console.log('[EXPORT-DEBUG] No audio clips — recording video-only stream');
       }
     } catch (err) {
-      console.warn('[EXPORT-DEBUG] *** Audio setup FAILED — proceeding with video only ***', err);
-      // If audio setup fails, proceed with video only
+      if (import.meta.env.DEV) {
+        console.warn('[EXPORT-DEBUG] Audio setup failed — proceeding with video only', err);
+      }
       combinedStream = videoStream;
       hasAudio = false;
     }
@@ -360,24 +345,19 @@ class ExportRunner {
     if (!mimeType) {
       throw new Error('No supported video MIME type found for MediaRecorder');
     }
-    console.log('[EXPORT-DEBUG] Selected MIME type:', mimeType);
+    if (import.meta.env.DEV) {
+      console.log('[EXPORT-DEBUG] Selected MIME type:', mimeType);
+    }
 
     // 4. Create MediaRecorder
     this.mediaRecorder = new MediaRecorder(combinedStream, {
       mimeType,
       videoBitsPerSecond: 5_000_000,
     });
-    console.log('[EXPORT-DEBUG] MediaRecorder created. Initial state:', this.mediaRecorder.state);
-    console.log('[EXPORT-DEBUG] Combined stream tracks — video:', combinedStream.getVideoTracks().length, 'audio:', combinedStream.getAudioTracks().length);
 
     this.recordedChunks = [];
     this.mediaRecorder.ondataavailable = (e) => {
-      console.log('[EXPORT-DEBUG] ondataavailable — chunk size:', e.data.size, 'bytes, type:', e.data.type);
       if (e.data.size > 0) this.recordedChunks.push(e.data);
-    };
-
-    this.mediaRecorder.onstart = () => {
-      console.log('[EXPORT-DEBUG] MediaRecorder onstart fired. State:', this.mediaRecorder?.state);
     };
 
     const recorderDone = new Promise<void>((resolve, reject) => {
@@ -389,19 +369,19 @@ class ExportRunner {
     this.engine.seekTo(toFrame(0));
     renderCompositorFrame(
       {
-        canvas: this.canvas,
+        canvas: this.canvas!,
         engine: this.engine,
         mediaAssets: this.mediaAssets,
         pool: this.pool,
         lastSeekRef: this.lastSeekRef,
       },
       0,
-      -1,
     );
     this.mediaRecorder.start(100);
     canvasVideoTrack?.requestFrame?.();
-    console.log('[EXPORT-DEBUG] MediaRecorder.start() called. State:', this.mediaRecorder.state);
-    this.startPendingAudio();
+    // T0-5: Start audio AFTER MediaRecorder.start() so the schedule is
+    // computed against the actual AudioContext.currentTime at recording start.
+    this.startPendingAudio(fps);
     this.startTime = performance.now();
     this.cancelled = false;
 
@@ -414,6 +394,8 @@ class ExportRunner {
     });
 
     // 6. Drive playback — export drives frame advancement itself
+    //    (engine.seekTo drives the compositor's resolveFrame; do NOT rely
+    //     on playbackEngine.play() which has its own rAF loop)
     //    (Don't rely on playbackEngine.play() — its internal rAF loop
     //     doesn't reliably advance the controller state visible to getSnapshot())
     this.engine.seekTo(toFrame(0));
@@ -470,24 +452,6 @@ class ExportRunner {
         canvasVideoTrack?.requestFrame?.();
         rafCount++;
 
-        if (rafCount <= 3 || rafCount % 30 === 0) {
-          console.log('[EXPORT-DEBUG] Frame', rafCount, '— currentFrame:', currentFrame, 'progress:', Math.round(progress * 100) + '%');
-          try {
-            const ctx = this.canvas!.getContext('2d');
-            if (ctx) {
-              const imageData = ctx.getImageData(0, 0, 1, 1);
-              const pixel = imageData.data;
-              const isBlank = pixel[0] === 0 && pixel[1] === 0 && pixel[2] === 0 && pixel[3] === 0;
-              console.log('[EXPORT-DEBUG]   Canvas pixel[0,0] RGBA:', pixel[0], pixel[1], pixel[2], pixel[3], isBlank ? '(BLANK/EMPTY)' : '(has content)');
-            }
-          } catch (e) {
-            console.warn('[EXPORT-DEBUG]   Failed to read canvas pixel:', e);
-          }
-          if (this.mediaRecorder) {
-            console.log('[EXPORT-DEBUG]   MediaRecorder state:', this.mediaRecorder.state, 'chunks so far:', this.recordedChunks.length);
-          }
-        }
-
         this.onProgress({
           status: 'encoding',
           progress,
@@ -508,39 +472,21 @@ class ExportRunner {
     });
 
     // 8. Stop recording
-    console.log('[EXPORT-DEBUG] === Render loop ended ===');
-    console.log('[EXPORT-DEBUG] Total frames rendered by export loop:', rafCount);
     if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-      console.log('[EXPORT-DEBUG] Calling MediaRecorder.stop(). State before stop:', this.mediaRecorder.state);
       this.mediaRecorder.stop();
-    } else {
-      console.warn('[EXPORT-DEBUG] MediaRecorder already inactive or null. State:', this.mediaRecorder?.state);
     }
     await recorderDone;
-    console.log('[EXPORT-DEBUG] MediaRecorder stopped. Total chunks:', this.recordedChunks.length);
-    if (this.cancelled) {
-      console.log('[EXPORT-DEBUG] Export was cancelled — aborting blob creation');
-      return;
-    }
+    if (this.cancelled) return;
 
     // 9. Create blob
-    let totalBytes = 0;
-    for (const chunk of this.recordedChunks) {
-      totalBytes += chunk.size;
-    }
-    console.log('[EXPORT-DEBUG] Total accumulated bytes across', this.recordedChunks.length, 'chunks:', totalBytes, '(' + (totalBytes / 1024 / 1024).toFixed(2) + ' MB)');
     const blob = new Blob(this.recordedChunks, { type: mimeType });
-    console.log('[EXPORT-DEBUG] Blob created. Size:', blob.size, 'bytes (' + (blob.size / 1024 / 1024).toFixed(2) + ' MB), type:', blob.type);
-    if (blob.size === 0) {
-      console.error('[EXPORT-DEBUG] *** CRITICAL: Blob is 0 bytes! MediaRecorder captured nothing. ***');
+    if (import.meta.env.DEV && blob.size === 0) {
+      console.error('[EXPORT-DEBUG] CRITICAL: Blob is 0 bytes — MediaRecorder captured nothing.');
     }
     const url = URL.createObjectURL(blob);
-    const fileName = `timeline-export-${Date.now()}.webm`;
-    console.log('[EXPORT-DEBUG] Download URL created:', url.substring(0, 60) + '...');
-    console.log('[EXPORT-DEBUG] File name:', fileName);
-
-    const elapsed = ((performance.now() - this.startTime) / 1000).toFixed(1);
-    console.log('[EXPORT-DEBUG] === Export complete. Elapsed:', elapsed, 'seconds ===');
+    // Determine file extension from MIME type
+    const ext = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
+    const fileName = `timeline-export-${Date.now()}.${ext}`;
 
     this.onProgress({
       status: 'complete',
@@ -567,11 +513,16 @@ class ExportRunner {
   }
 
   cleanup(): void {
+    // T1-2: Idempotent guard — cancel() and .finally() both call cleanup();
+    // the second call must be a no-op to avoid double-stopping audio sources.
+    if (this.cleaned) return;
+    this.cleaned = true;
+
     for (const source of this.audioSources) {
       try { source.stop(); } catch { /* already stopped */ }
     }
     this.audioSources = [];
-    this.pendingAudioStarts = [];
+    this.loadedAudioBuffers = [];
     if (this.audioCtx && this.audioCtx.state !== 'closed') {
       this.audioCtx.close().catch(() => {});
     }
@@ -582,15 +533,34 @@ class ExportRunner {
       this.stream = null;
     }
     this.pool.destroy();
-    this.pool = new MediaElementPool();
     this.lastSeekRef.clear();
   }
 
-  private startPendingAudio(): void {
-    if (!this.audioCtx || !this.audioDest || this.pendingAudioStarts.length === 0) return;
+  private startPendingAudio(fps: number): void {
+    // T0-5: Compute the audio schedule HERE, using the actual AudioContext
+    // currentTime at the moment MediaRecorder has started recording.
+    // Previously, computeAudioSchedule was called during audio loading with
+    // audioCtxCurrentTime=0, then startPendingAudio added baseTime on top —
+    // producing an offset equal to the audio loading duration (50–500ms).
+    // Now: schedule is computed at actual start time, so when=0 means
+    // "play this clip starting at the very beginning of the recording",
+    // which is accurate.
+    if (!this.audioCtx || !this.audioDest || this.loadedAudioBuffers.length === 0) return;
 
     const baseTime = this.audioCtx.currentTime;
-    for (const { buffer, entry } of this.pendingAudioStarts) {
+    const schedule = computeAudioSchedule(
+      this.loadedAudioBuffers.map(({ info }) => info),
+      baseTime,
+      fps,
+    );
+
+    for (let i = 0; i < this.loadedAudioBuffers.length; i++) {
+      const { buffer } = this.loadedAudioBuffers[i]!;
+      const entry = schedule[i]!;
+      const offset = Math.min(entry.offset, Math.max(0, buffer.duration));
+      const duration = Math.min(entry.duration, Math.max(0, buffer.duration - offset));
+      if (duration <= 0) continue;
+
       const source = this.audioCtx.createBufferSource();
       source.buffer = buffer;
 
@@ -601,15 +571,12 @@ class ExportRunner {
       gainNode.connect(this.audioDest);
 
       source.start(
-        Math.max(this.audioCtx.currentTime, baseTime + entry.when),
-        entry.offset,
-        entry.duration,
+        Math.max(this.audioCtx.currentTime, entry.when),
+        offset,
+        duration,
       );
       this.audioSources.push(source);
     }
-
-    console.log('[EXPORT-DEBUG] Started audio sources after MediaRecorder.start():', this.audioSources.length);
-    this.pendingAudioStarts = [];
   }
 }
 
@@ -630,28 +597,49 @@ export function useExport(
   });
   const runnerRef = useRef<ExportRunner | null>(null);
 
+  // T2-3: If the engine is replaced (e.g. user loads a demo/blank project)
+  // while an export is in-flight, cancel it. The running ExportRunner holds a
+  // captured reference to the old engine; continuing would produce incorrect output.
+  const cancelExportRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    cancelExportRef.current();
+  }, [engine]);
+
   const startExport = useCallback(() => {
-    console.log('[EXPORT-DEBUG] startExport called. runnerRef.current:', runnerRef.current ? 'SET (already running)' : 'null (ready to start)');
+    if (import.meta.env.DEV) {
+      console.log('[EXPORT-DEBUG] startExport called. runnerRef.current:', runnerRef.current ? 'SET (already running)' : 'null (ready to start)');
+    }
     if (runnerRef.current) return; // already running
 
     const runner = new ExportRunner(engine, mediaAssets, (update) => {
       setState((prev) => ({ ...prev, ...update }));
     });
     runnerRef.current = runner;
-    console.log('[EXPORT-DEBUG] ExportRunner created, calling runner.run()');
+    if (import.meta.env.DEV) {
+      console.log('[EXPORT-DEBUG] ExportRunner created, calling runner.run()');
+    }
 
-    setState({
-      status: 'preparing',
-      progress: 0,
-      error: null,
-      downloadUrl: null,
-      fileName: '',
+    setState((prev) => {
+      // T0-4: Revoke the previous export's download URL before overwriting
+      // state so the blob (potentially 1-100 MB) is freed from memory.
+      if (prev.downloadUrl) {
+        URL.revokeObjectURL(prev.downloadUrl);
+      }
+      return {
+        status: 'preparing',
+        progress: 0,
+        error: null,
+        downloadUrl: null,
+        fileName: '',
+      };
     });
 
     runner
       .run()
       .catch((err) => {
-        console.error('[EXPORT-DEBUG] *** Export runner threw an error ***', err);
+        if (import.meta.env.DEV) {
+          console.error('[EXPORT-DEBUG] Export runner threw an error', err);
+        }
         setState({
           status: 'error',
           progress: 0,
@@ -669,14 +657,23 @@ export function useExport(
   const cancelExport = useCallback(() => {
     runnerRef.current?.cancel();
     runnerRef.current = null;
-    setState({
-      status: 'idle',
-      progress: 0,
-      error: null,
-      downloadUrl: null,
-      fileName: '',
+    setState((prev) => {
+      // T0-4: Revoke export download URL on cancel too
+      if (prev.downloadUrl) {
+        URL.revokeObjectURL(prev.downloadUrl);
+      }
+      return {
+        status: 'idle',
+        progress: 0,
+        error: null,
+        downloadUrl: null,
+        fileName: '',
+      };
     });
   }, []);
+
+  // Keep the ref in sync so the engine-change effect can call the latest version
+  cancelExportRef.current = cancelExport;
 
   return {
     state,

@@ -61,7 +61,13 @@ function buildFilterString(effects: readonly Effect[]): string {
 
 // ---------------------------------------------------------------------------
 // Media element pool — caches <video> and <img> elements by clip ID
+//
+// T0-2: Added releaseVideo/releaseImage for per-clip cleanup on deletion.
+// Also enforces a MAX_POOL_SIZE cap with LRU order tracking so the pool
+// cannot grow without bound even if explicit release isn't called.
 // ---------------------------------------------------------------------------
+
+const MAX_POOL_SIZE = 32;
 
 class MediaElementPool {
   private videoElements = new Map<string, HTMLVideoElement>();
@@ -69,10 +75,65 @@ class MediaElementPool {
   private imageLoaded = new Map<string, boolean>();
   private videoSrcMap = new Map<string, string>();
   private imageSrcMap = new Map<string, string>();
+  // LRU order: most-recently-used clipId at the end
+  private videoOrder: string[] = [];
+  private imageOrder: string[] = [];
+
+  private touchVideoLRU(clipId: string): void {
+    const idx = this.videoOrder.indexOf(clipId);
+    if (idx !== -1) this.videoOrder.splice(idx, 1);
+    this.videoOrder.push(clipId);
+  }
+
+  private touchImageLRU(clipId: string): void {
+    const idx = this.imageOrder.indexOf(clipId);
+    if (idx !== -1) this.imageOrder.splice(idx, 1);
+    this.imageOrder.push(clipId);
+  }
+
+  private evictLRUVideo(): void {
+    const oldest = this.videoOrder.shift();
+    if (oldest) this._releaseVideo(oldest);
+  }
+
+  private evictLRUImage(): void {
+    const oldest = this.imageOrder.shift();
+    if (oldest) this._releaseImage(oldest);
+  }
+
+  private _releaseVideo(clipId: string): void {
+    const video = this.videoElements.get(clipId);
+    if (video) {
+      video.pause();
+      video.src = '';
+      video.remove();
+      this.videoElements.delete(clipId);
+    }
+    this.videoSrcMap.delete(clipId);
+    const idx = this.videoOrder.indexOf(clipId);
+    if (idx !== -1) this.videoOrder.splice(idx, 1);
+  }
+
+  private _releaseImage(clipId: string): void {
+    const img = this.imageElements.get(clipId);
+    if (img) {
+      img.onload = null;
+      img.src = '';
+      this.imageElements.delete(clipId);
+    }
+    this.imageLoaded.delete(clipId);
+    this.imageSrcMap.delete(clipId);
+    const idx = this.imageOrder.indexOf(clipId);
+    if (idx !== -1) this.imageOrder.splice(idx, 1);
+  }
 
   getVideo(clipId: string, src: string): HTMLVideoElement {
     let video = this.videoElements.get(clipId);
     if (!video) {
+      // Evict LRU entry if pool is at capacity
+      if (this.videoElements.size >= MAX_POOL_SIZE) {
+        this.evictLRUVideo();
+      }
       video = document.createElement('video');
       video.muted = true;
       video.playsInline = true;
@@ -86,12 +147,17 @@ class MediaElementPool {
       video.load();
       this.videoSrcMap.set(clipId, src);
     }
+    this.touchVideoLRU(clipId);
     return video;
   }
 
   getImage(clipId: string, src: string): HTMLImageElement {
     let img = this.imageElements.get(clipId);
     if (!img) {
+      // Evict LRU entry if pool is at capacity
+      if (this.imageElements.size >= MAX_POOL_SIZE) {
+        this.evictLRUImage();
+      }
       img = new Image();
       this.imageElements.set(clipId, img);
       this.imageLoaded.set(clipId, false);
@@ -102,6 +168,7 @@ class MediaElementPool {
       this.imageSrcMap.set(clipId, src);
       img.onload = () => this.imageLoaded.set(clipId, true);
     }
+    this.touchImageLRU(clipId);
     return img;
   }
 
@@ -109,20 +176,36 @@ class MediaElementPool {
     return this.imageLoaded.get(clipId) === true;
   }
 
+  /** Release a specific video element — call when the corresponding clip is deleted. */
+  releaseVideo(clipId: string): void {
+    this._releaseVideo(clipId);
+  }
+
+  /** Release a specific image element — call when the corresponding clip is deleted. */
+  releaseImage(clipId: string): void {
+    this._releaseImage(clipId);
+  }
+
+  /**
+   * Release any pool entries whose clipIds are not in the provided active set.
+   * Call this after each engine state update to evict deleted clips.
+   */
+  syncToActiveClips(activeClipIds: ReadonlySet<string>): void {
+    for (const clipId of [...this.videoElements.keys()]) {
+      if (!activeClipIds.has(clipId)) this._releaseVideo(clipId);
+    }
+    for (const clipId of [...this.imageElements.keys()]) {
+      if (!activeClipIds.has(clipId)) this._releaseImage(clipId);
+    }
+  }
+
   destroy(): void {
-    for (const video of this.videoElements.values()) {
-      video.pause();
-      video.src = '';
-      video.remove();
+    for (const clipId of [...this.videoElements.keys()]) {
+      this._releaseVideo(clipId);
     }
-    this.videoElements.clear();
-    this.videoSrcMap.clear();
-    for (const img of this.imageElements.values()) {
-      img.src = '';
+    for (const clipId of [...this.imageElements.keys()]) {
+      this._releaseImage(clipId);
     }
-    this.imageElements.clear();
-    this.imageLoaded.clear();
-    this.imageSrcMap.clear();
   }
 }
 
@@ -300,7 +383,7 @@ function renderLayer(
   applyTransform(ctx, layer.transform, canvasW, canvasH);
 
   // Diagnostic: log transform values for first few frames
-  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+  if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
     const t = layer.transform;
     console.log('[COMPOSITOR-DEBUG] clip:', layer.clipId, 'transform:', {
       positionX: t.positionX.value,
@@ -361,7 +444,7 @@ function renderVideo(
     lastSeekRef.set(clipId, targetTime);
   }
 
-  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+  if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
     console.log('[EXPORT-DEBUG]   renderVideo clip:', clipId, 'targetTime:', targetTime.toFixed(3), 'readyState:', video.readyState, 'videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight, 'src:', src?.substring(0, 80));
   }
 
@@ -403,7 +486,7 @@ function renderImage(
   const dx = -dw / 2;
   const dy = -dh / 2;
 
-  if (_debugFrameCount !== undefined && _debugFrameCount <= 3) {
+  if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
     console.log('[COMPOSITOR-DEBUG] renderImage clip:', clipId, {
       naturalWidth: img.naturalWidth,
       naturalHeight: img.naturalHeight,
@@ -513,6 +596,25 @@ export const CompositorPreview = React.memo(function CompositorPreview({
       poolRef.current.destroy();
     };
   }, []);
+
+  // T0-2: Sync pool to current engine state — evict elements for deleted clips.
+  // engine.subscribe fires whenever a transaction is committed. We collect all
+  // current clip IDs and release any pool entries not in that set.
+  useEffect(() => {
+    const syncPool = () => {
+      const state = engine.getState();
+      const activeClipIds = new Set<string>();
+      for (const track of state.timeline.tracks) {
+        for (const clip of track.clips) {
+          activeClipIds.add(clip.id as string);
+        }
+      }
+      poolRef.current.syncToActiveClips(activeClipIds);
+    };
+    // Sync immediately on mount and on every subsequent state change
+    syncPool();
+    return engine.subscribe(syncPool);
+  }, [engine]);
 
   // ResizeObserver: recalculate the canvas CSS display size whenever the
   // preview container resizes, maintaining CANVAS_W:CANVAS_H aspect ratio.

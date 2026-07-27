@@ -48,9 +48,6 @@ const DEFAULT_TRACK_HEIGHT_AUDIO = 68;
 const MIN_TRACK_HEIGHT = 36;
 const MAX_TRACK_HEIGHT = 140;
 
-let _txSeq = 0;
-const txId = () => `ui-tx-${++_txSeq}`;
-
 function extractModifiers(e: React.PointerEvent | React.KeyboardEvent): Modifiers {
   return { shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey };
 }
@@ -78,7 +75,7 @@ const ClipRow = React.memo(function ClipRow({
   startFrame: number;
   endFrame: number;
   trackType?: string;
-  thumbnails?: Map<string, string>;
+  thumbnails?: ReadonlyMap<string, string>;
 }) {
   const { engine } = useTimelineContext();
   const track = useTrackWithEngine(engine, trackId);
@@ -239,7 +236,9 @@ function EditorInner({
   const exportHook = useExport(engine, mediaAssets);
 
   const handleExportOpen = useCallback(() => {
-    console.log('[EXPORT-DEBUG] handleExportOpen called — setting exportOpen = true');
+    if (import.meta.env.DEV) {
+      console.log('[EXPORT-DEBUG] handleExportOpen called — setting exportOpen = true');
+    }
     setExportOpen(true);
   }, []);
   const handleExportClose = useCallback(() => {
@@ -702,7 +701,7 @@ function EditorInner({
       {/* Main Content Area */}
       <main className="timeline-main">
         {/* Top Navigation Bar */}
-        {showTopNav && <TopNav projectName={projectName} onExport={() => { console.log('[EXPORT-DEBUG] TopNav onExport click handler fired'); handleExportOpen(); onExport?.(); }} />}
+        {showTopNav && <TopNav projectName={projectName} onExport={() => { if (import.meta.env.DEV) console.log('[EXPORT-DEBUG] TopNav onExport click handler fired'); handleExportOpen(); onExport?.(); }} />}
 
         {/* Workspace Split: Media Browser + Preview */}
         <div className="timeline-workspace-split">
