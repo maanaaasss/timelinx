@@ -5,7 +5,7 @@
  * for imported media. Cannot live in core's asset registry because
  * core state must be serializable.
  */
-import React, { createContext, useContext, useRef, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useRef, useCallback, useEffect, useMemo } from 'react';
 
 export interface MediaAssetsContextValue {
   /** Get the File object for an imported asset */
@@ -16,10 +16,17 @@ export interface MediaAssetsContextValue {
   getThumbnail(assetId: string): string | undefined;
   /** Register an imported asset's file, blob URL, and thumbnail */
   addImportedAsset(assetId: string, file: File, blobUrl: string, thumbnail?: string): void;
-  /** Remove an imported asset and revoke its blob URL */
-  removeImportedAsset(assetId: string): void;
-  /** Get all thumbnails as a map (for passing to clip components) */
-  getAllThumbnails(): Map<string, string>;
+  /**
+   * Remove an imported asset and revoke its blob URL.
+   *
+   * By default, revocation is deferred by one microtask tick so that any
+   * currently-rendering frame (compositor or export) can complete its draw
+   * before the URL becomes invalid. Pass `immediate: true` only when you
+   * are certain no rendering is in progress for this asset (e.g. in tests).
+   */
+  removeImportedAsset(assetId: string, options?: { immediate?: boolean }): void;
+  /** Get all thumbnails as a ReadonlyMap (callers must not mutate) */
+  getAllThumbnails(): ReadonlyMap<string, string>;
 }
 
 const MediaAssetsCtx = createContext<MediaAssetsContextValue | null>(null);
@@ -58,6 +65,12 @@ export function MediaAssetsProvider({ children }: { children: React.ReactNode })
 
   const addImportedAsset = useCallback(
     (assetId: string, file: File, blobUrl: string, thumbnail?: string) => {
+      // T1-5: Revoke the previous blob URL before overwriting, so double-
+      // registration (e.g. re-import of the same asset ID) does not leak.
+      const existing = blobUrlsRef.current.get(assetId);
+      if (existing && existing !== blobUrl) {
+        URL.revokeObjectURL(existing);
+      }
       filesRef.current.set(assetId, file);
       blobUrlsRef.current.set(assetId, blobUrl);
       if (thumbnail) thumbnailsRef.current.set(assetId, thumbnail);
@@ -66,29 +79,45 @@ export function MediaAssetsProvider({ children }: { children: React.ReactNode })
   );
 
   const removeImportedAsset = useCallback(
-    (assetId: string) => {
+    (assetId: string, options?: { immediate?: boolean }) => {
       filesRef.current.delete(assetId);
-      const url = blobUrlsRef.current.get(assetId);
-      if (url) URL.revokeObjectURL(url);
-      blobUrlsRef.current.delete(assetId);
       thumbnailsRef.current.delete(assetId);
+      const url = blobUrlsRef.current.get(assetId);
+      blobUrlsRef.current.delete(assetId);
+      if (!url) return;
+
+      if (options?.immediate) {
+        // Immediate revocation — only safe when no render frame is in progress
+        // for this asset (e.g. during tests, or after confirming the compositor
+        // is not using this clip).
+        URL.revokeObjectURL(url);
+      } else {
+        // T0-3: Defer revocation by one microtask so the current render frame
+        // (compositor or export) finishes drawing before the URL becomes invalid.
+        // This prevents the "black frame in export" failure mode (H1 fix).
+        Promise.resolve().then(() => URL.revokeObjectURL(url));
+      }
     },
     [],
   );
 
+  // T1-1: Return ReadonlyMap to prevent callers from mutating context state (H2 fix).
   const getAllThumbnails = useCallback(
-    () => thumbnailsRef.current,
+    (): ReadonlyMap<string, string> => thumbnailsRef.current,
     [],
   );
 
-  const value: MediaAssetsContextValue = {
-    getFile,
-    getBlobUrl,
-    getThumbnail,
-    addImportedAsset,
-    removeImportedAsset,
-    getAllThumbnails,
-  };
+  const value: MediaAssetsContextValue = useMemo(
+    () => ({
+      getFile,
+      getBlobUrl,
+      getThumbnail,
+      addImportedAsset,
+      removeImportedAsset,
+      getAllThumbnails,
+    }),
+    [getFile, getBlobUrl, getThumbnail, addImportedAsset, removeImportedAsset, getAllThumbnails],
+  );
 
   return <MediaAssetsCtx.Provider value={value}>{children}</MediaAssetsCtx.Provider>;
 }
