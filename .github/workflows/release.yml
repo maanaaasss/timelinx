@@ -46,7 +46,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Verify no workspace: protocol in publishable packages
+      - name: "Verify no workspace: protocol in publishable packages"
         run: |
           echo "Checking publishable packages for workspace: references in dependency fields..."
           echo "pnpm rewrites workspace:* during publish, but npm does not."
