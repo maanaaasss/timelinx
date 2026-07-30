@@ -46,6 +46,51 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Verify no workspace: protocol in publishable packages
+        run: |
+          echo "Checking publishable packages for workspace: references in dependency fields..."
+          echo "pnpm rewrites workspace:* during publish, but npm does not."
+          echo "If any publishable package contains workspace: in deps, a manual"
+          echo "'npm publish' would ship it verbatim — uninstallable for consumers."
+          echo ""
+          FAIL=0
+          for pkg in packages/*/package.json; do
+            name=$(jq -r '.name' "$pkg")
+            access=$(jq -r '.publishConfig.access // empty' "$pkg")
+            if [ "$access" != "public" ]; then
+              continue
+            fi
+            echo "--- Checking $name ($pkg) ---"
+            # Check dependencies, peerDependencies, optionalDependencies for workspace:
+            HIT=$(jq -r '
+              (.dependencies // {}) | to_entries[] | select(.value | test("workspace:")) | "  dependencies.\(.key) = \(.value)"
+            ' "$pkg" 2>/dev/null)
+            HIT_PEER=$(jq -r '
+              (.peerDependencies // {}) | to_entries[] | select(.value | test("workspace:")) | "  peerDependencies.\(.key) = \(.value)"
+            ' "$pkg" 2>/dev/null)
+            HIT_OPT=$(jq -r '
+              (.optionalDependencies // {}) | to_entries[] | select(.value | test("workspace:")) | "  optionalDependencies.\(.key) = \(.value)"
+            ' "$pkg" 2>/dev/null)
+            ALL_HITS=$(printf "%s\n%s\n%s" "$HIT" "$HIT_PEER" "$HIT_OPT" | grep -v '^$')
+            if [ -n "$ALL_HITS" ]; then
+              echo "ERROR: $name has unresolved workspace: references:"
+              echo "$ALL_HITS"
+              echo "Replace with real semver ranges before publishing."
+              FAIL=1
+            else
+              echo "OK: $name is clean."
+            fi
+          done
+          if [ "$FAIL" -eq 1 ]; then
+            echo ""
+            echo "FATAL: One or more publishable packages contain workspace: references."
+            echo "These would be shipped verbatim if published via npm, breaking consumers."
+            echo "Fix the references above, then re-run."
+            exit 1
+          fi
+          echo ""
+          echo "All publishable packages verified clean."
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1

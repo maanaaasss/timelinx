@@ -20,6 +20,7 @@
     "deprecate-provisional-manager",
     "dispatch-freeze-state",
     "fix-insert-generator-name",
+    "fix-react-workspace-dep",
     "fix-tool-router-null-target",
     "keyboard-handler-null-engine",
     "keyframe-tool-auto-create-effect",
