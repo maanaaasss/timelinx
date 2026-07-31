@@ -1,7 +1,7 @@
 'use client';
 
-import { TransportControls, TimelineProvider } from '@timelinx/ui';
-import { TimelineEngine } from '@timelinx/react';
+import { TransportControls, TimelineProvider as UITimelineProvider } from '@timelinx/ui';
+import { TimelineEngine, TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 import {
   createTimeline,
   createTimelineState,
@@ -39,9 +39,11 @@ export function TransportControlsExample() {
 
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
-      <TimelineProvider engine={engine}>
-        <TransportControls />
-      </TimelineProvider>
+      <ReactTimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine}>
+          <TransportControls />
+        </UITimelineProvider>
+      </ReactTimelineProvider>
     </div>
   );
 }

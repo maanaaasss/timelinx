@@ -1,7 +1,7 @@
 'use client';
 
-import { InspectorPanel, TimelineProvider } from '@timelinx/ui';
-import { TimelineEngine } from '@timelinx/react';
+import { InspectorPanel, TimelineProvider as UITimelineProvider } from '@timelinx/ui';
+import { TimelineEngine, TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 import {
   createTimeline,
   createTimelineState,
@@ -71,9 +71,11 @@ export function InspectorPanelExample() {
 
   return (
     <div style={{ height: 400, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
-      <TimelineProvider engine={engine}>
-        <InspectorPanel />
-      </TimelineProvider>
+      <ReactTimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine}>
+          <InspectorPanel />
+        </UITimelineProvider>
+      </ReactTimelineProvider>
     </div>
   );
 }
