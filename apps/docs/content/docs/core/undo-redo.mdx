@@ -1,0 +1,48 @@
+---
+title: Undo/Redo
+description: HistoryStack and undo/redo via pure functions
+---
+
+## HistoryStack
+
+The undo/redo system is a simple stack of state snapshots:
+
+```ts
+import {
+  createHistory,
+  pushHistory,
+  undo,
+  redo,
+  getCurrentState,
+  canUndo,
+  canRedo,
+} from '@timelinx/core';
+
+let history = createHistory(initialState);
+
+// After each accepted dispatch:
+history = pushHistory(history, result.nextState);
+
+// Undo
+if (canUndo(history)) {
+  history = undo(history);
+  const restored = getCurrentState(history);
+}
+
+// Redo
+if (canRedo(history)) {
+  history = redo(history);
+  const restored = getCurrentState(history);
+}
+```
+
+## Pure Function API
+
+Every function in the history API is pure — it takes a history object and returns a new one. No mutation, no side effects. This makes undo/redo trivial to integrate with React state management.
+
+## Round-Tip Guarantees
+
+- `undo(redo(pushHistory(h, s)))` produces the same state as `s`
+- `getCurrentState(createHistory(s))` returns `s`
+- The history stack tracks an internal cursor; undo moves it back, redo moves it forward
+- Pushing a new state after an undo discards the redo stack (standard behavior)

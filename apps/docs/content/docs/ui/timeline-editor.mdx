@@ -1,0 +1,55 @@
+---
+title: TimelineEditor
+description: The full timeline editor component
+---
+
+The `TimelineEditor` is the primary component — a complete timeline editing surface with toolbar, ruler, tracks, transport controls, sidebar, and media browser.
+
+## Live Example
+
+import { TimelineEditorExample } from '@/components/examples/timeline-editor-example.client';
+
+<TimelineEditorExample />
+
+## Usage
+
+```tsx
+import { TimelineEditor } from '@timelinx/ui';
+import { TimelineEngine } from '@timelinx/react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My Edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
+});
+
+function App() {
+  return <TimelineEditor engine={engine} />;
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `engine` | `TimelineEngine` | **required** | The timeline engine instance |
+| `initialPpf` | `number` | `4` | Initial pixels per frame (zoom level) |
+| `showToolbar` | `boolean` | `true` | Show the toolbar |
+| `showSidebar` | `boolean` | `true` | Show the sidebar |
+| `showTopNav` | `boolean` | `true` | Show the top navigation |
+| `showTransportControls` | `boolean` | `true` | Show transport controls |
+| `showMediaBrowser` | `boolean` | `true` | Show the media browser |
+| `projectName` | `string` | — | Project name displayed in the UI |
+| `onExport` | `() => void` | — | Export callback |
+| `className` | `string` | — | Additional CSS class |
+| `style` | `React.CSSProperties` | — | Inline styles |
+
+## Self-Wrapping Provider
+
+`TimelineEditor` automatically wraps itself in `TimelineProvider` and `MediaAssetsProvider` if no existing provider context is detected. This means you can use it standalone without manually setting up providers.

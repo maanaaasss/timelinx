@@ -1,0 +1,7 @@
+/* Fumadocs base styles */
+@import 'fumadocs-ui/style.css';
+
+/* Timelinx design tokens and presets for visual consistency with @timelinx/ui components */
+@import '@timelinx/ui/styles/tokens';
+@import '@timelinx/ui/styles/structure';
+@import '@timelinx/ui/styles/presets/dark-pro';

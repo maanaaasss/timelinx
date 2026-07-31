@@ -1,0 +1,95 @@
+---
+title: '@timelinx/react API'
+description: Type-level API reference for @timelinx/react
+---
+
+## Engine
+
+### `TimelineEngine`
+
+The engine class that wraps `@timelinx/core` state management with React-compatible subscriptions.
+
+```ts
+import { TimelineEngine } from '@timelinx/react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My Edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
+});
+```
+
+### Engine Methods
+
+| Method | Description |
+|--------|-------------|
+| `engine.dispatch(transaction)` | Process a transaction |
+| `engine.undo()` | Undo the last transaction |
+| `engine.redo()` | Redo the last undone transaction |
+| `engine.seekTo(frame)` | Move the playhead to a specific frame |
+| `engine.getState()` | Get the current timeline state |
+| `engine.getSelectedClipIds()` | Get currently selected clip IDs |
+| `engine.setSelectedClipIds(ids)` | Set selected clip IDs |
+| `engine.activateTool(toolId)` | Activate a tool |
+| `engine.getActiveToolId()` | Get the currently active tool ID |
+
+### Playback
+
+| Method | Description |
+|--------|-------------|
+| `engine.playbackEngine.play()` | Start playback |
+| `engine.playbackEngine.pause()` | Pause playback |
+
+## Hooks
+
+### `useTimelineContext()`
+
+Returns the full timeline context value from `@timelinx/ui`'s `TimelineProvider`.
+
+### `useEngine()`
+
+Returns the engine instance from context.
+
+### `useClip(engine, clipId)`
+
+Subscribes to a specific clip's data. Re-renders only when that clip changes.
+
+### `useSelectedClipIds(engine)`
+
+Subscribes to the set of selected clip IDs.
+
+### `usePlayheadFrame(engine)`
+
+Subscribes to the current playhead frame.
+
+### `useIsPlaying(engine)`
+
+Subscribes to the playback state (playing/paused).
+
+### `useTimelineWithEngine(engine)`
+
+Subscribes to the timeline metadata (duration, fps, etc.).
+
+### `useClipEffects(engine, clipId)`
+
+Subscribes to a clip's effects array.
+
+## Provider
+
+### `TimelineProvider`
+
+Provides the engine to all child components via context.
+
+```tsx
+import { TimelineProvider } from '@timelinx/react';
+
+<TimelineProvider engine={engine}>
+  <YourApp />
+</TimelineProvider>
+```

@@ -1,0 +1,53 @@
+---
+title: Hooks
+description: React hooks for reading timeline state and dispatching operations
+---
+
+## Setup
+
+Wrap your app with `TimelineProvider` and use the hooks inside:
+
+```tsx
+import { TimelineProvider, useEngine, useTimelineContext } from '@timelinx/ui';
+import { createEngine } from '@timelinx/react';
+
+const engine = createEngine({ /* config */ });
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineView />
+    </TimelineProvider>
+  );
+}
+```
+
+## Reading State
+
+### `useEngine()`
+
+Returns the engine instance. Use this to dispatch operations:
+
+```tsx
+const engine = useEngine();
+engine.dispatch({ /* transaction */ });
+```
+
+### `useTimelineContext()`
+
+Returns the full timeline context value. Prefer more specific hooks for performance:
+
+```tsx
+const ctx = useTimelineContext();
+```
+
+## Granular Re-renders
+
+Hooks use `useSyncExternalStore` to subscribe to specific slices of state. A component that reads `state.timeline.duration` will only re-render when the duration changes — not when clips or tracks change.
+
+## Hook Reference
+
+| Hook | Returns | Re-renders when |
+|------|---------|-----------------|
+| `useEngine()` | Engine instance | Never (stable reference) |
+| `useTimelineContext()` | Full context value | Any state change |

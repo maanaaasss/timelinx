@@ -1,0 +1,59 @@
+---
+title: TimelineClip
+description: Individual clip rendering component
+---
+
+`TimelineClip` is a presentational component that renders a single clip on the timeline. It handles layout (position, width from `timelineStart`/`timelineEnd`), displays the clip name, and supports selection state.
+
+## Live Example
+
+import { TimelineClipExample } from '@/components/examples/timeline-clip-example.client';
+
+<TimelineClipExample />
+
+## Usage
+
+```tsx
+import { TimelineClip } from '@timelinx/ui';
+import { createClip, toFrame } from '@timelinx/core';
+
+const clip = createClip({
+  id: 'clip-1',
+  assetId: 'asset-1',
+  trackId: 'v1',
+  timelineStart: toFrame(0),
+  timelineEnd: toFrame(600),
+  mediaIn: toFrame(0),
+  mediaOut: toFrame(600),
+});
+
+<TimelineClip
+  clip={clip}
+  trackId="v1"
+  isAudio={false}
+  ppf={4}
+  height={80}
+  isSelected={false}
+/>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `clip` | `Clip` | **required** | The clip data object |
+| `trackId` | `string` | **required** | The track this clip belongs to |
+| `isAudio` | `boolean` | **required** | Whether this is an audio clip |
+| `ppf` | `number` | **required** | Pixels per frame (zoom level) |
+| `height` | `number` | **required** | Height of the clip row in pixels |
+| `isSelected` | `boolean` | **required** | Whether the clip is selected |
+| `isProvisional` | `boolean` | `false` | Ghost/preview during drag |
+| `trackType` | `string` | — | Track type for icon (`'video'` \| `'audio'` \| `'subtitle'`) |
+| `fps` | `number` | `30` | Frames per second |
+| `thumbnails` | `Map<string, string>` | — | Asset ID to thumbnail URL map |
+| `className` | `string` | — | Additional CSS class |
+| `style` | `React.CSSProperties` | — | Inline styles |
+
+## Standalone Component
+
+`TimelineClip` is a pure presentational component — it does not use any React context or hooks. All data is passed via props, making it easy to use in isolation or in custom layouts.

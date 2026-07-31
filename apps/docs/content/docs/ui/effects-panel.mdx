@@ -1,0 +1,36 @@
+---
+title: EffectsPanel
+description: Clip effects management panel
+---
+
+The `EffectsPanel` allows adding, removing, and toggling effects on the selected clip.
+
+## Live Example
+
+import { EffectsPanelExample } from '@/components/examples/effects-panel-example.client';
+
+<EffectsPanelExample />
+
+## Usage
+
+```tsx
+import { EffectsPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <EffectsPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS class |
+
+## Context Requirement
+
+`EffectsPanel` must be inside a `TimelineProvider`. It reads selected clip IDs and clip effects from the engine context. When no clip is selected, it displays "Select a clip to view its effects."

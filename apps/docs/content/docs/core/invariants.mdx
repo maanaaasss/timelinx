@@ -1,0 +1,46 @@
+---
+title: Invariants
+description: The 24 violation types and validation rules in @timelinx/core
+---
+
+## What Invariants Check
+
+After all operations in a transaction are applied, the resulting state is checked against a set of invariants. These catch:
+
+- **Overlap** — two clips on the same track occupying the same time range
+- **Asset missing** — a clip references an asset not in the registry
+- **Clip beyond timeline** — a clip extends past the timeline duration
+- **Media bounds** — mediaIn/mediaOut exceed the asset's intrinsic duration
+- **Track type mismatch** — a video clip on an audio track or vice versa
+- **Duplicate IDs** — two tracks or clips with the same ID
+
+There are 24 total violation types. Each produces a specific `reason` code in the rejection result.
+
+## Rejection Handling
+
+```ts
+const result = dispatch(state, transaction);
+if (!result.accepted) {
+  switch (result.reason) {
+    case 'OVERLAP':
+      break;
+    case 'ASSET_MISSING':
+      break;
+    case 'CLIP_BEYOND_TIMELINE':
+      break;
+    case 'INVARIANT_VIOLATED':
+      break;
+    // ... 24 total cases
+  }
+}
+```
+
+## What Invariants Do Not Check
+
+Invariants are structural validators, not semantic ones. They do not check:
+
+- Whether a media file actually exists on disk
+- Whether a clip's content makes creative sense
+- Whether audio levels are within acceptable ranges
+
+These are concerns of the application layer, not the state engine.

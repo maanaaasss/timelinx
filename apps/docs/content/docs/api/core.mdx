@@ -1,0 +1,140 @@
+---
+title: '@timelinx/core API'
+description: Type-level API reference for @timelinx/core
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+## Timeline Creation
+
+### `createTimeline`
+
+Creates a timeline definition.
+
+```ts
+import { createTimeline, toFrame, frameRate } from '@timelinx/core';
+
+const timeline = createTimeline({
+  id: 'tl-1',
+  name: 'My Edit',
+  fps: frameRate(30),
+  duration: toFrame(9000),
+});
+```
+
+### `createTimelineState`
+
+Creates the initial timeline state from a timeline definition and optional assets.
+
+```ts
+import { createTimelineState } from '@timelinx/core';
+
+const state = createTimelineState({ timeline, assets: [asset1, asset2] });
+```
+
+### `createAsset`
+
+Registers a media asset.
+
+```ts
+import { createAsset, toFrame, frameRate } from '@timelinx/core';
+
+const asset = createAsset({
+  id: 'my-video',
+  name: 'Interview.mp4',
+  mediaType: 'video',
+  filePath: '/media/interview.mp4',
+  intrinsicDuration: toFrame(6000),
+  nativeFps: frameRate(30),
+  sourceTimecodeOffset: toFrame(0),
+});
+```
+
+### `createTrack`
+
+Creates a track definition.
+
+```ts
+import { createTrack } from '@timelinx/core';
+
+const track = createTrack({
+  id: 'v1',
+  name: 'V1',
+  type: 'video',
+  clips: [],
+});
+```
+
+### `createClip`
+
+Creates a clip that references an asset and defines a time range.
+
+```ts
+import { createClip, toFrame } from '@timelinx/core';
+
+const clip = createClip({
+  id: 'clip-1',
+  assetId: 'my-video',
+  trackId: 'v1',
+  timelineStart: toFrame(0),
+  timelineEnd: toFrame(300),
+  mediaIn: toFrame(0),
+  mediaOut: toFrame(300),
+});
+```
+
+## Dispatch
+
+### `dispatch`
+
+Processes a transaction against the current state. Returns a `DispatchResult`.
+
+```ts
+import { dispatch } from '@timelinx/core';
+
+const result = dispatch(state, {
+  id: 'add-clip',
+  label: 'Add clip',
+  timestamp: Date.now(),
+  operations: [{ type: 'INSERT_CLIP', trackId: 'v1', clip }],
+});
+
+if (result.accepted) {
+  // result.nextState is the new immutable state
+} else {
+  // result.reason — one of 28 rejection reasons
+  // result.message — human-readable explanation
+}
+```
+
+## History
+
+### `createHistory`, `pushHistory`, `undo`, `redo`, `getCurrentState`, `canUndo`, `canRedo`
+
+Pure-function undo/redo system.
+
+```ts
+import { createHistory, pushHistory, undo, redo, getCurrentState, canUndo, canRedo } from '@timelinx/core';
+
+let history = createHistory(initialState);
+history = pushHistory(history, nextState);
+
+if (canUndo(history)) {
+  history = undo(history);
+  const restored = getCurrentState(history);
+}
+```
+
+## Utilities
+
+### `toFrame`
+
+Converts milliseconds to frame count at the given fps.
+
+### `frameRate`
+
+Creates a valid frame rate value.
+
+### `createEffect`, `toEffectId`
+
+Creates effect objects for the effects system.

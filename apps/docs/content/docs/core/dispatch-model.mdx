@@ -1,0 +1,50 @@
+---
+title: Dispatch Model
+description: How dispatch() processes timeline operations
+---
+
+## The 4-Step Algorithm
+
+Every call to `dispatch()` follows this sequence:
+
+1. **Validate** — check that every operation in the transaction is structurally valid
+2. **Apply** — apply all operations to produce a candidate next state
+3. **Check invariants** — verify the candidate state satisfies all invariants
+4. **Return** — return `{ accepted: true, nextState }` or `{ accepted: false, reason, message }`
+
+This is a rolling validation model: if any step fails, the original state is unchanged.
+
+```ts
+import { dispatch } from '@timelinx/core';
+
+const result = dispatch(currentState, transaction);
+
+if (result.accepted) {
+  // result.nextState is the new immutable state
+} else {
+  // result.reason is one of 28 rejection reasons
+  // result.message is a human-readable explanation
+}
+```
+
+## Immutability
+
+`dispatch()` never mutates the input state. Each accepted transaction produces a new state object with an incremented version number. This makes the engine safe for React's concurrent mode and enables trivial undo/redo via reference equality checks.
+
+## The Transaction Object
+
+A transaction bundles one or more operations with metadata:
+
+```ts
+const transaction = {
+  id: 'unique-id',          // unique identifier
+  label: 'Human-readable',  // shown in undo history
+  timestamp: Date.now(),    // when the transaction was created
+  operations: [              // one or more operations
+    { type: 'ADD_TRACK', track },
+    { type: 'INSERT_CLIP', trackId: 'v1', clip },
+  ],
+};
+```
+
+Operations within a transaction are applied in order. If any operation fails validation, the entire transaction is rejected (atomic).

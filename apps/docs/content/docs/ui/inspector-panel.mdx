@@ -1,0 +1,36 @@
+---
+title: InspectorPanel
+description: Clip property inspector panel
+---
+
+The `InspectorPanel` displays and allows editing of the selected clip's properties — position, duration, transform, and metadata.
+
+## Live Example
+
+import { InspectorPanelExample } from '@/components/examples/inspector-panel-example.client';
+
+<InspectorPanelExample />
+
+## Usage
+
+```tsx
+import { InspectorPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <InspectorPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS class |
+
+## Context Requirement
+
+`InspectorPanel` must be inside a `TimelineProvider`. It reads the selected clip IDs and clip data from the engine context. When no clip is selected, it displays a prompt to select one.
