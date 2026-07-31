@@ -91,12 +91,35 @@ content/docs/
 - MDX content compiles without errors
 - Client components use `dynamic()` with `ssr: false` for proper static generation
 
-### What could NOT be verified
+### Dev server verification
 
-- **Live dev server rendering** — `next dev` was not run in this environment; live component rendering should be verified manually
-- **Visual consistency** — the `dark-pro` preset CSS is imported, but actual visual rendering needs manual inspection
-- **Interactive functionality** — component interactivity (clicking clips, transport controls, etc.) needs manual testing
+Ran `next dev` on port 3456 and fetched all 5 UI component example pages via HTTP:
+
+| Page | HTTP Status | Page shell renders | Live example behavior |
+|------|-------------|-------------------|----------------------|
+| `/docs/ui/timeline-editor` | 200 | Title, description, sidebar, prose content all render | SSR correctly bails to CSR via `next/dynamic` — component will render client-side in browser |
+| `/docs/ui/timeline-clip` | 200 | Same — full page shell | Same CSR bailout pattern |
+| `/docs/ui/inspector-panel` | 200 | Same | Same |
+| `/docs/ui/effects-panel` | 200 | Same | Same |
+| `/docs/ui/transport-controls` | 200 | Same | Same |
+
+The `next/dynamic` with `ssr: false` pattern is working correctly: the server sends the full page shell (navigation, sidebar, title, description, prose content) and the live component examples hydrate client-side. No server-side errors in dev logs (only the expected `Bail out to client-side rendering: next/dynamic` which is the correct behavior).
+
+### What still needs project-owner verification
+
+**I cannot open a real browser from this environment.** The following require the project owner to run `cd apps/docs && npm run dev` and open in a browser:
+
+- **Live component rendering** — do the 5 examples (`TimelineEditor`, `TimelineClip`, `InspectorPanel`, `EffectsPanel`, `TransportControls`) actually render visible component UI, or do they show blank/broken areas?
+- **Visual consistency** — does the `dark-pro` preset CSS actually style the components to match the real product, or does it look unstyled/default?
+- **Interactivity** — can you click on `TransportControls` buttons, does `InspectorPanel` show real fields for a selected clip?
 - **Vercel deployment** — not tested; `next build` succeeding is the prerequisite
+
+## PR & CI Status
+
+**PR**: [#51](https://github.com/maanaaasss/timelinx/pull/51) — `docs-site-scaffold` → `main`  
+**CI**: `Build & Test` — **passed** (1m25s)  
+**Commit**: `c7cf143` — `feat: scaffold Fumadocs documentation site at apps/docs`  
+**Branch**: `docs-site-scaffold` (pushed to origin)
 
 ## Files Created
 
