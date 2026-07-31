@@ -1,0 +1,50 @@
+---
+title: Transactions
+description: Multi-operation atomic transactions in @timelinx/core
+---
+
+## Transaction Lifecycle
+
+1. Build a transaction with 1+ operations
+2. Call `dispatch(state, transaction)`
+3. All operations are validated against the current state
+4. If all pass, operations are applied in order to produce `nextState`
+5. If any fail, the entire transaction is rejected — no partial changes
+
+## Key Properties
+
+- **Atomicity** — all operations succeed or all fail
+- **Ordering** — operations apply in array order; later operations see the effects of earlier ones
+- **Isolation** — the input state is never mutated; `nextState` is a fresh object
+
+## Multi-Operation Example
+
+Split a clip at a point using three operations:
+
+```ts
+const result = dispatch(state, {
+  id: 'split-clip',
+  label: 'Split clip at frame 150',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'DELETE_CLIP', clipId: 'clip-1' },
+    { type: 'INSERT_CLIP', trackId: 'v1', clip: leftHalf },
+    { type: 'INSERT_CLIP', trackId: 'v1', clip: rightHalf },
+  ],
+});
+```
+
+The second and third operations depend on the first succeeding. Because they're in a single transaction, either all three apply or none do.
+
+## Single-Operation Transactions
+
+Simple operations are also transactions — just with one operation:
+
+```ts
+dispatch(state, {
+  id: 'move',
+  label: 'Move clip',
+  timestamp: Date.now(),
+  operations: [{ type: 'MOVE_CLIP', clipId: 'c1', newTimelineStart: toFrame(100) }],
+});
+```

@@ -1,0 +1,160 @@
+---
+title: Getting Started
+description: Install and start building with @timelinx/core
+---
+
+## Prerequisites
+
+- Node.js >= 22
+
+## Install
+
+```bash
+npm install @timelinx/core
+# or with React bindings:
+npm install @timelinx/core @timelinx/react
+# or with UI components:
+npm install @timelinx/core @timelinx/react @timelinx/ui
+```
+
+## Complete Walkthrough
+
+### Step 1: Create a Timeline
+
+Every timeline needs an asset registry, a timeline definition, and a state container:
+
+```ts
+import {
+  createAsset,
+  createClip,
+  createTrack,
+  createTimeline,
+  createTimelineState,
+  dispatch,
+  toFrame,
+  frameRate,
+} from '@timelinx/core';
+
+const asset = createAsset({
+  id: 'my-video',
+  name: 'Interview.mp4',
+  mediaType: 'video',
+  filePath: '/media/interview.mp4',
+  intrinsicDuration: toFrame(6000),
+  nativeFps: frameRate(30),
+  sourceTimecodeOffset: toFrame(0),
+});
+
+const timeline = createTimeline({
+  id: 'tl-1',
+  name: 'My Edit',
+  fps: frameRate(30),
+  duration: toFrame(10800),
+});
+
+const state = createTimelineState({ timeline });
+```
+
+### Step 2: Add a Track
+
+```ts
+const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
+
+const result = dispatch(state, {
+  id: 'add-track',
+  label: 'Add video track',
+  timestamp: Date.now(),
+  operations: [{ type: 'ADD_TRACK', track }],
+});
+
+if (!result.accepted) {
+  throw new Error(`Failed: ${result.reason} — ${result.message}`);
+}
+
+const withTrack = result.nextState;
+```
+
+### Step 3: Add a Clip
+
+```ts
+const clip = createClip({
+  id: 'clip-1',
+  assetId: 'my-video',
+  trackId: 'v1',
+  timelineStart: toFrame(0),
+  timelineEnd: toFrame(300),
+  mediaIn: toFrame(0),
+  mediaOut: toFrame(300),
+});
+
+const result = dispatch(withTrack, {
+  id: 'add-clip',
+  label: 'Add first clip',
+  timestamp: Date.now(),
+  operations: [{ type: 'INSERT_CLIP', trackId: 'v1', clip }],
+});
+
+const withClip = result.nextState;
+```
+
+### Step 4: Move the Clip
+
+```ts
+const result = dispatch(withClip, {
+  id: 'move-clip',
+  label: 'Move clip forward',
+  timestamp: Date.now(),
+  operations: [{ type: 'MOVE_CLIP', clipId: 'clip-1', newTimelineStart: toFrame(150) }],
+});
+
+const moved = result.nextState;
+```
+
+### Step 5: Undo
+
+```ts
+import { createHistory, pushHistory, undo, getCurrentState, canUndo } from '@timelinx/core';
+
+let history = createHistory(state);
+history = pushHistory(history, withTrack);
+history = pushHistory(history, withClip);
+history = pushHistory(history, moved);
+
+if (canUndo(history)) {
+  history = undo(history);
+  const restored = getCurrentState(history);
+}
+```
+
+## Multi-Operation Transactions
+
+Batch multiple operations into a single atomic transaction:
+
+```ts
+const result = dispatch(state, {
+  id: 'razor-split',
+  label: 'Split clip at frame 150',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'DELETE_CLIP', clipId: 'clip-1' },
+    { type: 'INSERT_CLIP', trackId: 'v1', clip: createClip({
+      id: 'clip-1-left', assetId: 'my-video', trackId: 'v1',
+      timelineStart: toFrame(0), timelineEnd: toFrame(150),
+      mediaIn: toFrame(0), mediaOut: toFrame(150),
+    })},
+    { type: 'INSERT_CLIP', trackId: 'v1', clip: createClip({
+      id: 'clip-1-right', assetId: 'my-video', trackId: 'v1',
+      timelineStart: toFrame(150), timelineEnd: toFrame(300),
+      mediaIn: toFrame(150), mediaOut: toFrame(300),
+    })},
+  ],
+});
+```
+
+If any operation fails validation, all three are rejected.
+
+## Next Steps
+
+- [Core Concepts](/docs/core) — dispatch model, invariants, history, tools
+- [React Integration](/docs/react) — hooks, provider, tool routing
+- [UI Components](/docs/ui) — drop-in React components

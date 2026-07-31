@@ -1,0 +1,71 @@
+---
+title: TimelineProvider
+description: Setting up the provider for @timelinx/react and @timelinx/ui
+---
+
+## Basic Usage
+
+```tsx
+import { TimelineProvider } from '@timelinx/ui';
+import { createEngine } from '@timelinx/react';
+
+const engine = createEngine({
+  timeline: {
+    id: 'tl-1',
+    name: 'My Edit',
+    fps: 30,
+    duration: 10800,
+  },
+});
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <YourComponents />
+    </TimelineProvider>
+  );
+}
+```
+
+## What the Provider Does
+
+- Creates a React context for the timeline engine
+- Enables all `use*` hooks to access the engine
+- Manages subscription lifecycle (subscribe/unsubscribe on mount/unmount)
+- Ensures components re-render only when their subscribed state changes
+
+## With @timelinx/ui
+
+When using `@timelinx/ui` components, the provider is typically set up at the top level:
+
+```tsx
+import { TimelineProvider, TimelineEditor } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineEditor />
+    </TimelineProvider>
+  );
+}
+```
+
+The `TimelineEditor` component and all other `@timelinx/ui` components consume the provider's context internally.
+
+## MediaAssetsProvider
+
+For media import functionality, wrap with `MediaAssetsProvider`:
+
+```tsx
+import { MediaAssetsProvider, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <MediaAssetsProvider>
+      <TimelineProvider engine={engine}>
+        <TimelineEditor />
+      </TimelineProvider>
+    </MediaAssetsProvider>
+  );
+}
+```

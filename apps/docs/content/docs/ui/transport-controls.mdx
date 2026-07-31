@@ -1,0 +1,36 @@
+---
+title: TransportControls
+description: Play, pause, and seek controls
+---
+
+The `TransportControls` component provides playback controls — play/pause toggle, frame stepping, and skip to start/end.
+
+## Live Example
+
+import { TransportControlsExample } from '@/components/examples/transport-controls-example.client';
+
+<TransportControlsExample />
+
+## Usage
+
+```tsx
+import { TransportControls, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TransportControls />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS class |
+
+## Context Requirement
+
+`TransportControls` must be inside a `TimelineProvider`. It reads the playhead frame, playing state, and timeline metadata (fps, duration) from the engine context.

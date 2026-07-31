@@ -1,0 +1,24 @@
+---
+title: UI Components
+description: Live component gallery for @timelinx/ui
+---
+
+The `@timelinx/ui` package provides drop-in React components for building timeline editors. All components consume the timeline engine via context and render real, interactive UI.
+
+## Components
+
+- [TimelineEditor](/docs/ui/timeline-editor) — the full editor with toolbar, ruler, tracks, and transport
+- [TimelineClip](/docs/ui/timeline-clip) — individual clip rendering
+- [InspectorPanel](/docs/ui/inspector-panel) — clip property inspector
+- [EffectsPanel](/docs/ui/effects-panel) — clip effects management
+- [TransportControls](/docs/ui/transport-controls) — play/pause/seek controls
+
+## Design Tokens
+
+Import `@timelinx/ui`'s CSS presets for visual consistency:
+
+```css
+@import '@timelinx/ui/styles/tokens';
+@import '@timelinx/ui/styles/structure';
+@import '@timelinx/ui/styles/presets/dark-pro';
+```

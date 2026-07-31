@@ -1,0 +1,11 @@
+{
+  "title": "UI Components",
+  "pages": [
+    "index",
+    "timeline-editor",
+    "timeline-clip",
+    "inspector-panel",
+    "effects-panel",
+    "transport-controls"
+  ]
+}

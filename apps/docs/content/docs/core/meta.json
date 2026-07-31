@@ -1,0 +1,10 @@
+{
+  "title": "Core",
+  "pages": [
+    "index",
+    "dispatch-model",
+    "transactions",
+    "invariants",
+    "undo-redo"
+  ]
+}

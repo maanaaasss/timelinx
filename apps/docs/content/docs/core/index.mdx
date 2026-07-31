@@ -1,0 +1,17 @@
+---
+title: Core Concepts
+description: The dispatch model, transactions, invariants, and undo/redo in @timelinx/core
+---
+
+The `@timelinx/core` package is a pure-function timeline state engine. It has zero runtime dependencies and no side effects — every operation takes a state and returns a new state.
+
+## Sections
+
+- [Dispatch Model](/docs/core/dispatch-model) — how `dispatch()` works, the 4-step algorithm, rolling validation
+- [Transactions](/docs/core/transactions) — multi-operation atomic transactions
+- [Invariants](/docs/core/invariants) — the 24 violation types and validation rules
+- [Undo/Redo](/docs/core/undo-redo) — HistoryStack, pure function API, round-trip guarantees
+
+## Full API Reference
+
+For exhaustive symbol-level detail, see the [API Reference](/docs/api).
