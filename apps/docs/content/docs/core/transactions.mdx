@@ -27,9 +27,9 @@ const result = dispatch(state, {
   label: 'Split clip at frame 150',
   timestamp: Date.now(),
   operations: [
-    { type: 'DELETE_CLIP', clipId: 'clip-1' },
-    { type: 'INSERT_CLIP', trackId: 'v1', clip: leftHalf },
-    { type: 'INSERT_CLIP', trackId: 'v1', clip: rightHalf },
+    { type: 'DELETE_CLIP', clipId: leftHalf.id },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: leftHalf },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: rightHalf },
   ],
 });
 ```
@@ -45,6 +45,6 @@ dispatch(state, {
   id: 'move',
   label: 'Move clip',
   timestamp: Date.now(),
-  operations: [{ type: 'MOVE_CLIP', clipId: 'c1', newTimelineStart: toFrame(100) }],
+  operations: [{ type: 'MOVE_CLIP', clipId: clip.id, newTimelineStart: toFrame(100) }],
 });
 ```

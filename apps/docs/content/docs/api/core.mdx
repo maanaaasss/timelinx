@@ -1,9 +1,10 @@
 ---
 title: '@timelinx/core API'
-description: Type-level API reference for @timelinx/core
+description: Auto-generated type-level API reference for @timelinx/core
 ---
 
-import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
 
 ## Timeline Creation
 
@@ -11,77 +12,51 @@ import { TypeTable } from 'fumadocs-ui/components/type-table';
 
 Creates a timeline definition.
 
-```ts
-import { createTimeline, toFrame, frameRate } from '@timelinx/core';
-
-const timeline = createTimeline({
-  id: 'tl-1',
-  name: 'My Edit',
-  fps: frameRate(30),
-  duration: toFrame(9000),
-});
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createTimeline"
+/>
 
 ### `createTimelineState`
 
-Creates the initial timeline state from a timeline definition and optional assets.
+Creates the initial timeline state from a timeline definition and optional asset registry.
 
-```ts
-import { createTimelineState } from '@timelinx/core';
-
-const state = createTimelineState({ timeline, assets: [asset1, asset2] });
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createTimelineState"
+/>
 
 ### `createAsset`
 
 Registers a media asset.
 
-```ts
-import { createAsset, toFrame, frameRate } from '@timelinx/core';
-
-const asset = createAsset({
-  id: 'my-video',
-  name: 'Interview.mp4',
-  mediaType: 'video',
-  filePath: '/media/interview.mp4',
-  intrinsicDuration: toFrame(6000),
-  nativeFps: frameRate(30),
-  sourceTimecodeOffset: toFrame(0),
-});
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createAsset"
+/>
 
 ### `createTrack`
 
 Creates a track definition.
 
-```ts
-import { createTrack } from '@timelinx/core';
-
-const track = createTrack({
-  id: 'v1',
-  name: 'V1',
-  type: 'video',
-  clips: [],
-});
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createTrack"
+/>
 
 ### `createClip`
 
 Creates a clip that references an asset and defines a time range.
 
-```ts
-import { createClip, toFrame } from '@timelinx/core';
-
-const clip = createClip({
-  id: 'clip-1',
-  assetId: 'my-video',
-  trackId: 'v1',
-  timelineStart: toFrame(0),
-  timelineEnd: toFrame(300),
-  mediaIn: toFrame(0),
-  mediaOut: toFrame(300),
-});
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createClip"
+/>
 
 ## Dispatch
 
@@ -89,41 +64,23 @@ const clip = createClip({
 
 Processes a transaction against the current state. Returns a `DispatchResult`.
 
-```ts
-import { dispatch } from '@timelinx/core';
-
-const result = dispatch(state, {
-  id: 'add-clip',
-  label: 'Add clip',
-  timestamp: Date.now(),
-  operations: [{ type: 'INSERT_CLIP', trackId: 'v1', clip }],
-});
-
-if (result.accepted) {
-  // result.nextState is the new immutable state
-} else {
-  // result.reason — one of 28 rejection reasons
-  // result.message — human-readable explanation
-}
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="dispatch"
+/>
 
 ## History
 
-### `createHistory`, `pushHistory`, `undo`, `redo`, `getCurrentState`, `canUndo`, `canRedo`
+### `createHistory`
 
-Pure-function undo/redo system.
+Creates a history state from an initial timeline state. Deprecated in favor of `HistoryStack`.
 
-```ts
-import { createHistory, pushHistory, undo, redo, getCurrentState, canUndo, canRedo } from '@timelinx/core';
-
-let history = createHistory(initialState);
-history = pushHistory(history, nextState);
-
-if (canUndo(history)) {
-  history = undo(history);
-  const restored = getCurrentState(history);
-}
-```
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createHistory"
+/>
 
 ## Utilities
 
@@ -131,10 +88,28 @@ if (canUndo(history)) {
 
 Converts milliseconds to frame count at the given fps.
 
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="toFrame"
+/>
+
 ### `frameRate`
 
 Creates a valid frame rate value.
 
-### `createEffect`, `toEffectId`
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="frameRate"
+/>
+
+### `createEffect`
 
 Creates effect objects for the effects system.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createEffect"
+/>

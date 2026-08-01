@@ -7,15 +7,18 @@ description: Setting up the provider for @timelinx/react and @timelinx/ui
 
 ```tsx
 import { TimelineProvider } from '@timelinx/ui';
-import { createEngine } from '@timelinx/react';
+import { TimelineEngine } from '@timelinx/react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
 
-const engine = createEngine({
-  timeline: {
-    id: 'tl-1',
-    name: 'My Edit',
-    fps: 30,
-    duration: 10800,
-  },
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My Edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
 });
 
 function App() {

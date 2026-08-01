@@ -42,7 +42,7 @@ const transaction = {
   timestamp: Date.now(),    // when the transaction was created
   operations: [              // one or more operations
     { type: 'ADD_TRACK', track },
-    { type: 'INSERT_CLIP', trackId: 'v1', clip },
+    { type: 'INSERT_CLIP', trackId: track.id, clip },
   ],
 };
 ```

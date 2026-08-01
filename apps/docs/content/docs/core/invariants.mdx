@@ -26,11 +26,11 @@ if (!result.accepted) {
       break;
     case 'ASSET_MISSING':
       break;
-    case 'CLIP_BEYOND_TIMELINE':
-      break;
     case 'INVARIANT_VIOLATED':
+      // result.message has details about which invariant was violated
+      // (e.g., CLIP_BEYOND_TIMELINE, MEDIA_BOUNDS_INVALID, etc.)
       break;
-    // ... 24 total cases
+    // ... 28 total RejectionReason cases
   }
 }
 ```
