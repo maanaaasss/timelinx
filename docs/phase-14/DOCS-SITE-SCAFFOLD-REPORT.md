@@ -65,18 +65,15 @@ content/docs/
 
 ### Real / Verified
 
-- **All MDX content pages** — adapted from existing `docs/guides/` guides with verified API usage patterns
-- **Live component examples** — 5 real React components (`TimelineEditor`, `TimelineClip`, `InspectorPanel`, `EffectsPanel`, `TransportControls`) that render with actual `@timelinx/ui` components, real engine instances, and real timeline state
-- **Prop tables** — manually derived from actual TypeScript type definitions in `@timelinx/ui`
-- **API reference pages** — type-level documentation for `@timelinx/core` and `@timelinx/react` based on actual exported types
-- **Design tokens** — `@timelinx/ui/styles/presets/dark-pro` imported globally for visual consistency
+- **All MDX content pages** — code samples verified against real `@timelinx/core@1.0.0-beta.3` types via strict `tsc --noEmit --strict`
+- **Live component examples** — 5 real React components with correct dual-provider wrapping (`@timelinx/react` + `@timelinx/ui`)
+- **API reference pages** — auto-generated from real `.d.ts` files via `fumadocs-typescript` (not hand-maintained)
+- **Design tokens** — `@timelinx/ui/styles/presets/dark-pro` imported globally
 - **Workspace exclusion** — confirmed `!apps/docs` in `pnpm-workspace.yaml`
 - **npm packages** — confirmed real installed directories (not symlinks) at correct versions
 
 ### Placeholder / Needs Follow-up
 
-- **Content accuracy** — code samples are adapted from existing guides but were NOT individually verified against the real published packages. A follow-up verification pass is recommended.
-- **fumadocs-typescript integration** — the API reference pages currently use manually written type tables rather than auto-generated ones from `fumadocs-typescript`. Wiring up auto-generation from `.d.ts` files is a follow-up task.
 - **Additional UI components** — only 5 of 30+ exported components have gallery pages. The remaining components (`ZoomControls`, `TrackList`, `Sidebar`, `TopNav`, `AssetBin`, `MediaPreview`, `ExportDialog`, `MarkersPanel`, `CaptionsPanel`, `TransitionsPanel`, `KeyframesPanel`, `CommandPalette`, `KeyboardShortcutsOverlay`, `StatusBar`, `TabbedPanel`, `TextPanel`, `CollapsibleSection`, `DropZone`, `SnapIndicator`, `CompositorPreview`) can be added incrementally.
 - **Vercel deployment** — no `vercel.json` created (not needed for standard Next.js on Vercel). Deployment should work out of the box with `vercel` CLI.
 
@@ -114,7 +111,37 @@ The `next/dynamic` with `ssr: false` pattern is working correctly: the server se
 - **Interactivity** — can you click on `TransportControls` buttons, does `InspectorPanel` show real fields for a selected clip?
 - **Vercel deployment** — not tested; `next build` succeeding is the prerequisite
 
-## PR & CI Status
+## Tier 1: Correctness (Completed)
+
+### Code sample verification
+
+Every code sample across all 17 MDX pages was extracted and verified against the real published packages. The following issues were found and fixed:
+
+| File | Issue | Fix |
+|------|-------|-----|
+| `react/hooks.mdx` | `createEngine` imported from `@timelinx/react` — **does not exist** | Changed to `new TimelineEngine({ initialState })` |
+| `react/provider.mdx` | Same `createEngine` issue | Same fix |
+| `react/hooks.mdx` | `useTimelineContext()` documented as returning engine | Changed to `useEngine()` which is the correct `@timelinx/ui` hook |
+| `api/core.mdx` | `createTimelineState({ assets: [...] })` — wrong param name | Changed to `assetRegistry: new Map(...)` |
+| `api/react.mdx` | `useClip(engine, clipId)` — wrong signature | Corrected: context version is `useClip(clipId)`, engine version is `useClipWithEngine(engine, clipId)` |
+| `api/react.mdx` | `useTimelineContext()` described as `@timelinx/ui` export | Removed — it exists in both packages with different return types |
+| `core/invariants.mdx` | `CLIP_BEYOND_TIMELINE` used as `RejectionReason` | Fixed: it's a `ViolationType`, invariant violations surface as `reason: 'INVARIANT_VIOLATED'` |
+| `getting-started/index.mdx` | `trackId: 'v1'` (string) in `INSERT_CLIP` operations | Changed to `track.id` (branded `TrackId`) |
+| `getting-started/index.mdx` | `clipId: 'clip-1'` (string) in `MOVE_CLIP`/`DELETE_CLIP` | Changed to `clip.id` (branded `ClipId`) |
+| `getting-started/index.mdx` | `.nextState` accessed without checking `result.accepted` | Added `if (!result.accepted) throw` guards |
+| `core/transactions.mdx` | Same `trackId`/`clipId` string issues | Same fixes |
+| `core/dispatch-model.mdx` | `trackId: 'v1'` in transaction example | Changed to `track.id` |
+
+All corrected code samples pass `tsc --noEmit --strict` against the real `@timelinx/core@1.0.0-beta.3` types.
+
+### API reference: auto-generated, not hand-maintained
+
+The `api/core.mdx` and `api/react.mdx` pages now use `fumadocs-typescript`'s `AutoTypeTable` component to render type tables directly from the real `.d.ts` files in `node_modules/`. The manually-written tables have been removed.
+
+- `createTimeline`, `createTimelineState`, `createAsset`, `createTrack`, `createClip`, `dispatch`, `createHistory`, `toFrame`, `frameRate`, `createEffect` — all auto-generated from `@timelinx/core/dist/index.d.ts`
+- `TimelineProviderProps` — auto-generated from `@timelinx/react/dist/index.d.ts`
+
+Spot-check confirmed the rendered tables contain real property names (`timeline`, `duration`, `id`, `fps`, `FrameRate`, etc.) from the actual types.
 
 **PR**: [#51](https://github.com/maanaaasss/timelinx/pull/51) — `docs-site-scaffold` → `main`  
 **CI**: `Build & Test` — **passed** (1m25s)  

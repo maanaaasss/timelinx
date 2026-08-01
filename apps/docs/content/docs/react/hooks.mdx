@@ -8,10 +8,20 @@ description: React hooks for reading timeline state and dispatching operations
 Wrap your app with `TimelineProvider` and use the hooks inside:
 
 ```tsx
-import { TimelineProvider, useEngine, useTimelineContext } from '@timelinx/ui';
-import { createEngine } from '@timelinx/react';
+import { TimelineProvider, useEngine } from '@timelinx/ui';
+import { TimelineEngine } from '@timelinx/react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
 
-const engine = createEngine({ /* config */ });
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My Edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
+});
 
 function App() {
   return (
@@ -33,12 +43,13 @@ const engine = useEngine();
 engine.dispatch({ /* transaction */ });
 ```
 
-### `useTimelineContext()`
+### `useEngine()`
 
-Returns the full timeline context value. Prefer more specific hooks for performance:
+Returns the engine instance from the `@timelinx/ui` `TimelineProvider` context. Use this to dispatch operations or pass to engine-first hooks:
 
 ```tsx
-const ctx = useTimelineContext();
+const engine = useEngine();
+engine.dispatch({ /* transaction */ });
 ```
 
 ## Granular Re-renders
@@ -49,5 +60,9 @@ Hooks use `useSyncExternalStore` to subscribe to specific slices of state. A com
 
 | Hook | Returns | Re-renders when |
 |------|---------|-----------------|
-| `useEngine()` | Engine instance | Never (stable reference) |
-| `useTimelineContext()` | Full context value | Any state change |
+| `useEngine()` | `TimelineEngine` | Never (stable reference) |
+| `useClip(clipId)` | `Clip \| null` | That clip's data changes |
+| `useSelectedClipIds(engine)` | `ReadonlySet<string>` | Selection changes |
+| `usePlayheadFrame(engine)` | `TimelineFrame` | Playhead moves |
+| `useIsPlaying(engine)` | `boolean` | Play/pause state changes |
+| `useTimelineWithEngine(engine)` | `Timeline` | Timeline metadata changes |

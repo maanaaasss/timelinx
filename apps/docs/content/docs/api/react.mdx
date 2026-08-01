@@ -1,13 +1,16 @@
 ---
 title: '@timelinx/react API'
-description: Type-level API reference for @timelinx/react
+description: Auto-generated type-level API reference for @timelinx/react
 ---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
 
 ## Engine
 
 ### `TimelineEngine`
 
-The engine class that wraps `@timelinx/core` state management with React-compatible subscriptions.
+The engine class that wraps `@timelinx/core` state management with React-compatible subscriptions via `useSyncExternalStore`.
 
 ```ts
 import { TimelineEngine } from '@timelinx/react';
@@ -25,71 +28,46 @@ const engine = new TimelineEngine({
 });
 ```
 
-### Engine Methods
+### `TimelineProviderProps`
 
-| Method | Description |
-|--------|-------------|
-| `engine.dispatch(transaction)` | Process a transaction |
-| `engine.undo()` | Undo the last transaction |
-| `engine.redo()` | Redo the last undone transaction |
-| `engine.seekTo(frame)` | Move the playhead to a specific frame |
-| `engine.getState()` | Get the current timeline state |
-| `engine.getSelectedClipIds()` | Get currently selected clip IDs |
-| `engine.setSelectedClipIds(ids)` | Set selected clip IDs |
-| `engine.activateTool(toolId)` | Activate a tool |
-| `engine.getActiveToolId()` | Get the currently active tool ID |
+Props for the `TimelineProvider` component.
 
-### Playback
-
-| Method | Description |
-|--------|-------------|
-| `engine.playbackEngine.play()` | Start playback |
-| `engine.playbackEngine.pause()` | Pause playback |
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/react/dist/index.d.ts"
+  type="TimelineProviderProps"
+/>
 
 ## Hooks
 
-### `useTimelineContext()`
-
-Returns the full timeline context value from `@timelinx/ui`'s `TimelineProvider`.
-
 ### `useEngine()`
 
-Returns the engine instance from context.
+Returns the engine instance from context. Throws if used outside `TimelineProvider`.
 
-### `useClip(engine, clipId)`
+### `useClip(clipId)`
 
-Subscribes to a specific clip's data. Re-renders only when that clip changes.
+Subscribes to a specific clip's data. Returns `Clip | null`.
 
 ### `useSelectedClipIds(engine)`
 
-Subscribes to the set of selected clip IDs.
+Subscribes to the set of selected clip IDs. Returns `ReadonlySet<string>`.
 
 ### `usePlayheadFrame(engine)`
 
-Subscribes to the current playhead frame.
+Subscribes to the current playhead frame. Returns `TimelineFrame`.
 
 ### `useIsPlaying(engine)`
 
-Subscribes to the playback state (playing/paused).
+Subscribes to the playback state. Returns `boolean`.
 
 ### `useTimelineWithEngine(engine)`
 
-Subscribes to the timeline metadata (duration, fps, etc.).
+Subscribes to the timeline metadata (duration, fps, etc.). Returns `Timeline`.
 
 ### `useClipEffects(engine, clipId)`
 
-Subscribes to a clip's effects array.
+Subscribes to a clip's effects array. Returns `readonly Effect[]`.
 
-## Provider
+### `useHistory(engine)`
 
-### `TimelineProvider`
-
-Provides the engine to all child components via context.
-
-```tsx
-import { TimelineProvider } from '@timelinx/react';
-
-<TimelineProvider engine={engine}>
-  <YourApp />
-</TimelineProvider>
-```
+Subscribes to history state. Returns `{ canUndo: boolean; canRedo: boolean }`.
