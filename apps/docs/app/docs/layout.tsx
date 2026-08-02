@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout tree={source.pageTree} nav={{ title: 'Timelinx', children: <PackageSelector /> }}>
+    <DocsLayout tree={source.pageTree} nav={{ title: 'Timelinx' }} sidebar={{ banner: <PackageSelector /> }}>
       {children}
     </DocsLayout>
   );
