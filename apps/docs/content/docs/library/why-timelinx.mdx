@@ -1,0 +1,57 @@
+---
+title: Why Timelinx?
+description: Design philosophy and what makes Timelinx different
+---
+
+## The Problem
+
+Building a timeline editor in the browser is hard. You need state management for tracks, clips, and timecode. You need undo/redo. You need to handle drag-and-drop, snapping, zooming, and playback. Most teams either build everything from scratch or depend on heavy frameworks that lock you into specific UI patterns.
+
+## The Timelinx Approach
+
+### Pure-function dispatch
+
+Every timeline operation is a pure function: `(state, command) → newState`. No mutation, no side effects, no hidden state. This means:
+
+- **Predictable** — same input always produces the same output
+- **Testable** — assert state transitions without mocking
+- **Debuggable** — log every dispatch, replay history, inspect any state
+
+### Built-in validation
+
+The dispatch engine validates every operation against 24 invariant types before applying it. Catches bugs at dispatch time, not in production. Overlapping clips, out-of-bounds timecodes, missing assets — all caught.
+
+### Atomic transactions
+
+Batch multiple operations into a single transaction. If any operation fails validation, the entire transaction is rejected. No partial state.
+
+```ts
+const result = dispatch(state, {
+  id: 'razor-split',
+  label: 'Split clip at frame 150',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'DELETE_CLIP', clipId: clip.id },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: leftHalf },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: rightHalf },
+  ],
+});
+```
+
+### Free undo/redo
+
+The history stack is built into the core. Push states onto the stack, undo, redo, or jump to any point. No extra libraries needed.
+
+### No backend required
+
+Everything runs in the browser. State is serializable — persist to localStorage, IndexedDB, or send to a server. But you don't have to.
+
+### Incremental adoption
+
+Use `@timelinx/core` alone for headless state management. Add `@timelinx/react` for React bindings. Add `@timelinx/ui` when you need pre-built components. Each package works independently.
+
+## Who is Timelinx for?
+
+- Developers building video editors, NLEs, or motion graphics tools in the browser
+- Teams that need a reliable timeline engine without vendor lock-in
+- Anyone who wants undo/redo, validation, and transactions without building them from scratch

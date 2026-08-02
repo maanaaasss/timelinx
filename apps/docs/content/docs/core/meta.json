@@ -1,5 +1,6 @@
 {
   "title": "Core",
+  "root": true,
   "pages": [
     "index",
     "dispatch-model",

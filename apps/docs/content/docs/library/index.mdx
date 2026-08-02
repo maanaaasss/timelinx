@@ -1,0 +1,49 @@
+---
+title: What is Timelinx?
+description: A browser-native timeline editor engine and UI toolkit
+---
+
+Timelinx is a browser-native timeline editor engine and UI toolkit. It provides everything you need to build video editors, NLEs, and motion graphics tools that run entirely in the browser — no backend, no plugins, no native code.
+
+## The Three Packages
+
+<Cards>
+  <Card title="@timelinx/core" href="/docs/core" />
+  <Card title="@timelinx/react" href="/docs/react" />
+  <Card title="@timelinx/ui" href="/docs/ui" />
+</Cards>
+
+### @timelinx/core
+
+A pure-function dispatch model for timeline state management. Zero runtime dependencies, no side effects. Every operation takes a state and returns a new state. Includes invariant validation, atomic transactions, and undo/redo out of the box.
+
+### @timelinx/react
+
+React bindings that connect the core engine to React's rendering model. Uses `useSyncExternalStore` for granular re-renders — only components that read changed state re-render. Provides hooks, providers, and tool routing.
+
+### @timelinx/ui
+
+Drop-in React components for building timeline editors. Panels, tracks, clips, rulers, playheads, toolbars, sidebars, and more. Each component is standalone or composable via `TimelineEditor`.
+
+## Quick Example
+
+```ts
+import { createTimeline, createTrack, createClip, dispatch, toFrame, frameRate } from '@timelinx/core';
+
+const timeline = createTimeline({ id: 'tl-1', name: 'My Edit', fps: frameRate(30), duration: toFrame(10800) });
+const state = createTimelineState({ timeline });
+
+const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
+const result = dispatch(state, {
+  id: 'add-track',
+  label: 'Add video track',
+  timestamp: Date.now(),
+  operations: [{ type: 'ADD_TRACK', track }],
+});
+```
+
+## Next Steps
+
+- [Why Timelinx?](/docs/library/why-timelinx) — motivation and design philosophy
+- [Architecture](/docs/library/architecture) — how the packages fit together
+- [Quick Start](/docs/library/quick-start) — build your first timeline in 10 lines

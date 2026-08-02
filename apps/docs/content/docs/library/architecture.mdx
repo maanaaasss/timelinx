@@ -1,0 +1,89 @@
+---
+title: Architecture
+description: How the three packages fit together
+---
+
+Timelinx is split into three packages with a clear dependency graph:
+
+```
+@timelinx/ui
+    ↓
+@timelinx/react
+    ↓
+@timelinx/core
+```
+
+Each layer depends only on the layers below it. You can use any layer independently.
+
+## Layer 1: Core (Headless Engine)
+
+`@timelinx/core` is a pure-function state machine. It knows nothing about React, the DOM, or rendering.
+
+**Responsibilities:**
+- Timeline state management (tracks, clips, timecode)
+- Dispatch model — `(state, command) → result`
+- Invariant validation (24 violation types)
+- Atomic transactions
+- History stack (undo/redo)
+
+**Data flow:**
+
+```
+Command → dispatch() → validation → new state
+                                  → history push
+```
+
+## Layer 2: React (Bindings)
+
+`@timelinx/react` bridges the core engine to React's rendering model.
+
+**Responsibilities:**
+- `TimelineProvider` — context provider that owns the engine instance
+- `useTimeline()` — read timeline state with granular re-renders
+- `useDispatch()` — dispatch commands from components
+- Tool routing — map keyboard/mouse events to dispatch commands
+
+**Key insight:** Uses `useSyncExternalStore` so only components that read changed state re-render. No prop drilling, no unnecessary renders.
+
+## Layer 3: UI (Components)
+
+`@timelinx/ui` provides ready-made React components that compose into a full timeline editor.
+
+**Component categories:**
+
+| Category | Examples |
+|---|---|
+| Timeline | `TimelineEditor`, `TimelineClip`, `TimelineRuler`, `TimelineTrack` |
+| Controls | `ZoomControls`, `TransportControls`, `Toolbar` |
+| Panels | `InspectorPanel`, `EffectsPanel`, `AssetBin`, `MediaPreview` |
+| Layout | `Sidebar`, `TopNav`, `TabbedPanel`, `CollapsibleSection` |
+| Dialogs | `ExportDialog`, `CommandPalette`, `KeyboardShortcutsOverlay` |
+
+**Standalone vs. composed:** Most components work standalone (wrap with providers) or composed via `TimelineEditor` which handles all provider wiring.
+
+## State Flow
+
+```
+User action (click, drag, keyboard)
+    ↓
+Tool handler (maps event to command)
+    ↓
+dispatch(state, command)
+    ↓
+Validation (24 invariant types)
+    ↓
+New state (or rejected with reason)
+    ↓
+React re-render (only affected components)
+    ↓
+UI update
+```
+
+## Serialization
+
+All state is plain objects — no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
+
+```ts
+const json = JSON.stringify(state);
+const restored = JSON.parse(json);
+```

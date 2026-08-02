@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Popover,
   PopoverTrigger,
@@ -23,6 +24,7 @@ const PACKAGES = [
     subtitle: 'The docs framework',
     icon: Building,
     color: 'var(--framework-color, var(--color-fd-foreground))',
+    href: '/docs/library',
   },
   {
     id: 'ui',
@@ -30,6 +32,7 @@ const PACKAGES = [
     subtitle: 'The default theme',
     icon: Layout,
     color: 'var(--ui-color, #60a5fa)',
+    href: '/docs/ui',
   },
   {
     id: 'core',
@@ -37,6 +40,7 @@ const PACKAGES = [
     subtitle: 'The headless library',
     icon: Box,
     color: 'var(--core-color, #c084fc)',
+    href: '/docs/core',
   },
   {
     id: 'react',
@@ -44,6 +48,7 @@ const PACKAGES = [
     subtitle: 'React bindings & hooks',
     icon: Pencil,
     color: 'var(--react-color, #f472b6)',
+    href: '/docs/react',
   },
   {
     id: 'cli',
@@ -51,15 +56,30 @@ const PACKAGES = [
     subtitle: 'CLI tools for docs & automation',
     icon: Terminal,
     color: 'var(--cli-color, var(--color-fd-foreground))',
+    href: '/docs/cli',
   },
 ] as const;
 
 type PackageId = (typeof PACKAGES)[number]['id'];
 
+function getPackageFromPathname(pathname: string): PackageId {
+  for (const pkg of PACKAGES) {
+    if (pathname.startsWith(pkg.href)) return pkg.id;
+  }
+  return 'library';
+}
+
 export function PackageSelector() {
-  const [selected, setSelected] = useState<PackageId>('cli');
-  const current = PACKAGES.find((p) => p.id === selected)!;
+  const router = useRouter();
+  const pathname = usePathname();
+  const [selected, setSelected] = useState<PackageId>('library');
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setSelected(getPackageFromPathname(pathname));
+  }, [pathname]);
+
+  const current = PACKAGES.find((p) => p.id === selected)!;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -101,6 +121,7 @@ export function PackageSelector() {
               onClick={() => {
                 setSelected(pkg.id);
                 setOpen(false);
+                router.push(pkg.href);
               }}
               className={[
                 'flex items-center gap-2 rounded p-2 w-full text-start transition-colors cursor-pointer',

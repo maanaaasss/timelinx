@@ -1,37 +1,8 @@
 ---
-title: Introduction
+title: Timelinx
 description: Browser-native timeline editor engine and UI components
 ---
 
-Timelinx is a browser-native timeline editor engine and UI toolkit. It provides:
+import { Redirect } from '@/components/redirect';
 
-- **@timelinx/core** — A pure-function dispatch model for timeline state management with invariant validation, transactions, and undo/redo
-- **@timelinx/react** — React bindings with granular re-rendering via `useSyncExternalStore`
-- **@timelinx/ui** — Drop-in React components for building timeline editors
-
-## Quick Example
-
-```ts
-import { createTimeline, createTrack, createClip, dispatch, toFrame, frameRate } from '@timelinx/core';
-
-const timeline = createTimeline({ id: 'tl-1', name: 'My Edit', fps: frameRate(30), duration: toFrame(10800) });
-const state = createTimelineState({ timeline });
-
-const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
-const result = dispatch(state, {
-  id: 'add-track',
-  label: 'Add video track',
-  timestamp: Date.now(),
-  operations: [{ type: 'ADD_TRACK', track }],
-});
-```
-
-## Explore the Docs
-
-<Cards>
-  <Card title="Getting Started" href="/docs/getting-started" />
-  <Card title="Core Concepts" href="/docs/core" />
-  <Card title="React Integration" href="/docs/react" />
-  <Card title="UI Components" href="/docs/ui" />
-  <Card title="API Reference" href="/docs/api" />
-</Cards>
+<Redirect to="/docs/library" />

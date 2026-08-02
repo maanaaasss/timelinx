@@ -1,15 +1,10 @@
 {
   "title": "Documentation",
   "pages": [
-    "---Getting Started---",
-    "getting-started",
-    "---Core---",
+    "library",
     "core",
-    "---React---",
     "react",
-    "---UI---",
     "ui",
-    "---API---",
-    "api"
+    "cli"
   ]
 }
