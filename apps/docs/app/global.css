@@ -13,4 +13,7 @@
   --radius-lg: 0.3125rem;
   --radius-xl: 0.4375rem;
   --radius-2xl: 0.5625rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
 }
