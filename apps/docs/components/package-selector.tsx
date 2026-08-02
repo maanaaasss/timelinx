@@ -7,7 +7,7 @@ import {
   PopoverContent,
 } from 'fumadocs-ui/components/ui/popover';
 import {
-  Building2,
+  Building,
   Layout,
   Box,
   Pencil,
@@ -21,7 +21,7 @@ const PACKAGES = [
     id: 'library',
     name: 'Library',
     subtitle: 'The docs framework',
-    icon: Building2,
+    icon: Building,
     color: '#facc15',
   },
   {
