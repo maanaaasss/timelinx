@@ -1,0 +1,44 @@
+---
+title: CommandPalette
+description: Searchable command palette for quick access to editor actions
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `CommandPalette` provides a Spotlight-style search interface for executing editor commands — adding tracks, toggling tools, navigating the timeline, and more.
+
+## Live Example
+
+import { CommandPaletteExample } from '@/components/examples/command-palette-example.client';
+
+<CommandPaletteExample />
+
+## Usage
+
+```tsx
+import { CommandPalette, TimelineProvider } from '@timelinx/ui';
+import { useState } from 'react';
+
+function App() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <TimelineProvider engine={engine}>
+      <CommandPalette isVisible={isOpen} onClose={() => setIsOpen(false)} />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="CommandPaletteProps"
+/>
+
+## Context Requirement
+
+`CommandPalette` must be inside a `TimelineProvider`. It dispatches commands to the engine and reads available actions from the current timeline state.

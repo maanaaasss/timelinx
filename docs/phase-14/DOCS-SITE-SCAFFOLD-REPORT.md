@@ -1,4 +1,4 @@
-# Phase 14 — Docs Site Scaffold Report
+/ses# Phase 14 — Docs Site Scaffold Report
 
 ## Setup
 
@@ -74,15 +74,14 @@ content/docs/
 
 ### Placeholder / Needs Follow-up
 
-- **Additional UI components** — only 5 of 30+ exported components have gallery pages. The remaining components (`ZoomControls`, `TrackList`, `Sidebar`, `TopNav`, `AssetBin`, `MediaPreview`, `ExportDialog`, `MarkersPanel`, `CaptionsPanel`, `TransitionsPanel`, `KeyframesPanel`, `CommandPalette`, `KeyboardShortcutsOverlay`, `StatusBar`, `TabbedPanel`, `TextPanel`, `CollapsibleSection`, `DropZone`, `SnapIndicator`, `CompositorPreview`) can be added incrementally.
 - **Vercel deployment** — no `vercel.json` created (not needed for standard Next.js on Vercel). Deployment should work out of the box with `vercel` CLI.
 
 ## Build Verification
 
 ### What was verified
 
-- `next build` succeeds cleanly (22 static pages generated)
-- TypeScript type checking passes
+- `next build` succeeds cleanly (46 static pages generated)
+- TypeScript type checking passes (`npx tsc --noEmit`)
 - All 3 `@timelinx/*` packages are real installed directories (not workspace symlinks)
 - Correct package versions: `core@1.0.0-beta.3`, `react@1.0.0-beta.6`, `ui@1.0.0-beta.2`
 - MDX content compiles without errors
@@ -148,7 +147,54 @@ Spot-check confirmed the rendered tables contain real property names (`timeline`
 **Commit**: `c7cf143` — `feat: scaffold Fumadocs documentation site at apps/docs`  
 **Branch**: `docs-site-scaffold` (pushed to origin)
 
+## Tier 2: Remaining Gallery Pages + Preset Switcher (Completed)
+
+### Preset Switcher
+
+Added runtime preset switching between Dark Pro, Light, and High Contrast themes:
+
+- **`apps/docs/styles/presets.css`** — Combined CSS file with all three presets scoped under `[data-preset="..."]` selectors
+- **`apps/docs/components/preset-switcher.tsx`** — Client component with theme toggle buttons
+- **`apps/docs/app/layout.tsx`** — Sets `data-preset="dark-pro"` as default on `<html>`
+- **`apps/docs/app/docs/layout.tsx`** — PresetSwitcher added to docs nav bar
+- **`apps/docs/app/global.css`** — Updated to import combined presets instead of single dark-pro
+
+The switcher persists the user's choice to `localStorage` and applies the selected preset by toggling the `data-preset` attribute on `<html>`. CSS custom properties update in real time with smooth transitions (via the existing `.timeline-editor *` transition rule in `tokens.css`).
+
+### Component Gallery Pages
+
+All 30 exported `@timelinx/ui` components now have gallery pages:
+
+| Category | Components | Pages |
+|----------|-----------|-------|
+| **Core Timeline** | TimelineEditor, TimelineClip, TimelineRuler, TimelineTrack, TimelinePlayhead, TimelineToolbar | 6 |
+| **Decomposed** | ZoomControls, TrackList, SnapIndicator, DropZone | 4 |
+| **Panels (context)** | InspectorPanel, EffectsPanel, TransportControls, AssetBin, MediaPreview, CompositorPreview, MarkersPanel, TransitionsPanel, KeyframesPanel, TextPanel, CaptionsPanel (deprecated), CommandPalette, StatusBar | 13 |
+| **Standalone** | Sidebar, TopNav, KeyboardShortcutsOverlay, ExportDialog, TabbedPanel, CollapsibleSection | 6 |
+| **Index** | UI Components landing | 1 |
+| **Total** | | **30 + 2 API + 14 other = 46 pages** |
+
+### Auto-Type Prop Tables
+
+All 29 component pages now use `fumadocs-typescript` `AutoTypeTable` to render prop tables directly from the real `.d.ts` files:
+
+```mdx
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="ComponentNameProps"
+/>
+```
+
+Manually-written prop tables have been removed from all component pages.
+
+### Additional Fix
+
+Added missing `TimelineToolbarProps` export to `packages/ui/src/index.ts` — the type existed in the component file but wasn't re-exported from the barrel.
+
 ## Files Created
+
+### Tier 1 (Initial scaffold)
 
 | File | Purpose |
 |------|---------|
@@ -159,8 +205,8 @@ Spot-check confirmed the rendered tables contain real property names (`timeline`
 | `apps/docs/next-env.d.ts` | Next.js type declarations |
 | `apps/docs/app/layout.tsx` | Root layout with RootProvider |
 | `apps/docs/app/page.tsx` | Redirect to /docs |
-| `apps/docs/app/global.css` | Fumadocs + dark-pro CSS imports |
-| `apps/docs/app/docs/layout.tsx` | Docs layout with sidebar |
+| `apps/docs/app/global.css` | Fumadocs + presets CSS imports |
+| `apps/docs/app/docs/layout.tsx` | Docs layout with sidebar + preset switcher |
 | `apps/docs/app/docs/[[...slug]]/page.tsx` | Catch-all docs page |
 | `apps/docs/lib/source.ts` | Fumadocs source loader |
 | `apps/docs/content/docs/**/*.mdx` | 17 content pages |
@@ -168,3 +214,14 @@ Spot-check confirmed the rendered tables contain real property names (`timeline`
 | `apps/docs/components/examples/*.tsx` | 5 live component examples |
 | `apps/docs/components/examples/*.client.tsx` | 5 dynamic import wrappers |
 | `pnpm-workspace.yaml` | Modified — added `!apps/docs` |
+
+### Tier 2 (Gallery pages + preset switcher)
+
+| File | Purpose |
+|------|---------|
+| `apps/docs/styles/presets.css` | Combined CSS for runtime preset switching |
+| `apps/docs/components/preset-switcher.tsx` | Theme toggle UI component |
+| `apps/docs/components/examples/*-example.tsx` | 24 new live component examples |
+| `apps/docs/components/examples/*-example.client.tsx` | 24 new dynamic import wrappers |
+| `apps/docs/content/docs/ui/*.mdx` | 24 new component gallery pages |
+| `packages/ui/src/index.ts` | Added missing `TimelineToolbarProps` export |

@@ -1,0 +1,45 @@
+---
+title: Sidebar
+description: Vertical icon-based navigation sidebar for switching between tool panels
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `Sidebar` renders a vertical strip of icon buttons for switching between the app's tool panels (Media, Video, Text, Effects, etc.). It highlights the active panel and exposes the selection via a controlled or uncontrolled callback.
+
+## Live Example
+
+import { SidebarExample } from '@/components/examples/sidebar-example.client';
+
+<SidebarExample />
+
+## Usage
+
+```tsx
+import { Sidebar } from '@timelinx/ui';
+import { useState } from 'react';
+
+function EditorLayout() {
+  const [active, setActive] = useState('media');
+
+  return (
+    <Sidebar
+      activePanel={active}
+      onPanelChange={setActive}
+    />
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="SidebarProps"
+/>
+
+## Standalone
+
+`Sidebar` is a standalone component — no context providers needed. All state is managed via props.

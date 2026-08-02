@@ -1,0 +1,39 @@
+---
+title: TopNav
+description: Top navigation bar with project name, back button, and export action
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TopNav` is a compact header bar that displays the current project name, a back-navigation button, and an export action. It sits at the top of the editor layout.
+
+## Live Example
+
+import { TopNavExample } from '@/components/examples/top-nav-example.client';
+
+<TopNavExample />
+
+## Usage
+
+```tsx
+import { TopNav } from '@timelinx/ui';
+
+<TopNav
+  projectName="My Video"
+  onBack={() => router.push('/')}
+  onExport={() => openExportDialog()}
+/>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TopNavProps"
+/>
+
+## Standalone
+
+`TopNav` is a standalone component — no context providers needed.

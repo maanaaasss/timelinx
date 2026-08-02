@@ -1,0 +1,39 @@
+---
+title: SnapIndicator
+description: Visual snap lines shown when aligning clips
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`SnapIndicator` renders vertical snap lines at specified frame positions. Used during drag operations to indicate alignment points.
+
+## Live Example
+
+import { SnapIndicatorExample } from '@/components/examples/snap-indicator-example.client';
+
+<SnapIndicatorExample />
+
+## Usage
+
+```tsx
+import { SnapIndicator } from '@timelinx/ui';
+
+<SnapIndicator
+  frames={[100, 300, 600, 900]}
+  ppf={4}
+  totalHeight={200}
+/>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="SnapIndicatorProps"
+/>
+
+## Standalone Component
+
+`SnapIndicator` is a pure presentational component. It renders a fragment of absolutely-positioned vertical lines — no providers or context required. Wrap it in a `position: relative` container to position the snap lines correctly.

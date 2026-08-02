@@ -1,0 +1,41 @@
+---
+title: TextPanel
+description: Panel for editing text overlays, titles, and captions on clips
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `TextPanel` provides an interface for adding and editing text overlays, titles, and captions on the selected clip. It replaces the deprecated `CaptionsPanel`.
+
+## Live Example
+
+import { TextPanelExample } from '@/components/examples/text-panel-example.client';
+
+<TextPanelExample />
+
+## Usage
+
+```tsx
+import { TextPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TextPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TextPanelProps"
+/>
+
+## Context Requirement
+
+`TextPanel` must be inside a `TimelineProvider`. It reads text overlay data from the selected clip in the engine context. When no clip is selected, it displays a prompt to select one.

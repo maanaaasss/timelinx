@@ -1,0 +1,46 @@
+---
+title: TabbedPanel
+description: Generic tabbed container that shows one child panel at a time
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TabbedPanel` renders a row of tab buttons and displays the child matching the active tab. It supports both controlled and uncontrolled usage.
+
+## Live Example
+
+import { TabbedPanelExample } from '@/components/examples/tabbed-panel-example.client';
+
+<TabbedPanelExample />
+
+## Usage
+
+```tsx
+import { TabbedPanel } from '@timelinx/ui';
+import type { TabDefinition } from '@timelinx/ui';
+
+const tabs = [
+  { id: 'general', label: 'General' },
+  { id: 'advanced', label: 'Advanced' },
+] as const satisfies readonly TabDefinition[];
+
+<TabbedPanel tabs={tabs} activeTab={active} onTabChange={setActive}>
+  <div>General content</div>
+  <div>Advanced content</div>
+</TabbedPanel>
+```
+
+Children are matched to tabs by index — the first child corresponds to the first tab, and so on.
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TabbedPanelProps"
+/>
+
+## Standalone
+
+`TabbedPanel` is a standalone component — no context providers needed.

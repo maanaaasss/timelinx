@@ -1,0 +1,43 @@
+---
+title: TimelinePlayhead
+description: Vertical playhead indicator showing the current playback position
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TimelinePlayhead` renders a vertical line and handle at the current playback frame position, spanning the full height of the timeline.
+
+## Live Example
+
+import { TimelinePlayheadExample } from '@/components/examples/timeline-playhead-example.client';
+
+<TimelinePlayheadExample />
+
+## Usage
+
+```tsx
+import { TimelinePlayhead, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{ position: 'relative', height: 200 }}>
+        <TimelinePlayhead totalHeight={200} />
+      </div>
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelinePlayheadProps"
+/>
+
+## Context Requirement
+
+`TimelinePlayhead` must be inside a `TimelineProvider`. It reads `ppf`, the current playhead frame, and playing state from the engine context to position itself and animate.

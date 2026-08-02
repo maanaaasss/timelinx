@@ -1,0 +1,48 @@
+---
+title: TimelineTrack
+description: Track header row with controls for mute, lock, and track identity
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TimelineTrack` renders a track header with the track icon, label, and controls for muting/hiding and locking the track.
+
+## Live Example
+
+import { TimelineTrackExample } from '@/components/examples/timeline-track-example.client';
+
+<TimelineTrackExample />
+
+## Usage
+
+```tsx
+import { TimelineTrack, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineTrack
+        trackId="v1"
+        shortId="V1"
+        height={48}
+        clipCount={3}
+        onDelete={(trackId) => console.log('delete', trackId)}
+        onAddClip={(trackId) => console.log('add clip', trackId)}
+      />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelineTrackProps"
+/>
+
+## Context Requirement
+
+`TimelineTrack` must be inside a `TimelineProvider`. It reads the track data and engine reference from context to render mute/lock controls and dispatch toggle actions.

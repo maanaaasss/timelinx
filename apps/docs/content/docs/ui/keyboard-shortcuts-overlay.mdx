@@ -1,0 +1,48 @@
+---
+title: KeyboardShortcutsOverlay
+description: Modal overlay displaying all available keyboard shortcuts
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`KeyboardShortcutsOverlay` renders a full-screen overlay listing all available keyboard shortcuts grouped by category. It closes automatically on Escape or backdrop click.
+
+## Live Example
+
+import { KeyboardShortcutsOverlayExample } from '@/components/examples/keyboard-shortcuts-overlay-example.client';
+
+<KeyboardShortcutsOverlayExample />
+
+## Usage
+
+```tsx
+import { KeyboardShortcutsOverlay } from '@timelinx/ui';
+import { useState } from 'react';
+
+function HelpButton() {
+  const [show, setShow] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setShow(true)}>?</button>
+      <KeyboardShortcutsOverlay
+        isVisible={show}
+        onClose={() => setShow(false)}
+      />
+    </>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="KeyboardShortcutsOverlayProps"
+/>
+
+## Standalone
+
+`KeyboardShortcutsOverlay` is a standalone component — no context providers needed.

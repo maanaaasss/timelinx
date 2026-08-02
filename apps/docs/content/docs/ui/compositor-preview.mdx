@@ -1,0 +1,43 @@
+---
+title: CompositorPreview
+description: Real-time canvas compositor for previewing the final timeline output
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `CompositorPreview` renders the composed output of all visible tracks and clips at the current playhead position using a canvas element. It handles compositing, scaling, and real-time playback preview.
+
+## Live Example
+
+import { CompositorPreviewExample } from '@/components/examples/compositor-preview-example.client';
+
+<CompositorPreviewExample />
+
+## Usage
+
+```tsx
+import { CompositorPreview, TimelineProvider, MediaAssetsProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <MediaAssetsProvider>
+        <CompositorPreview />
+      </MediaAssetsProvider>
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="CompositorPreviewProps"
+/>
+
+## Context Requirement
+
+`CompositorPreview` must be inside both a `TimelineProvider` and a `MediaAssetsProvider`. The timeline provider supplies clip and track state for compositing; the media assets provider supplies blob URLs and file data for rendering media frames.

@@ -1,0 +1,39 @@
+---
+title: ZoomControls
+description: Zoom slider and +/- buttons for timeline zoom
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`ZoomControls` provides a zoom slider with increment/decrement buttons. It is fully controlled via `ppf` and `onPpfChange`.
+
+## Live Example
+
+import { ZoomControlsExample } from '@/components/examples/zoom-controls-example.client';
+
+<ZoomControlsExample />
+
+## Usage
+
+```tsx
+import { ZoomControls } from '@timelinx/ui';
+import { useState } from 'react';
+
+function App() {
+  const [ppf, setPpf] = useState(8);
+  return <ZoomControls ppf={ppf} onPpfChange={setPpf} />;
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="ZoomControlsProps"
+/>
+
+## Standalone Component
+
+`ZoomControls` is a pure controlled component — it requires no providers or context. Pass the current zoom level and a setter, and it handles all interaction internally.
