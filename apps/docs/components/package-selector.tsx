@@ -6,42 +6,81 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from 'fumadocs-ui/components/ui/popover';
-import { buttonVariants } from 'fumadocs-ui/components/ui/button';
-import { BookOpen, Layers, Cpu, Atom, ChevronDown, Check } from 'lucide-react';
+import {
+  Building2,
+  Layout,
+  Box,
+  Pencil,
+  Terminal,
+  ChevronDown,
+  Check,
+} from 'lucide-react';
 
 const PACKAGES = [
-  { id: 'library', name: 'Library', icon: BookOpen, color: '#818cf8' },
-  { id: 'ui', name: 'Timelinx UI', icon: Layers, color: '#c084fc' },
-  { id: 'core', name: 'Timelinx Core', icon: Cpu, color: '#fb923c' },
-  { id: 'react', name: 'Timelinx React', icon: Atom, color: '#22d3ee' },
+  {
+    id: 'library',
+    name: 'Library',
+    subtitle: 'The docs framework',
+    icon: Building2,
+    color: '#facc15',
+  },
+  {
+    id: 'ui',
+    name: 'Timelinx UI',
+    subtitle: 'The default theme',
+    icon: Layout,
+    color: '#60a5fa',
+  },
+  {
+    id: 'core',
+    name: 'Timelinx Core',
+    subtitle: 'The headless library',
+    icon: Box,
+    color: '#c084fc',
+  },
+  {
+    id: 'react',
+    name: 'Timelinx React',
+    subtitle: 'React bindings & hooks',
+    icon: Pencil,
+    color: '#f472b6',
+  },
+  {
+    id: 'cli',
+    name: 'Fumadocs CLI',
+    subtitle: 'CLI tools for docs & automation',
+    icon: Terminal,
+    color: '#e2e8f0',
+  },
 ] as const;
 
 type PackageId = (typeof PACKAGES)[number]['id'];
 
 export function PackageSelector() {
-  const [selected, setSelected] = useState<PackageId>('library');
+  const [selected, setSelected] = useState<PackageId>('cli');
   const current = PACKAGES.find((p) => p.id === selected)!;
+  const [open, setOpen] = useState(false);
 
   return (
-    <Popover>
-      <PopoverTrigger
-        className={buttonVariants({
-          color: 'secondary',
-          className:
-            'gap-2 justify-start text-fd-muted-foreground bg-fd-secondary/50 w-full',
-        })}
-      >
-        <current.icon
-          size={16}
-          style={{ color: current.color, flexShrink: 0 }}
-        />
-        <span className="truncate">{current.name}</span>
-        <ChevronDown className="ms-auto size-3.5 opacity-60" />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-2.5 w-full rounded-lg border border-fd-border bg-fd-card px-3 py-2.5 text-sm font-medium text-fd-card-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground cursor-pointer"
+        >
+          <Terminal size={16} className="text-fd-muted-foreground" />
+          <span className="truncate">{current.name}</span>
+          <ChevronDown
+            size={14}
+            className="ms-auto text-fd-muted-foreground transition-transform duration-200"
+            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          />
+        </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="flex flex-col gap-0.5 p-1 w-[var(--radix-popover-trigger-width)]"
+        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-xl border border-fd-border bg-fd-card shadow-xl"
       >
         {PACKAGES.map((pkg) => {
           const Icon = pkg.icon;
@@ -50,21 +89,32 @@ export function PackageSelector() {
             <button
               key={pkg.id}
               type="button"
-              onClick={() => setSelected(pkg.id)}
+              onClick={() => {
+                setSelected(pkg.id);
+                setOpen(false);
+              }}
               className={[
-                'flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-start text-sm transition-colors',
+                'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-start transition-colors cursor-pointer',
                 isActive
-                  ? 'bg-fd-primary/10 text-fd-primary'
-                  : 'text-fd-muted-foreground hover:bg-fd-accent hover:text-fd-accent-foreground',
+                  ? 'bg-fd-primary/10'
+                  : 'hover:bg-fd-accent',
               ].join(' ')}
             >
-              <Icon
-                size={16}
-                style={{ color: pkg.color, flexShrink: 0 }}
-              />
-              <span className="truncate">{pkg.name}</span>
+              <span
+                className="flex items-center justify-center size-8 rounded-md border border-fd-border bg-fd-background"
+              >
+                <Icon size={16} style={{ color: pkg.color }} />
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-fd-foreground truncate">
+                  {pkg.name}
+                </div>
+                <div className="text-xs text-fd-muted-foreground truncate">
+                  {pkg.subtitle}
+                </div>
+              </div>
               {isActive && (
-                <Check className="ms-auto size-3.5 opacity-70" />
+                <Check size={14} className="text-fd-foreground shrink-0" />
               )}
             </button>
           );
