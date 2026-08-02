@@ -15,6 +15,7 @@
     "add-caption-tool-support",
     "add-react-hooks",
     "add-subpath-exports",
+    "add-timeline-toolbar-props-export",
     "clip-update-perf",
     "createclip-default-transform",
     "deprecate-provisional-manager",
