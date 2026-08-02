@@ -52,8 +52,8 @@ const PACKAGES = [
   },
   {
     id: 'cli',
-    name: 'Fumadocs CLI',
-    subtitle: 'CLI tools for docs & automation',
+    name: 'CLI',
+    subtitle: 'Command-line tools for Timelinx',
     icon: Terminal,
     color: 'var(--cli-color, var(--color-fd-foreground))',
     href: '/docs/cli',

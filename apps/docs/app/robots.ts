@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://docs.timelinx.dev/sitemap.xml',
+    sitemap: 'https://timelinx-docs.vercel.app/sitemap.xml',
   };
 }

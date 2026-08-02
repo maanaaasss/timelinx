@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     title: 'Timelinx',
     description:
       'Browser-native timeline editor engine and UI toolkit. Build video editors, NLEs, and motion graphics tools in the browser.',
-    url: 'https://docs.timelinx.dev',
+    url: 'https://timelinx-docs.vercel.app',
     siteName: 'Timelinx',
     locale: 'en_US',
     type: 'website',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description:
       'Browser-native timeline editor engine and UI toolkit.',
   },
-  metadataBase: new URL('https://docs.timelinx.dev'),
+  metadataBase: new URL('https://timelinx-docs.vercel.app'),
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
