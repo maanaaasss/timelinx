@@ -71,7 +71,7 @@ export function PackageSelector() {
         >
           <div className="size-9 shrink-0 empty:hidden md:size-5">
             <div
-              className="[&_svg]:size-full rounded-lg size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
+              className="[&_svg]:size-full rounded size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
               style={{ color: current.color }}
             >
               <current.icon />
@@ -89,7 +89,7 @@ export function PackageSelector() {
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-xl border border-fd-border bg-fd-card shadow-xl"
+        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-md border border-fd-border bg-fd-card shadow-xl"
       >
         {PACKAGES.map((pkg) => {
           const Icon = pkg.icon;
@@ -103,7 +103,7 @@ export function PackageSelector() {
                 setOpen(false);
               }}
               className={[
-                'flex items-center gap-2 rounded-lg p-2 w-full text-start transition-colors cursor-pointer',
+                'flex items-center gap-2 rounded p-2 w-full text-start transition-colors cursor-pointer',
                 isActive
                   ? 'bg-fd-primary/10'
                   : 'hover:bg-fd-accent',
@@ -111,7 +111,7 @@ export function PackageSelector() {
             >
               <div className="size-9 shrink-0 empty:hidden md:size-5">
                 <div
-                  className="[&_svg]:size-full rounded-lg size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
+                  className="[&_svg]:size-full rounded size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
                   style={{ color: pkg.color }}
                 >
                   <Icon />
