@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- [#53](https://github.com/maanaaasss/timelinx/pull/53) [`9a05046`](https://github.com/maanaaasss/timelinx/commit/9a05046aa5b5d63255711240ed2d5677759cbb0b) Thanks [@maanaaasss](https://github.com/maanaaasss)! - Export `TimelineToolbarProps` type from the public API barrel (`src/index.ts`). Previously the type existed in the component module but was not re-exported, preventing consumers from importing it for typing.
+
 ## 1.0.0-beta.2
 
 ### Minor Changes
