@@ -66,7 +66,7 @@ export function PackageSelector() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-2.5 w-full rounded-lg border border-fd-border bg-fd-card px-3 py-2.5 text-sm font-medium text-fd-card-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground cursor-pointer"
+          className="flex items-center gap-2.5 w-full rounded-md border border-fd-border bg-fd-card px-3 py-2.5 text-sm font-medium text-fd-card-foreground transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground cursor-pointer"
         >
           <Terminal size={16} className="text-fd-muted-foreground" />
           <span className="truncate">{current.name}</span>
@@ -80,7 +80,7 @@ export function PackageSelector() {
       <PopoverContent
         align="start"
         sideOffset={4}
-        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-xl border border-fd-border bg-fd-card shadow-xl"
+        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-md border border-fd-border bg-fd-card shadow-xl"
       >
         {PACKAGES.map((pkg) => {
           const Icon = pkg.icon;
@@ -94,14 +94,14 @@ export function PackageSelector() {
                 setOpen(false);
               }}
               className={[
-                'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-start transition-colors cursor-pointer',
+                'flex items-center gap-3 w-full rounded px-3 py-2.5 text-start transition-colors cursor-pointer',
                 isActive
                   ? 'bg-fd-primary/10'
                   : 'hover:bg-fd-accent',
               ].join(' ')}
             >
               <span
-                className="flex items-center justify-center size-8 rounded-md border border-fd-border bg-fd-background"
+                className="flex items-center justify-center size-8 rounded border border-fd-border bg-fd-background"
               >
                 <Icon size={16} style={{ color: pkg.color }} />
               </span>
