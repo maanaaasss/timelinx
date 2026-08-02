@@ -1,0 +1,41 @@
+---
+title: KeyframesPanel
+description: Panel for editing keyframe animation curves on the selected clip
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `KeyframesPanel` provides a keyframe editor for animating clip properties over time. It displays a curve editor for the selected clip's keyframes.
+
+## Live Example
+
+import { KeyframesPanelExample } from '@/components/examples/keyframes-panel-example.client';
+
+<KeyframesPanelExample />
+
+## Usage
+
+```tsx
+import { KeyframesPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <KeyframesPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="KeyframesPanelProps"
+/>
+
+## Context Requirement
+
+`KeyframesPanel` must be inside a `TimelineProvider`. It reads keyframe data from the selected clip in the engine context. When no clip is selected, it displays a prompt to select one.

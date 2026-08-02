@@ -1,0 +1,41 @@
+---
+title: TrackList
+description: Track label column with resizable track heights
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TrackList` renders the label column for each track, showing the track name and clip count. Tracks can be resized by dragging the separator between them.
+
+## Live Example
+
+import { TrackListExample } from '@/components/examples/track-list-example.client';
+
+<TrackListExample />
+
+## Usage
+
+```tsx
+import { TrackList, TimelineProvider } from '@timelinx/ui';
+
+<TimelineProvider engine={engine}>
+  <TrackList
+    trackHeights={{ v1: 80, a1: 68 }}
+    onTrackHeightChange={(id, h) => setHeights(prev => ({ ...prev, [id]: h }))}
+    clipCounts={new Map([['v1', 3], ['a1', 1]])}
+  />
+</TimelineProvider>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TrackListProps"
+/>
+
+## Context Requirement
+
+`TrackList` must be inside a `TimelineProvider`. It reads the engine to enumerate tracks, resolve track types, and render the label column for each track in the timeline.

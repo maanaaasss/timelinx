@@ -1,0 +1,55 @@
+---
+title: ExportDialog
+description: Modal dialog for timeline export progress, download, and error states
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`ExportDialog` is a modal overlay that displays export progress, handles browser compatibility errors, shows a download link on completion, and allows cancellation during encoding.
+
+## Live Example
+
+import { ExportDialogExample } from '@/components/examples/export-dialog-example.client';
+
+<ExportDialogExample />
+
+## Usage
+
+```tsx
+import { ExportDialog } from '@timelinx/ui';
+import type { ExportState } from '@timelinx/ui';
+
+<ExportDialog
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  exportState={state}
+  onCancel={cancelExport}
+  onStartExport={startExport}
+  isSupported={true}
+/>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="ExportDialogProps"
+/>
+
+## ExportState
+
+```ts
+interface ExportState {
+  status: 'idle' | 'preparing' | 'encoding' | 'complete' | 'error';
+  progress: number;       // 0–1
+  error: string | null;
+  downloadUrl: string | null;
+  fileName: string;
+}
+```
+
+## Standalone
+
+`ExportDialog` is a standalone component — no context providers needed.

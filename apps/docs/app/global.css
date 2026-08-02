@@ -1,7 +1,14 @@
 /* Fumadocs base styles */
 @import 'fumadocs-ui/style.css';
 
-/* Timelinx design tokens and presets for visual consistency with @timelinx/ui components */
+/* Timelinx design tokens and structure */
 @import '@timelinx/ui/styles/tokens';
 @import '@timelinx/ui/styles/structure';
-@import '@timelinx/ui/styles/presets/dark-pro';
+
+/* Combined presets for runtime switching via data-preset attribute */
+@import '../styles/presets.css';
+
+/* Default preset (applied via data-preset="dark-pro" on <html>) */
+:root {
+  color-scheme: dark;
+}

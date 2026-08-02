@@ -3,6 +3,9 @@ title: TransportControls
 description: Play, pause, and seek controls
 ---
 
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
 The `TransportControls` component provides playback controls — play/pause toggle, frame stepping, and skip to start/end.
 
 ## Live Example
@@ -27,9 +30,11 @@ function App() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | `string` | — | Additional CSS class |
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TransportControlsProps"
+/>
 
 ## Context Requirement
 

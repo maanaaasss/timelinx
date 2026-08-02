@@ -1,5 +1,6 @@
 import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
+import { PresetSwitcher } from '@/components/preset-switcher';
 import type { ReactNode } from 'react';
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -8,6 +9,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       tree={source.pageTree}
       nav={{
         title: 'Timelinx',
+        children: <PresetSwitcher />,
       }}
     >
       {children}

@@ -1,0 +1,41 @@
+---
+title: TimelineToolbar
+description: Toolbar with editing tools, undo/redo, zoom controls, and position display
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TimelineToolbar` renders the timeline toolbar with tool selection buttons (selection, razor, trim, slip, slide, hand), undo/redo, zoom controls, snap toggle, and a timecode position display.
+
+## Live Example
+
+import { TimelineToolbarExample } from '@/components/examples/timeline-toolbar-example.client';
+
+<TimelineToolbarExample />
+
+## Usage
+
+```tsx
+import { TimelineToolbar, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineToolbar />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelineToolbarProps"
+/>
+
+## Context Requirement
+
+`TimelineToolbar` must be inside a `TimelineProvider`. It reads the active tool, playing state, history, playhead frame, timeline metadata (fps, duration), and zoom level (ppf) from the engine context.

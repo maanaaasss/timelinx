@@ -9,6 +9,7 @@ export { TimelineEditor } from './components/timeline-editor';
 export type { TimelineEditorProps } from './components/timeline-editor';
 
 export { TimelineToolbar } from './components/timeline-toolbar';
+export type { TimelineToolbarProps } from './components/timeline-toolbar';
 
 export { TimelineRuler } from './components/timeline-ruler';
 export type { TimelineRulerProps } from './components/timeline-ruler';

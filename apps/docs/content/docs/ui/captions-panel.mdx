@@ -1,0 +1,60 @@
+---
+title: CaptionsPanel
+description: Panel for managing captions and subtitles
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+> **Deprecated:** Use `TextPanel` instead.
+
+The `CaptionsPanel` was the original interface for adding and editing captions and subtitles on the timeline. It has been superseded by `TextPanel`, which provides a more comprehensive text editing experience.
+
+## Live Example
+
+import { CaptionsPanelExample } from '@/components/examples/captions-panel-example.client';
+
+<CaptionsPanelExample />
+
+## Usage
+
+```tsx
+// Deprecated — use TextPanel instead
+import { CaptionsPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <CaptionsPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="CaptionsPanelProps"
+/>
+
+## Context Requirement
+
+`CaptionsPanel` must be inside a `TimelineProvider`. It reads caption track data and the selected clip from the engine context.
+
+## Migration
+
+Replace `CaptionsPanel` with `TextPanel`:
+
+```tsx
+import { TextPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TextPanel />
+    </TimelineProvider>
+  );
+}
+```

@@ -1,0 +1,40 @@
+---
+title: DropZone
+description: Drop target indicator for clip placement
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`DropZone` renders a visual drop target at a specific frame position. Shows a timecode label and highlights where a clip will be inserted on drop.
+
+## Live Example
+
+import { DropZoneExample } from '@/components/examples/drop-zone-example.client';
+
+<DropZoneExample />
+
+## Usage
+
+```tsx
+import { DropZone } from '@timelinx/ui';
+
+<DropZone
+  frame={450}
+  ppf={4}
+  totalHeight={200}
+  fps={30}
+/>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="DropZoneProps"
+/>
+
+## Standalone Component
+
+`DropZone` is a pure presentational component. It positions itself absolutely based on the frame and ppf values. Wrap it in a `position: relative` container so the drop target aligns correctly within your timeline layout.

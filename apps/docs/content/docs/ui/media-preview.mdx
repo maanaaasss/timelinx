@@ -1,0 +1,43 @@
+---
+title: MediaPreview
+description: Preview panel for viewing imported media files
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `MediaPreview` displays a preview of the currently selected or hovered media asset. It renders video, audio waveforms, or image thumbnails from the asset registry.
+
+## Live Example
+
+import { MediaPreviewExample } from '@/components/examples/media-preview-example.client';
+
+<MediaPreviewExample />
+
+## Usage
+
+```tsx
+import { MediaPreview, TimelineProvider, MediaAssetsProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <MediaAssetsProvider>
+        <MediaPreview />
+      </MediaAssetsProvider>
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="MediaPreviewProps"
+/>
+
+## Context Requirement
+
+`MediaPreview` must be inside both a `TimelineProvider` and a `MediaAssetsProvider`. The timeline provider supplies asset metadata; the media assets provider supplies the file and blob URL registry for rendering previews.

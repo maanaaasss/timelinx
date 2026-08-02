@@ -1,0 +1,41 @@
+---
+title: TransitionsPanel
+description: Panel for adding and configuring transitions between clips
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `TransitionsPanel` displays available transitions (cross dissolves, wipes, etc.) and allows applying them between adjacent clips on the timeline.
+
+## Live Example
+
+import { TransitionsPanelExample } from '@/components/examples/transitions-panel-example.client';
+
+<TransitionsPanelExample />
+
+## Usage
+
+```tsx
+import { TransitionsPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TransitionsPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TransitionsPanelProps"
+/>
+
+## Context Requirement
+
+`TransitionsPanel` must be inside a `TimelineProvider`. It reads clip adjacency data from the engine context to determine where transitions can be applied.

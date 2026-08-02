@@ -3,6 +3,9 @@ title: TimelineClip
 description: Individual clip rendering component
 ---
 
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
 `TimelineClip` is a presentational component that renders a single clip on the timeline. It handles layout (position, width from `timelineStart`/`timelineEnd`), displays the clip name, and supports selection state.
 
 ## Live Example
@@ -39,20 +42,11 @@ const clip = createClip({
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `clip` | `Clip` | **required** | The clip data object |
-| `trackId` | `string` | **required** | The track this clip belongs to |
-| `isAudio` | `boolean` | **required** | Whether this is an audio clip |
-| `ppf` | `number` | **required** | Pixels per frame (zoom level) |
-| `height` | `number` | **required** | Height of the clip row in pixels |
-| `isSelected` | `boolean` | **required** | Whether the clip is selected |
-| `isProvisional` | `boolean` | `false` | Ghost/preview during drag |
-| `trackType` | `string` | — | Track type for icon (`'video'` \| `'audio'` \| `'subtitle'`) |
-| `fps` | `number` | `30` | Frames per second |
-| `thumbnails` | `Map<string, string>` | — | Asset ID to thumbnail URL map |
-| `className` | `string` | — | Additional CSS class |
-| `style` | `React.CSSProperties` | — | Inline styles |
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelineClipProps"
+/>
 
 ## Standalone Component
 

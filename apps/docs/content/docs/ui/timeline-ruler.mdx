@@ -1,0 +1,43 @@
+---
+title: TimelineRuler
+description: Time ruler displaying frame/time markings along the top of the timeline
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`TimelineRuler` renders a time ruler with major and minor tick marks, showing frame numbers or timecode labels depending on the current zoom level.
+
+## Live Example
+
+import { TimelineRulerExample } from '@/components/examples/timeline-ruler-example.client';
+
+<TimelineRulerExample />
+
+## Usage
+
+```tsx
+import { TimelineRuler, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{ overflowX: 'auto', height: 48 }}>
+        <TimelineRuler totalWidth={2400} />
+      </div>
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelineRulerProps"
+/>
+
+## Context Requirement
+
+`TimelineRuler` must be inside a `TimelineProvider`. It reads `ppf` (pixels per frame), scroll position, viewport width, and timeline metadata from the engine context to render the correct tick marks and labels.

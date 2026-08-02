@@ -1,0 +1,43 @@
+---
+title: AssetBin
+description: Media asset bin for browsing and dropping imported assets onto the timeline
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `AssetBin` displays imported media assets and supports drag-and-drop onto the timeline. It shows thumbnails, file names, and media type icons for each registered asset.
+
+## Live Example
+
+import { AssetBinExample } from '@/components/examples/asset-bin-example.client';
+
+<AssetBinExample />
+
+## Usage
+
+```tsx
+import { AssetBin, TimelineProvider, MediaAssetsProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <MediaAssetsProvider>
+        <AssetBin />
+      </MediaAssetsProvider>
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="AssetBinProps"
+/>
+
+## Context Requirement
+
+`AssetBin` must be inside both a `TimelineProvider` and a `MediaAssetsProvider`. The timeline provider supplies track and clip state; the media assets provider supplies the file and thumbnail registry for imported assets.

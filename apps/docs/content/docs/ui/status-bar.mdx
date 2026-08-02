@@ -1,0 +1,41 @@
+---
+title: StatusBar
+description: Bottom status bar showing timeline info and playback state
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `StatusBar` displays the current playhead position, frame rate, timeline duration, and playback state in a compact bar at the bottom of the editor.
+
+## Live Example
+
+import { StatusBarExample } from '@/components/examples/status-bar-example.client';
+
+<StatusBarExample />
+
+## Usage
+
+```tsx
+import { StatusBar, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <StatusBar />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="StatusBarProps"
+/>
+
+## Context Requirement
+
+`StatusBar` must be inside a `TimelineProvider`. It reads the current frame, playback status, and timeline metadata from the engine context.

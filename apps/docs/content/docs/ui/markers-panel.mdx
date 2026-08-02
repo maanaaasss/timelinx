@@ -1,0 +1,41 @@
+---
+title: MarkersPanel
+description: Panel for adding and managing timeline markers
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+The `MarkersPanel` allows adding, editing, and removing markers on the timeline. Markers are useful for annotating key moments during editing.
+
+## Live Example
+
+import { MarkersPanelExample } from '@/components/examples/markers-panel-example.client';
+
+<MarkersPanelExample />
+
+## Usage
+
+```tsx
+import { MarkersPanel, TimelineProvider } from '@timelinx/ui';
+
+function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <MarkersPanel />
+    </TimelineProvider>
+  );
+}
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="MarkersPanelProps"
+/>
+
+## Context Requirement
+
+`MarkersPanel` must be inside a `TimelineProvider`. It reads marker data and the current playhead position from the engine context.

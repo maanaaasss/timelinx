@@ -3,6 +3,9 @@ title: TimelineEditor
 description: The full timeline editor component
 ---
 
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
 The `TimelineEditor` is the primary component — a complete timeline editing surface with toolbar, ruler, tracks, transport controls, sidebar, and media browser.
 
 ## Live Example
@@ -36,19 +39,11 @@ function App() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `engine` | `TimelineEngine` | **required** | The timeline engine instance |
-| `initialPpf` | `number` | `4` | Initial pixels per frame (zoom level) |
-| `showToolbar` | `boolean` | `true` | Show the toolbar |
-| `showSidebar` | `boolean` | `true` | Show the sidebar |
-| `showTopNav` | `boolean` | `true` | Show the top navigation |
-| `showTransportControls` | `boolean` | `true` | Show transport controls |
-| `showMediaBrowser` | `boolean` | `true` | Show the media browser |
-| `projectName` | `string` | — | Project name displayed in the UI |
-| `onExport` | `() => void` | — | Export callback |
-| `className` | `string` | — | Additional CSS class |
-| `style` | `React.CSSProperties` | — | Inline styles |
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="TimelineEditorProps"
+/>
 
 ## Self-Wrapping Provider
 

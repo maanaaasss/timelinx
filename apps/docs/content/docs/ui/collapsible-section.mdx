@@ -1,0 +1,41 @@
+---
+title: CollapsibleSection
+description: Accordion-style section that expands and collapses to show or hide content
+---
+
+import { AutoTypeTable } from 'fumadocs-typescript/ui';
+import { generator } from '@/lib/generator';
+
+`CollapsibleSection` renders a clickable header with a chevron that toggles visibility of its children. Useful for grouping inspector properties or settings into collapsible groups.
+
+## Live Example
+
+import { CollapsibleSectionExample } from '@/components/examples/collapsible-section-example.client';
+
+<CollapsibleSectionExample />
+
+## Usage
+
+```tsx
+import { CollapsibleSection } from '@timelinx/ui';
+
+<CollapsibleSection title="Transform" defaultOpen={true}>
+  <PositionControls />
+</CollapsibleSection>
+
+<CollapsibleSection title="Opacity" defaultOpen={false}>
+  <OpacityControls />
+</CollapsibleSection>
+```
+
+## Props
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/ui/dist/index.d.ts"
+  type="CollapsibleSectionProps"
+/>
+
+## Standalone
+
+`CollapsibleSection` is a standalone component — no context providers needed.
