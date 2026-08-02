@@ -1,22 +1,53 @@
 ---
 title: Quick Start
-description: Build your first timeline in minutes
+description: Getting started with Timelinx
 ---
 
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-## Introduction
+## Getting Started with Timelinx
 
-Get up and running with Timelinx in minutes. This guide walks you through installing the packages, creating a timeline, and rendering your first editor.
+Timelinx <span className="text-fd-muted-foreground text-sm">(time-linx)</span> is a **browser-native timeline editor engine**, designed to be predictable, testable, and composable. It consists of multiple layers:
+
+<Cards>
+  <Card title="@timelinx/core" href="/docs/core">
+    The headless engine. Pure-function dispatch model with invariant validation, transactions, and undo/redo.
+  </Card>
+  <Card title="@timelinx/react" href="/docs/react">
+    React bindings. Hooks, providers, and tool routing via `useSyncExternalStore`.
+  </Card>
+  <Card title="@timelinx/ui" href="/docs/ui">
+    Drop-in components. Tracks, clips, panels, and a full timeline editor.
+  </Card>
+  <Card title="Fumadocs CLI" href="/docs/cli">
+    CLI tools for docs and automation. Scaffold projects and generate content.
+  </Card>
+</Cards>
+
+<Callout title="Want to learn more?">
+  Read our in-depth [What is Timelinx?](/docs/library) introduction.
+</Callout>
+
+## Terminology
+
+**Timeline:** A sequence of tracks containing clips, aligned to a timecode basis (frames or timecode).
+
+**Dispatch:** A pure function `(state, command) → result` that validates and applies operations to timeline state.
+
+**Invariant:** A rule that timeline state must satisfy. The dispatch engine checks 24 invariant types before applying any operation.
+
+**Transaction:** A batch of operations applied atomically. If any operation fails validation, the entire transaction is rejected.
+
+Some basic knowledge of React.js would be useful for further customizations.
 
 ## Prerequisites
 
 - Node.js >= 22
 - A React project (Next.js, Vite, or any React setup)
 
-## Automatic Installation
+## Installation
 
-Install all three packages:
+Install the packages you need:
 
 <CodeBlockTabs defaultValue="npm" groupId="package-manager">
   <CodeBlockTabsList>
@@ -51,9 +82,11 @@ Install all three packages:
   Only need the engine? Install just `@timelinx/core` for headless state management without React or UI.
 </Callout>
 
-## Create a Timeline
+## Create Your First Timeline
 
-```ts
+Create a file to set up your timeline:
+
+```ts title="lib/timeline.ts"
 import {
   createTimeline,
   createTimelineState,
@@ -73,11 +106,8 @@ const timeline = createTimeline({
 });
 
 const state = createTimelineState({ timeline });
-```
 
-## Add a Track and Clip
-
-```ts
+// Add a video track
 const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
 
 const result = dispatch(state, {
@@ -102,20 +132,56 @@ if (!result.accepted) {
   throw new Error(`${result.reason}: ${result.message}`);
 }
 
-const ready = result.nextState;
+export const initialState = result.nextState;
 ```
 
 ## Render the Editor
 
-```tsx
+Create a React component that renders the timeline editor:
+
+```tsx title="app/editor/page.tsx"
 'use client';
 
 import { TimelineEditor } from '@timelinx/ui';
+import { initialState } from '@/lib/timeline';
 
 export default function Editor() {
-  return <TimelineEditor initialState={ready} />;
+  return <TimelineEditor initialState={initialState} />;
 }
 ```
+
+## Run the App
+
+Start your development server:
+
+<CodeBlockTabs defaultValue="npm" groupId="package-manager">
+  <CodeBlockTabsList>
+    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
+  </CodeBlockTabsList>
+  <CodeBlockTab value="npm">
+    ```bash
+    npm run dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="pnpm">
+    ```bash
+    pnpm dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="yarn">
+    ```bash
+    yarn dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="bun">
+    ```bash
+    bun run dev
+    ```
+  </CodeBlockTab>
+</CodeBlockTabs>
 
 That's it. You have a working timeline editor with tracks, clips, zoom, drag, undo/redo, and keyboard shortcuts.
 
@@ -146,18 +212,45 @@ That's it. You have a working timeline editor with tracks, clips, zoom, drag, un
   <Accordion id="custom-components" title="Can I build custom UI components?">
     Yes. Use `@timelinx/react` hooks (`useTimeline`, `useDispatch`) to build custom components that integrate with the engine.
   </Accordion>
+  <Accordion id="state-update" title="How do I update the timeline after initial render?">
+    Use `useDispatch` hook to dispatch commands from your components:
+
+    ```tsx
+    import { useDispatch } from '@timelinx/react';
+
+    function AddTrackButton() {
+      const dispatch = useDispatch();
+      return (
+        <button onClick={() => dispatch({ type: 'ADD_TRACK', track })}>
+          Add Track
+        </button>
+      );
+    }
+    ```
+  </Accordion>
 </Accordions>
 
-## Next Steps
+## Learn More
 
 <Cards>
-  <Card title="Core Concepts" href="/docs/core">
+  <Card href="/docs/library" title="What is Timelinx?">
+    Philosophy, design principles, and what makes Timelinx different.
+  </Card>
+  <Card href="/docs/library/architecture" title="Architecture">
+    How the three packages fit together.
+  </Card>
+</Cards>
+
+## Writing Content
+
+For authoring docs, make sure to read:
+
+<Cards>
+  <Card href="/docs/core" title="Core Concepts">
     Dispatch model, invariants, transactions, undo/redo.
   </Card>
-  <Card title="React Hooks" href="/docs/react/hooks">
-    `useTimeline`, `useDispatch`, `useTool`.
+  <Card href="/docs/react" title="React Integration">
+    Hooks, providers, and tool routing.
   </Card>
-  <Card title="UI Components" href="/docs/ui">
-    Full component reference.
-  </Card>
+  <Card href="/docs/ui" title="UI Components" description="See all available components to enhance your docs" />
 </Cards>
