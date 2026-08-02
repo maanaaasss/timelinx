@@ -1,68 +1,138 @@
 ---
 title: Hooks
-description: React hooks for reading timeline state and dispatching operations
+description: React hooks for subscribing to timeline state, tools, playback, and history
 ---
 
-## Setup
+Hooks in `@timelinx/react` read from the engine snapshot with `useSyncExternalStore`. Prefer the narrowest hook that gives your component the data it needs.
 
-Wrap your app with `TimelineProvider` and use the hooks inside:
+## Context-Based Hooks
+
+Use these inside `TimelineProvider` from `@timelinx/react`.
 
 ```tsx
-import { TimelineProvider, useEngine } from '@timelinx/ui';
-import { TimelineEngine } from '@timelinx/react';
-import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+import { TimelineProvider, useClip, useEngine, useTrackIds } from '@timelinx/react';
 
-const engine = new TimelineEngine({
-  initialState: createTimelineState({
-    timeline: createTimeline({
-      id: 'tl-1',
-      name: 'My Edit',
-      fps: frameRate(30),
-      duration: toFrame(9000),
-    }),
-  }),
-});
+function TrackSummary() {
+  const engine = useEngine();
+  const trackIds = useTrackIds();
 
-function App() {
   return (
-    <TimelineProvider engine={engine}>
-      <TimelineView />
-    </TimelineProvider>
+    <button onClick={() => engine.undo()}>
+      Tracks: {trackIds.length}
+    </button>
   );
 }
 ```
 
-## Reading State
-
-### `useEngine()`
-
-Returns the engine instance. Use this to dispatch operations:
-
-```tsx
-const engine = useEngine();
-engine.dispatch({ /* transaction */ });
-```
-
-### `useEngine()`
-
-Returns the engine instance from the `@timelinx/ui` `TimelineProvider` context. Use this to dispatch operations or pass to engine-first hooks:
-
-```tsx
-const engine = useEngine();
-engine.dispatch({ /* transaction */ });
-```
-
-## Granular Re-renders
-
-Hooks use `useSyncExternalStore` to subscribe to specific slices of state. A component that reads `state.timeline.duration` will only re-render when the duration changes — not when clips or tracks change.
-
-## Hook Reference
-
 | Hook | Returns | Re-renders when |
 |------|---------|-----------------|
-| `useEngine()` | `TimelineEngine` | Never (stable reference) |
-| `useClip(clipId)` | `Clip \| null` | That clip's data changes |
-| `useSelectedClipIds(engine)` | `ReadonlySet<string>` | Selection changes |
-| `usePlayheadFrame(engine)` | `TimelineFrame` | Playhead moves |
-| `useIsPlaying(engine)` | `boolean` | Play/pause state changes |
-| `useTimelineWithEngine(engine)` | `Timeline` | Timeline metadata changes |
+| `useEngine()` | `TimelineEngine` | Never; the engine reference is stable |
+| `useTimeline()` | `Timeline` | Timeline metadata or structure changes |
+| `useTrackIds()` | `readonly string[]` | Track order or count changes |
+| `useTrack(id)` | `Track \| null` | That track changes |
+| `useClip(id)` | `Clip \| null` | That clip changes |
+| `useMarkers()` | `readonly Marker[]` | Timeline markers change |
+| `useActiveTool()` | `{ id, cursor }` | Active tool or cursor changes |
+| `useCanUndoRedo()` | `{ canUndo, canRedo }` | History availability changes |
+| `useCanUndo()` | `boolean` | Undo availability changes |
+| `useCanRedo()` | `boolean` | Redo availability changes |
+| `useProvisional()` | `ProvisionalState \| null` | Drag preview state changes |
+
+## Engine-First Hooks
+
+Engine-first hooks are useful when you pass an engine explicitly, compose hooks outside the default provider, or bridge multiple editor instances.
+
+```tsx
+import {
+  usePlayheadFrame,
+  useSelectedClipIds,
+  useTimelineWithEngine,
+} from '@timelinx/react';
+
+function ExternalInspector({ engine }: { engine: TimelineEngine }) {
+  const timeline = useTimelineWithEngine(engine);
+  const playhead = usePlayheadFrame(engine);
+  const selectedClipIds = useSelectedClipIds(engine);
+
+  return <pre>{JSON.stringify({ timeline: timeline.name, playhead, selectedClipIds: [...selectedClipIds] })}</pre>;
+}
+```
+
+Common engine-first hooks include:
+
+- `useTimelineWithEngine(engine)`
+- `useTrackIdsWithEngine(engine)`
+- `useTrackWithEngine(engine, trackId)`
+- `useClipWithEngine(engine, clipId)`
+- `useVisibleClips(engine, window)`
+- `useVirtualWindow(engine, options)`
+- `useSelectedClipIds(engine)`
+- `useSelectedCaptionIds(engine)`
+- `useClipEffects(engine, clipId)`
+- `useClipTransition(engine, clipId)`
+- `useTrackCaptions(engine, trackId)`
+- `useAllTransitions(engine)`
+- `useHistory(engine)`
+- `useChange(engine)`
+- `usePlaybackEngine(engine)`
+- `usePlayheadFrame(engine)`
+- `useIsPlaying(engine)`
+
+## Dispatching From Hooks
+
+Hooks read state; transactions still go through the engine.
+
+```tsx
+import { useEngine } from '@timelinx/react';
+import { toFrame } from '@timelinx/core';
+
+function MoveButton({ clipId }: { clipId: string }) {
+  const engine = useEngine();
+
+  return (
+    <button
+      onClick={() => {
+        engine.dispatch({
+          id: `move-${clipId}`,
+          label: 'Move clip',
+          timestamp: Date.now(),
+          operations: [
+            {
+              type: 'MOVE_CLIP',
+              clipId,
+              newTimelineStart: toFrame(300),
+            },
+          ],
+        });
+      }}
+    >
+      Move
+    </button>
+  );
+}
+```
+
+Handle rejected dispatches when the UI action can fail:
+
+```tsx
+const result = engine.dispatch(transaction);
+
+if (!result.accepted) {
+  setError(result.message);
+}
+```
+
+## Playback Hooks
+
+`usePlayheadFrame(engine)` and `useIsPlaying(engine)` subscribe to the React engine snapshot. `usePlayhead()` and `usePlayheadEvent()` are lower-level playback hooks for integrations that work directly with a playback controller or playback engine.
+
+Keep high-frequency subscriptions narrow. Playhead movement can update frequently, so subscribe only the playhead, ruler, transport, and preview components that actually need those values.
+
+## Hook Design Guidance
+
+- Use `useClip(id)` for individual clip UI instead of subscribing a whole track if possible.
+- Use `useTrackIds()` for ordering and mount/unmount decisions.
+- Use `useHistory(engine)` or `useCanUndoRedo()` for toolbar state.
+- Use `useProvisional()` for ghost clips and drag previews.
+- Use `useChange(engine)` when you need to react to coarse state changes without diffing the entire timeline.
+- Pass the engine explicitly when building multi-editor pages.

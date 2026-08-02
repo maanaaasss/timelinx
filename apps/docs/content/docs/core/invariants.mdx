@@ -1,46 +1,85 @@
 ---
 title: Invariants
-description: The 24 violation types and validation rules in @timelinx/core
+description: Whole-state validation rules that protect committed timeline state
 ---
 
-## What Invariants Check
+Invariants are whole-document checks that run after a transaction has produced a proposed state. They catch errors that may not be obvious while validating a single operation.
 
-After all operations in a transaction are applied, the resulting state is checked against a set of invariants. These catch:
+## Violation Categories
 
-- **Overlap** — two clips on the same track occupying the same time range
-- **Asset missing** — a clip references an asset not in the registry
-- **Clip beyond timeline** — a clip extends past the timeline duration
-- **Media bounds** — mediaIn/mediaOut exceed the asset's intrinsic duration
-- **Track type mismatch** — a video clip on an audio track or vice versa
-- **Duplicate IDs** — two tracks or clips with the same ID
+| Area | Examples |
+|------|----------|
+| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references. |
+| Track structure | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references. |
+| Clip time | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`. |
+| Editorial metadata | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`. |
+| Effects | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
 
-There are 24 total violation types. Each produces a specific `reason` code in the rejection result.
+## Why Invariants Exist
 
-## Rejection Handling
+Per-operation validation answers “can this operation apply right now?” Invariants answer “is the resulting document still a valid Timelinx timeline?” Both are needed.
+
+Examples:
+
+- An `INSERT_CLIP` validator can reject a clip that overlaps existing clips on the target track.
+- The invariant checker can still detect a malformed imported project where two clips already overlap.
+- A `SET_TIMELINE_DURATION` validator can reject shrinking the timeline below an existing clip.
+- The invariant checker can still catch a state object loaded from storage with a clip beyond the timeline duration.
+
+## Important Checks
+
+The checker currently protects:
+
+- State shape and schema version.
+- Duplicate track, clip, marker, and asset IDs.
+- Track clip sort order.
+- No overlapping clips on the same track.
+- Clip `trackId` consistency with the containing track.
+- Finite, integer, non-negative frame values.
+- Nonzero clip duration and valid timeline bounds.
+- Referenced assets exist in `assetRegistry`.
+- Asset media type matches track type.
+- Media bounds stay inside the referenced asset duration.
+- Timeline duration, clip duration, media duration, and speed remain coherent.
+- Markers, captions, beat grids, in/out points, link groups, track groups, effects, keyframes, render stages, ranges, and opacity stay structurally valid.
+
+## Rejection Surface
+
+When invariant checks fail through `dispatch()`, the dispatcher returns:
 
 ```ts
-const result = dispatch(state, transaction);
-if (!result.accepted) {
-  switch (result.reason) {
-    case 'OVERLAP':
-      break;
-    case 'ASSET_MISSING':
-      break;
-    case 'INVARIANT_VIOLATED':
-      // result.message has details about which invariant was violated
-      // (e.g., CLIP_BEYOND_TIMELINE, MEDIA_BOUNDS_INVALID, etc.)
-      break;
-    // ... 28 total RejectionReason cases
-  }
+{
+  accepted: false,
+  reason: 'INVARIANT_VIOLATED',
+  message: '...collected violation messages...'
+}
+```
+
+Use `checkInvariants(state)` directly in tests, import pipelines, migrations, or debugging utilities when you need the individual `InvariantViolation[]` records.
+
+```ts
+import { checkInvariants } from '@timelinx/core';
+
+const violations = checkInvariants(importedState);
+
+if (violations.length > 0) {
+  throw new Error(
+    violations.map((violation) => violation.message).join('\n'),
+  );
 }
 ```
 
 ## What Invariants Do Not Check
 
-Invariants are structural validators, not semantic ones. They do not check:
+Invariants protect the timeline model. They do not verify everything a product might care about:
 
-- Whether a media file actually exists on disk
-- Whether a clip's content makes creative sense
-- Whether audio levels are within acceptable ranges
+- Whether a file path exists on disk.
+- Whether remote media is reachable.
+- Whether a clip looks or sounds creatively correct.
+- Whether audio loudness meets delivery standards.
+- Whether your app has permission to read a local file.
+- Whether an export preset is acceptable for a distributor.
 
-These are concerns of the application layer, not the state engine.
+Those checks belong in the application, import/export, media, or delivery layers. Keep them separate so the core remains deterministic and testable.
+
+In tests that create or transform raw state, run `checkInvariants()` after the mutation. In production code, prefer `dispatch()` so the invariant pass is automatic.

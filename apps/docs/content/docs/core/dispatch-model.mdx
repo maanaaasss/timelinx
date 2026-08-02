@@ -1,18 +1,33 @@
 ---
 title: Dispatch Model
-description: How dispatch() processes timeline operations
+description: How dispatch() processes operations with rolling validation and invariant checks
 ---
 
-## The 4-Step Algorithm
+`dispatch()` is the mutation gate for `TimelineState`. It receives the current state and a transaction, then returns either an accepted next state or a typed rejection. It does not mutate the input state, update history, notify subscribers, or render UI.
 
-Every call to `dispatch()` follows this sequence:
+## Pipeline
 
-1. **Validate** — check that every operation in the transaction is structurally valid
-2. **Apply** — apply all operations to produce a candidate next state
-3. **Check invariants** — verify the candidate state satisfies all invariants
-4. **Return** — return `{ accepted: true, nextState }` or `{ accepted: false, reason, message }`
+| Step | What happens |
+|------|--------------|
+| 1. Transaction arrives | A labeled batch of one or more `OperationPrimitive` objects is passed to `dispatch()`. |
+| 2. Validate rolling state | Each primitive is checked against the state produced by previous primitives in the same transaction. |
+| 3. Apply pure update | `applyOperation()` creates a proposed immutable state using structural sharing. |
+| 4. Check invariants | The whole proposed state is scanned for timeline-level violations. |
+| 5. Commit or reject | Accepted transactions bump `timeline.version` once; rejected transactions return the original state untouched. |
 
-This is a rolling validation model: if any step fails, the original state is unchanged.
+## The Actual Algorithm
+
+Every call follows this order:
+
+1. Start with `proposedState = state`.
+2. For each operation in the transaction, validate that operation against the current `proposedState`.
+3. If validation fails, return `{ accepted: false, reason, message }` immediately.
+4. If validation passes, apply that operation to produce the next rolling `proposedState`.
+5. After every operation has applied, run `checkInvariants(proposedState)`.
+6. If invariants fail, reject with `INVARIANT_VIOLATED`.
+7. If invariants pass, freeze the returned containers, bump `timeline.version` once, and return `{ accepted: true, nextState }`.
+
+Rolling validation is intentional. A split edit can delete a clip, then insert the two replacement clips in the same transaction. The inserts validate against the post-delete state, so they do not falsely overlap the original clip.
 
 ```ts
 import { dispatch } from '@timelinx/core';
@@ -20,31 +35,72 @@ import { dispatch } from '@timelinx/core';
 const result = dispatch(currentState, transaction);
 
 if (result.accepted) {
-  // result.nextState is the new immutable state
+  render(result.nextState);
 } else {
-  // result.reason is one of 28 rejection reasons
-  // result.message is a human-readable explanation
+  report(result.reason, result.message);
 }
 ```
 
-## Immutability
+## Commit Semantics
 
-`dispatch()` never mutates the input state. Each accepted transaction produces a new state object with an incremented version number. This makes the engine safe for React's concurrent mode and enables trivial undo/redo via reference equality checks.
+- Accepted transactions create a new `TimelineState`.
+- Rejected transactions leave the original state untouched.
+- `timeline.version` increments once per accepted transaction, not once per operation.
+- The dispatcher uses structural sharing where possible so selectors and React hooks can avoid unnecessary re-renders.
+- The returned asset registry is wrapped to reject runtime `set`, `delete`, and `clear` calls.
 
-## The Transaction Object
+## What Validation Catches Before Apply
 
-A transaction bundles one or more operations with metadata:
+Per-operation validators reject edits that are locally impossible:
+
+- Missing clips, tracks, markers, effects, keyframes, groups, or assets.
+- Locked tracks.
+- Overlaps on the target track.
+- Timeline and media bounds problems.
+- Track/media type mismatches.
+- Duplicate IDs.
+- Invalid speed, opacity, effect index, transition range, or marker range.
+
+## What Invariants Catch After Apply
+
+Whole-document invariants catch structural problems in the proposed result:
+
+| Area | Examples |
+|------|----------|
+| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references. |
+| Track structure | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references. |
+| Clip time | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`. |
+| Editorial metadata | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`. |
+| Effects | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
+
+The dispatcher reports invariant failures through `INVARIANT_VIOLATED` and includes the collected violation messages in `message`.
+
+## Transaction Shape
 
 ```ts
 const transaction = {
-  id: 'unique-id',          // unique identifier
-  label: 'Human-readable',  // shown in undo history
-  timestamp: Date.now(),    // when the transaction was created
-  operations: [              // one or more operations
+  id: 'tx-add-track-and-clip',
+  label: 'Add track and first clip',
+  timestamp: Date.now(),
+  operations: [
     { type: 'ADD_TRACK', track },
     { type: 'INSERT_CLIP', trackId: track.id, clip },
   ],
 };
 ```
 
-Operations within a transaction are applied in order. If any operation fails validation, the entire transaction is rejected (atomic).
+Operations are ordered. Later operations can depend on earlier operations, and the whole batch remains atomic.
+
+## Where History Fits
+
+History is deliberately outside `dispatch()`:
+
+```ts
+const result = dispatch(state, transaction);
+
+if (result.accepted) {
+  history = pushHistory(history, result.nextState);
+}
+```
+
+In React apps, `TimelineEngine` from `@timelinx/react` performs this coordination for you and publishes a new snapshot to subscribed hooks.

@@ -5,10 +5,7 @@
 @import '@timelinx/ui/styles/tokens';
 @import '@timelinx/ui/styles/structure';
 
-/* Combined presets for runtime switching via data-preset attribute */
-@import '../styles/presets.css';
-
-/* Default preset (applied via data-preset="dark-pro" on <html>) */
+/* Default dark theme */
 :root {
   color-scheme: dark;
 }
