@@ -1,29 +1,44 @@
 ---
 title: What is Timelinx?
-description: A browser-native timeline editor engine and UI toolkit
+description: Introducing Timelinx, a browser-native timeline engine that you can break.
 ---
 
-Timelinx is a browser-native timeline editor engine and UI toolkit. It provides everything you need to build video editors, NLEs, and motion graphics tools that run entirely in the browser — no backend, no plugins, no native code.
+The **Timelinx** framework refers to a combination of Core + React Bindings + UI Components. Timelinx is more of a mental framework — each layer can be a library on its own.
 
-## The Three Packages
+## Introduction
+
+Timelinx is a **browser-native timeline editor engine and UI toolkit**. It provides everything you need to build video editors, NLEs, and motion graphics tools that run entirely in the browser — no backend, no plugins, no native code.
+
+It consists of multiple layers:
 
 <Cards>
-  <Card title="@timelinx/core" href="/docs/core" />
-  <Card title="@timelinx/react" href="/docs/react" />
-  <Card title="@timelinx/ui" href="/docs/ui" />
+  <Card title="@timelinx/core" href="/docs/core">
+    A pure-function dispatch model for timeline state management. Zero dependencies, no side effects.
+  </Card>
+  <Card title="@timelinx/react" href="/docs/react">
+    React bindings with granular re-rendering via `useSyncExternalStore`. Hooks, providers, and tool routing.
+  </Card>
+  <Card title="@timelinx/ui" href="/docs/ui">
+    Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
+  </Card>
+  <Card title="Fumadocs CLI" href="/docs/cli">
+    CLI tools for docs and automation. Scaffold projects and generate content.
+  </Card>
 </Cards>
 
-### @timelinx/core
+<Callout title="Want to learn more?">
+  Read our in-depth [Why Timelinx?](/docs/library/why-timelinx) introduction.
+</Callout>
 
-A pure-function dispatch model for timeline state management. Zero runtime dependencies, no side effects. Every operation takes a state and returns a new state. Includes invariant validation, atomic transactions, and undo/redo out of the box.
+## Terminology
 
-### @timelinx/react
+**Timeline:** A sequence of tracks containing clips, aligned to a timecode basis (frames or timecode).
 
-React bindings that connect the core engine to React's rendering model. Uses `useSyncExternalStore` for granular re-renders — only components that read changed state re-render. Provides hooks, providers, and tool routing.
+**Dispatch:** A pure function `(state, command) → result` that validates and applies operations to timeline state.
 
-### @timelinx/ui
+**Invariant:** A rule that timeline state must satisfy. The dispatch engine checks 24 invariant types before applying any operation.
 
-Drop-in React components for building timeline editors. Panels, tracks, clips, rulers, playheads, toolbars, sidebars, and more. Each component is standalone or composable via `TimelineEditor`.
+**Transaction:** A batch of operations applied atomically. If any operation fails validation, the entire transaction is rejected.
 
 ## Quick Example
 
@@ -42,8 +57,16 @@ const result = dispatch(state, {
 });
 ```
 
-## Next Steps
+## Learn More
 
-- [Why Timelinx?](/docs/library/why-timelinx) — motivation and design philosophy
-- [Architecture](/docs/library/architecture) — how the packages fit together
-- [Quick Start](/docs/library/quick-start) — build your first timeline in 10 lines
+<Cards>
+  <Card href="/docs/library/why-timelinx" title="Why Timelinx?">
+    Philosophy, design principles, and what makes Timelinx different.
+  </Card>
+  <Card href="/docs/library/architecture" title="Architecture">
+    How the three packages fit together.
+  </Card>
+  <Card href="/docs/library/quick-start" title="Quick Start">
+    Build your first timeline in minutes.
+  </Card>
+</Cards>

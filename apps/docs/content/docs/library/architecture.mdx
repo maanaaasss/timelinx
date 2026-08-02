@@ -3,7 +3,7 @@ title: Architecture
 description: How the three packages fit together
 ---
 
-Timelinx is split into three packages with a clear dependency graph:
+Timelinx is split into three packages with a clear dependency graph. Each layer depends only on the layers below it. You can use any layer independently.
 
 ```
 @timelinx/ui
@@ -13,7 +13,19 @@ Timelinx is split into three packages with a clear dependency graph:
 @timelinx/core
 ```
 
-Each layer depends only on the layers below it. You can use any layer independently.
+## The Layers
+
+<Cards>
+  <Card title="@timelinx/core" href="/docs/core">
+    The headless engine. Pure-function dispatch model for timeline state management. Zero runtime dependencies, no side effects.
+  </Card>
+  <Card title="@timelinx/react" href="/docs/react">
+    React bindings. Bridges the core engine to React's rendering model via `useSyncExternalStore`.
+  </Card>
+  <Card title="@timelinx/ui" href="/docs/ui">
+    UI components. Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
+  </Card>
+</Cards>
 
 ## Layer 1: Core (Headless Engine)
 
@@ -43,13 +55,13 @@ Command → dispatch() → validation → new state
 - `useDispatch()` — dispatch commands from components
 - Tool routing — map keyboard/mouse events to dispatch commands
 
-**Key insight:** Uses `useSyncExternalStore` so only components that read changed state re-render. No prop drilling, no unnecessary renders.
+<Callout title="Key insight">
+  Uses `useSyncExternalStore` so only components that read changed state re-render. No prop drilling, no unnecessary renders.
+</Callout>
 
 ## Layer 3: UI (Components)
 
 `@timelinx/ui` provides ready-made React components that compose into a full timeline editor.
-
-**Component categories:**
 
 | Category | Examples |
 |---|---|
@@ -59,7 +71,9 @@ Command → dispatch() → validation → new state
 | Layout | `Sidebar`, `TopNav`, `TabbedPanel`, `CollapsibleSection` |
 | Dialogs | `ExportDialog`, `CommandPalette`, `KeyboardShortcutsOverlay` |
 
-**Standalone vs. composed:** Most components work standalone (wrap with providers) or composed via `TimelineEditor` which handles all provider wiring.
+<Callout title="Standalone vs. composed">
+  Most components work standalone (wrap with providers) or composed via `TimelineEditor` which handles all provider wiring.
+</Callout>
 
 ## State Flow
 
@@ -87,3 +101,12 @@ All state is plain objects — no class instances, no circular references. Seria
 const json = JSON.stringify(state);
 const restored = JSON.parse(json);
 ```
+
+<Cards>
+  <Card title="Quick Start" href="/docs/library/quick-start">
+    Build your first timeline in minutes.
+  </Card>
+  <Card title="Core Concepts" href="/docs/core">
+    Deep dive into the dispatch model.
+  </Card>
+</Cards>

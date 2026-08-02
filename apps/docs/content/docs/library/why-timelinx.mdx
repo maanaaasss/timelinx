@@ -3,23 +3,41 @@ title: Why Timelinx?
 description: Design philosophy and what makes Timelinx different
 ---
 
-## The Problem
+Timelinx was created to bring a more predictable, testable approach to building timeline editors in the browser. A **framework that doesn't hide its internals**.
 
-Building a timeline editor in the browser is hard. You need state management for tracks, clips, and timecode. You need undo/redo. You need to handle drag-and-drop, snapping, zooming, and playback. Most teams either build everything from scratch or depend on heavy frameworks that lock you into specific UI patterns.
-
-## The Timelinx Approach
+## Philosophy
 
 ### Pure-function dispatch
 
-Every timeline operation is a pure function: `(state, command) → newState`. No mutation, no side effects, no hidden state. This means:
+Every timeline operation is a pure function: `(state, command) → newState`. No mutation, no side effects, no hidden state.
 
-- **Predictable** — same input always produces the same output
-- **Testable** — assert state transitions without mocking
-- **Debuggable** — log every dispatch, replay history, inspect any state
+<Callout title="Why pure functions?">
+  Same input always produces the same output. This means your timeline state is predictable, testable, and debuggable without mocking or special tools.
+</Callout>
 
-### Built-in validation
+### Headless by design
 
-The dispatch engine validates every operation against 24 invariant types before applying it. Catches bugs at dispatch time, not in production. Overlapping clips, out-of-bounds timecodes, missing assets — all caught.
+The core engine knows nothing about React, the DOM, or rendering. You can use it with any UI framework — or no framework at all.
+
+- Use `@timelinx/core` alone for headless state management
+- Add `@timelinx/react` when you need React bindings
+- Add `@timelinx/ui` when you need pre-built components
+
+Each package works independently. Adopt incrementally.
+
+### Validation at dispatch time
+
+The dispatch engine validates every operation against **24 invariant types** before applying it. Catches bugs at dispatch time, not in production.
+
+Overlapping clips, out-of-bounds timecodes, missing assets — all caught before state is modified.
+
+```ts
+const result = dispatch(state, command);
+if (!result.accepted) {
+  // Rejected with reason + message — no partial state
+  console.error(`${result.reason}: ${result.message}`);
+}
+```
 
 ### Atomic transactions
 
@@ -42,16 +60,29 @@ const result = dispatch(state, {
 
 The history stack is built into the core. Push states onto the stack, undo, redo, or jump to any point. No extra libraries needed.
 
-### No backend required
+### Serializable state
 
-Everything runs in the browser. State is serializable — persist to localStorage, IndexedDB, or send to a server. But you don't have to.
+All state is plain objects — no class instances, no circular references. Serialize to JSON, persist to localStorage, IndexedDB, or send to a server.
 
-### Incremental adoption
+```ts
+const json = JSON.stringify(state);
+const restored = JSON.parse(json);
+```
 
-Use `@timelinx/core` alone for headless state management. Add `@timelinx/react` for React bindings. Add `@timelinx/ui` when you need pre-built components. Each package works independently.
+## When to use Timelinx
 
-## Who is Timelinx for?
+Timelinx is designed with flexibility in mind. It is not limited to certain usages.
 
-- Developers building video editors, NLEs, or motion graphics tools in the browser
-- Teams that need a reliable timeline engine without vendor lock-in
-- Anyone who wants undo/redo, validation, and transactions without building them from scratch
+- **Video editors** — build browser-native NLEs with tracks, clips, and playback
+- **Motion graphics tools** — timeline-based animation editors
+- **Audio editors** — multi-track audio timelines
+- **Any time-based UI** — animation sequencers, scheduling tools, etc.
+
+<Cards>
+  <Card title="Architecture" href="/docs/library/architecture">
+    See how the three packages fit together.
+  </Card>
+  <Card title="Quick Start" href="/docs/library/quick-start">
+    Build your first timeline in minutes.
+  </Card>
+</Cards>

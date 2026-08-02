@@ -1,13 +1,55 @@
 ---
 title: Quick Start
-description: Build your first timeline in 10 lines
+description: Build your first timeline in minutes
 ---
 
-## Install
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-```bash
-npm install @timelinx/core @timelinx/react @timelinx/ui
-```
+## Introduction
+
+Get up and running with Timelinx in minutes. This guide walks you through installing the packages, creating a timeline, and rendering your first editor.
+
+## Prerequisites
+
+- Node.js >= 22
+- A React project (Next.js, Vite, or any React setup)
+
+## Automatic Installation
+
+Install all three packages:
+
+<CodeBlockTabs defaultValue="npm" groupId="package-manager">
+  <CodeBlockTabsList>
+    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
+  </CodeBlockTabsList>
+  <CodeBlockTab value="npm">
+    ```bash
+    npm install @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="pnpm">
+    ```bash
+    pnpm add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="yarn">
+    ```bash
+    yarn add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="bun">
+    ```bash
+    bun add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+</CodeBlockTabs>
+
+<Callout title="Minimal install">
+  Only need the engine? Install just `@timelinx/core` for headless state management without React or UI.
+</Callout>
 
 ## Create a Timeline
 
@@ -77,8 +119,45 @@ export default function Editor() {
 
 That's it. You have a working timeline editor with tracks, clips, zoom, drag, undo/redo, and keyboard shortcuts.
 
+## FAQ
+
+<Accordions>
+  <Accordion id="minimal-install" title="Can I use only @timelinx/core?">
+    Yes. `@timelinx/core` is headless — no React, no DOM. Use it with any UI framework or vanilla JS.
+
+    ```bash
+    npm install @timelinx/core
+    ```
+  </Accordion>
+  <Accordion id="typescript" title="Does Timelinx support TypeScript?">
+    Yes. All packages are written in TypeScript with full type definitions. Operations, state, and components are fully typed.
+  </Accordion>
+  <Accordion id="state-persistence" title="How do I persist timeline state?">
+    State is serializable JSON. Persist to localStorage, IndexedDB, or send to a server:
+
+    ```ts
+    // Save
+    localStorage.setItem('timeline', JSON.stringify(state));
+
+    // Restore
+    const saved = JSON.parse(localStorage.getItem('timeline'));
+    ```
+  </Accordion>
+  <Accordion id="custom-components" title="Can I build custom UI components?">
+    Yes. Use `@timelinx/react` hooks (`useTimeline`, `useDispatch`) to build custom components that integrate with the engine.
+  </Accordion>
+</Accordions>
+
 ## Next Steps
 
-- [Core Concepts](/docs/core) — dispatch model, invariants, transactions
-- [React Hooks](/docs/react/hooks) — `useTimeline`, `useDispatch`, `useTool`
-- [UI Components](/docs/ui) — full component reference
+<Cards>
+  <Card title="Core Concepts" href="/docs/core">
+    Dispatch model, invariants, transactions, undo/redo.
+  </Card>
+  <Card title="React Hooks" href="/docs/react/hooks">
+    `useTimeline`, `useDispatch`, `useTool`.
+  </Card>
+  <Card title="UI Components" href="/docs/ui">
+    Full component reference.
+  </Card>
+</Cards>
