@@ -1,15 +1,93 @@
 ---
 title: React Integration
-description: Hooks, providers, and tool routing with @timelinx/react
+description: Engine snapshots, providers, hooks, tools, and rendering patterns with @timelinx/react
 ---
 
-The `@timelinx/react` package provides React bindings for the timeline engine. It uses `useSyncExternalStore` for granular re-rendering — components only re-render when the specific state they read changes.
+`@timelinx/react` adapts the headless core to React. It owns the React-oriented `TimelineEngine`, exposes provider and hook APIs, and uses `useSyncExternalStore` so components can subscribe to narrow slices of timeline state.
+
+## React Architecture
+
+| Layer | Responsibility |
+|-------|----------------|
+| Provider | `TimelineProvider` exposes one engine instance through context. |
+| Engine snapshot | `TimelineEngine` rebuilds a stable snapshot after dispatch, undo, redo, playback, and tool events. |
+| Selectors | Hooks subscribe through `useSyncExternalStore` and return the smallest useful slice. |
+| UI components | Timeline views and panels read hooks and emit transactions or tool events. |
+
+## What The React Engine Adds
+
+The core `dispatch()` function is pure. The React engine wraps it with runtime coordination:
+
+- A current `TimelineState`.
+- `HistoryStack` undo/redo with transaction compression.
+- Default editing tools and an optional custom tool list.
+- Snap index scheduling and lookup.
+- Track indexing and visible-window helpers.
+- Playback engine wiring when a media pipeline is provided.
+- Keyboard handling for transport and mark in/out workflows.
+- Provisional state for drag previews.
+- Stable snapshots for React subscriptions.
+
+## Choose A Provider
+
+| Provider | Use when |
+|----------|----------|
+| `TimelineProvider` from `@timelinx/react` | You are building your own components and want the headless React hooks such as `useTimeline()`, `useClip()`, and `useCanUndoRedo()`. |
+| `TimelineProvider` from `@timelinx/ui` | You are rendering Timelinx UI components. It includes the engine plus layout state such as pixels-per-frame, scroll position, label width, and toolbar/ruler dimensions. |
+
+## Minimal Headless React Setup
+
+```tsx
+import { TimelineEngine, TimelineProvider, useTimeline } from '@timelinx/react';
+import { createTimeline, createTimelineState, frameRate, toFrame } from '@timelinx/core';
+
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
+});
+
+function TimelineName() {
+  const timeline = useTimeline();
+  return <h1>{timeline.name}</h1>;
+}
+
+export function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineName />
+    </TimelineProvider>
+  );
+}
+```
+
+## With UI Components
+
+```tsx
+import { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
+
+const engine = new TimelineEngine({ initialState });
+
+export function App() {
+  return (
+    <TimelineProvider engine={engine} initialPpf={4}>
+      <TimelineEditor />
+    </TimelineProvider>
+  );
+}
+```
 
 ## Sections
 
-- [Hooks](/docs/react/hooks) — `useEngine`, `useTimelineContext`, and all available hooks
-- [Provider](/docs/react/provider) — setting up `TimelineProvider`
+- [Hooks](/docs/react/hooks) explains context-based hooks, engine-first hooks, playback hooks, and what each category should subscribe to.
+- [TimelineProvider](/docs/react/provider) explains the provider choice and how UI provider layout state fits around the engine.
 
 ## Full API Reference
 
-For exhaustive symbol-level detail, see the [API Reference](/docs/api).
+For symbol-level detail, see the [React API Reference](/docs/api/react).

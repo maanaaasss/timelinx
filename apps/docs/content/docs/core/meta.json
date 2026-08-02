@@ -2,6 +2,7 @@
   "title": "Core",
   "pages": [
     "index",
+    "architecture",
     "dispatch-model",
     "transactions",
     "invariants",

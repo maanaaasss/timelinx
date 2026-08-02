@@ -3,18 +3,56 @@ title: Introduction
 description: Browser-native timeline editor engine and UI components
 ---
 
-Timelinx is a browser-native timeline editor engine and UI toolkit. It provides:
+Timelinx is a browser-native timeline editing library for applications that need professional, frame-accurate editing primitives without tying the core model to a specific UI. It gives you a deterministic state engine, React subscriptions, and production editor components that can be used together or adopted one layer at a time.
 
-- **@timelinx/core** — A pure-function dispatch model for timeline state management with invariant validation, transactions, and undo/redo
-- **@timelinx/react** — React bindings with granular re-rendering via `useSyncExternalStore`
-- **@timelinx/ui** — Drop-in React components for building timeline editors
+## Packages
+
+| Package | Role | What it provides |
+|---------|------|------------------|
+| `@timelinx/core` | Deterministic editing kernel | Frame-branded state, operation primitives, validation, transactions, history, snapping, playback contracts, import/export serializers, and editing tools. |
+| `@timelinx/react` | React orchestration layer | A subscription-friendly engine that wires core dispatch, history, tools, provisional state, snap indexes, playback, keyboard handling, and selector hooks. |
+| `@timelinx/ui` | Composable editor surface | Timeline tracks, clips, ruler, transport, panels, media import helpers, export hooks, design tokens, presets, and production editor chrome. |
+| `@timelinx/media-web` | Browser media helpers | Web-facing media handling used by higher layers for real import and metadata workflows. |
+| `@timelinx/ai` | Editing suggestions | Helpers for transcript-driven suggestions, silence deletion, and scene detection that produce reviewable editing intent. |
+| `@timelinx/collab` | Collaboration primitives | Presence, comments, operation logs, branching history, local storage, CRDT sync, and conflict-resolution building blocks. |
+
+## What You Build With It
+
+- **Timeline editors:** Multi-track editors with clips, media assets, captions, markers, effects, transitions, keyframes, transport controls, snapping, selection tools, and undo/redo.
+- **Deterministic editing workflows:** Every mutation is expressed as a transaction. The dispatcher validates each primitive, applies accepted changes immutably, checks invariants, and returns a typed rejection when something is unsafe.
+- **Composable UI:** Use the full `TimelineEditor` when you want a ready surface, or assemble lower-level components such as `TimelineRuler`, `TimelineTrack`, `TimelineClip`, `InspectorPanel`, and `TransportControls`.
+- **Headless integrations:** Use `@timelinx/core` directly when building your own renderer, integrating with a non-React host, running tests, or generating edit decisions from another system.
+
+## Core Architecture At A Glance
+
+| Layer | Responsibility |
+|-------|----------------|
+| Types | Canonical data such as `TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, IDs, `TimelineFrame`, and `OperationPrimitive`. |
+| Engine | `dispatch()`, pure apply logic, `HistoryStack`, optional core `TimelineEngine`, playback controllers, indexes, and serializers. |
+| Validation | Per-operation validation before apply and whole-state invariant checks after a proposed state is built. |
+| Tools | Selection, razor, ripple, roll, slip, slide, zoom, transition, keyframe, and hand tools that produce transactions. |
+| Systems | Queries, asset registry helpers, validation helpers, frame resolution, and virtual-window helpers. |
+
+The central idea is intentionally strict: state lives in `TimelineState`, mutations are described as `Transaction` objects, and `dispatch()` is the stable mutation gate. UI tools and React components do not directly push into tracks or clips. They create editing intent, hand it to the engine, and render the accepted state.
 
 ## Quick Example
 
 ```ts
-import { createTimeline, createTrack, createClip, dispatch, toFrame, frameRate } from '@timelinx/core';
+import {
+  createTimeline,
+  createTimelineState,
+  createTrack,
+  dispatch,
+  frameRate,
+  toFrame,
+} from '@timelinx/core';
 
-const timeline = createTimeline({ id: 'tl-1', name: 'My Edit', fps: frameRate(30), duration: toFrame(10800) });
+const timeline = createTimeline({
+  id: 'tl-1',
+  name: 'My Edit',
+  fps: frameRate(30),
+  duration: toFrame(10800),
+});
 const state = createTimelineState({ timeline });
 
 const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
@@ -25,6 +63,25 @@ const result = dispatch(state, {
   operations: [{ type: 'ADD_TRACK', track }],
 });
 ```
+
+`result.accepted` tells you whether the transaction was committed. If it is accepted, `result.nextState.timeline.version` is incremented once for the transaction. If it is rejected, the original `state` is still the source of truth.
+
+## Data Model
+
+| Object | Stores |
+|--------|--------|
+| `TimelineState` | `schemaVersion`, `timeline`, and `assetRegistry`. |
+| `Timeline` | FPS, duration, tracks, markers, in/out points, groups, sequence settings, and version. |
+| `Track` | Track ID, type, clips, captions, lock/mute/solo state, height, blend mode, opacity, and group ID. |
+| `Clip` | Asset ID, track ID, timeline range, media bounds, speed, enable/reverse flags, effects, transform, audio properties, and transition. |
+| `AssetRegistry` | `ReadonlyMap<AssetId, Asset>` for media metadata and generator assets. |
+
+## How The Packages Fit Together
+
+- Start with `@timelinx/core` if you need the state model, validation rules, transaction API, serializers, or editing tools.
+- Add `@timelinx/react` if your editor is React-based and you want stable subscriptions, a React-oriented `TimelineEngine`, and selector hooks.
+- Add `@timelinx/ui` if you want ready editor chrome and panels that already understand the React engine context.
+- Add `@timelinx/ai` or `@timelinx/collab` only when your product needs suggestion workflows or collaborative state primitives.
 
 ## Explore the Docs
 

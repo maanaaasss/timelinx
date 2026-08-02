@@ -1,42 +1,48 @@
 ---
 title: Getting Started
-description: Install and start building with @timelinx/core
+description: Install Timelinx and commit your first frame-accurate edit
 ---
+
+This guide builds a minimal edit using `@timelinx/core`, then shows where the React and UI packages fit when you are ready to render an editor. The examples use frame values on purpose: Timelinx stores timeline time as branded integer frames, not milliseconds or floating seconds.
 
 ## Prerequisites
 
-- Node.js >= 22
+- Node.js `>= 22`
+- A package manager such as npm or pnpm
+- TypeScript recommended for branded IDs and `TimelineFrame` safety
 
 ## Install
 
 ```bash
 npm install @timelinx/core
-# or with React bindings:
-npm install @timelinx/core @timelinx/react
-# or with UI components:
+```
+
+For React apps:
+
+```bash
 npm install @timelinx/core @timelinx/react @timelinx/ui
 ```
 
-## Complete Walkthrough
+Use the thinnest layer that solves your problem: `@timelinx/core` for headless data and validation, `@timelinx/react` for subscription-safe React state, and `@timelinx/ui` for ready editor surfaces and panels.
 
-### Step 1: Create a Timeline
+## Build The Initial State
 
-Every timeline needs an asset registry, a timeline definition, and a state container:
+A usable timeline state has two important parts:
+
+- `timeline`: sequence settings, duration, tracks, markers, in/out points, groups, and version.
+- `assetRegistry`: a `ReadonlyMap` of media assets that clips are allowed to reference.
 
 ```ts
 import {
   createAsset,
-  createClip,
-  createTrack,
   createTimeline,
   createTimelineState,
-  dispatch,
-  toFrame,
   frameRate,
+  toFrame,
 } from '@timelinx/core';
 
 const asset = createAsset({
-  id: 'my-video',
+  id: 'asset-interview',
   name: 'Interview.mp4',
   mediaType: 'video',
   filePath: '/media/interview.mp4',
@@ -47,122 +53,159 @@ const asset = createAsset({
 
 const timeline = createTimeline({
   id: 'tl-1',
-  name: 'My Edit',
+  name: 'Interview cut',
   fps: frameRate(30),
   duration: toFrame(10800),
 });
 
-const state = createTimelineState({ timeline });
+let state = createTimelineState({
+  timeline,
+  assetRegistry: new Map([[asset.id, asset]]),
+});
 ```
 
-### Step 2: Add a Track
+The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+
+## Commit A Track
+
+State changes are transactions. A transaction has an ID, a label for history/UI, a timestamp, and one or more operation primitives.
 
 ```ts
-const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
+import { createTrack, dispatch } from '@timelinx/core';
 
-const result = dispatch(state, {
-  id: 'add-track',
-  label: 'Add video track',
-  timestamp: Date.now(),
-  operations: [{ type: 'ADD_TRACK', track }],
+const videoTrack = createTrack({
+  id: 'v1',
+  name: 'Video 1',
+  type: 'video',
 });
 
-if (!result.accepted) {
-  throw new Error(`Failed: ${result.reason} — ${result.message}`);
+const addTrack = dispatch(state, {
+  id: 'tx-add-video-track',
+  label: 'Add video track',
+  timestamp: Date.now(),
+  operations: [{ type: 'ADD_TRACK', track: videoTrack }],
+});
+
+if (!addTrack.accepted) {
+  throw new Error(`${addTrack.reason}: ${addTrack.message}`);
 }
 
-const withTrack = result.nextState;
+state = addTrack.nextState;
 ```
 
-### Step 3: Add a Clip
+## Insert A Clip
+
+Clips are viewports into assets. `timelineStart` and `timelineEnd` describe where the clip sits in the edit. `mediaIn` and `mediaOut` describe which portion of the source asset is played.
 
 ```ts
+import { createClip } from '@timelinx/core';
+
 const clip = createClip({
-  id: 'clip-1',
-  assetId: 'my-video',
-  trackId: 'v1',
+  id: 'clip-intro',
+  assetId: asset.id,
+  trackId: videoTrack.id,
   timelineStart: toFrame(0),
   timelineEnd: toFrame(300),
   mediaIn: toFrame(0),
   mediaOut: toFrame(300),
 });
 
-const result = dispatch(withTrack, {
-  id: 'add-clip',
-  label: 'Add first clip',
+const insertClip = dispatch(state, {
+  id: 'tx-insert-intro',
+  label: 'Insert intro clip',
   timestamp: Date.now(),
-  operations: [{ type: 'INSERT_CLIP', trackId: track.id, clip }],
+  operations: [{ type: 'INSERT_CLIP', trackId: videoTrack.id, clip }],
 });
 
-if (!result.accepted) {
-  throw new Error(`Failed: ${result.reason} — ${result.message}`);
+if (!insertClip.accepted) {
+  throw new Error(`${insertClip.reason}: ${insertClip.message}`);
 }
 
-const withClip = result.nextState;
+state = insertClip.nextState;
 ```
 
-### Step 4: Move the Clip
+After this transaction, the track contains one clip and `state.timeline.version` has advanced by one.
+
+## Move The Clip
+
+Moving a clip keeps its duration and media bounds intact. The validator checks track existence, locked state, overlap, negative frames, and timeline bounds before anything is committed.
 
 ```ts
-const result = dispatch(withClip, {
-  id: 'move-clip',
-  label: 'Move clip forward',
+const moveClip = dispatch(state, {
+  id: 'tx-move-intro',
+  label: 'Move intro later',
   timestamp: Date.now(),
-  operations: [{ type: 'MOVE_CLIP', clipId: clip.id, newTimelineStart: toFrame(150) }],
+  operations: [
+    {
+      type: 'MOVE_CLIP',
+      clipId: clip.id,
+      newTimelineStart: toFrame(150),
+    },
+  ],
 });
 
-if (!result.accepted) {
-  throw new Error(`Failed: ${result.reason} — ${result.message}`);
+if (!moveClip.accepted) {
+  throw new Error(`${moveClip.reason}: ${moveClip.message}`);
 }
 
-const moved = result.nextState;
+state = moveClip.nextState;
 ```
 
-### Step 5: Undo
+## Add Undo And Redo
+
+The pure history helpers keep snapshots outside the dispatcher. Push only accepted states.
 
 ```ts
-import { createHistory, pushHistory, undo, getCurrentState, canUndo } from '@timelinx/core';
+import {
+  canUndo,
+  createHistory,
+  getCurrentState,
+  pushHistory,
+  undo,
+} from '@timelinx/core';
 
 let history = createHistory(state);
-history = pushHistory(history, withTrack);
-history = pushHistory(history, withClip);
-history = pushHistory(history, moved);
+
+if (moveClip.accepted) {
+  history = pushHistory(history, moveClip.nextState);
+}
 
 if (canUndo(history)) {
   history = undo(history);
-  const restored = getCurrentState(history);
+  state = getCurrentState(history);
 }
 ```
 
-## Multi-Operation Transactions
+For a React editor, the `@timelinx/react` engine wraps this pattern with a `HistoryStack`, snapshots, subscriptions, tools, snapping, playback, keyboard routing, and dispatch.
 
-Batch multiple operations into a single atomic transaction:
+## Render With React And UI
 
-```ts
-const result = dispatch(state, {
-  id: 'razor-split',
-  label: 'Split clip at frame 150',
-  timestamp: Date.now(),
-  operations: [
-    { type: 'DELETE_CLIP', clipId: clip.id },
-    { type: 'INSERT_CLIP', trackId: track.id, clip: createClip({
-      id: 'clip-1-left', assetId: 'my-video', trackId: 'v1',
-      timelineStart: toFrame(0), timelineEnd: toFrame(150),
-      mediaIn: toFrame(0), mediaOut: toFrame(150),
-    })},
-    { type: 'INSERT_CLIP', trackId: track.id, clip: createClip({
-      id: 'clip-1-right', assetId: 'my-video', trackId: 'v1',
-      timelineStart: toFrame(150), timelineEnd: toFrame(300),
-      mediaIn: toFrame(150), mediaOut: toFrame(300),
-    })},
-  ],
-});
+```tsx
+import { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
+
+const engine = new TimelineEngine({ initialState: state });
+
+export function App() {
+  return (
+    <TimelineProvider engine={engine}>
+      <TimelineEditor />
+    </TimelineProvider>
+  );
+}
 ```
 
-If any operation fails validation, all three are rejected.
+Import the UI styles once in your application entrypoint:
 
-## Next Steps
+```css
+@import '@timelinx/ui/styles/tokens';
+@import '@timelinx/ui/styles/structure';
+@import '@timelinx/ui/styles/presets/dark-pro';
+```
 
-- [Core Concepts](/docs/core) — dispatch model, invariants, history, tools
-- [React Integration](/docs/react) — hooks, provider, tool routing
-- [UI Components](/docs/ui) — drop-in React components
+## What To Read Next
+
+- [Core architecture](/docs/core/architecture) explains the package boundaries and mutation path.
+- [Dispatch model](/docs/core/dispatch-model) explains accepted and rejected transactions.
+- [React integration](/docs/react) explains provider setup, hooks, tools, and snapshots.
+- [UI components](/docs/ui) maps the editor surface and reusable panels.

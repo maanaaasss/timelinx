@@ -3,14 +3,42 @@ title: Core Concepts
 description: The dispatch model, transactions, invariants, and undo/redo in @timelinx/core
 ---
 
-The `@timelinx/core` package is a pure-function timeline state engine. It has zero runtime dependencies and no side effects — every operation takes a state and returns a new state.
+The `@timelinx/core` package is the framework-agnostic editing kernel. It owns the data model, operation vocabulary, validation rules, undo/redo helpers, snapping primitives, tools, playback contracts, serializers, and query helpers. It does not import React, touch the DOM, or render UI.
+
+## Architecture Summary
+
+| Layer | Responsibility |
+|-------|----------------|
+| Types | `TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, IDs, `TimelineFrame`, `OperationPrimitive`, and other canonical data types. |
+| Engine | `dispatch()`, pure apply logic, `HistoryStack`, optional core `TimelineEngine`, playback helpers, timeline indexes, and serializers. |
+| Validation | Per-operation validation before apply and whole-state invariant checks after apply. |
+| Tools | Selection, razor, ripple, roll, slip, slide, zoom, transition, keyframe, and hand tools. |
+| Systems | Read-only queries, asset registry helpers, validation helpers, frame resolution, and virtual-window helpers. |
+
+## Mental Model
+
+- **State is the source of truth:** `TimelineState` contains the timeline plus the asset registry. Tracks, clips, captions, markers, groups, and sequence settings are read from this object.
+- **Transactions describe intent:** Mutations are represented as `Transaction` objects with ordered `OperationPrimitive` entries. This gives every edit a label, timestamp, and atomic boundary.
+- **Validation guards the model:** Per-operation validators catch local mistakes before apply. Invariants catch whole-state mistakes after the proposed state is built.
+- **History is outside dispatch:** `dispatch()` only accepts or rejects a transaction. Callers push accepted states into `HistoryStack` or the pure history helpers.
 
 ## Sections
 
-- [Dispatch Model](/docs/core/dispatch-model) — how `dispatch()` works, the 4-step algorithm, rolling validation
-- [Transactions](/docs/core/transactions) — multi-operation atomic transactions
-- [Invariants](/docs/core/invariants) — the 24 violation types and validation rules
-- [Undo/Redo](/docs/core/undo-redo) — HistoryStack, pure function API, round-trip guarantees
+- [Architecture](/docs/core/architecture) — package boundaries, data model, tools, indexes, playback, and serialization responsibilities.
+- [Dispatch Model](/docs/core/dispatch-model) — how `dispatch()` processes rolling validation, pure apply, invariant checks, and commit/reject results.
+- [Transactions](/docs/core/transactions) — multi-operation atomic edits, operation groups, and compound edit patterns.
+- [Invariants](/docs/core/invariants) — the violation categories that keep the timeline valid after every accepted edit.
+- [Undo/Redo](/docs/core/undo-redo) — `HistoryStack`, pure history helpers, compression, and integration expectations.
+
+## Public Surface
+
+The stable public API is exported from `@timelinx/core`. Typical application code should use:
+
+- Factories: `createTimeline`, `createTimelineState`, `createTrack`, `createClip`, `createAsset`
+- Time helpers: `toFrame`, `frameRate`, `FrameRates`, `framesToTimecode`, `secondsToFrames`, `framesToSeconds`
+- Mutation: `dispatch`, `Transaction`, `OperationPrimitive`, `DispatchResult`
+- Validation/history: `checkInvariants`, `HistoryStack`, `createHistory`, `pushHistory`, `undo`, `redo`
+- Editing systems: snap index, tool registry, default tools, playback contracts, frame resolver, virtual window helpers, import/export serializers
 
 ## Full API Reference
 

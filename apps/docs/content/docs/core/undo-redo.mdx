@@ -1,48 +1,114 @@
 ---
 title: Undo/Redo
-description: HistoryStack and undo/redo via pure functions
+description: Snapshot history, HistoryStack, compression, and integration patterns
 ---
 
-## HistoryStack
+Timelinx history is snapshot-based. A committed edit stores the accepted `TimelineState` plus the transaction that produced it. Undo and redo move a cursor through those accepted snapshots.
 
-The undo/redo system is a simple stack of state snapshots:
+## Recommended API: HistoryStack
+
+`HistoryStack` is the newer history implementation. It supports limits, transaction-aware compression, checkpoints, serialization, and restore.
 
 ```ts
 import {
-  createHistory,
-  pushHistory,
-  undo,
-  redo,
-  getCurrentState,
+  DEFAULT_COMPRESSION_POLICY,
+  HistoryStack,
+  dispatch,
+} from '@timelinx/core';
+
+const history = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY);
+history.push({
+  state: initialState,
+  transaction: {
+    id: 'initial',
+    label: 'Initial state',
+    timestamp: 0,
+    operations: [],
+  },
+});
+
+const result = dispatch(initialState, transaction);
+
+if (result.accepted) {
+  history.pushWithCompression(
+    { state: result.nextState, transaction },
+    transaction,
+  );
+}
+```
+
+Compression is useful for repeated one-operation edits such as dragging a clip, resizing an edge, or moving a keyframe. Instead of filling history with dozens of near-identical snapshots, compressible transactions inside the configured window can replace the last entry.
+
+## Undo And Redo With HistoryStack
+
+```ts
+const previous = history.undo();
+
+if (previous !== null) {
+  state = previous;
+}
+
+const next = history.redo();
+
+if (next !== null) {
+  state = next;
+}
+```
+
+`undo()` returns `null` when there is no earlier state. `redo()` returns `null` when there is no later state.
+
+## Pure Helper API
+
+The older pure helper API is still exported for compatibility and simple integrations:
+
+```ts
+import {
   canUndo,
-  canRedo,
+  createHistory,
+  getCurrentState,
+  pushHistory,
+  redo,
+  undo,
 } from '@timelinx/core';
 
 let history = createHistory(initialState);
 
-// After each accepted dispatch:
-history = pushHistory(history, result.nextState);
-
-// Undo
-if (canUndo(history)) {
-  history = undo(history);
-  const restored = getCurrentState(history);
+if (result.accepted) {
+  history = pushHistory(history, result.nextState);
 }
 
-// Redo
-if (canRedo(history)) {
-  history = redo(history);
-  const restored = getCurrentState(history);
+if (canUndo(history)) {
+  history = undo(history);
+  state = getCurrentState(history);
 }
 ```
 
-## Pure Function API
+Use this path when you specifically want immutable history containers in your own state manager. For new editor integrations, prefer `HistoryStack` or `TimelineEngine` from `@timelinx/react`.
 
-Every function in the history API is pure — it takes a history object and returns a new one. No mutation, no side effects. This makes undo/redo trivial to integrate with React state management.
+## React Engine Behavior
 
-## Round-Tip Guarantees
+The React `TimelineEngine` owns a `HistoryStack`. When `engine.dispatch(transaction)` accepts:
 
-- `undo(redo(pushHistory(h, s)))` produces the same state as `s`
-- `getCurrentState(createHistory(s))` returns `s`
-- The history stack tracks an internal cursor; undo moves it back, redo moves it forward
-- Pushing a new state after an undo discards the redo stack (standard behavior)
+1. Core `dispatch()` validates and returns `nextState`.
+2. The engine computes `diffStates(previous, nextState)`.
+3. The engine pushes the accepted entry with compression.
+4. Track and snap indexes are rebuilt or scheduled.
+5. Playback receives the new state.
+6. A stable snapshot is rebuilt and subscribers are notified.
+
+That means UI components generally call `engine.undo()` and `engine.redo()` rather than manually manipulating history.
+
+History stores accepted states only. Never push a rejected transaction into history. Rejected transactions are useful for UI feedback and logs, but they did not change the document.
+
+## Guarantees And Expectations
+
+- Undo moves from the present accepted state to the previous accepted state.
+- Redo moves forward only after an undo.
+- Pushing a new state after undo clears the redo path in the pure helper API.
+- History limits evict older entries when capacity is exceeded.
+- Checkpoints let advanced integrations name a specific history cursor and restore it later.
+- Serialization stores state snapshots using the timeline serializer plus the transaction metadata.
+
+## What History Does Not Do
+
+History does not merge conflicting remote edits, persist projects to your backend, or decide whether a user should be allowed to undo a particular business action. Those are application or collaboration-layer responsibilities.

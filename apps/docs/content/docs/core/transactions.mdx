@@ -1,50 +1,116 @@
 ---
 title: Transactions
-description: Multi-operation atomic transactions in @timelinx/core
+description: Atomic multi-operation edits in @timelinx/core
 ---
 
-## Transaction Lifecycle
+A transaction is a labeled, atomic batch of operation primitives. It is the smallest unit of commit, undo history, user-facing labeling, and validation.
 
-1. Build a transaction with 1+ operations
-2. Call `dispatch(state, transaction)`
-3. All operations are validated against the current state
-4. If all pass, operations are applied in order to produce `nextState`
-5. If any fail, the entire transaction is rejected — no partial changes
+```ts
+type Transaction = {
+  readonly id: string;
+  readonly label: string;
+  readonly timestamp: number;
+  readonly operations: readonly OperationPrimitive[];
+};
+```
 
 ## Key Properties
 
-- **Atomicity** — all operations succeed or all fail
-- **Ordering** — operations apply in array order; later operations see the effects of earlier ones
-- **Isolation** — the input state is never mutated; `nextState` is a fresh object
+| Property | Meaning |
+|----------|---------|
+| Atomic | If any primitive rejects, none of the transaction is committed. Callers keep rendering the previous state. |
+| Ordered | Operations apply in array order. Later operations validate against the rolling state from earlier operations. |
+| History-friendly | One accepted transaction should become one history entry. A split, ripple trim, or paste operation should undo as one user action. |
+| Serializable | Transactions are plain data. They can be logged, tested, compressed, replayed, or produced by tools and AI suggestion layers. |
 
-## Multi-Operation Example
+## Operation Groups
 
-Split a clip at a point using three operations:
+| Group | Operations |
+|-------|------------|
+| Clip | `MOVE_CLIP`, `RESIZE_CLIP`, `SLICE_CLIP`, `DELETE_CLIP`, `INSERT_CLIP`, `SET_MEDIA_BOUNDS`, `SET_CLIP_*`. |
+| Track | `ADD_TRACK`, `DELETE_TRACK`, `REORDER_TRACK`, `SET_TRACK_HEIGHT`, `SET_TRACK_NAME`, blend and opacity updates. |
+| Asset | `REGISTER_ASSET`, `UNREGISTER_ASSET`, `SET_ASSET_STATUS`. |
+| Timeline | `RENAME_TIMELINE`, `SET_TIMELINE_DURATION`, `SET_TIMELINE_START_TC`, `SET_SEQUENCE_SETTINGS`. |
+| Markers and ranges | Marker operations, in/out points, and beat grid operations. |
+| Creative metadata | Captions, effects, keyframes, transitions, link groups, track groups, transform, and audio properties. |
+
+These primitives are intentionally lower-level than UI actions. A UI action can map to one primitive or many.
+
+## Compound Edit Example
+
+Split a clip by replacing it with two clips in one transaction:
 
 ```ts
+const mediaSplit = toFrame(
+  original.mediaIn + (splitFrame - original.timelineStart),
+);
+
 const result = dispatch(state, {
-  id: 'split-clip',
-  label: 'Split clip at frame 150',
+  id: 'tx-split-clip',
+  label: 'Split interview clip',
   timestamp: Date.now(),
   operations: [
-    { type: 'DELETE_CLIP', clipId: leftHalf.id },
-    { type: 'INSERT_CLIP', trackId: track.id, clip: leftHalf },
-    { type: 'INSERT_CLIP', trackId: track.id, clip: rightHalf },
+    { type: 'DELETE_CLIP', clipId: original.id },
+    {
+      type: 'INSERT_CLIP',
+      trackId: track.id,
+      clip: createClip({
+        id: 'clip-left',
+        assetId: original.assetId,
+        trackId: track.id,
+        timelineStart: original.timelineStart,
+        timelineEnd: splitFrame,
+        mediaIn: original.mediaIn,
+        mediaOut: mediaSplit,
+      }),
+    },
+    {
+      type: 'INSERT_CLIP',
+      trackId: track.id,
+      clip: createClip({
+        id: 'clip-right',
+        assetId: original.assetId,
+        trackId: track.id,
+        timelineStart: splitFrame,
+        timelineEnd: original.timelineEnd,
+        mediaIn: mediaSplit,
+        mediaOut: original.mediaOut,
+      }),
+    },
   ],
 });
 ```
 
-The second and third operations depend on the first succeeding. Because they're in a single transaction, either all three apply or none do.
+If either replacement clip is invalid, the original clip remains in place.
 
-## Single-Operation Transactions
+## Ordering Patterns
 
-Simple operations are also transactions — just with one operation:
+Some edits require careful operation order:
+
+- Split: `DELETE_CLIP` before the replacement `INSERT_CLIP` operations.
+- Ripple delete: delete the target clip, then move following clips left.
+- Ripple insert: move following clips right, then insert the incoming clip.
+- Roll trim: resize the outgoing clip and incoming clip in the same transaction.
+- Slip: keep timeline bounds stable and update media bounds with `SET_MEDIA_BOUNDS`.
+
+Tools should preview with provisional state during gestures and return a transaction on commit. The dispatcher remains the only place where the document changes.
+
+## Rejection Handling
 
 ```ts
-dispatch(state, {
-  id: 'move',
-  label: 'Move clip',
-  timestamp: Date.now(),
-  operations: [{ type: 'MOVE_CLIP', clipId: clip.id, newTimelineStart: toFrame(100) }],
-});
+const result = dispatch(state, transaction);
+
+if (!result.accepted) {
+  switch (result.reason) {
+    case 'OVERLAP':
+    case 'LOCKED_TRACK':
+    case 'ASSET_MISSING':
+      showInlineEditError(result.message);
+      break;
+    default:
+      logUnexpectedRejection(result);
+  }
+}
 ```
+
+Prefer handling specific reasons close to the UI action. For example, an insert operation can show an overlap affordance, while an `ASSET_MISSING` rejection can tell the user to re-link media.

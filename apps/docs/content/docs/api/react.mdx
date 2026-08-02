@@ -10,7 +10,7 @@ import { generator } from '@/lib/generator';
 
 ### `TimelineEngine`
 
-The engine class that wraps `@timelinx/core` state management with React-compatible subscriptions via `useSyncExternalStore`.
+The React engine wraps `@timelinx/core` dispatch with subscriptions, history, tools, snapping, playback, keyboard handling, provisional state, and stable snapshots.
 
 ```ts
 import { TimelineEngine } from '@timelinx/react';
@@ -28,6 +28,28 @@ const engine = new TimelineEngine({
 });
 ```
 
+### `TimelineEngineOptions`
+
+Constructor options for initial state, history, custom tools, playback pipeline, dimensions, clocks, zoom callbacks, and error handling.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/react/dist/index.d.ts"
+  type="TimelineEngineOptions"
+/>
+
+### `EngineSnapshot`
+
+The stable snapshot read by hooks.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/react/dist/index.d.ts"
+  type="EngineSnapshot"
+/>
+
+## Providers
+
 ### `TimelineProviderProps`
 
 Props for the `TimelineProvider` component.
@@ -40,34 +62,72 @@ Props for the `TimelineProvider` component.
 
 ## Hooks
 
-### `useEngine()`
+Context hooks read the engine from `TimelineProvider`. Engine-first hooks accept a `TimelineEngine` argument, which is useful for multiple editor instances or external inspectors.
+
+### `useEngine`
 
 Returns the engine instance from context. Throws if used outside `TimelineProvider`.
 
-### `useClip(clipId)`
+### `useTimeline`
+
+Subscribes to timeline metadata and structure.
+
+### `useTrackIds`
+
+Subscribes to track ordering.
+
+### `useTrack`
+
+Subscribes to one track by ID.
+
+### `useClip`
 
 Subscribes to a specific clip's data. Returns `Clip | null`.
 
-### `useSelectedClipIds(engine)`
+### `useHistory`
+
+Subscribes to `{ canUndo, canRedo }`.
+
+### `useSelectedClipIds`
 
 Subscribes to the set of selected clip IDs. Returns `ReadonlySet<string>`.
 
-### `usePlayheadFrame(engine)`
+### `usePlayheadFrame`
 
 Subscribes to the current playhead frame. Returns `TimelineFrame`.
 
-### `useIsPlaying(engine)`
+### `useIsPlaying`
 
 Subscribes to the playback state. Returns `boolean`.
 
-### `useTimelineWithEngine(engine)`
+### `useTimelineWithEngine`
 
 Subscribes to the timeline metadata (duration, fps, etc.). Returns `Timeline`.
 
-### `useClipEffects(engine, clipId)`
+### `useClipEffects`
 
 Subscribes to a clip's effects array. Returns `readonly Effect[]`.
 
-### `useHistory(engine)`
+## Tool Router
 
-Subscribes to history state. Returns `{ canUndo: boolean; canRedo: boolean }`.
+### `createToolRouter`
+
+Creates pointer/key handlers that translate host UI events into engine tool calls.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/react/dist/index.d.ts"
+  type="createToolRouter"
+/>
+
+### `useToolRouter`
+
+React hook for using a tool router in custom timeline surfaces.
+
+### `useVirtualWindow`
+
+Subscribes to the visible timeline window for virtualized rendering.
+
+### `useVisibleClips`
+
+Subscribes to clips visible in the current frame range.
