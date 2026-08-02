@@ -2,10 +2,9 @@
   "title": "Library",
   "root": true,
   "pages": [
-    "index",
+    "quick-start",
     "---Introduction---",
-    "why-timelinx",
-    "architecture",
-    "quick-start"
+    "index",
+    "architecture"
   ]
 }

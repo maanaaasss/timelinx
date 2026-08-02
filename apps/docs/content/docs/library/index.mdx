@@ -1,6 +1,6 @@
 ---
 title: What is Timelinx?
-description: Introducing Timelinx, a browser-native timeline engine that you can break.
+description: A browser-native timeline engine — what it is, why it exists, and what makes it different.
 ---
 
 The **Timelinx** framework refers to a combination of Core + React Bindings + UI Components. Timelinx is more of a mental framework — each layer can be a library on its own.
@@ -21,14 +21,7 @@ It consists of multiple layers:
   <Card title="@timelinx/ui" href="/docs/ui">
     Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
   </Card>
-  <Card title="Fumadocs CLI" href="/docs/cli">
-    CLI tools for docs and automation. Scaffold projects and generate content.
-  </Card>
 </Cards>
-
-<Callout title="Want to learn more?">
-  Read our in-depth [Why Timelinx?](/docs/library/why-timelinx) introduction.
-</Callout>
 
 ## Terminology
 
@@ -39,6 +32,79 @@ It consists of multiple layers:
 **Invariant:** A rule that timeline state must satisfy. The dispatch engine checks 24 invariant types before applying any operation.
 
 **Transaction:** A batch of operations applied atomically. If any operation fails validation, the entire transaction is rejected.
+
+## Philosophy
+
+### Pure-function dispatch
+
+Every timeline operation is a pure function: `(state, command) → newState`. No mutation, no side effects, no hidden state.
+
+<Callout title="Why pure functions?">
+  Same input always produces the same output. This means your timeline state is predictable, testable, and debuggable without mocking or special tools.
+</Callout>
+
+### Headless by design
+
+The core engine knows nothing about React, the DOM, or rendering. You can use it with any UI framework — or no framework at all.
+
+- Use `@timelinx/core` alone for headless state management
+- Add `@timelinx/react` when you need React bindings
+- Add `@timelinx/ui` when you need pre-built components
+
+Each package works independently. Adopt incrementally.
+
+### Validation at dispatch time
+
+The dispatch engine validates every operation against **24 invariant types** before applying it. Catches bugs at dispatch time, not in production.
+
+Overlapping clips, out-of-bounds timecodes, missing assets — all caught before state is modified.
+
+```ts
+const result = dispatch(state, command);
+if (!result.accepted) {
+  // Rejected with reason + message — no partial state
+  console.error(`${result.reason}: ${result.message}`);
+}
+```
+
+### Atomic transactions
+
+Batch multiple operations into a single transaction. If any operation fails validation, the entire transaction is rejected. No partial state.
+
+```ts
+const result = dispatch(state, {
+  id: 'razor-split',
+  label: 'Split clip at frame 150',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'DELETE_CLIP', clipId: clip.id },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: leftHalf },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: rightHalf },
+  ],
+});
+```
+
+### Free undo/redo
+
+The history stack is built into the core. Push states onto the stack, undo, redo, or jump to any point. No extra libraries needed.
+
+### Serializable state
+
+All state is plain objects — no class instances, no circular references. Serialize to JSON, persist to localStorage, IndexedDB, or send to a server.
+
+```ts
+const json = JSON.stringify(state);
+const restored = JSON.parse(json);
+```
+
+## When to use Timelinx
+
+Timelinx is designed with flexibility in mind. It is not limited to certain usages.
+
+- **Video editors** — build browser-native NLEs with tracks, clips, and playback
+- **Motion graphics tools** — timeline-based animation editors
+- **Audio editors** — multi-track audio timelines
+- **Any time-based UI** — animation sequencers, scheduling tools, etc.
 
 ## Quick Example
 
@@ -60,13 +126,10 @@ const result = dispatch(state, {
 ## Learn More
 
 <Cards>
-  <Card href="/docs/library/why-timelinx" title="Why Timelinx?">
-    Philosophy, design principles, and what makes Timelinx different.
+  <Card href="/docs/library/quick-start" title="Quick Start">
+    Build your first timeline in minutes.
   </Card>
   <Card href="/docs/library/architecture" title="Architecture">
     How the three packages fit together.
-  </Card>
-  <Card href="/docs/library/quick-start" title="Quick Start">
-    Build your first timeline in minutes.
   </Card>
 </Cards>
