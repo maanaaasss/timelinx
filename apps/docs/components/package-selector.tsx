@@ -92,7 +92,6 @@ export function PackageSelector() {
           </div>
           <div className="flex-1 min-w-0">
             <span className="font-medium truncate">{current.name}</span>
-            <span className="text-fd-muted-foreground ml-1.5 truncate">{current.subtitle}</span>
           </div>
           <ChevronsUpDown className="shrink-0 size-3.5" />
         </button>
