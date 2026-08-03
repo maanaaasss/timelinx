@@ -8,6 +8,8 @@ import { generator } from '@/lib/generator';
 
 ## Timeline Creation
 
+These factories create the canonical data structures used by the dispatcher and invariants.
+
 ### `createTimeline`
 
 Creates a timeline definition.
@@ -58,6 +60,40 @@ Creates a clip that references an asset and defines a time range.
   type="createClip"
 />
 
+## Frame And Time Utilities
+
+Timelinx stores timeline positions as branded integer frames. Use `toFrame()` when a value is already a frame count, and conversion helpers when crossing from seconds or timecode display.
+
+### `toFrame`
+
+Brands a known frame count as `TimelineFrame`.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="toFrame"
+/>
+
+### `frameRate`
+
+Validates and brands a supported frame rate.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="frameRate"
+/>
+
+### `framesToTimecode`
+
+Formats frame counts for display.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="framesToTimecode"
+/>
+
 ## Dispatch
 
 ### `dispatch`
@@ -72,6 +108,18 @@ Processes a transaction against the current state. Returns a `DispatchResult`.
 
 ## History
 
+For new editor integrations, prefer `HistoryStack`. The pure helper functions remain useful for compatibility and simple immutable history containers.
+
+### `HistoryStack`
+
+Snapshot history with compression, checkpoints, and serialization support.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="HistoryStack"
+/>
+
 ### `createHistory`
 
 Creates a history state from an initial timeline state. Deprecated in favor of `HistoryStack`.
@@ -82,27 +130,27 @@ Creates a history state from an initial timeline state. Deprecated in favor of `
   type="createHistory"
 />
 
-## Utilities
-
-### `toFrame`
-
-Converts milliseconds to frame count at the given fps.
+## Tools And Snapping
 
 <AutoTypeTable
   generator={generator}
   path="node_modules/@timelinx/core/dist/index.d.ts"
-  type="toFrame"
+  type="createRegistry"
 />
-
-### `frameRate`
-
-Creates a valid frame rate value.
 
 <AutoTypeTable
   generator={generator}
   path="node_modules/@timelinx/core/dist/index.d.ts"
-  type="frameRate"
+  type="buildSnapIndex"
 />
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="nearest"
+/>
+
+## Effects And Transitions
 
 ### `createEffect`
 
@@ -112,4 +160,36 @@ Creates effect objects for the effects system.
   generator={generator}
   path="node_modules/@timelinx/core/dist/index.d.ts"
   type="createEffect"
+/>
+
+### `createTransition`
+
+Creates transition objects for clip transition metadata.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="createTransition"
+/>
+
+## Subtitles And Captions
+
+### `parseSRT`
+
+Parses SRT text into caption import data.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="parseSRT"
+/>
+
+### `subtitleImportToOps`
+
+Converts parsed subtitle data into timeline operations that can be reviewed and dispatched.
+
+<AutoTypeTable
+  generator={generator}
+  path="node_modules/@timelinx/core/dist/index.d.ts"
+  type="subtitleImportToOps"
 />

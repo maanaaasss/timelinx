@@ -3,6 +3,7 @@
   "root": true,
   "pages": [
     "index",
+    "architecture",
     "dispatch-model",
     "transactions",
     "invariants",

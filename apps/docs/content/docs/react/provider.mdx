@@ -1,68 +1,87 @@
 ---
 title: TimelineProvider
-description: Setting up the provider for @timelinx/react and @timelinx/ui
+description: Provider setup for headless React hooks and @timelinx/ui components
 ---
 
-## Basic Usage
+Timelinx has two provider exports with the same component name. They serve related but different layers.
+
+## Provider Choice
+
+| Import | Use When | Provides |
+|--------|----------|----------|
+| `TimelineProvider` from `@timelinx/react` | You are building custom React components and using only React hooks. | The `TimelineEngine` instance through React context. |
+| `TimelineProvider` from `@timelinx/ui` | You are rendering `@timelinx/ui` editor components. | The `TimelineEngine` plus layout state: pixels-per-frame, scroll position, viewport width, label width, ruler height, and toolbar height. |
+
+Most UI apps should use the UI provider. `TimelineEditor`, `TimelineTrack`, `TimelineRuler`, panels, and other UI components expect the UI context because they need zoom and layout information in addition to the engine.
+
+## Headless React Provider
 
 ```tsx
-import { TimelineProvider } from '@timelinx/ui';
-import { TimelineEngine } from '@timelinx/react';
-import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+import { TimelineEngine, TimelineProvider } from '@timelinx/react';
 
-const engine = new TimelineEngine({
-  initialState: createTimelineState({
-    timeline: createTimeline({
-      id: 'tl-1',
-      name: 'My Edit',
-      fps: frameRate(30),
-      duration: toFrame(9000),
-    }),
-  }),
-});
+const engine = new TimelineEngine({ initialState });
 
-function App() {
+export function App() {
   return (
     <TimelineProvider engine={engine}>
-      <YourComponents />
+      <CustomTimeline />
     </TimelineProvider>
   );
 }
 ```
 
-## What the Provider Does
+Use this provider for your own components with hooks from `@timelinx/react`.
 
-- Creates a React context for the timeline engine
-- Enables all `use*` hooks to access the engine
-- Manages subscription lifecycle (subscribe/unsubscribe on mount/unmount)
-- Ensures components re-render only when their subscribed state changes
-
-## With @timelinx/ui
-
-When using `@timelinx/ui` components, the provider is typically set up at the top level:
+## UI Provider
 
 ```tsx
-import { TimelineProvider, TimelineEditor } from '@timelinx/ui';
+import { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
 
-function App() {
+const engine = new TimelineEngine({
+  initialState,
+  getPixelsPerFrame: () => 4,
+});
+
+export function App() {
   return (
-    <TimelineProvider engine={engine}>
+    <TimelineProvider
+      engine={engine}
+      initialPpf={4}
+      labelWidth={176}
+      rulerHeight={28}
+      toolbarHeight={42}
+    >
       <TimelineEditor />
     </TimelineProvider>
   );
 }
 ```
 
-The `TimelineEditor` component and all other `@timelinx/ui` components consume the provider's context internally.
+The UI provider exposes:
+
+- `engine`
+- `ppf` and `setPpf`
+- `scrollLeft` and `setScrollLeft`
+- `vpWidth` and `setVpWidth`
+- `labelWidth`
+- `rulerHeight`
+- `toolbarHeight`
+
+These values keep the ruler, playhead, clips, track labels, and scroll container aligned.
 
 ## MediaAssetsProvider
 
-For media import functionality, wrap with `MediaAssetsProvider`:
+`@timelinx/ui` also exposes `MediaAssetsProvider` for media import and preview workflows.
 
 ```tsx
-import { MediaAssetsProvider, TimelineProvider } from '@timelinx/ui';
+import {
+  MediaAssetsProvider,
+  TimelineEditor,
+  TimelineProvider,
+} from '@timelinx/ui';
 
-function App() {
+export function App() {
   return (
     <MediaAssetsProvider>
       <TimelineProvider engine={engine}>
@@ -72,3 +91,18 @@ function App() {
   );
 }
 ```
+
+Use it around editor surfaces that need imported media metadata, preview records, or drop-zone flows.
+
+## Engine Lifetime
+
+Create the engine outside render or memoize it. Recreating it on every render resets history, tool state, selected IDs, indexes, and subscribers.
+
+```tsx
+const engine = useMemo(
+  () => new TimelineEngine({ initialState }),
+  [initialState],
+);
+```
+
+If `initialState` is loaded asynchronously, create the engine after loading completes and render a loading state until it exists.
