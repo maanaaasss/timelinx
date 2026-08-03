@@ -20,7 +20,7 @@ const PACKAGES = [
   {
     id: 'library',
     name: 'Library',
-    subtitle: 'Overview & getting started',
+    subtitle: 'The timelinx library',
     icon: BookOpen,
     color: '#fff383',
     href: '/docs/library',
@@ -28,7 +28,7 @@ const PACKAGES = [
   {
     id: 'ui',
     name: 'UI Components',
-    subtitle: 'Drop-in React components',
+    subtitle: 'The default theme',
     icon: Layout,
     color: '#60a5fa',
     href: '/docs/ui',
@@ -36,7 +36,7 @@ const PACKAGES = [
   {
     id: 'core',
     name: 'Core',
-    subtitle: 'Timeline engine',
+    subtitle: 'The headless library',
     icon: Box,
     color: '#c084fc',
     href: '/docs/core',
@@ -44,7 +44,7 @@ const PACKAGES = [
   {
     id: 'react',
     name: 'React',
-    subtitle: 'Hooks & bindings',
+    subtitle: 'The react bindings',
     icon: Pencil,
     color: '#aa99ff',
     href: '/docs/react',
@@ -94,6 +94,7 @@ export function PackageSelector() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{current.name}</p>
+            <p className="text-xs text-fd-muted-foreground truncate">{current.subtitle}</p>
           </div>
           <ChevronsUpDown className="shrink-0 ms-auto size-4 text-fd-muted-foreground" />
         </button>
@@ -132,6 +133,7 @@ export function PackageSelector() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{pkg.name}</p>
+                <p className="text-xs text-fd-muted-foreground truncate">{pkg.subtitle}</p>
               </div>
               {isActive && (
                 <Check className="shrink-0 ms-auto size-4" style={{ color: pkg.color }} />
