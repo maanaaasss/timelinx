@@ -15,30 +15,11 @@
   --radius-2xl: 0.4375rem;
   --fd-radius: 0.25rem;
   --fd-radius-lg: 0.3125rem;
-  --fd-primary: #fff383;
-  --fd-accent-foreground: #fff383;
+  --color-fd-primary: #fff383;
+  --color-fd-primary-foreground: #09090b;
 }
 
 /* Hide Fumadocs layout tabs (package selector replaces them) */
 [data-grid-area="main"] {
   display: none;
-}
-
-/* Accent color for active sidebar items — pointer bar and text */
-aside [data-active="true"] {
-  color: var(--fd-primary) !important;
-}
-aside [data-active="true"]::before {
-  background-color: var(--fd-primary) !important;
-}
-
-/* Accent color for active tabs and links */
-.border-fd-primary {
-  border-color: var(--fd-primary) !important;
-}
-.text-fd-primary {
-  color: var(--fd-primary) !important;
-}
-.bg-fd-primary\/10 {
-  background-color: color-mix(in srgb, var(--fd-primary) 10%, transparent) !important;
 }

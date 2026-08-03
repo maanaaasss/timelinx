@@ -79,8 +79,8 @@ export function PackageSelector() {
     const pkg = getPackageFromPathname(pathname);
     setSelected(pkg);
     const color = PACKAGES.find((p) => p.id === pkg)?.color ?? '#fff383';
-    document.documentElement.style.setProperty('--fd-primary', color);
-    document.documentElement.style.setProperty('--fd-accent-foreground', color);
+    document.documentElement.style.setProperty('--color-fd-primary', color);
+    document.documentElement.style.setProperty('--color-fd-primary-foreground', '#09090b');
   }, [pathname]);
 
   const current = PACKAGES.find((p) => p.id === selected)!;
