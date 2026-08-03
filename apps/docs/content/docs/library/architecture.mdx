@@ -1,16 +1,51 @@
 ---
 title: Architecture
-description: How the three packages fit together
+description: How the packages fit together — dependency graph, data flow, and internal module structure
 ---
 
-Timelinx is split into three packages with a clear dependency graph. Each layer depends only on the layers below it. You can use any layer independently.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-```
-@timelinx/ui
-    ↓
-@timelinx/react
-    ↓
-@timelinx/core
+Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it — you can use any layer independently.
+
+## Package Dependency Graph
+
+```mermaid
+graph TD
+    subgraph "Application Layer"
+        APP["Your App / Editor"]
+    end
+
+    subgraph "UI Layer"
+        UI["@timelinx/ui"]
+    end
+
+    subgraph "Binding Layer"
+        REACT["@timelinx/react"]
+    end
+
+    subgraph "Engine Layer"
+        CORE["@timelinx/core"]
+    end
+
+    subgraph "Platform Adapters"
+        MEDIA["@timelinx/media-web"]
+    end
+
+    APP --> UI
+    APP --> REACT
+    APP --> CORE
+    APP --> MEDIA
+    UI --> REACT
+    UI --> CORE
+    REACT --> CORE
+    MEDIA --> CORE
+
+    style CORE fill:#818cf8,stroke:#6366f1,color:#fff
+    style REACT fill:#f472b6,stroke:#ec4899,color:#fff
+    style UI fill:#60a5fa,stroke:#3b82f6,color:#fff
+    style MEDIA fill:#34d399,stroke:#10b981,color:#fff
+    style APP fill:#a78bfa,stroke:#8b5cf6,color:#fff
 ```
 
 ## The Layers
@@ -25,82 +60,329 @@ Timelinx is split into three packages with a clear dependency graph. Each layer 
   <Card title="@timelinx/ui" href="/docs/ui">
     UI components. Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
   </Card>
+  <Card title="@timelinx/media-web" href="/docs/library">
+    Web-native media adapters. WebCodecs decoding, WebAudio waveforms, thumbnail extraction, WebGL compositing, and export.
+  </Card>
 </Cards>
 
-## Layer 1: Core (Headless Engine)
+---
 
-`@timelinx/core` is a pure-function state machine. It knows nothing about React, the DOM, or rendering.
+## Core Internal Architecture
 
-**Responsibilities:**
-- Timeline state management (tracks, clips, timecode)
-- Dispatch model — `(state, command) → result`
-- Invariant validation (24 violation types)
-- Atomic transactions
-- History stack (undo/redo)
+`@timelinx/core` is the foundation — a deterministic, frame-based editing kernel with zero runtime dependencies.
 
-**Data flow:**
+```mermaid
+graph TD
+    subgraph "@timelinx/core"
+        direction TB
 
+        subgraph "State Model"
+            STATE["TimelineState"]
+            TL["Timeline"]
+            TRACKS["Tracks"]
+            CLIPS["Clips"]
+            ASSETS["Assets"]
+            MARKERS["Markers"]
+            STATE --> TL
+            STATE --> TRACKS
+            STATE --> CLIPS
+            STATE --> ASSETS
+            STATE --> MARKERS
+        end
+
+        subgraph "Dispatch Engine"
+            DISPATCH["dispatch()"]
+            VALIDATE["Invariant Checker"]
+            APPLY["apply()"]
+            DISPATCH --> VALIDATE
+            VALIDATE --> APPLY
+        end
+
+        subgraph "History"
+            HISTORY["HistoryStack"]
+            UNDO["undo()"]
+            REDO["redo()"]
+            COMPRESS["TransactionCompressor"]
+            HISTORY --> UNDO
+            HISTORY --> REDO
+            HISTORY --> COMPRESS
+        end
+
+        subgraph "Tool System"
+            REGISTRY["ToolRegistry"]
+            SELECT["SelectionTool"]
+            RAZOR["RazorTool"]
+            TRIM["RippleTrimTool"]
+            ROLL["RollTrimTool"]
+            SLIP["SlipTool"]
+            SLIDE["SlideTool"]
+            HAND["HandTool"]
+            REGISTRY --> SELECT
+            REGISTRY --> RAZOR
+            REGISTRY --> TRIM
+            REGISTRY --> ROLL
+            REGISTRY --> SLIP
+            REGISTRY --> SLIDE
+            REGISTRY --> HAND
+        end
+
+        subgraph "Spatial & Playback"
+            SNAP["SnapIndex / RBush"]
+            INTERVAL["IntervalTree"]
+            TRACK_IDX["TrackIndex"]
+            PLAYHEAD["PlayheadController"]
+            PLAYBACK["PlaybackEngine"]
+            KEYBOARD["KeyboardHandler"]
+            VWINDOW["VirtualWindow"]
+        end
+
+        subgraph "Serialization"
+            SERIAL["Serializer"]
+            MIGRATE["Migrator"]
+            OTIO_I["OTIO Import"]
+            OTIO_E["OTIO Export"]
+            FCPXML["FCPXML Export"]
+            EDL["EDL Export"]
+            AAF["AAF Export"]
+        end
+
+        APPLY --> STATE
+        APPLY --> HISTORY
+    end
+
+    style STATE fill:#818cf8,stroke:#6366f1,color:#fff
+    style DISPATCH fill:#fbbf24,stroke:#f59e0b,color:#000
+    style HISTORY fill:#a78bfa,stroke:#8b5cf6,color:#fff
+    style REGISTRY fill:#f472b6,stroke:#ec4899,color:#fff
 ```
-Command → dispatch() → validation → new state
-                                  → history push
-```
 
-## Layer 2: React (Bindings)
+**Key design decisions:**
+- **Pure functions** — `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects.
+- **Branded IDs** — `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse.
+- **Frame-based time** — All positions are integer frames, eliminating floating-point drift.
+- **24 invariant types** — Every mutation is validated before it's applied.
+
+---
+
+## React Binding Architecture
 
 `@timelinx/react` bridges the core engine to React's rendering model.
 
-**Responsibilities:**
-- `TimelineProvider` — context provider that owns the engine instance
-- `useTimeline()` — read timeline state with granular re-renders
-- `useDispatch()` — dispatch commands from components
-- Tool routing — map keyboard/mouse events to dispatch commands
+```mermaid
+graph LR
+    subgraph "@timelinx/react"
+        direction TB
+        ENGINE["TimelineEngine"]
+        PROVIDER["TimelineProvider"]
+        ENGINE --> PROVIDER
+
+        subgraph "Hooks"
+            H_TL["useTimeline()"]
+            H_TK["useTrackIds()"]
+            H_CL["useClip()"]
+            H_HI["useHistory()"]
+            H_TO["useActiveTool()"]
+            H_PH["usePlayheadFrame()"]
+            H_PL["useIsPlaying()"]
+            H_SE["useSelectedClipIds()"]
+            H_VW["useVisibleClips()"]
+        end
+
+        PROVIDER --> H_TL
+        PROVIDER --> H_TK
+        PROVIDER --> H_CL
+        PROVIDER --> H_HI
+        PROVIDER --> H_TO
+        PROVIDER --> H_PH
+        PROVIDER --> H_PL
+        PROVIDER --> H_SE
+        PROVIDER --> H_VW
+
+        ROUTER["ToolRouter"]
+    end
+
+    CORE_ENGINE["@timelinx/core"] --> ENGINE
+
+    style ENGINE fill:#f472b6,stroke:#ec4899,color:#fff
+    style PROVIDER fill:#f9a8d4,stroke:#f472b6,color:#000
+    style CORE_ENGINE fill:#818cf8,stroke:#6366f1,color:#fff
+```
 
 <Callout title="Key insight">
   Uses `useSyncExternalStore` so only components that read changed state re-render. No prop drilling, no unnecessary renders.
 </Callout>
 
-## Layer 3: UI (Components)
+---
 
-`@timelinx/ui` provides ready-made React components that compose into a full timeline editor.
+## UI Component Map
 
-| Category | Examples |
-|---|---|
-| Timeline | `TimelineEditor`, `TimelineClip`, `TimelineRuler`, `TimelineTrack` |
-| Controls | `ZoomControls`, `TransportControls`, `Toolbar` |
-| Panels | `InspectorPanel`, `EffectsPanel`, `AssetBin`, `MediaPreview` |
-| Layout | `Sidebar`, `TopNav`, `TabbedPanel`, `CollapsibleSection` |
-| Dialogs | `ExportDialog`, `CommandPalette`, `KeyboardShortcutsOverlay` |
+`@timelinx/ui` provides 29+ React components organized into five categories:
 
-<Callout title="Standalone vs. composed">
-  Most components work standalone (wrap with providers) or composed via `TimelineEditor` which handles all provider wiring.
-</Callout>
+```mermaid
+graph TD
+    subgraph "@timelinx/ui"
+        direction TB
 
-## State Flow
+        subgraph "Timeline Components"
+            TE["TimelineEditor"]
+            TR["TimelineRuler"]
+            TT["TimelineTrack"]
+            TC["TimelineClip"]
+            TP["TimelinePlayhead"]
+            SI["SnapIndicator"]
+            DZ["DropZone"]
+            TL["TrackList"]
+        end
 
+        subgraph "Controls"
+            TB["TimelineToolbar"]
+            ZC["ZoomControls"]
+            TC2["TransportControls"]
+        end
+
+        subgraph "Panels"
+            IP["InspectorPanel"]
+            EP["EffectsPanel"]
+            KP["KeyframesPanel"]
+            AB["AssetBin"]
+            MP["MediaPreview"]
+            CP["CaptionsPanel"]
+            TP2["TransitionsPanel"]
+            MK["MarkersPanel"]
+            TXT["TextPanel"]
+        end
+
+        subgraph "Layout"
+            SB["Sidebar"]
+            TN["TopNav"]
+            TAB["TabbedPanel"]
+            CS["CollapsibleSection"]
+            STB["StatusBar"]
+        end
+
+        subgraph "Dialogs"
+            EX["ExportDialog"]
+            CMD["CommandPalette"]
+            KS["KeyboardShortcutsOverlay"]
+        end
+    end
+
+    REACT_PKG["@timelinx/react"] --> TE
+    CORE_PKG["@timelinx/core"] --> TE
+
+    style TE fill:#60a5fa,stroke:#3b82f6,color:#fff
+    style REACT_PKG fill:#f472b6,stroke:#ec4899,color:#fff
+    style CORE_PKG fill:#818cf8,stroke:#6366f1,color:#fff
 ```
-User action (click, drag, keyboard)
-    ↓
-Tool handler (maps event to command)
-    ↓
-dispatch(state, command)
-    ↓
-Validation (24 invariant types)
-    ↓
-New state (or rejected with reason)
-    ↓
-React re-render (only affected components)
-    ↓
-UI update
+
+---
+
+## Media Pipeline
+
+`@timelinx/media-web` implements the pipeline contracts defined in `@timelinx/core` using browser-native APIs:
+
+```mermaid
+graph LR
+    subgraph "@timelinx/core"
+        direction TB
+        VC["VideoDecoder contract"]
+        AC["AudioDecoder contract"]
+        CC["Compositor contract"]
+        THC["ThumbnailProvider contract"]
+        FR["FrameResolver"]
+    end
+
+    subgraph "@timelinx/media-web"
+        direction TB
+        WCD["WebCodecsDecoder"]
+        WAW["WebAudioWaveform"]
+        THE["ThumbnailExtractor"]
+        WGL["WebGLCompositor"]
+        SE["SimpleExporter"]
+    end
+
+    subgraph "Browser APIs"
+        direction TB
+        WEBCODECS["WebCodecs API"]
+        WEBAUDIO["Web Audio API"]
+        WEBGL["WebGL / WebGL2"]
+        CANVAS["OffscreenCanvas"]
+        CAPTURE["captureStream()"]
+    end
+
+    VC -.->|"implements"| WCD
+    AC -.->|"implements"| WAW
+    CC -.->|"implements"| WGL
+    THC -.->|"implements"| THE
+
+    WCD --> WEBCODECS
+    WAW --> WEBAUDIO
+    WGL --> WEBGL
+    THE --> CANVAS
+    SE --> CAPTURE
+
+    style WCD fill:#34d399,stroke:#10b981,color:#000
+    style WAW fill:#34d399,stroke:#10b981,color:#000
+    style WGL fill:#34d399,stroke:#10b981,color:#000
+    style THE fill:#34d399,stroke:#10b981,color:#000
+    style SE fill:#34d399,stroke:#10b981,color:#000
 ```
 
-## Serialization
+---
+
+## End-to-End Data Flow
+
+This is how a user interaction flows through the entire stack:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as @timelinx/ui
+    participant React as @timelinx/react
+    participant Core as @timelinx/core
+    participant Media as @timelinx/media-web
+
+    User->>UI: Click / Drag / Keyboard
+    UI->>React: ToolRouter maps event
+    React->>Core: dispatch(state, command)
+    Core->>Core: Validate invariants
+    Core->>Core: Apply operation
+    Core->>Core: Push to history
+    Core-->>React: New state (or rejection)
+    React-->>UI: useSyncExternalStore triggers re-render
+    UI-->>User: Updated visual
+
+    Note over Media,Core: Media pipeline runs in parallel
+    UI->>Media: Request frame decode
+    Media->>Core: Read clip/asset metadata
+    Media-->>UI: Decoded frame / waveform
+```
+
+---
+
+## Serialization & Interchange
+
+`@timelinx/core` supports multiple interchange formats for professional workflows:
+
+```mermaid
+graph LR
+    STATE["TimelineState"]
+
+    STATE -->|"serialize"| JSON["JSON"]
+    STATE -->|"export"| OTIO["OpenTimelineIO"]
+    STATE -->|"export"| FCPXML["FCPXML"]
+    STATE -->|"export"| EDL["CMX3600 EDL"]
+    STATE -->|"export"| AAF["AAF"]
+    OTIO -->|"import"| STATE
+
+    style STATE fill:#818cf8,stroke:#6366f1,color:#fff
+    style JSON fill:#fbbf24,stroke:#f59e0b,color:#000
+    style OTIO fill:#34d399,stroke:#10b981,color:#000
+```
 
 All state is plain objects — no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
 
-```ts
-const json = JSON.stringify(state);
-const restored = JSON.parse(json);
-```
+---
 
 <Cards>
   <Card title="Quick Start" href="/docs/library/quick-start">
