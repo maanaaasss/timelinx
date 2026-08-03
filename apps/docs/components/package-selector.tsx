@@ -82,19 +82,19 @@ export function PackageSelector() {
         <button
           type="button"
           data-popup-open={open || undefined}
-          className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 border border-fd-border/50 bg-fd-card/50 text-start transition-colors hover:bg-fd-accent/50 data-[popup-open]:bg-fd-accent/50 data-[popup-open]:border-fd-border cursor-pointer"
+          className="inline-flex items-center gap-2 w-full rounded-lg border bg-fd-secondary/50 p-1.5 ps-2 text-sm text-fd-muted-foreground text-start transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground data-[popup-open]:bg-fd-accent data-[popup-open]:text-fd-accent-foreground cursor-pointer"
         >
           <div
-            className="size-5 shrink-0 [&_svg]:size-full"
+            className="size-4 shrink-0 [&_svg]:size-full"
             style={{ color: current.color }}
           >
             <current.icon />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium leading-tight truncate">{current.name}</p>
-            <p className="text-[11px] leading-tight text-fd-muted-foreground truncate mt-0.5">{current.subtitle}</p>
+            <span className="font-medium truncate">{current.name}</span>
+            <span className="text-fd-muted-foreground ml-1.5 truncate">{current.subtitle}</span>
           </div>
-          <ChevronsUpDown className="shrink-0 size-3.5 text-fd-muted-foreground" />
+          <ChevronsUpDown className="shrink-0 size-3.5" />
         </button>
       </PopoverTrigger>
       <PopoverContent
