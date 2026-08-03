@@ -17,6 +17,8 @@
   --fd-radius-lg: 0.3125rem;
   --color-fd-primary: #fff383;
   --color-fd-primary-foreground: #09090b;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 /* Hide Fumadocs layout tabs (package selector replaces them) */
