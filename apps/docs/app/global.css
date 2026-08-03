@@ -8,14 +8,13 @@
 /* Default dark theme */
 :root {
   color-scheme: dark;
-  --radius-sm: 0.28125rem;
-  --radius-md: 0.34375rem;
-  --radius-lg: 0.40625rem;
-  --radius-xl: 0.53125rem;
-  --radius-2xl: 0.65625rem;
-  --text-xs: 0.78125rem;
-  --text-sm: 0.90625rem;
-  --text-base: 1.03125rem;
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.3125rem;
+  --radius-xl: 0.375rem;
+  --radius-2xl: 0.4375rem;
+  --fd-radius: 0.25rem;
+  --fd-radius-lg: 0.3125rem;
 }
 
 /* Hide Fumadocs layout tabs (package selector replaces them) */
