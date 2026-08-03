@@ -1,0 +1,10 @@
+{
+  "title": "Library",
+  "root": true,
+  "pages": [
+    "---Introduction---",
+    "quick-start",
+    "index",
+    "architecture"
+  ]
+}

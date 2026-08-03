@@ -1,0 +1,249 @@
+---
+title: Quick Start
+description: Getting started with Timelinx
+icon: Rocket
+---
+
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+## Getting Started with Timelinx
+
+Timelinx <span className="text-fd-muted-foreground text-sm">(time-linx)</span> is a **browser-native timeline editor engine**, designed to be predictable, testable, and composable. It consists of multiple layers:
+
+<Cards>
+  <Card title="@timelinx/core" href="/docs/core">
+    The headless engine. Pure-function dispatch model with invariant validation, transactions, and undo/redo.
+  </Card>
+  <Card title="@timelinx/react" href="/docs/react">
+    React bindings. Hooks, providers, and tool routing via `useSyncExternalStore`.
+  </Card>
+  <Card title="@timelinx/ui" href="/docs/ui">
+    Drop-in components. Tracks, clips, panels, and a full timeline editor.
+  </Card>
+</Cards>
+
+<Callout title="Want to learn more?">
+  Read our in-depth [What is Timelinx?](/docs/library) introduction.
+</Callout>
+
+## Terminology
+
+**Timeline:** A sequence of tracks containing clips, aligned to a timecode basis (frames or timecode).
+
+**Dispatch:** A pure function `(state, command) → result` that validates and applies operations to timeline state.
+
+**Invariant:** A rule that timeline state must satisfy. The dispatch engine checks 24 invariant types before applying any operation.
+
+**Transaction:** A batch of operations applied atomically. If any operation fails validation, the entire transaction is rejected.
+
+Some basic knowledge of React.js would be useful for further customizations.
+
+## Prerequisites
+
+- Node.js >= 22
+- A React project (Next.js, Vite, or any React setup)
+
+## Installation
+
+Install the packages you need:
+
+<CodeBlockTabs defaultValue="npm" groupId="package-manager">
+  <CodeBlockTabsList>
+    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
+  </CodeBlockTabsList>
+  <CodeBlockTab value="npm">
+    ```bash
+    npm install @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="pnpm">
+    ```bash
+    pnpm add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="yarn">
+    ```bash
+    yarn add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="bun">
+    ```bash
+    bun add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </CodeBlockTab>
+</CodeBlockTabs>
+
+<Callout title="Minimal install">
+  Only need the engine? Install just `@timelinx/core` for headless state management without React or UI.
+</Callout>
+
+## Create Your First Timeline
+
+Create a file to set up your timeline:
+
+```ts title="lib/timeline.ts"
+import {
+  createTimeline,
+  createTimelineState,
+  createTrack,
+  createClip,
+  dispatch,
+  toFrame,
+  frameRate,
+} from '@timelinx/core';
+
+// Create a 10-second timeline at 30fps
+const timeline = createTimeline({
+  id: 'tl-1',
+  name: 'My Edit',
+  fps: frameRate(30),
+  duration: toFrame(3000),
+});
+
+const state = createTimelineState({ timeline });
+
+// Add a video track
+const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
+
+const result = dispatch(state, {
+  id: 'setup',
+  label: 'Add track and clip',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'ADD_TRACK', track },
+    { type: 'INSERT_CLIP', trackId: track.id, clip: createClip({
+      id: 'clip-1',
+      assetId: 'my-video',
+      trackId: 'v1',
+      timelineStart: toFrame(0),
+      timelineEnd: toFrame(300),
+      mediaIn: toFrame(0),
+      mediaOut: toFrame(300),
+    })},
+  ],
+});
+
+if (!result.accepted) {
+  throw new Error(`${result.reason}: ${result.message}`);
+}
+
+export const initialState = result.nextState;
+```
+
+## Render the Editor
+
+Create a React component that renders the timeline editor:
+
+```tsx title="app/editor/page.tsx"
+'use client';
+
+import { TimelineEditor } from '@timelinx/ui';
+import { initialState } from '@/lib/timeline';
+
+export default function Editor() {
+  return <TimelineEditor initialState={initialState} />;
+}
+```
+
+## Run the App
+
+Start your development server:
+
+<CodeBlockTabs defaultValue="npm" groupId="package-manager">
+  <CodeBlockTabsList>
+    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
+    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
+  </CodeBlockTabsList>
+  <CodeBlockTab value="npm">
+    ```bash
+    npm run dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="pnpm">
+    ```bash
+    pnpm dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="yarn">
+    ```bash
+    yarn dev
+    ```
+  </CodeBlockTab>
+  <CodeBlockTab value="bun">
+    ```bash
+    bun run dev
+    ```
+  </CodeBlockTab>
+</CodeBlockTabs>
+
+That's it. You have a working timeline editor with tracks, clips, zoom, drag, undo/redo, and keyboard shortcuts.
+
+## FAQ
+
+<Accordions>
+  <Accordion id="minimal-install" title="Can I use only @timelinx/core?">
+    Yes. `@timelinx/core` is headless — no React, no DOM. Use it with any UI framework or vanilla JS.
+
+    ```bash
+    npm install @timelinx/core
+    ```
+  </Accordion>
+  <Accordion id="typescript" title="Does Timelinx support TypeScript?">
+    Yes. All packages are written in TypeScript with full type definitions. Operations, state, and components are fully typed.
+  </Accordion>
+  <Accordion id="state-persistence" title="How do I persist timeline state?">
+    State is serializable JSON. Persist to localStorage, IndexedDB, or send to a server:
+
+    ```ts
+    // Save
+    localStorage.setItem('timeline', JSON.stringify(state));
+
+    // Restore
+    const saved = JSON.parse(localStorage.getItem('timeline'));
+    ```
+  </Accordion>
+  <Accordion id="custom-components" title="Can I build custom UI components?">
+    Yes. Use `@timelinx/react` hooks (`useTimeline`, `useDispatch`) to build custom components that integrate with the engine.
+  </Accordion>
+  <Accordion id="state-update" title="How do I update the timeline after initial render?">
+    Use `useDispatch` hook to dispatch commands from your components:
+
+    ```tsx
+    import { useDispatch } from '@timelinx/react';
+
+    function AddTrackButton() {
+      const dispatch = useDispatch();
+      return (
+        <button onClick={() => dispatch({ type: 'ADD_TRACK', track })}>
+          Add Track
+        </button>
+      );
+    }
+    ```
+  </Accordion>
+</Accordions>
+
+## Learn More
+
+<Cards>
+  <Card href="/docs/library" title="What is Timelinx?">
+    Philosophy, design principles, and what makes Timelinx different.
+  </Card>
+  <Card href="/docs/library/architecture" title="Architecture">
+    How the three packages fit together.
+  </Card>
+  <Card href="/docs/core" title="Core Concepts">
+    Dispatch model, invariants, transactions, undo/redo.
+  </Card>
+  <Card href="/docs/react" title="React Integration">
+    Hooks, providers, and tool routing.
+  </Card>
+  <Card href="/docs/ui" title="UI Components">
+    Full component reference with live examples.
+  </Card>
+</Cards>

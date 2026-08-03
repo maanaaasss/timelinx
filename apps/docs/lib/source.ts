@@ -1,5 +1,6 @@
 import { defineDocs } from 'fumadocs-mdx/macro';
 import { loader } from 'fumadocs-core/source';
+import { lucideIconsPlugin } from 'fumadocs-core/source/plugins/lucide-icons';
 
 const docs = defineDocs({
   dir: 'content/docs',
@@ -8,4 +9,5 @@ const docs = defineDocs({
 export const source = loader({
   baseUrl: '/docs',
   source: docs.toFumadocsSource(),
+  plugins: [lucideIconsPlugin()],
 });

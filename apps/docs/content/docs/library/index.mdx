@@ -1,0 +1,70 @@
+---
+title: What is Timelinx?
+description: Introducing Timelinx, a browser-native timeline engine built for developers.
+icon: CircleQuestionMark
+---
+
+The **Timelinx** framework refers to a combination of Core + React Bindings + UI Components. Timelinx is more of a mental framework — each layer can be a library on its own.
+
+## Philosophy
+
+Timelinx was created to bring a more predictable, testable approach to building timeline editors in the browser. A **framework that doesn't hide its internals**.
+
+### Pure-function dispatch
+
+Every timeline operation is a pure function: `(state, command) → newState`. No mutation, no side effects, no hidden state.
+
+While most timeline libraries rely on mutable state objects, Timelinx treats every operation as a mathematical function. Same input always produces same output. This means your timeline state is predictable, testable, and debuggable without mocking or special tools.
+
+### Headless by design
+
+The core engine knows nothing about React, the DOM, or rendering. You can use it with any UI framework — or no framework at all.
+
+Timelinx integrates tightly with your React project, bringing useful hooks and a good-looking UI.
+
+For React developers, you are still using standard hooks like `useSyncExternalStore`. There is nothing new — everything is familiar to you.
+
+### Composable components
+
+The only thing `@timelinx/ui` offers is **User Interface**. The components are opinionated for bringing better timeline editing experience.
+
+Instead, we follow a flexible approach — use `TimelineEditor` for a complete editor, or compose individual components (`TimelineClip`, `TimelineRuler`, `ZoomControls`) to build your own.
+
+### Validation at dispatch time
+
+Traditionally, state managers validate on read or not at all.
+
+However, Timelinx validates every operation against **24 invariant types** before applying it. With a perfect dispatch-reject boundary, bugs are caught at dispatch time, not in production.
+
+You can fetch state and trust it — it has already been validated. It is always consistent and easy to debug.
+
+### Minimal
+
+Timelinx is maintained with care on the maintainability of the codebase.
+
+While we don't aim to offer every functionality people wanted, we're more focused on making basic features perfect and well-maintained. You can also help Timelinx to be more useful by contributing!
+
+## When to use Timelinx
+
+Timelinx is designed with flexibility in mind, it is not limited to certain usages.
+
+- `@timelinx/core` is a headless timeline engine for building editors.
+- `@timelinx/react` provides React bindings for the core.
+- `@timelinx/ui` offers pre-built components.
+
+For most browser-based video tools, vanilla JavaScript is no longer enough.
+Nowadays, we also wish to have real-time collaboration, multi-track editing, undo/redo, etc. In these cases, Timelinx can help you build the timeline editor easier, with less boilerplate.
+
+### Video editors
+
+Timelinx focuses on **authoring experience**, it provides a predictable dispatch model and many timeline automation tools.
+
+It helps you to iterate your editor faster while never leaving your state consistent.
+You can take this site as an example of docs site built with Timelinx.
+
+### Motion graphics tools
+
+Most browser frameworks can already suffice the needs of a simple animation tool.
+
+Timelinx provides additional tooling, including invariant validation, atomic transactions, and a default UI theme.
+It helps you to avoid building state management, validation, and undo/redo from scratch.
