@@ -47,7 +47,7 @@ const PACKAGES = [
     name: 'React',
     subtitle: 'Hooks & bindings',
     icon: Pencil,
-    color: '#f472b6',
+    color: '#aa99ff',
     href: '/docs/react',
   },
   {
