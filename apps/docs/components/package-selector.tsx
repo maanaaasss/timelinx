@@ -8,7 +8,7 @@ import {
   PopoverContent,
 } from 'fumadocs-ui/components/ui/popover';
 import {
-  Building,
+  BookOpen,
   Layout,
   Box,
   Pencil,
@@ -21,41 +21,41 @@ const PACKAGES = [
   {
     id: 'library',
     name: 'Library',
-    subtitle: 'The docs framework',
-    icon: Building,
-    color: 'var(--framework-color, var(--color-fd-foreground))',
+    subtitle: 'Overview & getting started',
+    icon: BookOpen,
+    color: '#fff383',
     href: '/docs/library',
   },
   {
     id: 'ui',
-    name: 'Timelinx UI',
-    subtitle: 'The default theme',
+    name: 'UI Components',
+    subtitle: 'Drop-in React components',
     icon: Layout,
-    color: 'var(--ui-color, #60a5fa)',
+    color: '#60a5fa',
     href: '/docs/ui',
   },
   {
     id: 'core',
-    name: 'Timelinx Core',
-    subtitle: 'The headless library',
+    name: 'Core',
+    subtitle: 'Timeline engine',
     icon: Box,
-    color: 'var(--core-color, #c084fc)',
+    color: '#c084fc',
     href: '/docs/core',
   },
   {
     id: 'react',
-    name: 'Timelinx React',
-    subtitle: 'React bindings & hooks',
+    name: 'React',
+    subtitle: 'Hooks & bindings',
     icon: Pencil,
-    color: 'var(--react-color, #f472b6)',
+    color: '#f472b6',
     href: '/docs/react',
   },
   {
     id: 'cli',
     name: 'CLI',
-    subtitle: 'Command-line tools for Timelinx',
+    subtitle: 'Command-line tools',
     icon: Terminal,
-    color: 'var(--cli-color, var(--color-fd-foreground))',
+    color: '#a1a1aa',
     href: '/docs/cli',
   },
 ] as const;
@@ -76,7 +76,11 @@ export function PackageSelector() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setSelected(getPackageFromPathname(pathname));
+    const pkg = getPackageFromPathname(pathname);
+    setSelected(pkg);
+    const color = PACKAGES.find((p) => p.id === pkg)?.color ?? '#fff383';
+    document.documentElement.style.setProperty('--fd-primary', color);
+    document.documentElement.style.setProperty('--fd-accent-foreground', color);
   }, [pathname]);
 
   const current = PACKAGES.find((p) => p.id === selected)!;
@@ -89,19 +93,16 @@ export function PackageSelector() {
           data-popup-open={open || undefined}
           className="flex items-center gap-2 rounded-lg p-2 border bg-fd-secondary/50 text-start text-fd-secondary-foreground transition-colors hover:bg-fd-accent data-[popup-open]:bg-fd-accent data-[popup-open]:text-fd-accent-foreground cursor-pointer"
         >
-          <div className="size-9 shrink-0 empty:hidden md:size-5">
+          <div className="size-5 shrink-0">
             <div
-              className="[&_svg]:size-full rounded size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
+              className="[&_svg]:size-full rounded size-full"
               style={{ color: current.color }}
             >
               <current.icon />
             </div>
           </div>
-          <div>
-            <p className="text-sm font-medium">{current.name}</p>
-            <p className="text-sm text-fd-muted-foreground empty:hidden md:hidden">
-              {current.subtitle}
-            </p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{current.name}</p>
           </div>
           <ChevronsUpDown className="shrink-0 ms-auto size-4 text-fd-muted-foreground" />
         </button>
@@ -130,9 +131,9 @@ export function PackageSelector() {
                   : 'hover:bg-fd-accent',
               ].join(' ')}
             >
-              <div className="size-9 shrink-0 empty:hidden md:size-5">
+              <div className="size-5 shrink-0">
                 <div
-                  className="[&_svg]:size-full rounded size-full max-md:bg-[currentColor]/10 max-md:border max-md:p-1.5"
+                  className="[&_svg]:size-full rounded size-full"
                   style={{ color: pkg.color }}
                 >
                   <Icon />
@@ -140,12 +141,9 @@ export function PackageSelector() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{pkg.name}</p>
-                <p className="text-sm text-fd-muted-foreground empty:hidden md:hidden truncate">
-                  {pkg.subtitle}
-                </p>
               </div>
               {isActive && (
-                <Check className="shrink-0 ms-auto size-4 text-fd-muted-foreground" />
+                <Check className="shrink-0 ms-auto size-4" style={{ color: pkg.color }} />
               )}
             </button>
           );
