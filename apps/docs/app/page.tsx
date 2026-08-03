@@ -23,7 +23,7 @@ export default function Home() {
       nav={{
         title: (
           <span className="flex items-center gap-2.5 font-bold tracking-tight text-fd-foreground">
-            <span className="size-6 rounded bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-black">
+            <span className="size-6 rounded bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs font-black">
               T
             </span>
             Timelinx
@@ -114,15 +114,15 @@ export default function Home() {
                 <span className="text-purple-400">import</span> &#123; createTimelineStore &#125; <span className="text-purple-400">from</span> <span className="text-emerald-400">&apos;@timelinx/core&apos;</span>;{'\n'}
                 <span className="text-purple-400">import</span> &#123; TimelineProvider, Timeline, TrackHeader &#125; <span className="text-purple-400">from</span> <span className="text-emerald-400">&apos;@timelinx/react&apos;</span>;{'\n\n'}
                 <span className="text-fd-muted-foreground">// Initialize headless timeline store</span>{'\n'}
-                <span className="text-purple-400">const</span> store = <span className="text-blue-400">createTimelineStore</span>();{'\n'}
-                store.<span className="text-blue-400">dispatch</span>(&#123; type: <span className="text-emerald-400">&apos;ADD_TRACK&apos;</span>, payload: &#123; id: <span className="text-emerald-400">&apos;track-1&apos;</span>, name: <span className="text-emerald-400">&apos;Video Track&apos;</span> &#125; &#125;);{'\n'}
-                store.<span className="text-blue-400">dispatch</span>(&#123; type: <span className="text-emerald-400">&apos;ADD_CLIP&apos;</span>, payload: &#123; trackId: <span className="text-emerald-400">&apos;track-1&apos;</span>, start: <span className="text-amber-400">0</span>, duration: <span className="text-amber-400">5</span> &#125; &#125;);{'\n\n'}
+                <span className="text-purple-400">const</span> store = <span className="text-amber-400">createTimelineStore</span>();{'\n'}
+                store.<span className="text-amber-400">dispatch</span>(&#123; type: <span className="text-emerald-400">&apos;ADD_TRACK&apos;</span>, payload: &#123; id: <span className="text-emerald-400">&apos;track-1&apos;</span>, name: <span className="text-emerald-400">&apos;Video Track&apos;</span> &#125; &#125;);{'\n'}
+                store.<span className="text-amber-400">dispatch</span>(&#123; type: <span className="text-emerald-400">&apos;ADD_CLIP&apos;</span>, payload: &#123; trackId: <span className="text-emerald-400">&apos;track-1&apos;</span>, start: <span className="text-cyan-400">0</span>, duration: <span className="text-cyan-400">5</span> &#125; &#125;);{'\n\n'}
                 <span className="text-fd-muted-foreground">// Render reactive React UI component</span>{'\n'}
-                <span className="text-purple-400">export function</span> <span className="text-blue-400">Editor</span>() &#123;{'\n'}
+                <span className="text-purple-400">export function</span> <span className="text-amber-400">Editor</span>() &#123;{'\n'}
                 {'  '}<span className="text-purple-400">return</span> ({'\n'}
-                {'    '}&lt;<span className="text-indigo-400">TimelineProvider</span> store=&#123;store&#125;&gt;{'\n'}
-                {'      '}&lt;<span className="text-indigo-400">Timeline</span> /&gt;{'\n'}
-                {'    '}&lt;/<span className="text-indigo-400">TimelineProvider</span>&gt;{'\n'}
+                {'    '}&lt;<span className="text-blue-400">TimelineProvider</span> store=&#123;store&#125;&gt;{'\n'}
+                {'      '}&lt;<span className="text-blue-400">Timeline</span> /&gt;{'\n'}
+                {'    '}&lt;/<span className="text-blue-400">TimelineProvider</span>&gt;{'\n'}
                 {'  '});{'\n'}
                 &#125;
               </code>
@@ -143,13 +143,13 @@ export default function Home() {
 
           <Cards className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Card
-              icon={<Box className="size-5 text-indigo-400" />}
+              icon={<Box className="size-5 text-amber-400" />}
               title="@timelinx/core"
               description="Pure-function state engine with spatial indexing (RBush), atomic transactions, and built-in undo/redo history."
               href="/docs/core"
             />
             <Card
-              icon={<Pencil className="size-5 text-pink-400" />}
+              icon={<Pencil className="size-5 text-cyan-400" />}
               title="@timelinx/react"
               description="Reactive hooks and providers: useTimeline, useDispatch, and useTimelineSelector with zero re-render waste."
               href="/docs/react"
@@ -167,13 +167,13 @@ export default function Home() {
               href="/docs/library"
             />
             <Card
-              icon={<Share2 className="size-5 text-amber-400" />}
+              icon={<Share2 className="size-5 text-purple-400" />}
               title="@timelinx/collab"
               description="Real-time multi-user editing backed by Yjs CRDTs with WebRTC and WebSocket provider support."
               href="/docs/library"
             />
             <Card
-              icon={<Sparkles className="size-5 text-cyan-400" />}
+              icon={<Sparkles className="size-5 text-pink-400" />}
               title="@timelinx/ai"
               description="AI transcript-to-timeline alignment, automatic clip cutting, and intelligent scene boundary detection."
               href="/docs/library"
@@ -201,7 +201,7 @@ export default function Home() {
               </p>
             </div>
             <div className="p-6 rounded-xl border border-fd-border bg-fd-card">
-              <Layers className="size-6 text-indigo-400 mb-3" />
+              <Layers className="size-6 text-cyan-400 mb-3" />
               <h3 className="text-base font-semibold text-fd-foreground mb-1.5">Spatial Indexing (RBush)</h3>
               <p className="text-sm text-fd-muted-foreground leading-relaxed">
                 2D spatial search algorithms ensure smooth 60fps playhead sync and clip queries across thousands of clips.
