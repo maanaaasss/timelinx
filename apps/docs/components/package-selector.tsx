@@ -82,27 +82,25 @@ export function PackageSelector() {
         <button
           type="button"
           data-popup-open={open || undefined}
-          className="flex items-center gap-2 rounded-lg p-2 border bg-fd-secondary/50 text-start text-fd-secondary-foreground transition-colors hover:bg-fd-accent data-[popup-open]:bg-fd-accent data-[popup-open]:text-fd-accent-foreground cursor-pointer"
+          className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 border border-fd-border/50 bg-fd-card/50 text-start transition-colors hover:bg-fd-accent/50 data-[popup-open]:bg-fd-accent/50 data-[popup-open]:border-fd-border cursor-pointer"
         >
-          <div className="size-5 shrink-0">
-            <div
-              className="[&_svg]:size-full rounded size-full"
-              style={{ color: current.color }}
-            >
-              <current.icon />
-            </div>
+          <div
+            className="size-5 shrink-0 [&_svg]:size-full"
+            style={{ color: current.color }}
+          >
+            <current.icon />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{current.name}</p>
-            <p className="text-xs text-fd-muted-foreground truncate">{current.subtitle}</p>
+            <p className="text-sm font-medium leading-tight truncate">{current.name}</p>
+            <p className="text-[11px] leading-tight text-fd-muted-foreground truncate mt-0.5">{current.subtitle}</p>
           </div>
-          <ChevronsUpDown className="shrink-0 ms-auto size-4 text-fd-muted-foreground" />
+          <ChevronsUpDown className="shrink-0 size-3.5 text-fd-muted-foreground" />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        sideOffset={4}
-        className="w-[var(--radix-popover-trigger-width)] p-1.5 rounded-md border border-fd-border bg-fd-card shadow-xl"
+        sideOffset={6}
+        className="w-[var(--radix-popover-trigger-width)] p-1 rounded-lg border border-fd-border/60 bg-fd-card shadow-2xl"
       >
         {PACKAGES.map((pkg) => {
           const Icon = pkg.icon;
@@ -116,27 +114,21 @@ export function PackageSelector() {
                 setOpen(false);
                 router.push(pkg.href);
               }}
-              className={[
-                'flex items-center gap-2 rounded p-2 w-full text-start transition-colors cursor-pointer',
-                isActive
-                  ? 'bg-fd-primary/10'
-                  : 'hover:bg-fd-accent',
-              ].join(' ')}
+              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-start transition-colors cursor-pointer hover:bg-fd-accent/50"
+              style={isActive ? { backgroundColor: `color-mix(in srgb, ${pkg.color} 8%, transparent)` } : undefined}
             >
-              <div className="size-5 shrink-0">
-                <div
-                  className="[&_svg]:size-full rounded size-full"
-                  style={{ color: pkg.color }}
-                >
-                  <Icon />
-                </div>
+              <div
+                className="size-4 shrink-0 [&_svg]:size-full"
+                style={{ color: pkg.color }}
+              >
+                <Icon />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{pkg.name}</p>
-                <p className="text-xs text-fd-muted-foreground truncate">{pkg.subtitle}</p>
+                <p className="text-sm font-medium leading-tight truncate">{pkg.name}</p>
+                <p className="text-[11px] leading-tight text-fd-muted-foreground truncate mt-0.5">{pkg.subtitle}</p>
               </div>
               {isActive && (
-                <Check className="shrink-0 ms-auto size-4" style={{ color: pkg.color }} />
+                <Check className="shrink-0 size-3.5" style={{ color: pkg.color }} />
               )}
             </button>
           );
