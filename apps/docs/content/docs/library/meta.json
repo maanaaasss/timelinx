@@ -2,7 +2,9 @@
   "title": "Library",
   "root": true,
   "pages": [
-    "introduction",
+    "---Introduction---",
+    "index",
+    "quick-start",
     "architecture"
   ]
 }
