@@ -12,7 +12,6 @@ import {
   Layout,
   Box,
   Pencil,
-  Terminal,
   ChevronsUpDown,
   Check,
 } from 'lucide-react';
@@ -49,14 +48,6 @@ const PACKAGES = [
     icon: Pencil,
     color: '#aa99ff',
     href: '/docs/react',
-  },
-  {
-    id: 'cli',
-    name: 'CLI',
-    subtitle: 'Command-line tools',
-    icon: Terminal,
-    color: '#a1a1aa',
-    href: '/docs/cli',
   },
 ] as const;
 
