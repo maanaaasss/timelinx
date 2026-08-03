@@ -17,6 +17,29 @@
   --fd-radius-lg: 0.3125rem;
 }
 
+/* Smaller text in containers */
+[data-search-full] {
+  font-size: var(--text-xs) !important;
+}
+[data-search-full] kbd {
+  font-size: 0.6875rem !important;
+}
+#nd-sidebar {
+  font-size: 0.8125rem !important;
+}
+
+/* Bigger headings in footer navigation */
+footer a {
+  font-size: var(--text-lg) !important;
+}
+footer a p:first-child {
+  font-size: var(--text-lg) !important;
+  font-weight: 600 !important;
+}
+footer a p:last-child {
+  font-size: var(--text-sm) !important;
+}
+
 /* Hide Fumadocs layout tabs (package selector replaces them) */
 [data-grid-area="main"] {
   display: none;
