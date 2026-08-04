@@ -48,6 +48,11 @@ export default function Home() {
           url: '/docs/ui',
           active: 'nested-url',
         },
+        {
+          text: 'Media Web',
+          url: '/docs/media-web',
+          active: 'nested-url',
+        },
       ]}
     >
       <div className="max-w-6xl mx-auto px-6 py-12 lg:py-20">
@@ -164,7 +169,7 @@ export default function Home() {
               icon={<Video className="size-5 text-emerald-400" />}
               title="@timelinx/media-web"
               description="Web Audio/Video frame decoding, waveform generation, and HTML5 Canvas video playback sync."
-              href="/docs/library"
+              href="/docs/media-web"
             />
             <Card
               icon={<Share2 className="size-5 text-purple-400" />}
