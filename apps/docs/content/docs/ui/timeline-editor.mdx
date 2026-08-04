@@ -1,12 +1,14 @@
 ---
 title: TimelineEditor
-description: The full timeline editor component
+description: The full timeline editor component — props, layout structure, keyboard shortcuts, and customization
+icon: LayoutDashboard
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { AutoTypeTable } from 'fumadocs-typescript/ui';
 import { generator } from '@/lib/generator';
 
-The `TimelineEditor` is the primary component — a complete timeline editing surface with toolbar, ruler, tracks, transport controls, sidebar, and media browser.
+`TimelineEditor` is the primary drop-in component. It assembles every panel into a complete NLE-like editing surface: top nav, toolbar, ruler, track list, track rows, transport controls, sidebar, asset bin, and media preview.
 
 ## Live Example
 
@@ -14,13 +16,21 @@ import { TimelineEditorExample } from '@/components/examples/timeline-editor-exa
 
 <TimelineEditorExample />
 
-## Usage
+## Basic Usage
 
 ```tsx
-import { TimelineEditor } from '@timelinx/ui';
-import { TimelineEngine } from '@timelinx/react';
-import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+'use client'; // Next.js only
 
+import { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor } from '@timelinx/ui';
+import {
+  createTimelineState,
+  createTimeline,
+  frameRate,
+  toFrame,
+} from '@timelinx/core';
+
+// Create the engine once, outside the component
 const engine = new TimelineEngine({
   initialState: createTimelineState({
     timeline: createTimeline({
@@ -32,10 +42,16 @@ const engine = new TimelineEngine({
   }),
 });
 
-function App() {
-  return <TimelineEditor engine={engine} />;
+export default function EditorPage() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <TimelineEditor engine={engine} />
+    </div>
+  );
 }
 ```
+
+`TimelineEditor` fills its container. Always give the container an explicit height.
 
 ## Props
 
@@ -45,6 +61,99 @@ function App() {
   type="TimelineEditorProps"
 />
 
+## Key Props
+
+| Prop | Type | Default | Notes |
+|------|------|---------|-------|
+| `engine` | `TimelineEngine` | required | The engine instance. Create outside the component. |
+| `defaultTool` | `string` | `'selection'` | Active tool on mount. |
+| `ppf` | `number` | `6` | Initial pixels per frame (zoom level). |
+| `showTopNav` | `boolean` | `true` | Show the top navigation bar with project name. |
+| `showSidebar` | `boolean` | `true` | Show the right-side panel. |
+| `showAssetBin` | `boolean` | `true` | Show the asset browser in the sidebar. |
+| `showCompositorPreview` | `boolean` | `true` | Show the video preview in the sidebar. |
+| `onSave` | `(state: TimelineState) => void` | none | Called when the user presses ⌘S. |
+| `onExport` | `() => void` | none | Called when the user clicks Export. |
+| `className` | `string` | none | Additional CSS class on the root element. |
+
+## Layout Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ TopNav   [project name]                [save] [export]       │
+├───────────────┬─────────────────────────────────────────────┤
+│ TimelineToolbar (tools, undo/redo, zoom)                     │
+├───────────────┬─────────────────────────────────────────────┤
+│               │ TimelineRuler (timecode, ticks)              │
+│               ├─────────────────────────────────────────────┤
+│  Sidebar      │ TrackList  │  Track rows                     │
+│  (preview +   │  (headers) │  (clips, playhead)              │
+│   asset bin)  │            │                                 │
+│               ├─────────────────────────────────────────────┤
+│               │ TransportControls (play, stop, timecode)     │
+└───────────────┴─────────────────────────────────────────────┘
+```
+
 ## Self-Wrapping Provider
 
-`TimelineEditor` automatically wraps itself in `TimelineProvider` and `MediaAssetsProvider` if no existing provider context is detected. This means you can use it standalone without manually setting up providers.
+`TimelineEditor` automatically wraps itself in `TimelineProvider` if no provider exists in the component tree above it. You do not need to add `TimelineProvider` manually when using `TimelineEditor`.
+
+When using decomposed components, add `TimelineProvider` explicitly. See [Custom Layout](/docs/ui/custom-layout).
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|---------|--------|
+| `Space` | Play / Pause |
+| `J` | Play backward (hold to increase speed) |
+| `K` | Pause |
+| `L` | Play forward |
+| `←` / `→` | Step 1 frame |
+| `Shift+←` / `Shift+→` | Step 10 frames |
+| `Home` | Go to first frame |
+| `End` | Go to last frame |
+| `I` | Set in-point |
+| `O` | Set out-point |
+| `V` | Select tool |
+| `C` | Razor / Slice tool |
+| `T` | Ripple Trim tool |
+| `R` | Roll Trim tool |
+| `S` | Slip tool |
+| `⌘Z` / `Ctrl+Z` | Undo |
+| `⌘⇧Z` / `Ctrl+Y` | Redo |
+| `Delete` / `Backspace` | Delete selected clips |
+| `⌘A` / `Ctrl+A` | Select all clips |
+| `⌘S` / `Ctrl+S` | Save (calls `onSave` prop) |
+| `?` | Toggle keyboard shortcut overlay |
+
+## Controlling the Engine Externally
+
+The engine is fully accessible outside the component. Call methods directly:
+
+```tsx
+// From anywhere with access to the engine reference
+engine.dispatch(transaction);
+engine.undo();
+engine.activateTool('razor');
+engine.setPlayheadFrame(toFrame(450));
+```
+
+## Saving State
+
+The editor does not auto-save. Call `onSave` and write the state to your storage:
+
+```tsx
+import { serializeProject } from '@timelinx/core';
+
+<TimelineEditor
+  engine={engine}
+  onSave={(state) => {
+    const json = JSON.stringify(serializeProject(state));
+    fetch('/api/project', { method: 'POST', body: json });
+  }}
+/>
+```
+
+<Callout title="State comes from the engine">
+  The `onSave` callback receives the current state from `engine.getSnapshot().state`. If you dispatch further changes after this call, the save will be stale. Always call `serializeProject` inside the `onSave` callback, not outside it.
+</Callout>

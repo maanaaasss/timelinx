@@ -1,0 +1,168 @@
+---
+title: Web Workers
+description: Offloading waveform extraction and thumbnail generation to background threads
+icon: Server
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Waveform extraction and batch thumbnail generation are CPU-intensive. Running them on the main thread causes frame drops and jank in the editor UI. `@timelinx/media-web` provides worker script entry points and message contract types to run these operations in dedicated `Worker` threads.
+
+## Worker Scripts
+
+Two worker entry points are exported from `@timelinx/media-web/workers`:
+
+```ts
+import WaveformWorker from '@timelinx/media-web/workers/waveform-worker?worker';
+import ThumbnailWorker from '@timelinx/media-web/workers/thumbnail-worker?worker';
+```
+
+The `?worker` suffix is a Vite-specific import. In other bundlers, adjust the import accordingly.
+
+---
+
+## Waveform Worker
+
+### Message Types
+
+```ts
+// From @timelinx/core
+type WaveformWorkerMessage = {
+  type: 'EXTRACT_WAVEFORM';
+  id: string;
+  arrayBuffer: ArrayBuffer;
+  config?: { samplesPerPixel?: number; channelCount?: number };
+};
+
+type WaveformWorkerResponse =
+  | { type: 'WAVEFORM_RESULT'; id: string; data: WaveformData }
+  | { type: 'WAVEFORM_ERROR'; id: string; message: string };
+```
+
+### Usage
+
+```ts
+const worker = new WaveformWorker();
+
+function extractWaveformInWorker(file: File, assetId: string): Promise<WaveformData> {
+  return new Promise((resolve, reject) => {
+    const arrayBuffer = await file.arrayBuffer();
+
+    worker.postMessage(
+      { type: 'EXTRACT_WAVEFORM', id: assetId, arrayBuffer },
+      [arrayBuffer],  // Transfer ownership to avoid copying
+    );
+
+    worker.onmessage = (e: MessageEvent<WaveformWorkerResponse>) => {
+      if (e.data.id !== assetId) return;
+      if (e.data.type === 'WAVEFORM_RESULT') resolve(e.data.data);
+      if (e.data.type === 'WAVEFORM_ERROR') reject(new Error(e.data.message));
+    };
+  });
+}
+```
+
+<Callout title="Transfer ArrayBuffer ownership">
+  Pass `[arrayBuffer]` as the second argument to `postMessage` to transfer the buffer to the worker without copying. The buffer becomes unusable on the main thread after this — read all metadata you need before posting.
+</Callout>
+
+---
+
+## Thumbnail Worker
+
+### Message Types
+
+```ts
+type ThumbnailWorkerMessage = {
+  type: 'GENERATE_THUMBNAIL';
+  id: string;
+  clipId: string;
+  mediaFrame: number;
+  filePath: string;
+  width: number;
+  height: number;
+  quality?: number;
+};
+
+type ThumbnailWorkerResponse =
+  | { type: 'THUMBNAIL_RESULT'; id: string; clipId: string; mediaFrame: number; bitmap: ImageBitmap }
+  | { type: 'THUMBNAIL_ERROR'; id: string; clipId: string; message: string };
+```
+
+### Usage
+
+```ts
+const thumbnailWorker = new ThumbnailWorker();
+
+function requestThumbnail(clipId: string, mediaFrame: number, filePath: string) {
+  thumbnailWorker.postMessage({
+    type: 'GENERATE_THUMBNAIL',
+    id: `${clipId}-${mediaFrame}`,
+    clipId,
+    mediaFrame,
+    filePath,
+    width: 160,
+    height: 90,
+    quality: 0.7,
+  });
+}
+
+thumbnailWorker.onmessage = (e: MessageEvent<ThumbnailWorkerResponse>) => {
+  if (e.data.type === 'THUMBNAIL_RESULT') {
+    thumbnailCache.set(`${e.data.clipId}-${e.data.mediaFrame}`, e.data.bitmap);
+    // Trigger re-render of the relevant TimelineClip
+  }
+};
+```
+
+---
+
+## Worker Lifecycle
+
+Workers are persistent — create one instance per worker type and reuse it for the lifetime of the editor session:
+
+```ts
+// Create once (outside components)
+const waveformWorker = new WaveformWorker();
+const thumbnailWorker = new ThumbnailWorker();
+
+// Terminate when the user closes the project
+waveformWorker.terminate();
+thumbnailWorker.terminate();
+```
+
+---
+
+## `ThumbnailQueue` and `ThumbnailCache`
+
+For high-volume thumbnail requests (long timelines with many clips), use the queue and cache utilities from `@timelinx/core` to avoid flooding the worker:
+
+```ts
+import { ThumbnailQueue, ThumbnailCache } from '@timelinx/core';
+
+const cache = new ThumbnailCache({ maxSize: 300 });
+const queue = new ThumbnailQueue({
+  maxConcurrent: 4,
+  onRequest: (entry) => {
+    thumbnailWorker.postMessage({
+      type: 'GENERATE_THUMBNAIL',
+      id: entry.id,
+      ...entry.request,
+    });
+  },
+});
+
+// Enqueue visible clips at high priority, off-screen at low
+function requestVisibleThumbnails(visibleClips: Clip[], ppf: number) {
+  for (const clip of visibleClips) {
+    const key = `${clip.id}-${clip.mediaIn}`;
+    if (cache.has(key)) continue;
+
+    queue.enqueue({
+      id: key,
+      request: { clipId: clip.id, mediaFrame: clip.mediaIn, width: 160, height: 90 },
+      priority: 'high',
+    });
+  }
+}
+```

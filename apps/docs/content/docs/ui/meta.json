@@ -3,6 +3,10 @@
   "root": true,
   "pages": [
     "index",
+    "---Customization---",
+    "theming",
+    "styling",
+    "custom-layout",
     "---Timeline---",
     "timeline-editor",
     "timeline-clip",
@@ -38,3 +42,4 @@
     "collapsible-section"
   ]
 }
+

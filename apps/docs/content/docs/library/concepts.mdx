@@ -1,0 +1,271 @@
+---
+title: Concepts
+description: The mental model behind Timelinx — every core term defined with its exact TypeScript type
+icon: BookOpen
+---
+
+Before working with Timelinx, these are the terms you need to understand. Each concept maps directly to a TypeScript type in `@timelinx/core`.
+
+---
+
+## `TimelineState`
+
+```ts
+type TimelineState = {
+  readonly schemaVersion: number;
+  readonly timeline: Timeline;
+  readonly assetRegistry: ReadonlyMap<AssetId, Asset>;
+};
+```
+
+**The root document.** Everything the engine knows about a project lives in one `TimelineState`. It is a plain object — no class instances, no circular references. Serialize it with `JSON.stringify()` or pass it to `serializeProject()` for versioned storage.
+
+Every accepted transaction returns a new `TimelineState`. The old one remains untouched (structural sharing via Immer-style updates keeps this efficient).
+
+---
+
+## `Timeline`
+
+```ts
+type Timeline = {
+  readonly id: string;
+  readonly name: string;
+  readonly fps: FrameRate;
+  readonly duration: TimelineFrame;
+  readonly version: number;
+  readonly tracks: readonly Track[];
+  readonly markers: readonly Marker[];
+  // ... groups, beat grid, in/out, sequence settings
+};
+```
+
+**The editorial document.** `Timeline` holds the track list, marker list, frame rate, and total duration. `version` increments by 1 on every accepted transaction — hooks use it to detect stale data.
+
+A project has exactly one `Timeline`.
+
+---
+
+## `Track`
+
+```ts
+type Track = {
+  readonly id: TrackId;
+  readonly type: TrackType;  // 'video' | 'audio' | 'subtitle' | 'title'
+  readonly clips: readonly Clip[];
+  readonly captions: readonly Caption[];
+  readonly locked: boolean;
+  readonly muted: boolean;
+  readonly solo: boolean;
+  readonly height: number;
+  // ...
+};
+```
+
+**A horizontal container for clips.** Tracks enforce a type constraint: a `'video'` track only accepts clips backed by video assets. `clips` is always sorted ascending by `timelineStart` — this is enforced by the invariant checker.
+
+---
+
+## `Clip`
+
+```ts
+type Clip = {
+  readonly id: ClipId;
+  readonly assetId: AssetId;
+  readonly trackId: TrackId;
+  // Timeline bounds (where the clip sits on the track)
+  readonly timelineStart: TimelineFrame;
+  readonly timelineEnd: TimelineFrame;
+  // Media bounds (which portion of the asset plays)
+  readonly mediaIn: TimelineFrame;
+  readonly mediaOut: TimelineFrame;
+  readonly speed: number;
+  // ...
+};
+```
+
+**A time-bound viewport into an asset.** The clip has two coordinate systems:
+
+- **Timeline bounds** — where the clip appears in the edit (`timelineStart` to `timelineEnd`)
+- **Media bounds** — which frames of the source asset play (`mediaIn` to `mediaOut`)
+
+These are independent. Moving `mediaIn` without changing `timelineStart` is a "slip" edit. The core invariant at `speed=1.0`:
+
+```
+mediaOut - mediaIn === timelineEnd - timelineStart
+```
+
+---
+
+## `Asset`
+
+```ts
+type Asset = FileAsset | GeneratorAsset;
+
+type FileAsset = {
+  readonly kind: 'file';
+  readonly id: AssetId;
+  readonly mediaType: TrackType;
+  readonly filePath: string;
+  readonly intrinsicDuration: TimelineFrame;
+  readonly status: 'online' | 'offline' | 'proxy-only' | 'missing';
+  // ...
+};
+```
+
+**A media source registered in `assetRegistry`.** Clips reference assets by `assetId` — they do not embed file paths or durations. One asset can be used by many clips. This design allows:
+
+- Reconnecting offline media by updating `filePath` on the asset without touching any clips
+- Knowing the total duration of a source once, not per-clip
+- Checking `status` to show relinking warnings in the UI
+
+---
+
+## `TimelineFrame`
+
+```ts
+type TimelineFrame = number & { readonly __brand: 'TimelineFrame' };
+```
+
+**An integer frame position.** All positions and durations in `TimelineState` are frame counts, not seconds or milliseconds. The brand prevents accidentally mixing pixel coordinates, seconds, or raw numbers with frame counts at compile time.
+
+```ts
+import { toFrame, secondsToFrames, frameRate } from '@timelinx/core';
+
+const frame = toFrame(450);                           // brand a known integer
+const dur   = secondsToFrames(15, frameRate(30));     // 450 frames
+```
+
+---
+
+## `Transaction`
+
+```ts
+type Transaction = {
+  readonly id: string;
+  readonly label: string;
+  readonly timestamp: number;
+  readonly operations: readonly OperationPrimitive[];
+};
+```
+
+**A labeled, atomic batch of operations.** This is the only way to mutate state. A transaction is either accepted in full or rejected in full — there is no partial application. One transaction becomes one undo history entry.
+
+The `label` is human-readable and appears in the undo menu (`'Move clip'`, `'Split interview'`).
+
+---
+
+## `OperationPrimitive`
+
+```ts
+type OperationPrimitive =
+  | { type: 'MOVE_CLIP'; clipId: ClipId; newTimelineStart: TimelineFrame }
+  | { type: 'DELETE_CLIP'; clipId: ClipId }
+  | { type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId }
+  // ... 39 more variants
+```
+
+**A single mutation intent.** Operations are lower-level than user actions. A "razor cut" UI action might produce one `SLICE_CLIP` primitive, while a "ripple delete" produces one `DELETE_CLIP` and several `MOVE_CLIP` primitives. All 42 variants are documented in [Operations](/docs/core/operations).
+
+---
+
+## `DispatchResult`
+
+```ts
+type DispatchResult =
+  | { accepted: true;  nextState: TimelineState }
+  | { accepted: false; reason: RejectionReason; message: string };
+```
+
+**The outcome of `dispatch()`.** Always check `accepted` before using `nextState`. The discriminated union forces you to handle both cases at compile time.
+
+```ts
+const result = engine.dispatch(transaction);
+
+if (result.accepted) {
+  console.log('new version:', result.nextState.timeline.version);
+} else {
+  console.error(result.reason, result.message);
+}
+```
+
+---
+
+## `ITool`
+
+```ts
+interface ITool {
+  readonly id: ToolId;
+  onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void;
+  onPointerMove(event: TimelinePointerEvent, ctx: ToolContext): ProvisionalState | null;
+  onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null;
+  // ...
+}
+```
+
+**An editing tool.** Tools translate pointer and key events into provisional state (during gestures) and transactions (on commit). The engine owns the tool registry and routes all events to the active tool. See [Tool System](/docs/core/tools).
+
+---
+
+## `EngineSnapshot`
+
+```ts
+type EngineSnapshot = {
+  readonly state: TimelineState;
+  readonly stableTrackIds: readonly string[];
+  readonly history: { canUndo: boolean; canRedo: boolean };
+  readonly activeToolId: string;
+  readonly provisional: ProvisionalState | null;
+  readonly playheadFrame: TimelineFrame;
+  readonly isPlaying: boolean;
+  readonly selectedClipIds: ReadonlySet<string>;
+  // ...
+};
+```
+
+**The frozen object that React hooks read from.** `TimelineEngine` rebuilds a new snapshot after every state change and notifies all `useSyncExternalStore` subscribers. Hooks compute their return value from this snapshot, not from the state directly — this is what makes them selective about re-renders.
+
+---
+
+## `ProvisionalState`
+
+```ts
+type ProvisionalState = {
+  readonly clips: readonly ProvisionalClip[];
+  readonly rubberBand?: RubberBandRegion;
+};
+```
+
+**A drag-in-progress preview.** During a clip drag, `onPointerMove` returns provisional state with ghost clip positions. This state is stored in the snapshot and rendered by the UI as translucent overlay clips. It is never committed to `TimelineState` — it disappears on pointer up.
+
+---
+
+## `PipelineConfig`
+
+```ts
+type PipelineConfig = {
+  readonly videoDecoder: VideoDecoder;
+  readonly audioDecoder?: AudioDecoder;
+  readonly compositor: Compositor;
+  readonly thumbnailProvider?: ThumbnailProvider;
+};
+```
+
+**The media backend contract.** Core defines what a decoder and compositor look like as TypeScript function types. `@timelinx/media-web` provides browser implementations. Pass a `PipelineConfig` to `TimelineEngine` to enable video playback. Without it, the editor operates in edit-only mode. See [Pipeline](/docs/media-web/pipeline).
+
+---
+
+## `SnapPoint`
+
+```ts
+type SnapPoint = {
+  readonly frame: TimelineFrame;
+  readonly type: SnapPointType;  // 'ClipStart' | 'ClipEnd' | 'Playhead' | 'Marker' | ...
+  readonly priority: number;
+  readonly trackId: TrackId | null;
+  readonly sourceId: string;
+};
+```
+
+**A magnetic target frame.** The snap index is a sorted list of these points. Tools call `nearest(index, frame, radiusPx, ppf)` to find the closest snap point within the snap radius. Higher priority points win when two snap points are equally close.
+
+Priority order: Marker (100) > InPoint/OutPoint (90) > ClipStart/ClipEnd (80) > Playhead (70) > BeatGrid (50).

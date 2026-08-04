@@ -1,0 +1,151 @@
+---
+title: Virtual Rendering
+description: useVirtualWindow, useVisibleClips, and rendering only the clips in the viewport
+icon: Layers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+A 2-hour timeline at 24fps has 172,800 frames. A busy documentary might have 500+ clips across 20 tracks. Rendering all of them as DOM nodes simultaneously causes layout thrashing, slow reflows, and unusable scroll performance.
+
+Virtual rendering solves this by mounting only the clips visible in the current viewport and using `position: absolute` layout to place them at the correct pixel offset.
+
+`@timelinx/ui`'s `TimelineTrack` handles this automatically. These hooks are for custom canvas implementations.
+
+---
+
+## `VirtualWindow`
+
+```ts
+type VirtualWindow = {
+  readonly startFrame: TimelineFrame;
+  readonly endFrame: TimelineFrame;
+  readonly vpWidth: number;   // viewport width in pixels
+  readonly ppf: number;       // pixels per frame (current zoom)
+};
+```
+
+`startFrame` and `endFrame` are the first and last frame visible in the timeline's scroll container.
+
+---
+
+## `useVirtualWindow(engine, options)`
+
+Computes the visible frame range from the container's scroll position and zoom level:
+
+```tsx
+import { useVirtualWindow } from '@timelinx/react';
+import { useRef } from 'react';
+
+function TrackCanvas({ engine, ppf }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const window = useVirtualWindow(engine, {
+    containerRef,
+    ppf,
+    scrollLeft,
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      onScroll={(e) => setScrollLeft(e.currentTarget.scrollLeft)}
+      style={{ overflow: 'auto', position: 'relative' }}
+    >
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+### Options
+
+```ts
+type VirtualWindowOptions = {
+  containerRef: RefObject<HTMLElement>;
+  ppf: number;
+  scrollLeft: number;
+  bufferFrames?: number;  // extra frames to render outside viewport (default: 60)
+};
+```
+
+`bufferFrames` renders extra clips beyond the visible edge to prevent pop-in during fast scrolling. The default is 60 frames (2 seconds at 30fps).
+
+---
+
+## `useVisibleClips(engine, window)`
+
+Returns only the clips whose timeline range intersects the visible window:
+
+```tsx
+import { useVisibleClips, useVirtualWindow } from '@timelinx/react';
+
+function TrackRow({ engine, trackId, ppf, scrollLeft }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const window = useVirtualWindow(engine, { containerRef, ppf, scrollLeft });
+  const clips = useVisibleClips(engine, window);
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative', height: 80 }}>
+      {clips
+        .filter((clip) => clip.trackId === trackId)
+        .map((clip) => (
+          <div
+            key={clip.id}
+            data-clip-id={clip.id}
+            style={{
+              position: 'absolute',
+              left: clip.timelineStart * ppf - scrollLeft,
+              width: (clip.timelineEnd - clip.timelineStart) * ppf,
+              height: '100%',
+            }}
+          >
+            {clip.name ?? 'Clip'}
+          </div>
+        ))}
+    </div>
+  );
+}
+```
+
+`useVisibleClips` re-renders when the clip set in the viewport changes — not on every playhead tick or every unrelated state change.
+
+---
+
+## Layout Pattern
+
+Clips use `position: absolute` inside a `position: relative` container. The container's width is the total timeline duration in pixels (`duration * ppf`):
+
+```tsx
+function TrackScrollable({ engine, ppf }) {
+  const timeline = useTimeline();
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        width: timeline.duration * ppf,  // full timeline width
+        minWidth: '100%',
+      }}
+    >
+      {/* Each clip is absolutely positioned */}
+    </div>
+  );
+}
+```
+
+The scroll container is the parent with `overflow: auto`. It scrolls over the absolutely-positioned track content.
+
+---
+
+## Performance Notes
+
+- Subscribe to `useTrackIds()` to mount/unmount track rows — not to `useAllTracks()` (which re-renders whenever any track changes).
+- Subscribe to `useTrack(id)` per row — not to `useTimeline()` (which re-renders on any timeline change including unrelated metadata).
+- Use `useVisibleClips` per track row rather than fetching all clips and filtering in render.
+- Keep playhead subscriptions (`usePlayheadFrame`) only in components that actually render the playhead, ruler, or transport — not in every clip.
+
+<Callout title="useClip(id) for individual clip properties">
+  For rendering individual clip properties (color, name, effects), use `useClip(id)` so the clip component only re-renders when that specific clip changes — not when any clip on any track changes.
+</Callout>

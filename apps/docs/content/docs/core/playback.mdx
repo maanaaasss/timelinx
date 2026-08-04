@@ -1,0 +1,190 @@
+---
+title: Playback
+description: PlayheadController, PlaybackEngine, the Clock abstraction, and KeyboardHandler
+icon: Play
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Playback in Timelinx is split across two classes with a clear separation of concerns:
+
+- **`PlayheadController`** — manages the playhead position. Knows about frame rate, loop regions, and playback rate. Never calls `dispatch()`.
+- **`PlaybackEngine`** — coordinates between `PlayheadController` events and the media pipeline. Requests decoded frames at the current playhead position.
+
+`TimelineEngine` owns both, wired together via the `pipeline` constructor option.
+
+---
+
+## `PlayheadController`
+
+```ts
+import { PlayheadController } from '@timelinx/core';
+
+const controller = new PlayheadController(
+  { durationFrames: toFrame(9000), fps: frameRate(30) },
+  browserClock, // optional — defaults to nodeClock in non-browser
+);
+```
+
+### Methods
+
+| Method | Signature | Notes |
+|--------|-----------|-------|
+| `play()` | `() => void` | Starts advancing the playhead on each clock tick. |
+| `pause()` | `() => void` | Stops advancement without seeking. |
+| `stop()` | `() => void` | Pauses and seeks to frame 0. |
+| `seek(frame)` | `(frame: TimelineFrame) => void` | Jump to a specific frame. Fires a `'seek'` event. |
+| `setPlaybackRate(rate)` | `(rate: PlaybackRate) => void` | `0.25 \| 0.5 \| 1.0 \| 1.5 \| 2.0` |
+| `setQuality(q)` | `(q: PlaybackQuality) => void` | `'full' \| 'draft'` |
+| `setLoopRegion(r)` | `(r: LoopRegion \| null) => void` | `{ inFrame, outFrame }` |
+| `getState()` | `() => PlayheadState` | Current playhead state snapshot. |
+| `on(listener)` | `(listener: PlayheadListener) => PlayheadUnsubscribe` | Subscribe to playhead events. |
+
+### `PlayheadState`
+
+```ts
+type PlayheadState = {
+  readonly currentFrame: TimelineFrame;
+  readonly isPlaying: boolean;
+  readonly playbackRate: PlaybackRate;
+  readonly quality: PlaybackQuality;
+  readonly durationFrames: TimelineFrame;
+  readonly fps: FrameRate;
+  readonly loopRegion: LoopRegion | null;
+  readonly prerollFrames: number;
+  readonly postrollFrames: number;
+};
+```
+
+### `PlayheadEvent`
+
+```ts
+type PlayheadEvent = {
+  readonly type: PlayheadEventType;  // 'play' | 'pause' | 'seek' | 'frame' | 'end'
+  readonly state: PlayheadState;
+};
+```
+
+Subscribe:
+
+```ts
+const unsubscribe = controller.on((event) => {
+  if (event.type === 'frame') {
+    renderFrame(event.state.currentFrame);
+  }
+  if (event.type === 'end') {
+    controller.seek(toFrame(0));
+  }
+});
+
+// Later:
+unsubscribe();
+```
+
+---
+
+## `PlaybackEngine`
+
+`PlaybackEngine` sits between `PlayheadController` and the media pipeline. On each `'frame'` event from the controller, it calls `resolveFrame()` to find active clips, then calls `pipeline.videoDecoder` for each, then `pipeline.compositor` to produce the output frame.
+
+```ts
+import { PlaybackEngine, browserClock } from '@timelinx/core';
+
+const playback = new PlaybackEngine(
+  state,
+  pipeline,          // PipelineConfig
+  { width: 1920, height: 1080 },
+  browserClock,
+);
+```
+
+### `PlaybackEngine` Methods
+
+| Method | Notes |
+|--------|-------|
+| `updateState(state)` | Call after each accepted dispatch to keep the compositor in sync. |
+| `play()` | Delegates to the internal `PlayheadController`. |
+| `pause()` | |
+| `seek(frame)` | |
+| `on(listener)` | Subscribe to playback-driven state changes (fired after each composited frame). |
+
+`TimelineEngine` wraps `PlaybackEngine` and exposes `play()`, `pause()`, and `setPlayheadFrame()` directly. You only interact with `PlaybackEngine` directly in headless integrations.
+
+---
+
+## The `Clock` Abstraction
+
+`PlayheadController` accepts an injected `Clock`:
+
+```ts
+type Clock = {
+  requestFrame(callback: (timestamp: number) => void): number;
+  cancelFrame(id: number): void;
+  now(): number;
+};
+```
+
+| Clock | Use case |
+|-------|---------|
+| `browserClock` | `requestAnimationFrame`-based. Default for browser apps. |
+| `nodeClock` | `setInterval`-based. For server-side use. |
+| `createTestClock()` | Manually controlled. Advance by calling `tick(ms)`. |
+
+### Test Clock Example
+
+```ts
+import { PlayheadController, createTestClock, toFrame, frameRate } from '@timelinx/core';
+
+const clock = createTestClock();
+const controller = new PlayheadController(
+  { durationFrames: toFrame(300), fps: frameRate(30) },
+  clock,
+);
+
+controller.play();
+clock.tick(1000); // advance 1 second
+expect(controller.getState().currentFrame).toBe(30); // 30fps × 1s
+```
+
+---
+
+## `KeyboardHandler`
+
+`KeyboardHandler` implements J/K/L jog-shuttle and I/O mark-in/out keyboard controls:
+
+```ts
+import { KeyboardHandler } from '@timelinx/core';
+
+const keyboard = new KeyboardHandler(playbackEngine, {
+  onMarkIn: () => {
+    engine.dispatch({ ... /* SET_IN_POINT operation */ });
+  },
+  onMarkOut: () => {
+    engine.dispatch({ ... /* SET_OUT_POINT operation */ });
+  },
+  getTimelineState: () => currentState,
+});
+
+// Wire to DOM
+document.addEventListener('keydown', (e) => keyboard.handleKeyDown(e));
+document.addEventListener('keyup',   (e) => keyboard.handleKeyUp(e));
+```
+
+### Default Bindings
+
+| Key | Action |
+|-----|--------|
+| `J` | Play backward (hold: increase reverse speed) |
+| `K` | Pause |
+| `L` | Play forward (hold: increase speed) |
+| `Space` | Play / Pause toggle |
+| `I` | Set in-point at current frame |
+| `O` | Set out-point at current frame |
+| `←` | Step back 1 frame |
+| `→` | Step forward 1 frame |
+| `Shift+←` | Step back 10 frames |
+| `Shift+→` | Step forward 10 frames |
+| `Home` | Seek to frame 0 |
+| `End` | Seek to last frame |
+
+`TimelineEngine` wires `KeyboardHandler` internally. In React apps, call `engine.handleKeyDown(event, modifiers)` from a `useEffect` event listener rather than instantiating `KeyboardHandler` directly.

@@ -1,0 +1,328 @@
+---
+title: TimelineEngine
+description: The React engine class — constructor options, methods, snapshot model, and lifetime management
+icon: Cpu
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`TimelineEngine` is the central object in every `@timelinx/react` application. It owns the timeline state, history stack, tool registry, snap index, playback engine, and keyboard handler. React hooks subscribe to it via `useSyncExternalStore`.
+
+```ts
+import { TimelineEngine } from '@timelinx/react';
+import { createTimelineState, createTimeline, frameRate, toFrame } from '@timelinx/core';
+
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-1',
+      name: 'My Edit',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+    }),
+  }),
+});
+```
+
+---
+
+## Constructor Options
+
+```ts
+new TimelineEngine(options: TimelineEngineOptions)
+```
+
+| Option | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `initialState` | `TimelineState` | required | The starting document. |
+| `historyLimit` | `number` | `100` | Maximum number of undo entries. Older entries are evicted when the limit is reached. |
+| `compression` | `CompressionPolicy` | `DEFAULT_COMPRESSION_POLICY` | Controls which operations merge in history (e.g., repeated drag frames merge into one). |
+| `tools` | `ITool[]` | `[]` | Additional tools merged with the 12 defaults. Same ID overwrites the built-in. |
+| `defaultToolId` | `string` | `'selection'` | Which tool is active on mount. |
+| `getPixelsPerFrame` | `() => number` | `() => 10` | Returns current zoom level for snap radius calculation. Wire this to the UI provider's `ppf`. |
+| `onZoomChange` | `(ppf: number) => void` | noop | Called by `ZoomTool` when the user zooms. Update UI `ppf` state here. |
+| `pipeline` | `PipelineConfig` | none | Media backend — video decoder, compositor, thumbnail provider. Without this, the engine runs edit-only. |
+| `dimensions` | `{ width: number; height: number }` | `{ width: 1920, height: 1080 }` | Compositor canvas dimensions passed to `PlaybackEngine`. |
+| `clock` | `Clock` | `browserClock` | Time source for playback. Swap for `createTestClock()` in tests. |
+| `onMarkIn` | `() => void` | none | Called when the user presses the I key (mark in-point). |
+| `onMarkOut` | `() => void` | none | Called when the user presses the O key. |
+| `onError` | `(err: unknown, phase: string) => void` | none | Called when a tool or dispatch throws an unexpected error. `phase` is `'dispatch'`, `'onPointerDown'`, etc. |
+
+---
+
+## Methods
+
+### `dispatch(transaction)`
+
+```ts
+dispatch(transaction: Transaction): DispatchResult
+```
+
+Validates and applies a transaction. On acceptance:
+1. Core `dispatch()` validates each operation and applies them in order.
+2. `diffStates()` computes what changed.
+3. The accepted entry is pushed to history with compression.
+4. Track index and snap index are rebuilt.
+5. Playback receives the new state.
+6. A new `EngineSnapshot` is built and all React subscribers are notified.
+
+On rejection, the current state is unchanged and React does not re-render.
+
+```ts
+const result = engine.dispatch({
+  id: 'tx-add-clip',
+  label: 'Add interview clip',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'REGISTER_ASSET', asset: videoAsset },
+    { type: 'INSERT_CLIP', trackId: track.id, clip },
+  ],
+});
+
+if (!result.accepted) {
+  console.error(result.reason, result.message);
+}
+```
+
+---
+
+### `undo()` / `redo()`
+
+```ts
+undo(): boolean
+redo(): boolean
+```
+
+Returns `true` if the operation succeeded, `false` if there was nothing to undo/redo. After a successful undo or redo, the engine rebuilds indexes, notifies subscribers, and emits a new snapshot.
+
+```tsx
+import { useEngine, useCanUndoRedo } from '@timelinx/react';
+
+function UndoRedoButtons() {
+  const engine = useEngine();
+  const { canUndo, canRedo } = useCanUndoRedo();
+
+  return (
+    <>
+      <button disabled={!canUndo} onClick={() => engine.undo()}>Undo</button>
+      <button disabled={!canRedo} onClick={() => engine.redo()}>Redo</button>
+    </>
+  );
+}
+```
+
+---
+
+### `activateTool(toolId)` / `getActiveToolId()`
+
+```ts
+activateTool(toolId: string): void
+getActiveToolId(): string
+```
+
+Switches the active tool and notifies subscribers. The cursor updates to reflect the new tool's default cursor.
+
+---
+
+### Pointer & Keyboard Event Handlers
+
+```ts
+handlePointerDown(event: TimelinePointerEvent, modifiers: Modifiers): void
+handlePointerMove(event: TimelinePointerEvent, modifiers: Modifiers): void
+handlePointerUp(event: TimelinePointerEvent, modifiers: Modifiers): void
+handleKeyDown(event: TimelineKeyEvent, modifiers: Modifiers): void
+handleKeyUp(event: TimelineKeyEvent, modifiers: Modifiers): void
+```
+
+These forward events to the active tool. Call them from the tool router (`useToolRouter`) or from manual event handlers on the timeline container.
+
+```ts
+type Modifiers = {
+  shift: boolean;
+  alt: boolean;
+  ctrl: boolean;
+  meta: boolean;
+};
+```
+
+---
+
+### Playback Methods
+
+```ts
+setPlayheadFrame(frame: TimelineFrame): void
+play(): void
+pause(): void
+stop(): void
+```
+
+`setPlayheadFrame` moves the playhead without playing. `play()` starts playback from the current frame — only available when `pipeline` was provided in the constructor. Without a pipeline, `play()` has no effect.
+
+---
+
+### `subscribe(callback)` / `getSnapshot()`
+
+```ts
+subscribe(callback: () => void): () => void
+getSnapshot(): EngineSnapshot
+```
+
+These are the `useSyncExternalStore` integration points. React hooks call these internally — you only need them when building a custom subscription outside React.
+
+The returned `subscribe` function returns an unsubscribe function:
+
+```ts
+const unsubscribe = engine.subscribe(() => {
+  console.log('state changed');
+});
+// later:
+unsubscribe();
+```
+
+---
+
+## `EngineSnapshot`
+
+Hooks read from an `EngineSnapshot` — an immutable frozen object rebuilt after every state change:
+
+```ts
+type EngineSnapshot = {
+  readonly state: TimelineState;
+  readonly stableTrackIds: readonly string[];
+  readonly history: { canUndo: boolean; canRedo: boolean };
+  readonly activeToolId: string;
+  readonly cursor: string | null;
+  readonly provisional: ProvisionalState | null;
+  readonly playheadFrame: TimelineFrame;
+  readonly isPlaying: boolean;
+  readonly selectedClipIds: ReadonlySet<string>;
+  readonly selectedCaptionIds: ReadonlySet<string>;
+  readonly snapIndex: SnapIndex;
+  readonly change: StateChange;
+};
+```
+
+| Field | Notes |
+|-------|-------|
+| `state` | Current `TimelineState`. |
+| `stableTrackIds` | Track ID array. Stable reference — only replaced when track count or order changes. React hooks use this to mount/unmount per-track components without re-running on unrelated state changes. |
+| `history` | `canUndo` and `canRedo` flags. Updated once when availability changes, not on every snapshot. |
+| `activeToolId` | String ID of the current tool. |
+| `cursor` | CSS cursor string for the current tool and hover state. |
+| `provisional` | Drag-preview state from the active tool. `null` when idle. |
+| `playheadFrame` | Current playhead position. |
+| `isPlaying` | `true` when playback is running. |
+| `selectedClipIds` | `ReadonlySet<string>` from the `SelectionTool`. |
+| `selectedCaptionIds` | `ReadonlySet<string>` of selected captions. |
+| `snapIndex` | Current snap index — rebuilt after every dispatch. |
+| `change` | `StateChange` diff from the previous snapshot. Use with `useChange()` for coarse re-renders. |
+
+---
+
+## Lifetime Management
+
+**Create the engine outside of the render function:**
+
+```tsx
+// ✅ Correct: engine is stable across renders
+const engine = new TimelineEngine({ initialState });
+
+function App() {
+  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+}
+```
+
+**Wrong — recreating on every render resets all state:**
+
+```tsx
+// ❌ Wrong: engine resets on every render
+function App() {
+  const engine = new TimelineEngine({ initialState }); // don't do this
+  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+}
+```
+
+**When initial state is loaded asynchronously:**
+
+```tsx
+import { useMemo, useState, useEffect } from 'react';
+import { TimelineEngine } from '@timelinx/react';
+
+function App() {
+  const [initialState, setInitialState] = useState<TimelineState | null>(null);
+
+  useEffect(() => {
+    loadProjectFromServer().then(setInitialState);
+  }, []);
+
+  const engine = useMemo(
+    () => (initialState ? new TimelineEngine({ initialState }) : null),
+    [initialState],
+  );
+
+  if (!engine) return <LoadingScreen />;
+
+  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+}
+```
+
+<Callout title="Do not memoize with stale deps">
+  If `initialState` changes identity on every render (e.g., from a selector that constructs a new object), the engine will be recreated on every render. Load your state once and keep the reference stable.
+</Callout>
+
+---
+
+## Multiple Engine Instances
+
+You can mount multiple independent editor instances on the same page. Each engine maintains its own state, history, and subscriptions:
+
+```tsx
+function SplitEditorApp() {
+  const engineA = useMemo(() => new TimelineEngine({ initialState: stateA }), []);
+  const engineB = useMemo(() => new TimelineEngine({ initialState: stateB }), []);
+
+  return (
+    <div style={{ display: 'flex', gap: 16 }}>
+      <TimelineProvider engine={engineA}>
+        <TimelineEditor engine={engineA} />
+      </TimelineProvider>
+      <TimelineProvider engine={engineB}>
+        <TimelineEditor engine={engineB} />
+      </TimelineProvider>
+    </div>
+  );
+}
+```
+
+Engine-first hooks accept an engine argument directly for use outside the default provider context:
+
+```tsx
+function ExternalInspector({ engine }: { engine: TimelineEngine }) {
+  const timeline = useTimelineWithEngine(engine);
+  return <h2>{timeline.name}</h2>;
+}
+```
+
+---
+
+## Wiring Media Playback
+
+Pass a `PipelineConfig` to enable frame decoding and compositing:
+
+```ts
+import { createWebCodecsDecoder } from '@timelinx/media-web';
+import { createWebGLCompositor } from '@timelinx/media-web';
+import { createThumbnailExtractor } from '@timelinx/media-web';
+
+const engine = new TimelineEngine({
+  initialState,
+  pipeline: {
+    videoDecoder: createWebCodecsDecoder(),
+    compositor: createWebGLCompositor({ canvas: canvasRef.current! }),
+    thumbnailProvider: createThumbnailExtractor(),
+  },
+  dimensions: { width: 1920, height: 1080 },
+});
+```
+
+Without `pipeline`, the engine is edit-only: dispatch, undo/redo, selection, and tool routing work normally but `play()` has no effect.

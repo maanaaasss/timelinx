@@ -3,7 +3,13 @@
   "root": true,
   "pages": [
     "index",
+    "---Core---",
+    "engine",
+    "provider",
     "hooks",
-    "provider"
+    "---Advanced---",
+    "tool-router",
+    "virtual-window"
   ]
 }
+

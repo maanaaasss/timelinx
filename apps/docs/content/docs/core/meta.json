@@ -3,10 +3,23 @@
   "root": true,
   "pages": [
     "index",
-    "architecture",
+    "---Data Model---",
+    "data-model",
+    "time",
+    "operations",
+    "---State Machine---",
     "dispatch-model",
     "transactions",
     "invariants",
-    "undo-redo"
+    "undo-redo",
+    "---Editing---",
+    "tools",
+    "snapping",
+    "frame-resolver",
+    "---Runtime---",
+    "playback",
+    "serialization",
+    "architecture"
   ]
 }
+

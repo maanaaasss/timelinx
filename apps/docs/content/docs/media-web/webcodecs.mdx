@@ -1,0 +1,140 @@
+---
+title: WebCodecs Decoder
+description: Video frame decoding using the browser's WebCodecs API
+icon: Film
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`WebCodecsDecoderAdapter` implements the `VideoDecoder` pipeline contract using the browser's WebCodecs API. It manages per-clip `VideoDecoder` instances, caches decoded frames, and handles hardware/software acceleration preferences.
+
+## Installation
+
+The adapter is exported from `@timelinx/media-web`:
+
+```ts
+import { createWebCodecsDecoder, WebCodecsDecoderAdapter } from '@timelinx/media-web';
+```
+
+## Feature Detection
+
+Always check support before using WebCodecs:
+
+```ts
+import { createWebCodecsDecoder } from '@timelinx/media-web';
+
+const decoder = createWebCodecsDecoder();
+if (!decoder.isSupported()) {
+  console.warn('WebCodecs not available. Playback disabled.');
+}
+```
+
+WebCodecs is supported in Chrome 94+, Edge 94+, and Safari 16.4+. It is not available in Firefox.
+
+---
+
+## `createWebCodecsDecoder(config?)`
+
+Factory function — creates an adapter instance:
+
+```ts
+function createWebCodecsDecoder(config?: WebCodecsDecoderConfig): WebCodecsDecoderAdapter
+```
+
+### `WebCodecsDecoderConfig`
+
+```ts
+type WebCodecsDecoderConfig = {
+  codec?: string;
+  hardwareAcceleration?: HardwareAcceleration;
+  concurrency?: number;
+};
+```
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `codec` | `string` | auto-detect | Codec string, e.g. `'avc1.42001E'` for H.264 baseline. When omitted, the adapter infers from the source file's metadata. |
+| `hardwareAcceleration` | `HardwareAcceleration` | `'prefer-hardware'` | `'prefer-hardware'` \| `'prefer-software'` \| `'no-preference'` |
+| `concurrency` | `number` | `4` | Reserved for future concurrent decoder pool. Currently unused. |
+
+---
+
+## `configureDecoder(clipId, config)`
+
+Register a decoder for a specific clip. Call this when you add an asset to the registry and know its codec:
+
+```ts
+await decoder.configureDecoder('clip-1', {
+  codec: 'avc1.42001E',
+  codedWidth: 1920,
+  codedHeight: 1080,
+  hardwareAcceleration: 'prefer-hardware',
+});
+```
+
+If not called, the adapter attempts auto-configuration on the first decode request, which may be slower.
+
+---
+
+## Decode Flow
+
+The adapter is called by `PlaybackEngine` during playback:
+
+```ts
+// Called internally by PlaybackEngine — you don't call this directly
+const result = await decoder.decode({
+  clipId: 'clip-1',
+  mediaFrame: toFrame(450),
+  quality: 'full',
+});
+// result: { clipId, mediaFrame, width, height, bitmap: VideoFrame }
+```
+
+Decoded frames are cached by `{ clipId, mediaFrame }`. On cache hit, the frame is returned immediately. Cache entries are evicted after a configurable TTL (default 2 seconds).
+
+`quality` values:
+- `'full'` — decode at full resolution
+- `'draft'` — decode at reduced resolution for fast scrubbing
+
+---
+
+## Hardware Acceleration
+
+```ts
+const decoder = createWebCodecsDecoder({
+  hardwareAcceleration: 'prefer-hardware', // Use GPU decoder when available
+});
+```
+
+`'prefer-software'` is useful when testing in CI environments or when GPU decoders produce visual artifacts with a specific codec.
+
+---
+
+## Cleanup
+
+Decoder instances hold GPU resources. Close the adapter when the engine is destroyed:
+
+```ts
+decoder.close();
+```
+
+This calls `.close()` on all active `VideoDecoder` instances and clears the frame cache.
+
+---
+
+## Error Handling
+
+If a decode fails (missing codec, corrupted frame, GPU error):
+
+```ts
+const result = await decoder.decode(request).catch((err) => {
+  console.error('Decode failed', err);
+  return null;
+});
+```
+
+`PlaybackEngine` skips frames that fail to decode. Persistent decode errors cause playback to stall — handle `onError` in `TimelineEngineOptions` to surface this to the user.
+
+<Callout type="warn" title="Codec configuration">
+  WebCodecs requires a specific codec string (e.g., `'avc1.42001E'`). Your media import flow must extract this from the source file and register it with `configureDecoder()` before playback starts. The codec string can be obtained from a `<video>` element's `videoTracks[0].getCapabilities()` or from an MP4 demuxer.
+</Callout>

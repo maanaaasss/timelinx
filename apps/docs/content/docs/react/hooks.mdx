@@ -1,138 +1,314 @@
 ---
 title: Hooks
-description: React hooks for subscribing to timeline state, tools, playback, and history
+description: Every @timelinx/react hook — what it returns, when it re-renders, and how to use it
+icon: Blocks
 ---
 
-Hooks in `@timelinx/react` read from the engine snapshot with `useSyncExternalStore`. Prefer the narrowest hook that gives your component the data it needs.
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Context-Based Hooks
+All hooks in `@timelinx/react` read from the `EngineSnapshot` via `useSyncExternalStore`. They subscribe selectively — each hook re-renders only when the slice of state it reads changes.
 
-Use these inside `TimelineProvider` from `@timelinx/react`.
+**The rule: use the narrowest hook for what you need.** `useClip(id)` re-renders only when that clip changes. `useTimeline()` re-renders any time any part of the timeline changes.
+
+## State Hooks
+
+### `useEngine()`
+
+Returns the stable `TimelineEngine` reference. Does not cause re-renders.
 
 ```tsx
-import { TimelineProvider, useClip, useEngine, useTrackIds } from '@timelinx/react';
+const engine = useEngine();
+engine.dispatch(transaction);
+engine.undo();
+engine.activateTool('razor');
+```
 
-function TrackSummary() {
-  const engine = useEngine();
-  const trackIds = useTrackIds();
+---
 
-  return (
-    <button onClick={() => engine.undo()}>
-      Tracks: {trackIds.length}
-    </button>
-  );
+### `useTimeline()`
+
+Returns the full `Timeline` object. Re-renders when any timeline metadata changes (name, fps, duration, version).
+
+```tsx
+const timeline = useTimeline();
+// { id, name, fps, duration, version, tracks, markers, ... }
+
+return <h1>{timeline.name}</h1>;
+```
+
+---
+
+### `useTrackIds()`
+
+Returns a stable `readonly string[]` of track IDs in order. Re-renders only when the count or order of tracks changes. Use this to mount/unmount track row components:
+
+```tsx
+const trackIds = useTrackIds();
+
+return (
+  <>
+    {trackIds.map((id) => (
+      <TimelineTrack key={id} trackId={id} />
+    ))}
+  </>
+);
+```
+
+---
+
+### `useTrack(id)`
+
+Returns a single `Track | null` by ID. Re-renders when that track's data changes (clips, mute, lock, height, name). Does not re-render when other tracks change.
+
+```tsx
+const track = useTrack('v1');
+if (!track) return null;
+
+return <span>{track.name} — {track.clips.length} clips</span>;
+```
+
+---
+
+### `useClip(id)`
+
+Returns a single `Clip | null` by ID. Re-renders when that clip changes (timeline bounds, media bounds, speed, effects, name). Does not re-render when anything else changes.
+
+```tsx
+const clip = useClip('clip-1');
+if (!clip) return null;
+
+return <span style={{ color: clip.color ?? 'white' }}>{clip.name}</span>;
+```
+
+---
+
+### `useMarkers()`
+
+Returns `readonly Marker[]` from `timeline.markers`. Re-renders when the marker list changes.
+
+```tsx
+const markers = useMarkers();
+return <ul>{markers.map(m => <li key={m.id}>{m.label}</li>)}</ul>;
+```
+
+---
+
+### `useProvisional()`
+
+Returns `ProvisionalState | null`. `null` when idle; a provisional state object during drag gestures. Re-renders on every pointer move during a drag.
+
+```tsx
+const provisional = useProvisional();
+
+if (provisional) {
+  // Render ghost clips
+  return provisional.clips.map((p) => <GhostClip key={p.clipId} {...p} />);
 }
 ```
 
-| Hook | Returns | Re-renders when |
-|------|---------|-----------------|
-| `useEngine()` | `TimelineEngine` | Never; the engine reference is stable |
-| `useTimeline()` | `Timeline` | Timeline metadata or structure changes |
-| `useTrackIds()` | `readonly string[]` | Track order or count changes |
-| `useTrack(id)` | `Track \| null` | That track changes |
-| `useClip(id)` | `Clip \| null` | That clip changes |
-| `useMarkers()` | `readonly Marker[]` | Timeline markers change |
-| `useActiveTool()` | `{ id, cursor }` | Active tool or cursor changes |
-| `useCanUndoRedo()` | `{ canUndo, canRedo }` | History availability changes |
-| `useCanUndo()` | `boolean` | Undo availability changes |
-| `useCanRedo()` | `boolean` | Redo availability changes |
-| `useProvisional()` | `ProvisionalState \| null` | Drag preview state changes |
+---
 
-## Engine-First Hooks
+### `useSelectedClipIds()`
 
-Engine-first hooks are useful when you pass an engine explicitly, compose hooks outside the default provider, or bridge multiple editor instances.
+Returns `ReadonlySet<string>`. Re-renders when the selection set changes.
 
 ```tsx
-import {
-  usePlayheadFrame,
-  useSelectedClipIds,
-  useTimelineWithEngine,
-} from '@timelinx/react';
+const selectedClipIds = useSelectedClipIds();
+const isSelected = selectedClipIds.has(clip.id);
+```
 
-function ExternalInspector({ engine }: { engine: TimelineEngine }) {
-  const timeline = useTimelineWithEngine(engine);
-  const playhead = usePlayheadFrame(engine);
-  const selectedClipIds = useSelectedClipIds(engine);
+---
 
-  return <pre>{JSON.stringify({ timeline: timeline.name, playhead, selectedClipIds: [...selectedClipIds] })}</pre>;
+### `useSelectedCaptionIds()`
+
+Returns `ReadonlySet<string>`. Re-renders when the caption selection set changes.
+
+---
+
+### `useActiveTool()` / `useActiveToolId()`
+
+```tsx
+const { id, cursor } = useActiveTool();
+// id: 'selection' | 'razor' | ...
+// cursor: 'default' | 'crosshair' | null | ...
+
+const toolId = useActiveToolId();
+```
+
+Use these to highlight the active tool button in a toolbar.
+
+---
+
+## History Hooks
+
+### `useCanUndoRedo()`
+
+```tsx
+const { canUndo, canRedo } = useCanUndoRedo();
+
+<button disabled={!canUndo} onClick={() => engine.undo()}>Undo</button>
+<button disabled={!canRedo} onClick={() => engine.redo()}>Redo</button>
+```
+
+Re-renders only when undo/redo availability changes — not on every dispatch.
+
+---
+
+### `useCanUndo()` / `useCanRedo()`
+
+Boolean variants of `useCanUndoRedo()`:
+
+```tsx
+const canUndo = useCanUndo();
+const canRedo = useCanRedo();
+```
+
+---
+
+### `useHistory(engine)`
+
+Engine-first. Returns detailed history state:
+
+```tsx
+import { useHistory } from '@timelinx/react';
+
+const { canUndo, canRedo, undoLabel, redoLabel } = useHistory(engine);
+// undoLabel: 'Undo: Move clip'
+// redoLabel: 'Redo: Add track'
+```
+
+---
+
+## Playback Hooks
+
+### `usePlayheadFrame(engine?)`
+
+Returns the current `TimelineFrame` of the playhead. Re-renders on every playhead tick during playback.
+
+```tsx
+import { usePlayheadFrame } from '@timelinx/react';
+
+function Transport({ engine }) {
+  const frame = usePlayheadFrame(engine);
+  const tc = framesToTimecode(frame, timeline.fps);
+  return <span className="timecode">{tc}</span>;
 }
 ```
 
-Common engine-first hooks include:
+<Callout type="warn" title="Mount sparingly">
+  `usePlayheadFrame` re-renders on every animation frame during playback (30–60× per second). Keep it only in components that display the playhead position — ruler, transport, and compositor. Do not use it in clip components.
+</Callout>
 
-- `useTimelineWithEngine(engine)`
-- `useTrackIdsWithEngine(engine)`
-- `useTrackWithEngine(engine, trackId)`
-- `useClipWithEngine(engine, clipId)`
-- `useVisibleClips(engine, window)`
-- `useVirtualWindow(engine, options)`
-- `useSelectedClipIds(engine)`
-- `useSelectedCaptionIds(engine)`
-- `useClipEffects(engine, clipId)`
-- `useClipTransition(engine, clipId)`
-- `useTrackCaptions(engine, trackId)`
-- `useAllTransitions(engine)`
-- `useHistory(engine)`
-- `useChange(engine)`
-- `usePlaybackEngine(engine)`
-- `usePlayheadFrame(engine)`
-- `useIsPlaying(engine)`
+---
 
-## Dispatching From Hooks
+### `useIsPlaying(engine?)`
 
-Hooks read state; transactions still go through the engine.
+Returns `boolean`. Re-renders when playback starts or stops.
 
 ```tsx
-import { useEngine } from '@timelinx/react';
-import { toFrame } from '@timelinx/core';
+const isPlaying = useIsPlaying(engine);
+<button>{isPlaying ? '⏸ Pause' : '▶ Play'}</button>
+```
 
-function MoveButton({ clipId }: { clipId: string }) {
+---
+
+## Clip & Effect Hooks
+
+### `useClipEffects(engine, clipId)`
+
+Returns `readonly Effect[]` for a clip. Re-renders when the effects array changes.
+
+```tsx
+const effects = useClipEffects(engine, 'clip-1');
+effects.forEach((effect) => console.log(effect.type));
+```
+
+---
+
+### `useClipTransition(engine, clipId)`
+
+Returns `Transition | null`. Re-renders when the clip's transition changes.
+
+```tsx
+const transition = useClipTransition(engine, 'clip-1');
+```
+
+---
+
+### `useTrackCaptions(engine, trackId)`
+
+Returns `readonly Caption[]`. Re-renders when the caption list on that track changes.
+
+---
+
+## Virtual Rendering Hooks
+
+### `useVirtualWindow(engine, options)`
+
+Returns a `VirtualWindow` — the visible frame range from current scroll and zoom. See [Virtual Rendering](/docs/react/virtual-window).
+
+### `useVisibleClips(engine, window)`
+
+Returns clips that intersect the visible frame window. See [Virtual Rendering](/docs/react/virtual-window).
+
+---
+
+## Change Hooks
+
+### `useChange(engine)`
+
+Returns a `StateChange` diff from the previous snapshot. Use for coarse re-renders — react to the type of change without inspecting the full state:
+
+```tsx
+import { useChange } from '@timelinx/react';
+
+const change = useChange(engine);
+// { type: 'CLIP_MOVED' | 'TRACK_ADDED' | ... , clipId?, trackId? }
+```
+
+---
+
+## Engine-First Variants
+
+Every context-based hook has a `WithEngine` variant that accepts the engine explicitly. Use them when building components outside the default `TimelineProvider`:
+
+| Context | Engine-first |
+|---------|-------------|
+| `useTimeline()` | `useTimelineWithEngine(engine)` |
+| `useTrackIds()` | `useTrackIdsWithEngine(engine)` |
+| `useTrack(id)` | `useTrackWithEngine(engine, id)` |
+| `useClip(id)` | `useClipWithEngine(engine, id)` |
+| `useSelectedClipIds()` | `useSelectedClipIds(engine)` |
+| `usePlayheadFrame()` | `usePlayheadFrame(engine)` |
+| `useIsPlaying()` | `useIsPlaying(engine)` |
+
+---
+
+## Dispatching from Components
+
+Hooks read state; transactions still go through the engine:
+
+```tsx
+function DeleteButton({ clipId }: { clipId: string }) {
   const engine = useEngine();
 
   return (
     <button
       onClick={() => {
-        engine.dispatch({
-          id: `move-${clipId}`,
-          label: 'Move clip',
+        const result = engine.dispatch({
+          id: `delete-${clipId}`,
+          label: 'Delete clip',
           timestamp: Date.now(),
-          operations: [
-            {
-              type: 'MOVE_CLIP',
-              clipId,
-              newTimelineStart: toFrame(300),
-            },
-          ],
+          operations: [{ type: 'DELETE_CLIP', clipId }],
         });
+
+        if (!result.accepted) {
+          console.warn('Delete rejected:', result.reason);
+        }
       }}
     >
-      Move
+      Delete
     </button>
   );
 }
 ```
-
-Handle rejected dispatches when the UI action can fail:
-
-```tsx
-const result = engine.dispatch(transaction);
-
-if (!result.accepted) {
-  setError(result.message);
-}
-```
-
-## Playback Hooks
-
-`usePlayheadFrame(engine)` and `useIsPlaying(engine)` subscribe to the React engine snapshot. `usePlayhead()` and `usePlayheadEvent()` are lower-level playback hooks for integrations that work directly with a playback controller or playback engine.
-
-Keep high-frequency subscriptions narrow. Playhead movement can update frequently, so subscribe only the playhead, ruler, transport, and preview components that actually need those values.
-
-## Hook Design Guidance
-
-- Use `useClip(id)` for individual clip UI instead of subscribing a whole track if possible.
-- Use `useTrackIds()` for ordering and mount/unmount decisions.
-- Use `useHistory(engine)` or `useCanUndoRedo()` for toolbar state.
-- Use `useProvisional()` for ghost clips and drag previews.
-- Use `useChange(engine)` when you need to react to coarse state changes without diffing the entire timeline.
-- Pass the engine explicitly when building multi-editor pages.
