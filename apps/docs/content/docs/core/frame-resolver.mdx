@@ -1,0 +1,206 @@
+---
+title: Frame Resolution
+description: Querying clips at a given frame, TrackIndex, IntervalTree, and virtual rendering helpers
+icon: Search
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Frame resolution is the process of answering "what clips are active at frame N?" This feeds the playback compositor, virtual rendering, and navigation (next/prev clip boundary). The helpers in this section are pure functions — they read from state and return results without side effects.
+
+## `resolveFrame(state, frame)`
+
+Returns the compositor request for a given timeline frame — every clip active at that position, in track order, with media frames calculated:
+
+```ts
+import { resolveFrame } from '@timelinx/core';
+
+const request = resolveFrame(state, playheadFrame);
+// request: ResolvedCompositeRequest
+// {
+//   timelineFrame: TimelineFrame,
+//   layers: ResolvedLayer[],
+//   width: number,
+//   height: number,
+//   quality: 'full',
+// }
+```
+
+Each `ResolvedLayer` carries what the compositor needs:
+
+```ts
+type ResolvedLayer = {
+  readonly clipId: ClipId;
+  readonly trackId: TrackId;
+  readonly trackIndex: number;
+  readonly mediaFrame: TimelineFrame;  // frame in asset to decode
+  readonly transform: ClipTransform;
+  readonly opacity: number;
+  readonly blendMode: string;
+  readonly effects: readonly Effect[];
+};
+```
+
+`PlaybackEngine` calls `resolveFrame()` on each tick to know what to decode and composite.
+
+---
+
+## `mediaFrameForClip(clip, timelineFrame)`
+
+Convert a timeline position to the corresponding media frame for a specific clip:
+
+```ts
+import { mediaFrameForClip } from '@timelinx/core';
+
+const mediaFrame = mediaFrameForClip(clip, playheadFrame);
+// = clip.mediaIn + (playheadFrame - clip.timelineStart)
+// Adjusted for speed and reversed flag
+```
+
+For a clip with `speed = 2.0`, the media frame advances twice as fast as the timeline frame. For `reversed = true`, the formula counts backward from `mediaOut`.
+
+---
+
+## `getClipsAtFrame(track, frame)`
+
+Returns all clips on a track that are active at a given frame:
+
+```ts
+import { getClipsAtFrame } from '@timelinx/core';
+
+const activeClips = getClipsAtFrame(track, playheadFrame);
+```
+
+A clip is active if `clip.timelineStart <= frame < clip.timelineEnd`. Disabled clips (`enabled: false`) are included — callers decide whether to skip them.
+
+---
+
+## `findClipById(state, clipId)`
+
+Find a clip by ID without knowing which track it's on:
+
+```ts
+import { findClipById } from '@timelinx/core';
+
+const clip = findClipById(state, clipId);
+// returns Clip | null
+```
+
+This iterates all tracks. For repeated lookups, use `TrackIndex` below.
+
+---
+
+## Navigation Helpers
+
+### `findNextClipBoundary(state, frame)` / `findPrevClipBoundary`
+
+Find the next or previous clip boundary (start or end) from a given frame. Used by J/K/L navigation and clip-to-clip jumping:
+
+```ts
+import { findNextClipBoundary, findPrevClipBoundary } from '@timelinx/core';
+
+const nextBoundary = findNextClipBoundary(state, currentFrame);
+// { frame: TimelineFrame, type: 'start' | 'end', clipId: ClipId }
+
+const prevBoundary = findPrevClipBoundary(state, currentFrame);
+```
+
+Returns `null` if there is no boundary in that direction.
+
+---
+
+### `findNextMarker(state, frame)` / `findPrevMarker`
+
+Navigate between markers:
+
+```ts
+import { findNextMarker, findPrevMarker } from '@timelinx/core';
+
+const next = findNextMarker(state, currentFrame);
+// { marker: Marker } or null
+```
+
+---
+
+## `TrackIndex`
+
+`TrackIndex` is a per-track interval tree that makes repeated frame queries fast. Build it once after each state change, then query without re-scanning all clips:
+
+```ts
+import { TrackIndex } from '@timelinx/core';
+
+const trackIndex = new TrackIndex();
+trackIndex.build(state);
+
+// Fast range query on a specific track
+const clips = trackIndex.query('v1', startFrame, endFrame);
+```
+
+`TimelineEngine` owns a `TrackIndex` internally, rebuilt after every dispatch. Use it directly only in headless integrations.
+
+---
+
+## `IntervalTree`
+
+`IntervalTree` is the data structure powering `TrackIndex`. For cases where you need a generic interval tree independent of the timeline model:
+
+```ts
+import { IntervalTree } from '@timelinx/core';
+
+type MyInterval = { start: number; end: number; data: string };
+
+const tree = new IntervalTree<MyInterval>();
+tree.insert({ start: 100, end: 200, data: 'clip-a' });
+tree.insert({ start: 150, end: 300, data: 'clip-b' });
+
+const hits = tree.query(175);
+// [{ start: 100, end: 200, data: 'clip-a' }, { start: 150, end: 300, data: 'clip-b' }]
+
+tree.remove('clip-a', (item) => item.data === 'clip-a');
+```
+
+---
+
+## Virtual Rendering
+
+Long timelines can have thousands of clips. Only render the clips visible in the current viewport.
+
+### `VirtualWindow`
+
+```ts
+type VirtualWindow = {
+  readonly startFrame: TimelineFrame;
+  readonly endFrame: TimelineFrame;
+  readonly vpWidth: number;  // viewport width in pixels
+  readonly ppf: number;      // pixels per frame (zoom)
+};
+```
+
+### `getVisibleClips(state, window)`
+
+Returns all clips whose timeline range intersects the visible frame range:
+
+```ts
+import { getVisibleClips } from '@timelinx/core';
+
+const visible = getVisibleClips(state, {
+  startFrame: scrollLeft / ppf,
+  endFrame: (scrollLeft + vpWidth) / ppf,
+  vpWidth,
+  ppf,
+});
+```
+
+### `getVisibleFrameRange(state, window)`
+
+```ts
+import { getVisibleFrameRange } from '@timelinx/core';
+
+const { startFrame, endFrame } = getVisibleFrameRange(state, window);
+```
+
+Use these to drive `useVisibleClips()` from `@timelinx/react`, which subscribes to engine state changes and returns only the clips in the current viewport.
+
+<Callout title="Virtual rendering is opt-in">
+  `TimelineEditor` from `@timelinx/ui` handles virtual rendering automatically. You only need these helpers when building a custom timeline canvas.
+</Callout>

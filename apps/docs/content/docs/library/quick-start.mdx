@@ -1,88 +1,52 @@
 ---
 title: Quick Start
-description: Getting started with Timelinx
+description: Build a working timeline editor in under 5 minutes
 icon: Rocket
 ---
 
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-## Getting Started with Timelinx
+## What You're Building
 
-Timelinx <span className="text-fd-muted-foreground text-sm">(time-linx)</span> is a **browser-native timeline editor engine**, designed to be predictable, testable, and composable. It consists of multiple layers:
+A fully functional timeline editor with video tracks, clip placement, zoom, drag-to-move, undo/redo, and keyboard shortcuts — running entirely in the browser.
 
 <Cards>
   <Card title="@timelinx/core" href="/docs/core">
-    The headless engine. Pure-function dispatch model with invariant validation, transactions, and undo/redo.
+    The headless engine. Dispatch model, invariant validation, and undo history.
   </Card>
   <Card title="@timelinx/react" href="/docs/react">
-    React bindings. Hooks, providers, and tool routing via `useSyncExternalStore`.
+    React bindings — `TimelineEngine`, hooks, and providers.
   </Card>
   <Card title="@timelinx/ui" href="/docs/ui">
-    Drop-in components. Tracks, clips, panels, and a full timeline editor.
+    Drop-in components — tracks, clips, ruler, panels, and a complete editor surface.
   </Card>
 </Cards>
 
-<Callout title="Want to learn more?">
-  Read our in-depth [What is Timelinx?](/docs/library) introduction.
-</Callout>
-
-## Terminology
-
-**Timeline:** A sequence of tracks containing clips, aligned to a timecode basis (frames or timecode).
-
-**Dispatch:** A pure function `(state, command) → result` that validates and applies operations to timeline state.
-
-**Invariant:** A rule that timeline state must satisfy. The dispatch engine checks 24 invariant types before applying any operation.
-
-**Transaction:** A batch of operations applied atomically. If any operation fails validation, the entire transaction is rejected.
-
-Some basic knowledge of React.js would be useful for further customizations.
-
 ## Prerequisites
 
-- Node.js >= 22
-- A React project (Next.js, Vite, or any React setup)
+- Node.js ≥ 22
+- React ≥ 18 (Next.js, Vite, or any setup)
+- TypeScript ≥ 5.0
 
-## Installation
+## Install
 
-Install the packages you need:
+```bash
+pnpm add @timelinx/core @timelinx/react @timelinx/ui
+```
 
-<CodeBlockTabs defaultValue="npm" groupId="package-manager">
-  <CodeBlockTabsList>
-    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
-  </CodeBlockTabsList>
-  <CodeBlockTab value="npm">
-    ```bash
-    npm install @timelinx/core @timelinx/react @timelinx/ui
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="pnpm">
-    ```bash
-    pnpm add @timelinx/core @timelinx/react @timelinx/ui
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="yarn">
-    ```bash
-    yarn add @timelinx/core @timelinx/react @timelinx/ui
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="bun">
-    ```bash
-    bun add @timelinx/core @timelinx/react @timelinx/ui
-    ```
-  </CodeBlockTab>
-</CodeBlockTabs>
+Then add the CSS to your global stylesheet. Both imports are required:
 
-<Callout title="Minimal install">
-  Only need the engine? Install just `@timelinx/core` for headless state management without React or UI.
-</Callout>
+```css
+/* globals.css */
+@import '@timelinx/ui/styles/presets/dark-pro';
+@import '@timelinx/ui/styles/structure';
+```
 
-## Create Your First Timeline
+See [Installation](/docs/library/installation) for Next.js, Vite, and framework-specific notes.
 
-Create a file to set up your timeline:
+## Create an Initial State
+
+State is a plain object. Build it once with factory functions:
 
 ```ts title="lib/timeline.ts"
 import {
@@ -90,44 +54,65 @@ import {
   createTimelineState,
   createTrack,
   createClip,
+  createAsset,
   dispatch,
   toFrame,
+  toTrackId,
+  toAssetId,
   frameRate,
 } from '@timelinx/core';
 
-// Create a 10-second timeline at 30fps
+// 10-minute timeline at 30fps
 const timeline = createTimeline({
   id: 'tl-1',
   name: 'My Edit',
   fps: frameRate(30),
-  duration: toFrame(3000),
+  duration: toFrame(18000),
 });
 
-const state = createTimelineState({ timeline });
+const emptyState = createTimelineState({ timeline });
 
-// Add a video track
-const track = createTrack({ id: 'v1', name: 'V1', type: 'video', clips: [] });
+// A video asset must be registered before any clip can reference it
+const videoAsset = createAsset({
+  id: 'asset-1',
+  name: 'interview.mp4',
+  mediaType: 'video',
+  filePath: '/media/interview.mp4',
+  intrinsicDuration: toFrame(9000), // 5 minutes
+  nativeFps: frameRate(30),
+  sourceTimecodeOffset: toFrame(0),
+});
 
-const result = dispatch(state, {
-  id: 'setup',
-  label: 'Add track and clip',
+const videoTrack = createTrack({ id: 'v1', name: 'V1', type: 'video' });
+
+const result = dispatch(emptyState, {
+  id: 'tx-setup',
+  label: 'Setup timeline',
   timestamp: Date.now(),
   operations: [
-    { type: 'ADD_TRACK', track },
-    { type: 'INSERT_CLIP', trackId: track.id, clip: createClip({
-      id: 'clip-1',
-      assetId: 'my-video',
-      trackId: 'v1',
-      timelineStart: toFrame(0),
-      timelineEnd: toFrame(300),
-      mediaIn: toFrame(0),
-      mediaOut: toFrame(300),
-    })},
+    // 1. Register the asset first — clips must reference an existing asset
+    { type: 'REGISTER_ASSET', asset: videoAsset },
+    // 2. Add the track
+    { type: 'ADD_TRACK', track: videoTrack },
+    // 3. Place a clip (references the asset registered in step 1)
+    {
+      type: 'INSERT_CLIP',
+      trackId: toTrackId('v1'),
+      clip: createClip({
+        id: 'clip-1',
+        assetId: toAssetId('asset-1'),
+        trackId: toTrackId('v1'),
+        timelineStart: toFrame(0),
+        timelineEnd: toFrame(300),  // 10 seconds at 30fps
+        mediaIn: toFrame(0),
+        mediaOut: toFrame(300),
+      }),
+    },
   ],
 });
 
 if (!result.accepted) {
-  throw new Error(`${result.reason}: ${result.message}`);
+  throw new Error(`Setup failed: ${result.reason} — ${result.message}`);
 }
 
 export const initialState = result.nextState;
@@ -135,115 +120,88 @@ export const initialState = result.nextState;
 
 ## Render the Editor
 
-Create a React component that renders the timeline editor:
+Create a `TimelineEngine` from your initial state and pass it to `TimelineEditor`:
 
 ```tsx title="app/editor/page.tsx"
-'use client';
+'use client'; // Next.js only
 
+import { TimelineEngine } from '@timelinx/react';
 import { TimelineEditor } from '@timelinx/ui';
 import { initialState } from '@/lib/timeline';
 
-export default function Editor() {
-  return <TimelineEditor initialState={initialState} />;
+// Create the engine once, outside the component
+const engine = new TimelineEngine({ initialState });
+
+export default function EditorPage() {
+  return (
+    <div style={{ height: '100vh' }}>
+      <TimelineEditor engine={engine} />
+    </div>
+  );
 }
 ```
 
-## Run the App
+`TimelineEditor` gives you: toolbar, ruler, track list, clip drag and resize, zoom controls, transport, sidebar, and keyboard shortcuts — all wired to the engine.
 
-Start your development server:
+## Run It
 
-<CodeBlockTabs defaultValue="npm" groupId="package-manager">
-  <CodeBlockTabsList>
-    <CodeBlockTabsTrigger value="npm">npm</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="pnpm">pnpm</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="yarn">yarn</CodeBlockTabsTrigger>
-    <CodeBlockTabsTrigger value="bun">bun</CodeBlockTabsTrigger>
-  </CodeBlockTabsList>
-  <CodeBlockTab value="npm">
-    ```bash
-    npm run dev
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="pnpm">
-    ```bash
-    pnpm dev
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="yarn">
-    ```bash
-    yarn dev
-    ```
-  </CodeBlockTab>
-  <CodeBlockTab value="bun">
-    ```bash
-    bun run dev
-    ```
-  </CodeBlockTab>
-</CodeBlockTabs>
+```bash
+pnpm dev
+```
 
-That's it. You have a working timeline editor with tracks, clips, zoom, drag, undo/redo, and keyboard shortcuts.
+Open the page. You should see a dark timeline editor with one video track and a clip at the start. Try dragging the clip, pressing ⌘Z to undo, and using the zoom controls.
+
+## What's Next
+
+<Cards>
+  <Card href="/docs/library/concepts" title="Concepts">
+    Every core term defined with its exact TypeScript type.
+  </Card>
+  <Card href="/docs/core/dispatch-model" title="Dispatch Model">
+    How transactions, operations, and invariants work.
+  </Card>
+  <Card href="/docs/react/engine" title="TimelineEngine">
+    Full engine API — methods, options, and snapshot model.
+  </Card>
+  <Card href="/docs/ui/theming" title="Theming">
+    Customize colors, fonts, and layout with CSS tokens.
+  </Card>
+</Cards>
 
 ## FAQ
 
 <Accordions>
-  <Accordion id="minimal-install" title="Can I use only @timelinx/core?">
-    Yes. `@timelinx/core` is headless — no React, no DOM. Use it with any UI framework or vanilla JS.
-
-    ```bash
-    npm install @timelinx/core
-    ```
+  <Accordion id="headless" title="Can I use only @timelinx/core without React?">
+    Yes. `@timelinx/core` is headless — no React, no DOM. Use it for server-side processing, tests, or with any other UI framework.
   </Accordion>
-  <Accordion id="typescript" title="Does Timelinx support TypeScript?">
-    Yes. All packages are written in TypeScript with full type definitions. Operations, state, and components are fully typed.
+  <Accordion id="typescript" title="Is TypeScript required?">
+    Not required, but strongly recommended. All packages are written in TypeScript with full type definitions. Operations, state, and hook return types are fully typed.
   </Accordion>
-  <Accordion id="state-persistence" title="How do I persist timeline state?">
-    State is serializable JSON. Persist to localStorage, IndexedDB, or send to a server:
+  <Accordion id="register-asset" title="Why do I need REGISTER_ASSET before INSERT_CLIP?">
+    Clips reference assets by ID. The dispatcher validates that `assetId` exists in `assetRegistry` before accepting `INSERT_CLIP`. This prevents orphan clips that reference non-existent media — a common source of broken project files.
+  </Accordion>
+  <Accordion id="persist" title="How do I save and restore the timeline?">
+    State is serializable JSON. Pass it through `serializeProject()` for versioned storage:
 
     ```ts
+    import { serializeProject, deserializeProject } from '@timelinx/core';
+
     // Save
-    localStorage.setItem('timeline', JSON.stringify(state));
+    const json = JSON.stringify(serializeProject(state));
+    localStorage.setItem('project', json);
 
     // Restore
-    const saved = JSON.parse(localStorage.getItem('timeline'));
+    const saved = JSON.parse(localStorage.getItem('project')!);
+    const state = deserializeProject(saved); // handles migrations
     ```
   </Accordion>
-  <Accordion id="custom-components" title="Can I build custom UI components?">
-    Yes. Use `@timelinx/react` hooks (`useTimeline`, `useDispatch`) to build custom components that integrate with the engine.
-  </Accordion>
-  <Accordion id="state-update" title="How do I update the timeline after initial render?">
-    Use `useDispatch` hook to dispatch commands from your components:
+  <Accordion id="editor-height" title="TimelineEditor has no height — how do I fix it?">
+    `TimelineEditor` fills its container. Give the container an explicit height:
 
     ```tsx
-    import { useDispatch } from '@timelinx/react';
-
-    function AddTrackButton() {
-      const dispatch = useDispatch();
-      return (
-        <button onClick={() => dispatch({ type: 'ADD_TRACK', track })}>
-          Add Track
-        </button>
-      );
-    }
+    <div style={{ height: '60vh' }}>
+      <TimelineEditor engine={engine} />
+    </div>
     ```
   </Accordion>
 </Accordions>
-
-## Learn More
-
-<Cards>
-  <Card href="/docs/library" title="What is Timelinx?">
-    Philosophy, design principles, and what makes Timelinx different.
-  </Card>
-  <Card href="/docs/library/architecture" title="Architecture">
-    How the three packages fit together.
-  </Card>
-  <Card href="/docs/core" title="Core Concepts">
-    Dispatch model, invariants, transactions, undo/redo.
-  </Card>
-  <Card href="/docs/react" title="React Integration">
-    Hooks, providers, and tool routing.
-  </Card>
-  <Card href="/docs/ui" title="UI Components">
-    Full component reference with live examples.
-  </Card>
-</Cards>

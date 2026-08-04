@@ -1,0 +1,217 @@
+---
+title: Serialization
+description: Project persistence, schema versioning, migrations, and interchange formats (OTIO, FCPXML, EDL, AAF, SRT)
+icon: HardDrive
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`TimelineState` is a plain object. You can serialize it to JSON directly with `JSON.stringify()`. For production use, the project serializer adds versioning and migration support to protect stored projects from future schema changes.
+
+## Project Serializer
+
+### `serializeProject(state, metadata?)`
+
+Wraps state in a versioned project envelope:
+
+```ts
+import { serializeProject } from '@timelinx/core';
+
+const project = serializeProject(state, {
+  appVersion: '1.0.0',
+  createdAt: Date.now(),
+  modifiedAt: Date.now(),
+});
+
+const json = JSON.stringify(project);
+localStorage.setItem('project', json);
+```
+
+The envelope shape:
+
+```ts
+type ProjectDocument = {
+  readonly schemaVersion: number;    // current schema version
+  readonly state: TimelineState;
+  readonly metadata?: ProjectMetadata;
+};
+```
+
+### `deserializeProject(raw)`
+
+Parse and validate a stored project document. Returns `TimelineState`:
+
+```ts
+import { deserializeProject } from '@timelinx/core';
+
+const raw = JSON.parse(localStorage.getItem('project')!);
+const state = deserializeProject(raw);
+```
+
+`deserializeProject` calls `migrateProject()` internally to handle older schema versions. If the schema version is incompatible or the document is malformed, it throws `SerializationError`.
+
+### `migrateProject(raw)`
+
+Explicitly run migrations without the full deserialize path:
+
+```ts
+import { migrateProject, CURRENT_SCHEMA_VERSION } from '@timelinx/core';
+
+const migrated = migrateProject(raw);
+// migrated.schemaVersion === CURRENT_SCHEMA_VERSION
+```
+
+Use this when you want to inspect the migrated document before committing it.
+
+### Error Handling
+
+```ts
+import { deserializeProject, SerializationError } from '@timelinx/core';
+
+try {
+  const state = deserializeProject(raw);
+} catch (err) {
+  if (err instanceof SerializationError) {
+    showDialog('This project file cannot be opened: ' + err.message);
+  } else {
+    throw err;
+  }
+}
+```
+
+---
+
+## Schema Versioning
+
+```ts
+import { CURRENT_SCHEMA_VERSION } from '@timelinx/core';
+```
+
+`CURRENT_SCHEMA_VERSION` is an integer that increments with each breaking change to `TimelineState`. The serializer stores this in `ProjectDocument.schemaVersion`. The migrator reads it to determine which migration functions to run.
+
+<Callout title="Always run through the deserializer">
+  Do not use `JSON.parse(raw) as TimelineState` directly from storage. The shape of `TimelineState` changes between schema versions. `deserializeProject()` + `migrateProject()` is the only safe path.
+</Callout>
+
+---
+
+## OTIO Import / Export
+
+OpenTimelineIO (OTIO) is an open interchange format for editorial data.
+
+### Import
+
+```ts
+import { importOtio } from '@timelinx/core';
+
+const otioJson = await fetch('/project.otio').then((r) => r.text());
+const state = importOtio(otioJson);
+```
+
+The importer converts OTIO tracks, clips, and markers to `TimelineState`. Assets are registered in `assetRegistry` from the OTIO media references. Media properties that OTIO does not carry (e.g., intrinsicDuration) are estimated and should be validated by your media import flow.
+
+### Export
+
+```ts
+import { exportOtio } from '@timelinx/core';
+
+const otioJson = exportOtio(state);
+await fetch('/save', { method: 'POST', body: otioJson });
+```
+
+---
+
+## FCPXML Export
+
+Final Cut Pro XML, compatible with Final Cut Pro X and DaVinci Resolve:
+
+```ts
+import { exportFcpXml } from '@timelinx/core';
+
+const xml = exportFcpXml(state);
+downloadFile(xml, 'project.fcpxml', 'application/xml');
+```
+
+---
+
+## EDL Export (CMX3600)
+
+Edit Decision List format, the oldest and most universal interchange format:
+
+```ts
+import { exportEdl } from '@timelinx/core';
+
+const edl = exportEdl(state);
+downloadFile(edl, 'project.edl', 'text/plain');
+```
+
+EDL supports only one track. `exportEdl` uses the first video track.
+
+---
+
+## AAF Export
+
+Advanced Authoring Format, used by Avid Media Composer and Pro Tools:
+
+```ts
+import { exportAaf } from '@timelinx/core';
+
+const aaf = exportAaf(state);
+downloadFile(aaf, 'project.aaf', 'application/octet-stream');
+```
+
+---
+
+## Subtitle Import
+
+### `parseSRT(text)`
+
+Parse an SRT subtitle file into a `Caption[]` array:
+
+```ts
+import { parseSRT } from '@timelinx/core';
+
+const text = await fetch('/subtitles.srt').then((r) => r.text());
+const captions = parseSRT(text, { fps: frameRate(30) });
+// captions: Caption[]
+```
+
+### `parseVTT(text)`
+
+Parse a WebVTT file:
+
+```ts
+import { parseVTT } from '@timelinx/core';
+
+const captions = parseVTT(text, { fps: frameRate(30) });
+```
+
+### `subtitleImportToOps(captions, trackId)`
+
+Convert parsed captions to `ADD_CAPTION` operations for dispatch:
+
+```ts
+import { subtitleImportToOps } from '@timelinx/core';
+
+const ops = subtitleImportToOps(captions, toTrackId('sub-1'));
+
+const result = engine.dispatch({
+  id: 'tx-import-subs',
+  label: 'Import subtitles',
+  timestamp: Date.now(),
+  operations: ops,
+});
+```
+
+This imports each caption as an individual `ADD_CAPTION` operation. They are validated and applied atomically — if any caption overlaps an existing one, the entire import is rejected.
+
+### `defaultCaptionStyle()`
+
+Returns a `CaptionStyle` with sensible defaults (white text, bottom-center position, no burn-in):
+
+```ts
+import { defaultCaptionStyle } from '@timelinx/core';
+
+const style = defaultCaptionStyle();
+// { color: '#ffffff', fontSize: 32, position: 'bottom-center', burnIn: false, ... }
+```

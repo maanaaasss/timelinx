@@ -1,0 +1,147 @@
+---
+title: Pipeline
+description: Wiring @timelinx/media-web adapters into TimelineEngine via PipelineConfig
+icon: Workflow
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`PipelineConfig` is the bridge between `TimelineEngine` and the browser's media APIs. You pass a pipeline at engine construction time. The engine calls into the pipeline when it needs decoded video frames, composited output, or thumbnail images.
+
+## The Contract
+
+```ts
+// From @timelinx/core
+type PipelineConfig = {
+  readonly videoDecoder: VideoDecoder;
+  readonly audioDecoder?: AudioDecoder;
+  readonly compositor: Compositor;
+  readonly thumbnailProvider?: ThumbnailProvider;
+};
+```
+
+Only `videoDecoder` and `compositor` are required. The engine can play back silently without `audioDecoder`, and thumbnails are disabled without `thumbnailProvider`.
+
+---
+
+## Minimal Wiring
+
+```tsx
+import { useRef, useMemo, useEffect } from 'react';
+import { TimelineEngine } from '@timelinx/react';
+import { createWebCodecsDecoder } from '@timelinx/media-web';
+import { createWebGLCompositor } from '@timelinx/media-web';
+
+function EditorApp({ initialState }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const engine = useMemo(() => {
+    if (!canvasRef.current) return null;
+
+    return new TimelineEngine({
+      initialState,
+      pipeline: {
+        videoDecoder: createWebCodecsDecoder(),
+        compositor: createWebGLCompositor({ canvas: canvasRef.current }),
+      },
+      dimensions: { width: 1920, height: 1080 },
+    });
+  }, [canvasRef.current]);
+
+  return (
+    <>
+      <canvas ref={canvasRef} width={1920} height={1080} />
+      {engine && <TimelineEditor engine={engine} />}
+    </>
+  );
+}
+```
+
+<Callout type="warn" title="Canvas must exist before engine creation">
+  The WebGL compositor needs a canvas element at creation time. Use a ref and wait for it to be populated before constructing the engine. The `useMemo` dependency on `canvasRef.current` handles this — it re-runs once the canvas mounts.
+</Callout>
+
+---
+
+## Full Wiring (with thumbnails and audio)
+
+```tsx
+import { TimelineEngine } from '@timelinx/react';
+import {
+  createWebCodecsDecoder,
+  createWebGLCompositor,
+  createThumbnailExtractor,
+  createWebAudioWaveform,
+} from '@timelinx/media-web';
+
+const engine = new TimelineEngine({
+  initialState,
+  pipeline: {
+    videoDecoder: createWebCodecsDecoder({
+      hardwareAcceleration: 'prefer-hardware',
+    }),
+    audioDecoder: createWebAudioWaveform(),
+    compositor: createWebGLCompositor({
+      canvas: canvasElement,
+      width: 1920,
+      height: 1080,
+    }),
+    thumbnailProvider: createThumbnailExtractor({
+      width: 160,
+      height: 90,
+    }),
+  },
+  dimensions: { width: 1920, height: 1080 },
+});
+```
+
+---
+
+## What Happens During Playback
+
+When `engine.play()` is called:
+
+1. `PlaybackEngine` starts advancing the playhead on each animation frame.
+2. For each frame, `PlaybackEngine` calls `resolveFrame(state, currentFrame)` to find all active clips and their media positions.
+3. For each active clip, it calls `pipeline.videoDecoder(request)` where `request = { clipId, mediaFrame, quality }`.
+4. When all frames are decoded, it calls `pipeline.compositor({ timelineFrame, layers, width, height, quality })`.
+5. The compositor writes the output to the canvas.
+6. The engine notifies React subscribers with the new `playheadFrame`.
+
+---
+
+## Without a Pipeline
+
+If you omit `pipeline`, the engine is edit-only:
+
+- `dispatch()`, `undo()`, `redo()`, selection, and all tools work normally.
+- `play()` has no effect.
+- `setPlayheadFrame()` updates the playhead position and notifies subscribers, but no frames are decoded.
+- `thumbnailProvider` is absent, so `TimelineTrack` clip thumbnails are blank.
+
+This is the correct mode for server-side rendering, testing, or embedding a lightweight timeline in a UI that doesn't need video preview.
+
+---
+
+## Cleanup
+
+When the engine is no longer needed, close the adapters to release GPU and codec resources:
+
+```ts
+// Close individual adapters
+videoDecoder.close?.();
+compositor.close?.();
+
+// Or: nothing to clean up on the engine itself — the adapters manage their own resources
+```
+
+In React, clean up in a `useEffect` return:
+
+```tsx
+useEffect(() => {
+  return () => {
+    videoDecoderRef.current?.close?.();
+    compositorRef.current?.close?.();
+  };
+}, []);
+```

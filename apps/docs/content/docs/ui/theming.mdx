@@ -1,0 +1,274 @@
+---
+title: Theming
+description: Customizing colors, fonts, layout dimensions, and accent using CSS custom properties
+icon: Palette
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`@timelinx/ui` uses a CSS custom property (CSS variable) design system. Every color, font, size, and animation speed is a variable in `:root`. Override them after importing your preset to customize the editor's appearance.
+
+## Import Order
+
+```css
+/* globals.css */
+/* 1. Preset — defines all tokens */
+@import '@timelinx/ui/styles/presets/dark-pro';
+
+/* 2. Structure — imports tokens, defines layout */
+@import '@timelinx/ui/styles/structure';
+
+/* 3. Your overrides — come last to win specificity */
+:root {
+  --accent: #7c3aed;  /* override amber accent with violet */
+}
+```
+
+<Callout type="warn" title="Always import structure after your preset">
+  `structure.css` references the token variables. If you swap the import order, the component CSS can't resolve the variables.
+</Callout>
+
+---
+
+## Bundled Presets
+
+| File | Description |
+|------|-------------|
+| `@timelinx/ui/styles/presets/dark-pro` | Default. Instrument-black canvas with amber accent and cyan selection. |
+| `@timelinx/ui/styles/presets/light` | Light mode. Off-white surfaces, cool-gray borders, same accent scale. |
+| `@timelinx/ui/styles/presets/high-contrast` | Maximum contrast for accessibility. `prefers-contrast: more` compatible. |
+
+---
+
+## Accent Color
+
+The accent is used for the playhead, active tool highlight, focus rings, and primary buttons. The scale is `--accent-100` (lightest) through `--accent-600` (darkest):
+
+```css
+:root {
+  /* Primary accent — used on interactive elements */
+  --accent:        #7c3aed;  /* violet instead of amber */
+  --accent-hover:  #6d28d9;
+  --accent-active: #5b21b6;
+  --accent-subtle: rgba(124,58,237,0.12);
+  --accent-border: rgba(124,58,237,0.30);
+  --accent-glow:   rgba(124,58,237,0.08);
+  --accent-on-fill: #ffffff;  /* text on accent-filled buttons */
+
+  /* Full scale */
+  --accent-100: #ede9fe;
+  --accent-200: #c4b5fd;
+  --accent-300: #a78bfa;
+  --accent-400: #7c3aed;
+  --accent-500: #6d28d9;
+  --accent-600: #5b21b6;
+
+  /* Playhead uses the accent */
+  --playhead-color:  var(--accent-400);
+  --playhead-shadow: 0 0 8px rgba(124,58,237,0.4);
+}
+```
+
+---
+
+## Selection Color
+
+The selection ring around selected clips and the rubber-band rectangle use the selection color. By default it is electric cyan, distinct from the amber accent:
+
+```css
+:root {
+  --selection:         #7c3aed;   /* match accent if you prefer */
+  --selection-ring:    #6d28d9;
+  --selection-glow:    rgba(124,58,237,0.12);
+  --selection-handle:  #7c3aed;
+  --selection-on-fill: #ffffff;
+}
+```
+
+---
+
+## Surface Colors
+
+The background surfaces use a layered elevation model. Each level is slightly lighter than the one below:
+
+```css
+:root {
+  --bg-canvas:         #0C0C10;  /* outermost, page background */
+  --bg-app:            #0C0C10;  /* app shell */
+  --bg-panel:          #121216;  /* sidebars, tool panels */
+  --bg-surface:        #18181E;  /* track rows, content areas */
+  --bg-surface-raised: #1E1E26;  /* cards, dropdowns, modals */
+  --bg-surface-soft:   #141418;  /* soft fills */
+  --bg-hover:          rgba(255,255,255,0.04);
+  --bg-active:         rgba(255,255,255,0.06);
+}
+```
+
+---
+
+## Text Colors
+
+```css
+:root {
+  --text-primary:   #ECECF0;  /* main text */
+  --text-secondary: #B4B4C8;  /* labels, descriptions */
+  --text-tertiary:  #8888A0;  /* placeholders, metadata */
+  --text-disabled:  #4A4A5C;  /* disabled state */
+}
+```
+
+---
+
+## Track Type Colors
+
+Each track type has a full color family: the fill, a 70% dimmed version, a 12% background tint, and a 30% border:
+
+```css
+:root {
+  /* Video track — blue */
+  --track-video:        #3B82F6;
+  --track-video-dim:    rgba(59,130,246,0.70);
+  --track-video-bg:     rgba(59,130,246,0.12);
+  --track-video-border: rgba(59,130,246,0.30);
+
+  /* Audio track — lighter blue */
+  --track-audio:        #60A5FA;
+  --track-audio-bg:     rgba(96,165,250,0.12);
+  --track-audio-border: rgba(96,165,250,0.30);
+
+  /* Subtitle track — amber */
+  --track-subtitle:     #F59E0B;
+  --track-subtitle-bg:  rgba(245,158,11,0.12);
+
+  /* Image/title track — pink */
+  --track-image:        #EC4899;
+  --track-image-bg:     rgba(236,72,153,0.12);
+
+  /* Effect track — green */
+  --track-effect:       #10B981;
+  --track-effect-bg:    rgba(16,185,129,0.12);
+
+  /* Music track — purple */
+  --track-music:        #A855F7;
+  --track-music-bg:     rgba(168,85,247,0.12);
+}
+```
+
+---
+
+## Layout Dimensions
+
+These control the structural dimensions of the editor panels:
+
+```css
+:root {
+  --track-height:        80px;   /* default track row height */
+  --track-height-video:  80px;   /* video-specific default */
+  --track-height-audio:  80px;   /* audio-specific default */
+  --track-header-width:  180px;  /* left header column */
+  --ruler-height:        36px;   /* timecode ruler */
+  --toolbar-height:      44px;   /* top toolbar */
+  --topbar-height:       48px;   /* menu/project bar */
+  --sidebar-width:       180px;  /* right-side panel */
+  --clip-radius:         2px;    /* clip corner radius */
+}
+```
+
+---
+
+## Typography
+
+```css
+:root {
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+```
+
+To use a different font, override `--font-sans` and `--font-display` after importing a Google Font:
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+}
+```
+
+---
+
+## Animation Speed
+
+```css
+:root {
+  --duration-fast:   120ms;  /* hover transitions, icon swaps */
+  --duration-base:   180ms;  /* panel reveals, clip grabs */
+  --duration-slow:   280ms;  /* modal enters, complex transitions */
+
+  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+```
+
+To reduce motion (accessibility):
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+```
+
+---
+
+## Scoped Theming
+
+Override tokens on a parent element to scope them to a subtree without affecting the rest of the page:
+
+```css
+.my-compact-editor {
+  --track-height:       56px;
+  --ruler-height:       28px;
+  --toolbar-height:     36px;
+  --track-header-width: 140px;
+}
+```
+
+```tsx
+<div className="my-compact-editor">
+  <TimelineEditor engine={engine} />
+</div>
+```
+
+---
+
+## Creating a Custom Preset
+
+Copy `dark-pro.css` as a starting point and modify the variables:
+
+```css
+/* my-preset.css */
+@import '@timelinx/ui/styles/tokens.css';
+
+:root {
+  color-scheme: dark;
+  --bg-canvas:         #0a0a0f;
+  --bg-app:            #0a0a0f;
+  --bg-panel:          #100f1a;
+  --bg-surface:        #16152a;
+  /* ... rest of your overrides */
+  --accent:            #818cf8;  /* indigo */
+}
+```
+
+```css
+/* globals.css */
+@import './my-preset.css';
+@import '@timelinx/ui/styles/structure';
+```

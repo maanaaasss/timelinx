@@ -1,0 +1,15 @@
+{
+  "title": "Media Web",
+  "root": true,
+  "pages": [
+    "index",
+    "pipeline",
+    "---Adapters---",
+    "webcodecs",
+    "webaudio",
+    "thumbnails",
+    "webgl",
+    "export",
+    "workers"
+  ]
+}

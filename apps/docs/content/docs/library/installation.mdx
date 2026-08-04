@@ -1,0 +1,182 @@
+---
+title: Installation
+description: Installing @timelinx packages, peer dependencies, TypeScript requirements, and framework-specific setup
+icon: Package
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Package Overview
+
+| Package | Purpose | Peer dependencies |
+|---------|---------|-------------------|
+| `@timelinx/core` | Headless engine, types, dispatch, tools, serializers | None |
+| `@timelinx/react` | Hooks, context, `TimelineEngine` class | `react ≥18`, `@timelinx/core` |
+| `@timelinx/ui` | React components, CSS design system | `react ≥18`, `@timelinx/react`, `@timelinx/core` |
+| `@timelinx/media-web` | Browser media adapters | `react ≥18`, `@timelinx/core` (not on npm yet) |
+
+---
+
+## Installing
+
+**All-in-one (recommended for most apps):**
+
+```bash
+# pnpm
+pnpm add @timelinx/core @timelinx/react @timelinx/ui
+
+# npm
+npm install @timelinx/core @timelinx/react @timelinx/ui
+
+# yarn
+yarn add @timelinx/core @timelinx/react @timelinx/ui
+```
+
+**Headless only (no UI, custom React components):**
+
+```bash
+pnpm add @timelinx/core @timelinx/react
+```
+
+**Core only (no React, scripts/server-side work):**
+
+```bash
+pnpm add @timelinx/core
+```
+
+---
+
+## Requirements
+
+- **TypeScript** ≥5.0 — the packages use `const` enums, branded types, and `satisfies`.
+- **Node.js** ≥22 — for local development and CI.
+- **React** ≥18 — `@timelinx/react` uses `useSyncExternalStore` which landed in React 18.
+
+---
+
+## CSS Setup
+
+`@timelinx/ui` ships with a CSS design system. You must import two files:
+
+1. **A preset** — defines the color tokens (choose one)
+2. **Structure CSS** — defines the layout and component structure
+
+```css
+/* In your global CSS file */
+
+/* Step 1: Choose a preset */
+@import '@timelinx/ui/styles/presets/dark-pro';  /* default dark theme */
+/* @import '@timelinx/ui/styles/presets/light'; */
+/* @import '@timelinx/ui/styles/presets/high-contrast'; */
+
+/* Step 2: Import structure */
+@import '@timelinx/ui/styles/structure';
+```
+
+<Callout type="warn" title="Import order matters">
+  Always import the preset before `structure`. The structure CSS references CSS variables defined by the preset. Reversing the order causes unstyled components.
+</Callout>
+
+The components will not render correctly without both imports. If you see unstyled or missing UI, this is the most common cause.
+
+---
+
+## Next.js Setup
+
+`@timelinx/ui` and `@timelinx/react` are ES modules. Add them to `transpilePackages` in `next.config`:
+
+```ts
+// next.config.ts
+const nextConfig = {
+  transpilePackages: ['@timelinx/ui', '@timelinx/react', '@timelinx/core'],
+};
+
+export default nextConfig;
+```
+
+All components that use hooks must be rendered client-side. Add `'use client'` to any file that imports `TimelineEditor`, `TimelineProvider`, or hooks:
+
+```tsx
+'use client';
+
+import { TimelineEditor } from '@timelinx/ui';
+import { TimelineEngine } from '@timelinx/react';
+```
+
+Import the CSS in `app/globals.css`:
+
+```css
+@import '@timelinx/ui/styles/presets/dark-pro';
+@import '@timelinx/ui/styles/structure';
+```
+
+---
+
+## Vite Setup
+
+No special configuration is needed. Vite handles ES modules and CSS imports natively.
+
+```ts
+// vite.config.ts — nothing special required
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});
+```
+
+---
+
+## Checking Your Setup
+
+After installation, verify everything is working with this minimal test:
+
+```tsx
+'use client'; // if using Next.js
+
+import { TimelineEngine } from '@timelinx/react';
+import { TimelineEditor } from '@timelinx/ui';
+import { createTimelineState, createTimeline, frameRate, toFrame } from '@timelinx/core';
+
+const engine = new TimelineEngine({
+  initialState: createTimelineState({
+    timeline: createTimeline({
+      id: 'tl-test',
+      name: 'Test',
+      fps: frameRate(30),
+      duration: toFrame(900),
+    }),
+  }),
+});
+
+export default function TestPage() {
+  return (
+    <div style={{ height: 400 }}>
+      <TimelineEditor engine={engine} />
+    </div>
+  );
+}
+```
+
+If the editor renders with a toolbar and empty track area, the installation is complete.
+
+---
+
+## Common Installation Errors
+
+**`Error: Cannot find module '@timelinx/ui/styles/presets/dark-pro'`**
+
+The package was not installed, or the path is wrong. Check that `@timelinx/ui` is in `node_modules` and that you are importing from the correct subpath.
+
+**Components render but are unstyled**
+
+CSS was not imported. Add the preset and structure imports to your global stylesheet.
+
+**`useEngine() called outside TimelineProvider`**
+
+All components that use `@timelinx/react` hooks must be rendered inside a `TimelineProvider`. Wrap your editor tree.
+
+**`ReferenceError: document is not defined`**
+
+You are importing `@timelinx/ui` in a Next.js server component. Add `'use client'` to the file.

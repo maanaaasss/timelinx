@@ -1,0 +1,140 @@
+---
+title: Exporter
+description: Recording and exporting the timeline output using MediaRecorder
+icon: Download
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`SimpleExportAdapter` renders the entire timeline from start to finish and records the compositor output using the browser's `MediaRecorder` API. The result is a `Blob` that can be downloaded as WebM, MP4, or GIF.
+
+## Import
+
+```ts
+import { createSimpleExporter, SimpleExportAdapter } from '@timelinx/media-web';
+```
+
+---
+
+## `createSimpleExporter()`
+
+```ts
+function createSimpleExporter(): SimpleExportAdapter
+```
+
+---
+
+## `export(state, pipeline, config, onProgress?)`
+
+```ts
+adapter.export(
+  state: TimelineState,
+  pipeline: PipelineConfig,
+  config: ExportConfig,
+  onProgress?: (progress: ExportProgress) => void,
+): Promise<ExportResult>
+```
+
+### `ExportConfig`
+
+```ts
+type ExportConfig = {
+  format: ExportFormat;
+  width: number;
+  height: number;
+  fps: FrameRate;
+  quality?: number;
+  inPoint?: TimelineFrame;
+  outPoint?: TimelineFrame;
+};
+
+type ExportFormat = 'webm' | 'mp4' | 'gif';
+```
+
+| Field | Notes |
+|-------|-------|
+| `format` | `'webm'` is universally supported in Chromium. `'mp4'` requires H.264 support in `MediaRecorder` (Chromium only). `'gif'` produces animated GIFs via canvas-to-frame rendering. |
+| `width`, `height` | Output resolution. |
+| `fps` | Render frame rate. |
+| `quality` | JPEG/codec quality 0–1. Default `0.85`. |
+| `inPoint`, `outPoint` | Export range. Defaults to the full timeline. |
+
+---
+
+## Progress Reporting
+
+```ts
+const exporter = createSimpleExporter();
+
+const result = await exporter.export(state, pipeline, config, (progress) => {
+  console.log(`${Math.round(progress.progress * 100)}% — ${progress.framesEncoded}/${progress.totalFrames} frames`);
+});
+```
+
+### `ExportProgress`
+
+```ts
+type ExportProgress = {
+  readonly progress: number;        // 0.0 to 1.0
+  readonly status: string;          // 'encoding' | 'finalizing' | 'done'
+  readonly framesEncoded: number;
+  readonly totalFrames: number;
+};
+```
+
+---
+
+## `ExportResult`
+
+```ts
+type ExportResult = {
+  readonly blob: Blob;
+  readonly format: ExportFormat;
+  readonly duration: number;  // seconds
+};
+```
+
+Download the result:
+
+```ts
+const result = await exporter.export(state, pipeline, config);
+
+const url = URL.createObjectURL(result.blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = `export.${result.format}`;
+a.click();
+URL.revokeObjectURL(url);
+```
+
+---
+
+## Integration with ExportDialog
+
+The `ExportDialog` component and `useExport` hook from `@timelinx/ui` wrap this adapter:
+
+```tsx
+import { ExportDialog } from '@timelinx/ui';
+
+function App() {
+  return (
+    <ExportDialog
+      engine={engine}
+      pipeline={pipeline}
+      onExportComplete={(blob, format) => downloadBlob(blob, `export.${format}`)}
+    />
+  );
+}
+```
+
+---
+
+## Browser Limitations
+
+<Callout type="warn" title="captureStream() is Chromium-only">
+  `SimpleExportAdapter` uses `canvas.captureStream()` to feed the compositor output into `MediaRecorder`. This API is Chromium-only and is not available in Safari. On Safari, the export button should be hidden or replaced with a server-side export flow.
+</Callout>
+
+<Callout type="warn" title="MP4 container support varies">
+  `MediaRecorder` with `'video/mp4'` is only guaranteed in Chrome 130+. For cross-browser compatibility, export as WebM and convert server-side with FFmpeg if needed.
+</Callout>

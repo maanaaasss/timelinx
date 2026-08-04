@@ -1,0 +1,164 @@
+---
+title: Tool Router
+description: Translating DOM pointer events to TimelinePointerEvent using createToolRouter and useToolRouter
+icon: MousePointer2
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The tool router is the bridge between raw DOM `PointerEvent` objects and the `TimelinePointerEvent` that tools receive. It resolves which track and clip the pointer is over, converts pixel X to a timeline frame, and forwards the event to the engine.
+
+In `@timelinx/ui`, `TimelineEditor` handles this internally. You need the tool router only when building a custom timeline canvas.
+
+---
+
+## The Resolution Problem
+
+A raw `PointerEvent` gives you `clientX`, `clientY`, and the target element. The tool needs `{ frame, trackId, clipId, edge }`. The router handles that translation:
+
+1. `clientX` → frame: `(clientX - containerLeft + scrollLeft) / ppf`
+2. target element → trackId: read `data-track-id` attribute from the element or its ancestors
+3. target element → clipId: read `data-clip-id`
+4. proximity to clip edge → `edge: 'start' | 'end'`
+
+---
+
+## `useToolRouter(options)`
+
+React hook that creates and manages a tool router:
+
+```tsx
+import { useToolRouter } from '@timelinx/react';
+import { useRef } from 'react';
+
+function CustomTimeline({ engine, ppf, scrollLeft }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { onPointerDown, onPointerMove, onPointerUp } = useToolRouter({
+    getEngine: () => engine,
+
+    getFrameFromX: (clientX) => {
+      const rect = containerRef.current!.getBoundingClientRect();
+      return Math.max(0, Math.floor((clientX - rect.left + scrollLeft) / ppf));
+    },
+
+    getTrackId: (element) => {
+      const el = element.closest('[data-track-id]');
+      return el?.getAttribute('data-track-id') ?? null;
+    },
+
+    getClipId: (element) => {
+      const el = element.closest('[data-clip-id]');
+      return el?.getAttribute('data-clip-id') ?? null;
+    },
+
+    getModifiers: (event) => ({
+      shift: event.shiftKey,
+      alt: event.altKey,
+      ctrl: event.ctrlKey,
+      meta: event.metaKey,
+    }),
+  });
+
+  return (
+    <div
+      ref={containerRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{ position: 'relative', height: '100%', overflow: 'hidden' }}
+    >
+      {/* Render tracks and clips here */}
+    </div>
+  );
+}
+```
+
+---
+
+## `createToolRouter(options)`
+
+The imperative version used outside React:
+
+```ts
+import { createToolRouter } from '@timelinx/react';
+
+const router = createToolRouter({
+  getEngine: () => engine,
+  getFrameFromX: (x) => Math.floor((x - containerLeft + scrollLeft) / ppf),
+  getTrackId: (el) => el.closest('[data-track-id]')?.getAttribute('data-track-id') ?? null,
+  getClipId: (el) => el.closest('[data-clip-id]')?.getAttribute('data-clip-id') ?? null,
+  getModifiers: (e) => ({ shift: e.shiftKey, alt: e.altKey, ctrl: e.ctrlKey, meta: e.metaKey }),
+});
+
+container.addEventListener('pointerdown', router.onPointerDown);
+container.addEventListener('pointermove', router.onPointerMove);
+container.addEventListener('pointerup',   router.onPointerUp);
+```
+
+---
+
+## `ToolRouterOptions`
+
+```ts
+type ToolRouterOptions = {
+  getEngine: () => TimelineEngine;
+  getFrameFromX: (clientX: number) => number;
+  getTrackId: (element: Element) => string | null;
+  getClipId: (element: Element) => string | null;
+  getModifiers: (event: PointerEvent) => Modifiers;
+  getEdge?: (element: Element, clientX: number, ppf: number) => 'start' | 'end' | null;
+};
+```
+
+| Option | Notes |
+|--------|-------|
+| `getEngine` | Returns the engine. Called on every event. |
+| `getFrameFromX` | Convert `clientX` to a frame index. Include scroll offset. |
+| `getTrackId` | Walk up the DOM from the event target to find `data-track-id`. |
+| `getClipId` | Walk up the DOM from the event target to find `data-clip-id`. |
+| `getModifiers` | Extract modifier keys from the native event. |
+| `getEdge` | Optional. Detect if the pointer is near a clip start/end handle. If omitted, the router uses the snap radius to infer. |
+
+---
+
+## `data-*` Attribute Convention
+
+Mark your track and clip DOM elements with these attributes so the router can resolve them:
+
+```tsx
+// Track container
+<div data-track-id={track.id}>
+  {clips.map(clip => (
+    // Clip element
+    <div
+      key={clip.id}
+      data-clip-id={clip.id}
+      style={{
+        position: 'absolute',
+        left: clip.timelineStart * ppf - scrollLeft,
+        width: (clip.timelineEnd - clip.timelineStart) * ppf,
+      }}
+    />
+  ))}
+</div>
+```
+
+`getTrackId` and `getClipId` use `.closest('[data-track-id]')` to walk up from any nested element inside the clip (e.g., a thumbnail or label).
+
+---
+
+## Pointer Capture
+
+The router calls `setPointerCapture()` on pointer down so move and up events are received even when the pointer leaves the container:
+
+```ts
+// Handled automatically by useToolRouter — shown here for reference
+containerRef.current.setPointerCapture(event.pointerId);
+```
+
+If you implement a custom router, set pointer capture on `pointerdown` to avoid losing drag events.
+
+<Callout title="Keyboard events">
+  The tool router handles pointer events only. For keyboard events (`onKeyDown`, `onKeyUp`), wire them separately to `engine.handleKeyDown()` and `engine.handleKeyUp()`.
+</Callout>

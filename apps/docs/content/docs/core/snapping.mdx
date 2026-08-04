@@ -1,0 +1,189 @@
+---
+title: Snapping
+description: How the snap index works, snap point priorities, and integrating snapping into custom tools
+icon: Magnet
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Snapping is the magnetic pull that makes clips jump to nearby boundaries when dragging close enough. The snap system is built on a sorted list of `SnapPoint` objects, each carrying a frame position, type, and priority. Tools call `nearest()` to find the closest snap target within a pixel radius.
+
+## `SnapPoint`
+
+```ts
+type SnapPoint = {
+  readonly frame: TimelineFrame;
+  readonly type: SnapPointType;
+  readonly priority: number;
+  readonly trackId: TrackId | null;  // null = timeline-wide (playhead, markers)
+  readonly sourceId: string;         // clipId, markerId — for exclusion
+};
+
+type SnapPointType =
+  | 'ClipStart'
+  | 'ClipEnd'
+  | 'Playhead'
+  | 'Marker'
+  | 'InPoint'
+  | 'OutPoint'
+  | 'BeatGrid';
+```
+
+**Priority table** (higher wins when two points are equidistant):
+
+| Type | Priority | When present |
+|------|----------|-------------|
+| `Marker` | 100 | A marker exists on the timeline |
+| `InPoint` | 90 | `timeline.inPoint` is set |
+| `OutPoint` | 90 | `timeline.outPoint` is set |
+| `ClipStart` | 80 | Start of any clip on any track |
+| `ClipEnd` | 80 | End of any clip on any track |
+| `Playhead` | 70 | Always present |
+| `BeatGrid` | 50 | `timeline.beatGrid` is set |
+
+---
+
+## `SnapIndex`
+
+```ts
+type SnapIndex = {
+  readonly points: readonly SnapPoint[];  // sorted ascending by frame
+  readonly builtAt: number;               // Date.now()
+  readonly enabled: boolean;
+};
+```
+
+`points` is always sorted. `nearest()` can binary-search it efficiently even with thousands of clips.
+
+---
+
+## `buildSnapIndex(state, options?)`
+
+Constructs a snap index from the current `TimelineState`:
+
+```ts
+import { buildSnapIndex } from '@timelinx/core';
+
+const index = buildSnapIndex(state, {
+  includePlayhead: true,
+  playheadFrame: currentFrame,
+  includeBeatGrid: true,
+});
+```
+
+`TimelineEngine` calls `buildSnapIndex` automatically after each accepted dispatch and stores the result in `EngineSnapshot.snapIndex`. In custom headless integrations, call it manually after each state change.
+
+---
+
+## `nearest(index, frame, radiusPx, ppf, excludeIds?)`
+
+Find the closest snap point to `frame` within a pixel radius:
+
+```ts
+import { nearest } from '@timelinx/core';
+
+const snapPoint = nearest(
+  index,
+  candidateFrame,   // the frame the user is dragging toward
+  8,                // snap radius in pixels
+  ppf,              // pixels per frame (current zoom level)
+  [movingClipId],   // exclude the clip being moved (so it doesn't snap to itself)
+);
+
+if (snapPoint !== null) {
+  // Use snapPoint.frame instead of candidateFrame
+}
+```
+
+The radius is specified in pixels — `nearest()` converts it to frames using `radiusPx / ppf`. At higher zoom levels, the snap radius covers fewer frames; at lower zoom, it covers more. This means snapping always feels the same distance to the user regardless of zoom.
+
+Returns `null` if no snap point is within the radius.
+
+---
+
+## `toggleSnap(index)`
+
+```ts
+import { toggleSnap } from '@timelinx/core';
+
+const disabled = toggleSnap(index);  // { ...index, enabled: false }
+const enabled  = toggleSnap(disabled); // { ...index, enabled: true }
+```
+
+When `enabled` is `false`, `nearest()` always returns `null`. Toggle with a button in the toolbar (common shortcut: S key).
+
+---
+
+## `SnapIndexManager`
+
+`SnapIndexManager` wraps `buildSnapIndex` with async rebuild scheduling to avoid blocking the main thread after large edits:
+
+```ts
+import { SnapIndexManager } from '@timelinx/core';
+
+const manager = new SnapIndexManager();
+manager.rebuildSync(state);      // synchronous, for initial build
+
+manager.scheduleRebuild(state);  // async, after each dispatch
+manager.current();               // returns the latest SnapIndex
+```
+
+`TimelineEngine` owns a `SnapIndexManager` internally. The snap index in `EngineSnapshot.snapIndex` is always current.
+
+---
+
+## Using Snapping in a Custom Tool
+
+Inside `onPointerMove`, apply snap before returning provisional state:
+
+```ts
+import { nearest } from '@timelinx/core';
+
+class MyMoveTool implements ITool {
+  private dragStartFrame: TimelineFrame | null = null;
+  private originalClipStart: TimelineFrame | null = null;
+
+  onPointerDown(event: TimelinePointerEvent, ctx: ToolContext) {
+    this.dragStartFrame = event.frame;
+    this.originalClipStart = ctx.state./* find clip */ ...;
+  }
+
+  onPointerMove(event: TimelinePointerEvent, ctx: ToolContext) {
+    if (this.dragStartFrame === null) return null;
+
+    const delta = event.frame - this.dragStartFrame;
+    let candidateStart = (this.originalClipStart! + delta) as TimelineFrame;
+
+    // Apply snap
+    const snap = nearest(
+      ctx.snapIndex,
+      candidateStart,
+      8,                    // 8px snap radius
+      ctx.pixelsPerFrame,
+      [event.clipId!],      // exclude the clip being dragged
+    );
+    if (snap !== null) {
+      candidateStart = snap.frame;
+    }
+
+    return {
+      clips: [{
+        clipId: event.clipId!,
+        trackId: event.trackId!,
+        timelineStart: candidateStart,
+        timelineEnd: (candidateStart + clipDuration) as TimelineFrame,
+        isGhost: true,
+      }],
+    };
+  }
+
+  onPointerUp(event: TimelinePointerEvent, ctx: ToolContext) {
+    // Commit the final position as a transaction
+    // ...
+  }
+}
+```
+
+<Callout title="Always exclude the moving clip">
+  Pass `[clipId]` to the `excludeIds` parameter so the clip doesn't snap to its own start and end frames while being dragged.
+</Callout>

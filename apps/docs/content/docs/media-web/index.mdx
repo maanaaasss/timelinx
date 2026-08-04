@@ -1,0 +1,76 @@
+---
+title: Media Web
+description: Browser-native adapters for video decoding, audio waveforms, compositing, and export
+icon: Monitor
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`@timelinx/media-web` provides browser-native implementations of the pipeline contracts defined in `@timelinx/core`. The core package defines what a video decoder, compositor, and thumbnail provider look like — `@timelinx/media-web` implements them using WebCodecs, WebGL, Web Audio, and the MediaRecorder API.
+
+## What This Package Provides
+
+| Adapter | Browser API | Core contract |
+|---------|-------------|---------------|
+| `WebCodecsDecoderAdapter` | WebCodecs | `VideoDecoder` |
+| `WebAudioWaveformAdapter` | Web Audio API | `AudioDecoder` (waveform variant) |
+| `ThumbnailExtractorAdapter` | `<video>` element | `ThumbnailProvider` |
+| `WebGLCompositorAdapter` | WebGL 2 | `Compositor` |
+| `SimpleExportAdapter` | MediaRecorder | export utility |
+
+Each adapter is a class that implements a single contract from `@timelinx/core/types/pipeline`. The adapters are independent — use only the ones you need.
+
+---
+
+## Browser Support
+
+| Feature | Chrome | Safari | Firefox |
+|---------|--------|--------|---------|
+| WebCodecs | 94+ | 16.4+ | Not supported |
+| Web Audio API | All modern | All modern | All modern |
+| WebGL 2 | All modern | All modern | All modern |
+| OffscreenCanvas | 69+ | 16.4+ | 105+ |
+| MediaRecorder | All modern | 14.1+ | All modern |
+
+<Callout type="warn" title="Firefox and WebCodecs">
+  WebCodecs is not available in Firefox. Use `isSupported()` on `WebCodecsDecoderAdapter` before passing it to the pipeline. Without a video decoder, you can still use the editor for editing — only playback is affected.
+</Callout>
+
+---
+
+## Capability Detection
+
+```ts
+import { getBrowserMediaCapabilities } from '@timelinx/media-web';
+
+const caps = getBrowserMediaCapabilities();
+// {
+//   webCodecs: boolean,
+//   webAudio: boolean,
+//   webgl2: boolean,
+//   offscreenCanvas: boolean,
+//   captureStream: boolean,
+// }
+
+if (!caps.webCodecs) {
+  // Show a banner: "Playback is not supported in this browser."
+}
+```
+
+---
+
+## Package Status
+
+`@timelinx/media-web` is currently marked `"private": true` and is not published to npm. It ships as a workspace-local package intended for use in the `apps/demo` and `apps/editor` applications. To use it in your own app, copy it into your monorepo or wait for the public release.
+
+---
+
+## Pages in This Section
+
+- **[Pipeline](/docs/media-web/pipeline)** — Wiring all adapters into `TimelineEngine`
+- **[WebCodecs Decoder](/docs/media-web/webcodecs)** — Video frame decoding
+- **[Web Audio Waveform](/docs/media-web/webaudio)** — Waveform extraction
+- **[Thumbnail Extractor](/docs/media-web/thumbnails)** — In-track thumbnail generation
+- **[WebGL Compositor](/docs/media-web/webgl)** — GPU-accelerated compositing
+- **[Exporter](/docs/media-web/export)** — Recording and export via MediaRecorder
+- **[Web Workers](/docs/media-web/workers)** — Offloading heavy work off the main thread

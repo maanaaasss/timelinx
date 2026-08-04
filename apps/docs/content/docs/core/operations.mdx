@@ -1,0 +1,845 @@
+---
+title: Operations Reference
+description: Every OperationPrimitive in @timelinx/core — what it does, what it requires, and why it rejects
+icon: Zap
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
+
+`OperationPrimitive` is a discriminated union with 42 variants. Every mutation to `TimelineState` is expressed as one or more operations inside a `Transaction`. Operations are the only way to change state.
+
+```ts
+import { dispatch } from '@timelinx/core';
+
+const result = dispatch(state, {
+  id: 'tx-1',
+  label: 'Human-readable label',
+  timestamp: Date.now(),
+  operations: [
+    { type: 'ADD_TRACK', track },
+    { type: 'INSERT_CLIP', trackId: track.id, clip },
+  ],
+});
+```
+
+Operations are validated in order. Each one is checked against the state produced by all previous operations in the same transaction. If any operation rejects, the entire transaction is rejected and the original state is unchanged.
+
+---
+
+## Clip Operations
+
+### `MOVE_CLIP`
+
+Move a clip to a new start frame on the same track or a different track.
+
+```ts
+{ type: 'MOVE_CLIP'; clipId: ClipId; newTimelineStart: TimelineFrame; targetTrackId?: TrackId }
+```
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `clipId` | yes | Must exist. |
+| `newTimelineStart` | yes | New position. `timelineEnd` is calculated from the clip's existing duration. |
+| `targetTrackId` | no | If omitted, stays on the same track. If provided, must match `clip.assetId` mediaType. |
+
+**Rejects with:** `CLIP_NOT_FOUND`, `TRACK_NOT_FOUND`, `OVERLAP`, `LOCKED_TRACK`, `TYPE_MISMATCH`, `OUT_OF_BOUNDS`
+
+```ts
+{ type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(450) }
+```
+
+---
+
+### `RESIZE_CLIP`
+
+Trim one edge of a clip. The opposite edge stays fixed.
+
+```ts
+{ type: 'RESIZE_CLIP'; clipId: ClipId; edge: 'start' | 'end'; newFrame: TimelineFrame }
+```
+
+| Field | Notes |
+|-------|-------|
+| `edge` | `'start'` shrinks/grows from the left; `'end'` from the right. |
+| `newFrame` | The new position of the chosen edge. |
+
+When trimming, the dispatcher adjusts `mediaIn` (for `edge: 'start'`) or `mediaOut` (for `edge: 'end'`) to maintain the media-duration invariant at the current speed. Trimming past the asset's `intrinsicDuration` rejects.
+
+**Rejects with:** `CLIP_NOT_FOUND`, `LOCKED_TRACK`, `MEDIA_BOUNDS_INVALID`, `OVERLAP`, `INVALID_RANGE`
+
+```ts
+// Extend the end of a clip by 30 frames
+{ type: 'RESIZE_CLIP', clipId: toClipId('clip-1'), edge: 'end', newFrame: toFrame(330) }
+```
+
+---
+
+### `SLICE_CLIP`
+
+Split a clip into two at a specific frame. The original clip is removed and replaced with two new clips.
+
+```ts
+{ type: 'SLICE_CLIP'; clipId: ClipId; atFrame: TimelineFrame }
+```
+
+`atFrame` must be strictly inside the clip (`timelineStart < atFrame < timelineEnd`). The dispatcher creates two clips whose IDs are `clipId + '-l'` and `clipId + '-r'`.
+
+<Callout title="Prefer DELETE + INSERT for compound edits">
+  `SLICE_CLIP` is a convenience operation for single-frame splits. For a razor tool that must preview ghost clips or handle undo as one action across multiple tracks, use `DELETE_CLIP` + `INSERT_CLIP` pairs in a transaction.
+</Callout>
+
+**Rejects with:** `CLIP_NOT_FOUND`, `LOCKED_TRACK`, `INVALID_RANGE` (if `atFrame` is not inside the clip)
+
+---
+
+### `DELETE_CLIP`
+
+Remove a clip from its track.
+
+```ts
+{ type: 'DELETE_CLIP'; clipId: ClipId }
+```
+
+**Rejects with:** `CLIP_NOT_FOUND`, `LOCKED_TRACK`
+
+---
+
+### `INSERT_CLIP`
+
+Place a new clip on a track.
+
+```ts
+{ type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId }
+```
+
+The clip's `assetId` must exist in `assetRegistry` at the time of validation. The clip's `trackId` field is ignored — the `trackId` in the operation is authoritative.
+
+**Rejects with:** `ASSET_MISSING`, `TYPE_MISMATCH`, `OVERLAP`, `LOCKED_TRACK`, `OUT_OF_BOUNDS`, `DUPLICATE_ID`, `MEDIA_BOUNDS_INVALID`
+
+```ts
+import { createClip, toFrame, toClipId, toAssetId, toTrackId } from '@timelinx/core';
+
+{
+  type: 'INSERT_CLIP',
+  trackId: toTrackId('v1'),
+  clip: createClip({
+    id: 'clip-1',
+    assetId: toAssetId('asset-interview'),
+    trackId: toTrackId('v1'),
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(300),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(300),
+  }),
+}
+```
+
+---
+
+### `SET_MEDIA_BOUNDS`
+
+Remap which portion of the asset plays without changing the clip's timeline position.
+
+```ts
+{ type: 'SET_MEDIA_BOUNDS'; clipId: ClipId; mediaIn: TimelineFrame; mediaOut: TimelineFrame }
+```
+
+Use this for slip edits: the clip stays in its timeline position but plays a different window of the source. The new `mediaOut - mediaIn` must equal the existing `timelineEnd - timelineStart` (adjusted for speed).
+
+**Rejects with:** `CLIP_NOT_FOUND`, `LOCKED_TRACK`, `MEDIA_BOUNDS_INVALID`
+
+---
+
+### `SET_CLIP_ENABLED`
+
+```ts
+{ type: 'SET_CLIP_ENABLED'; clipId: ClipId; enabled: boolean }
+```
+
+Disabled clips remain in the timeline but are excluded from compositing. Does not affect other clips.
+
+---
+
+### `SET_CLIP_REVERSED`
+
+```ts
+{ type: 'SET_CLIP_REVERSED'; clipId: ClipId; reversed: boolean }
+```
+
+When `true`, the media plays from `mediaOut` backward to `mediaIn`.
+
+---
+
+### `SET_CLIP_SPEED`
+
+```ts
+{ type: 'SET_CLIP_SPEED'; clipId: ClipId; speed: number }
+```
+
+`speed` must be `> 0`. Common values: `0.5` (half speed), `1.0` (normal), `2.0` (double speed). When speed changes, the dispatcher recalculates `mediaOut` so the timeline duration is preserved.
+
+**Rejects with:** `CLIP_NOT_FOUND`, `LOCKED_TRACK`, `SPEED_INVALID` (if `speed ≤ 0`), `MEDIA_BOUNDS_INVALID`
+
+---
+
+### `SET_CLIP_COLOR`
+
+```ts
+{ type: 'SET_CLIP_COLOR'; clipId: ClipId; color: string | null }
+```
+
+Hex color string (e.g. `'#e74c3c'`) for visual organization in the timeline row. `null` clears the override.
+
+---
+
+### `SET_CLIP_NAME`
+
+```ts
+{ type: 'SET_CLIP_NAME'; clipId: ClipId; name: string | null }
+```
+
+Display name override for the clip label. `null` falls back to the asset name.
+
+---
+
+## Track Operations
+
+### `ADD_TRACK`
+
+```ts
+{ type: 'ADD_TRACK'; track: Track }
+```
+
+Appends the track to `timeline.tracks`. The track's ID must be unique across all tracks.
+
+**Rejects with:** `DUPLICATE_ID`, `LOCKED_TRACK` (if target would be a locked parent group)
+
+```ts
+import { createTrack } from '@timelinx/core';
+
+{ type: 'ADD_TRACK', track: createTrack({ id: 'v2', name: 'V2', type: 'video' }) }
+```
+
+---
+
+### `DELETE_TRACK`
+
+```ts
+{ type: 'DELETE_TRACK'; trackId: TrackId }
+```
+
+Removes the track and all its clips. Rejects if the track is locked.
+
+**Rejects with:** `TRACK_NOT_FOUND`, `LOCKED_TRACK`
+
+---
+
+### `REORDER_TRACK`
+
+```ts
+{ type: 'REORDER_TRACK'; trackId: TrackId; newIndex: number }
+```
+
+Moves the track to `newIndex` in the `tracks` array. `0` is the top of the timeline. Out-of-range indexes are clamped.
+
+---
+
+### `SET_TRACK_HEIGHT`
+
+```ts
+{ type: 'SET_TRACK_HEIGHT'; trackId: TrackId; height: number }
+```
+
+Row height in pixels. The UI enforces a 36–140 range; the engine stores whatever value is dispatched.
+
+---
+
+### `SET_TRACK_NAME`
+
+```ts
+{ type: 'SET_TRACK_NAME'; trackId: TrackId; name: string }
+```
+
+---
+
+### `SET_TRACK_BLEND_MODE`
+
+```ts
+{ type: 'SET_TRACK_BLEND_MODE'; trackId: TrackId; blendMode: string }
+```
+
+CSS blend mode string applied when compositing this track over tracks below it. Example: `'multiply'`, `'screen'`, `'overlay'`.
+
+---
+
+### `SET_TRACK_OPACITY`
+
+```ts
+{ type: 'SET_TRACK_OPACITY'; trackId: TrackId; opacity: number }
+```
+
+`opacity` must be in `[0, 1]`. The invariant checker rejects values outside this range with `INVALID_OPACITY`.
+
+---
+
+## Asset Operations
+
+### `REGISTER_ASSET`
+
+```ts
+{ type: 'REGISTER_ASSET'; asset: Asset }
+```
+
+Adds an asset to `assetRegistry`. Must be dispatched before any `INSERT_CLIP` that references this `assetId`.
+
+**Rejects with:** `DUPLICATE_ID` (if `assetId` already exists)
+
+```ts
+import { createAsset, frameRate, toFrame } from '@timelinx/core';
+
+{
+  type: 'REGISTER_ASSET',
+  asset: createAsset({
+    id: 'asset-interview',
+    name: 'interview.mp4',
+    mediaType: 'video',
+    filePath: '/media/interview.mp4',
+    intrinsicDuration: toFrame(9000),
+    nativeFps: frameRate(30),
+    sourceTimecodeOffset: toFrame(0),
+  }),
+}
+```
+
+---
+
+### `UNREGISTER_ASSET`
+
+```ts
+{ type: 'UNREGISTER_ASSET'; assetId: AssetId }
+```
+
+Removes an asset from `assetRegistry`.
+
+**Rejects with:** `NOT_FOUND`, `ASSET_IN_USE` (if any clip in any track still references this `assetId`)
+
+---
+
+### `SET_ASSET_STATUS`
+
+```ts
+{ type: 'SET_ASSET_STATUS'; assetId: AssetId; status: AssetStatus }
+```
+
+Updates the reachability status without unregistering. Use this when a file goes offline or a proxy becomes available.
+
+`status` values: `'online'` | `'offline'` | `'proxy-only'` | `'missing'`
+
+---
+
+## Timeline Operations
+
+### `RENAME_TIMELINE`
+
+```ts
+{ type: 'RENAME_TIMELINE'; name: string }
+```
+
+---
+
+### `SET_TIMELINE_DURATION`
+
+```ts
+{ type: 'SET_TIMELINE_DURATION'; duration: TimelineFrame }
+```
+
+**Rejects with:** `OUT_OF_BOUNDS` if any clip's `timelineEnd` would exceed the new duration.
+
+---
+
+### `SET_TIMELINE_START_TC`
+
+```ts
+{ type: 'SET_TIMELINE_START_TC'; startTimecode: Timecode }
+```
+
+Sets the ruler's display origin. `'00:00:00:00'` means the ruler starts at midnight. `'01:00:00:00'` is common for broadcast deliverables.
+
+---
+
+### `SET_SEQUENCE_SETTINGS`
+
+```ts
+{ type: 'SET_SEQUENCE_SETTINGS'; settings: Partial<SequenceSettings> }
+```
+
+Updates resolution, pixel aspect ratio, audio sample rate, or field order. Only the fields present in `settings` are updated.
+
+---
+
+## Marker Operations
+
+### `ADD_MARKER`
+
+```ts
+{ type: 'ADD_MARKER'; marker: Marker }
+```
+
+`Marker` is a discriminated union:
+
+```ts
+// Point marker — single frame
+{ type: 'point', id, frame, label, color, scope, linkedClipId }
+
+// Range marker — frame range
+{ type: 'range', id, frameStart, frameEnd, label, color, scope, linkedClipId }
+```
+
+`scope` values: `'global'` | `'personal'` | `'export'`
+
+`linkedClipId` — when set, this marker moves with the referenced clip during ripple operations.
+
+---
+
+### `MOVE_MARKER`
+
+```ts
+{ type: 'MOVE_MARKER'; markerId: MarkerId; newFrame: TimelineFrame }
+```
+
+For range markers, moves the start frame and preserves the duration.
+
+---
+
+### `DELETE_MARKER`
+
+```ts
+{ type: 'DELETE_MARKER'; markerId: MarkerId }
+```
+
+---
+
+### `SET_IN_POINT`
+
+```ts
+{ type: 'SET_IN_POINT'; frame: TimelineFrame | null }
+```
+
+Sets the export/loop region start. `null` clears it. The UI shows this as the left handle on the ruler's range overlay.
+
+---
+
+### `SET_OUT_POINT`
+
+```ts
+{ type: 'SET_OUT_POINT'; frame: TimelineFrame | null }
+```
+
+---
+
+### `ADD_BEAT_GRID`
+
+```ts
+{
+  type: 'ADD_BEAT_GRID';
+  beatGrid: {
+    readonly bpm: number;
+    readonly timeSignature: readonly [number, number];
+    readonly offset: TimelineFrame;
+  }
+}
+```
+
+Attaches a beat grid to the timeline for music-aligned editing. The snap index generates `BeatGrid` snap points from this. Only one beat grid is allowed per timeline.
+
+**Rejects with:** `BEAT_GRID_EXISTS`
+
+---
+
+### `REMOVE_BEAT_GRID`
+
+```ts
+{ type: 'REMOVE_BEAT_GRID' }
+```
+
+---
+
+## Generator Operations
+
+### `INSERT_GENERATOR`
+
+```ts
+{ type: 'INSERT_GENERATOR'; generator: Generator; trackId: TrackId; atFrame: TimelineFrame }
+```
+
+Creates a synthetic clip from a generator definition. Generators produce content without a source file — color bars, tone generators, countdown leaders. The engine creates the asset and clip together.
+
+```ts
+{
+  type: 'INSERT_GENERATOR',
+  trackId: toTrackId('v1'),
+  atFrame: toFrame(0),
+  generator: {
+    type: 'color-bars',
+    duration: toFrame(300),
+  },
+}
+```
+
+---
+
+## Caption Operations
+
+Captions are subtitle/title items on `subtitle` and `title` tracks.
+
+### `ADD_CAPTION`
+
+```ts
+{
+  type: 'ADD_CAPTION';
+  caption: Omit<Caption, 'style'> & { style?: CaptionStyle };
+  trackId: TrackId;
+}
+```
+
+---
+
+### `EDIT_CAPTION`
+
+```ts
+{
+  type: 'EDIT_CAPTION';
+  captionId: CaptionId;
+  trackId: TrackId;
+  text?: string;
+  language?: string;
+  style?: Partial<CaptionStyle>;
+  burnIn?: boolean;
+  startFrame?: TimelineFrame;
+  endFrame?: TimelineFrame;
+}
+```
+
+Only the provided fields are updated.
+
+---
+
+### `DELETE_CAPTION`
+
+```ts
+{ type: 'DELETE_CAPTION'; captionId: CaptionId; trackId: TrackId }
+```
+
+---
+
+## Effect & Keyframe Operations
+
+Effects are compositing operations applied to individual clips. Each clip carries an ordered `effects` array. Keyframes animate an effect's parameters over time.
+
+### `ADD_EFFECT`
+
+```ts
+{ type: 'ADD_EFFECT'; clipId: ClipId; effect: Effect }
+```
+
+Appends an effect to the clip's `effects` array. Effect `id` must be unique within the clip.
+
+**Rejects with:** `CLIP_NOT_FOUND`, `DUPLICATE_EFFECT_ID`
+
+---
+
+### `REMOVE_EFFECT`
+
+```ts
+{ type: 'REMOVE_EFFECT'; clipId: ClipId; effectId: EffectId }
+```
+
+---
+
+### `REORDER_EFFECT`
+
+```ts
+{ type: 'REORDER_EFFECT'; clipId: ClipId; effectId: EffectId; newIndex: number }
+```
+
+The order of effects in the array determines the compositing pipeline order.
+
+**Rejects with:** `EFFECT_INDEX_OUT_OF_RANGE`
+
+---
+
+### `SET_EFFECT_ENABLED`
+
+```ts
+{ type: 'SET_EFFECT_ENABLED'; clipId: ClipId; effectId: EffectId; enabled: boolean }
+```
+
+Disabled effects are excluded from compositing but remain in the array.
+
+---
+
+### `SET_EFFECT_PARAM`
+
+```ts
+{
+  type: 'SET_EFFECT_PARAM';
+  clipId: ClipId;
+  effectId: EffectId;
+  key: string;
+  value: number | string | boolean;
+}
+```
+
+Updates a single named parameter on an effect. The `key` must be a valid parameter name for the effect type.
+
+---
+
+### `ADD_KEYFRAME`
+
+```ts
+{
+  type: 'ADD_KEYFRAME';
+  clipId: ClipId;
+  effectId: EffectId;
+  keyframe: Keyframe;
+}
+```
+
+`Keyframe` shape: `{ id: KeyframeId, frame: TimelineFrame, value: number, easing: EasingCurve }`
+
+Keyframes must be unique by `id` within the effect and sorted ascending by `frame`.
+
+**Rejects with:** `EFFECT_NOT_FOUND`, `DUPLICATE_KEYFRAME_ID`
+
+---
+
+### `MOVE_KEYFRAME`
+
+```ts
+{ type: 'MOVE_KEYFRAME'; clipId: ClipId; effectId: EffectId; keyframeId: KeyframeId; newFrame: TimelineFrame }
+```
+
+Moving a keyframe out of order relative to other keyframes in the same effect rejects with `KEYFRAME_ORDER_VIOLATION`.
+
+---
+
+### `DELETE_KEYFRAME`
+
+```ts
+{ type: 'DELETE_KEYFRAME'; clipId: ClipId; effectId: EffectId; keyframeId: KeyframeId }
+```
+
+---
+
+### `SET_KEYFRAME_EASING`
+
+```ts
+{ type: 'SET_KEYFRAME_EASING'; clipId: ClipId; effectId: EffectId; keyframeId: KeyframeId; easing: EasingCurve }
+```
+
+`EasingCurve` presets: `LINEAR_EASING`, `HOLD_EASING`. Custom bezier curves are represented as `{ type: 'cubic-bezier', cx1, cy1, cx2, cy2 }`.
+
+---
+
+## Creative Metadata Operations
+
+### `SET_CLIP_TRANSFORM`
+
+```ts
+{ type: 'SET_CLIP_TRANSFORM'; clipId: ClipId; transform: Partial<ClipTransform> }
+```
+
+`ClipTransform` fields:
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `x` | `number` | `0` | Horizontal position offset in pixels |
+| `y` | `number` | `0` | Vertical position offset |
+| `scaleX` | `number` | `1.0` | Horizontal scale factor |
+| `scaleY` | `number` | `1.0` | Vertical scale factor |
+| `rotation` | `number` | `0` | Degrees clockwise |
+| `anchorX` | `number` | `0.5` | Horizontal anchor (0=left, 1=right) |
+| `anchorY` | `number` | `0.5` | Vertical anchor (0=top, 1=bottom) |
+| `cropLeft` | `number` | `0` | Crop fraction 0–1 |
+| `cropRight` | `number` | `0` | |
+| `cropTop` | `number` | `0` | |
+| `cropBottom` | `number` | `0` | |
+
+Only the fields present in `Partial<ClipTransform>` are updated.
+
+---
+
+### `SET_AUDIO_PROPERTIES`
+
+```ts
+{ type: 'SET_AUDIO_PROPERTIES'; clipId: ClipId; properties: Partial<AudioProperties> }
+```
+
+`AudioProperties` fields:
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `volume` | `number` | `1.0` | Linear gain. `1.0` = 0 dB. |
+| `pan` | `number` | `0` | `-1.0` = full left, `1.0` = full right |
+| `channelRouting` | `ChannelRouting` | stereo | Channel mapping for surround |
+
+---
+
+### `ADD_TRANSITION`
+
+```ts
+{ type: 'ADD_TRANSITION'; clipId: ClipId; transition: Transition }
+```
+
+Attaches a transition to a clip. Only one transition per clip is allowed. The transition spans the clip's cut point with its neighbors.
+
+`Transition` fields:
+- `id: TransitionId`
+- `type: TransitionType` — e.g. `'dissolve' | 'wipe' | 'push'`
+- `durationFrames: number`
+- `alignment: TransitionAlignment` — `'start' | 'end' | 'center'`
+- `params: Record<string, number | string>` — type-specific parameters
+
+**Rejects with:** already has a transition (use `DELETE_TRANSITION` first)
+
+---
+
+### `DELETE_TRANSITION`
+
+```ts
+{ type: 'DELETE_TRANSITION'; clipId: ClipId }
+```
+
+**Rejects with:** `TRANSITION_NOT_FOUND`
+
+---
+
+### `SET_TRANSITION_DURATION`
+
+```ts
+{ type: 'SET_TRANSITION_DURATION'; clipId: ClipId; durationFrames: number }
+```
+
+---
+
+### `SET_TRANSITION_ALIGNMENT`
+
+```ts
+{ type: 'SET_TRANSITION_ALIGNMENT'; clipId: ClipId; alignment: TransitionAlignment }
+```
+
+`TransitionAlignment`: `'start'` | `'end'` | `'center'`
+
+- `'start'` — transition starts at the clip's cut point
+- `'end'` — transition ends at the cut point
+- `'center'` — transition straddles the cut point equally
+
+---
+
+### `LINK_CLIPS`
+
+```ts
+{ type: 'LINK_CLIPS'; linkGroup: LinkGroup }
+```
+
+`LinkGroup`: `{ id: LinkGroupId, clipIds: readonly ClipId[] }`
+
+Linked clips move together during `MOVE_CLIP` operations. Useful for keeping audio and video clips in sync.
+
+**Rejects with:** `DUPLICATE_LINK_GROUP_ID`
+
+---
+
+### `UNLINK_CLIPS`
+
+```ts
+{ type: 'UNLINK_CLIPS'; linkGroupId: LinkGroupId }
+```
+
+**Rejects with:** `LINK_GROUP_NOT_FOUND`
+
+---
+
+### `ADD_TRACK_GROUP`
+
+```ts
+{ type: 'ADD_TRACK_GROUP'; trackGroup: TrackGroup }
+```
+
+`TrackGroup`: `{ id: TrackGroupId, name: string, trackIds: readonly TrackId[], collapsed?: boolean }`
+
+Creates a collapsible group of tracks. Tracks reference the group via `track.groupId`.
+
+**Rejects with:** `DUPLICATE_TRACK_GROUP_ID`
+
+---
+
+### `DELETE_TRACK_GROUP`
+
+```ts
+{ type: 'DELETE_TRACK_GROUP'; trackGroupId: TrackGroupId }
+```
+
+Removes the group. Tracks that referenced it have their `groupId` cleared.
+
+**Rejects with:** `TRACK_GROUP_NOT_FOUND`
+
+---
+
+## Rejection Reasons
+
+Every rejected `DispatchResult` carries one of these `reason` values:
+
+| Reason | When it's returned |
+|--------|-------------------|
+| `OVERLAP` | The proposed clip position would overlap an existing clip on the same track |
+| `LOCKED_TRACK` | The target track has `locked: true` |
+| `ASSET_MISSING` | `INSERT_CLIP` references an `assetId` not in `assetRegistry` |
+| `TYPE_MISMATCH` | Clip's `mediaType` does not match the target track's `type` |
+| `OUT_OF_BOUNDS` | Clip would extend past `timeline.duration` |
+| `MEDIA_BOUNDS_INVALID` | `mediaOut` would exceed `asset.intrinsicDuration`, or `mediaOut ≤ mediaIn` |
+| `ASSET_IN_USE` | `UNREGISTER_ASSET` on an asset still referenced by clips |
+| `TRACK_NOT_EMPTY` | `DELETE_TRACK` on a track with clips (must delete clips first) |
+| `SPEED_INVALID` | `speed ≤ 0` |
+| `INVARIANT_VIOLATED` | Post-apply invariant check failed (whole-state check) |
+| `NOT_FOUND` | Generic: entity ID does not exist in state |
+| `BEAT_GRID_EXISTS` | `ADD_BEAT_GRID` when one is already present |
+| `CLIP_NOT_FOUND` | Clip ID is not found in any track |
+| `DUPLICATE_EFFECT_ID` | `ADD_EFFECT` with an ID already on the clip |
+| `EFFECT_NOT_FOUND` | Effect ID is missing from the clip |
+| `EFFECT_INDEX_OUT_OF_RANGE` | `REORDER_EFFECT` target index is out of bounds |
+| `KEYFRAME_NOT_FOUND` | Keyframe ID is missing from the effect |
+| `DUPLICATE_KEYFRAME_ID` | `ADD_KEYFRAME` with an ID already in the effect |
+| `INVALID_RANGE` | A start frame ≥ end frame, or `atFrame` outside clip bounds |
+| `TRANSITION_NOT_FOUND` | `DELETE_TRANSITION` or `SET_TRANSITION_*` on a clip with no transition |
+| `LINK_GROUP_NOT_FOUND` | `UNLINK_CLIPS` with an unknown group ID |
+| `TRACK_GROUP_NOT_FOUND` | `DELETE_TRACK_GROUP` with an unknown group ID |
+| `DUPLICATE_LINK_GROUP_ID` | `LINK_CLIPS` with an ID already in `linkGroups` |
+| `DUPLICATE_TRACK_GROUP_ID` | `ADD_TRACK_GROUP` with an ID already in `trackGroups` |
+| `INVALID_OPACITY` | `SET_TRACK_OPACITY` value outside 0–1 |
+| `TRACK_NOT_FOUND` | Track ID not found |
+| `UNKNOWN_OPERATION` | The `type` field does not match any known operation |
+| `DUPLICATE_ID` | Inserting any entity whose ID already exists |
+
+**Handling rejections:**
+
+```ts
+const result = dispatch(state, transaction);
+
+if (!result.accepted) {
+  switch (result.reason) {
+    case 'OVERLAP':
+      showSnapHint('Clip overlaps an existing clip. Use ripple insert or move the target.');
+      break;
+    case 'ASSET_MISSING':
+      showError('Asset not found. Re-link the source file and try again.');
+      break;
+    case 'LOCKED_TRACK':
+      // silently ignore — user tried to edit a locked track
+      break;
+    default:
+      console.error('[dispatch]', result.reason, result.message);
+  }
+}
+```

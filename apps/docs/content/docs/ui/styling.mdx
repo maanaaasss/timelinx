@@ -1,0 +1,177 @@
+---
+title: Styling Components
+description: CSS classes, data attributes, and customization patterns for all UI components
+icon: Paintbrush
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+All `@timelinx/ui` components expose stable CSS class names and `data-*` attributes for styling. The class names are not scoped or hashed — they are stable public API.
+
+## Class Name Conventions
+
+All components use a `tl-` prefix:
+
+| Class | Component |
+|-------|-----------|
+| `.tl-editor` | `TimelineEditor` root |
+| `.tl-ruler` | `TimelineRuler` |
+| `.tl-track` | `TimelineTrack` row |
+| `.tl-track-header` | Left header of a track row |
+| `.tl-clip` | `TimelineClip` |
+| `.tl-clip-label` | Clip name label |
+| `.tl-clip-thumbnail` | Thumbnail strip inside a clip |
+| `.tl-playhead` | Playhead line |
+| `.tl-toolbar` | `TimelineToolbar` |
+| `.tl-tool-btn` | Individual tool button |
+| `.tl-snap-indicator` | Snap indicator line |
+| `.tl-transport` | `TransportControls` |
+| `.tl-inspector` | `InspectorPanel` |
+
+---
+
+## `data-*` Attributes
+
+Components expose state as `data-*` attributes for CSS selectors and test selectors:
+
+```css
+/* Style the active tool button */
+.tl-tool-btn[data-active="true"] {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+/* Style selected clips */
+.tl-clip[data-selected="true"] {
+  outline: 2px solid var(--selection);
+  outline-offset: -1px;
+}
+
+/* Style disabled clips */
+.tl-clip[data-enabled="false"] {
+  opacity: 0.4;
+}
+
+/* Style locked tracks */
+.tl-track[data-locked="true"] .tl-track-header {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+```
+
+### `TimelineClip` data attributes
+
+| Attribute | Values | Set when |
+|-----------|--------|---------|
+| `data-clip-id` | clip ID string | Always |
+| `data-selected` | `"true"` / `"false"` | In selection set |
+| `data-enabled` | `"true"` / `"false"` | Clip is enabled/disabled |
+| `data-dragging` | `"true"` when absent | During drag gesture |
+| `data-ghost` | `"true"` when absent | Provisional drag preview |
+| `data-track-type` | `"video"` / `"audio"` / etc. | Always |
+
+### `TimelineTrack` data attributes
+
+| Attribute | Values | Set when |
+|-----------|--------|---------|
+| `data-track-id` | track ID string | Always |
+| `data-track-type` | `"video"` / `"audio"` / `"subtitle"` / `"title"` | Always |
+| `data-locked` | `"true"` / `"false"` | Track is locked |
+| `data-muted` | `"true"` / `"false"` | Track is muted |
+| `data-solo` | `"true"` / `"false"` | Track is soloed |
+
+---
+
+## Targeting Specific Track Types
+
+Use `data-track-type` to style track rows by type:
+
+```css
+.tl-track[data-track-type="video"] {
+  border-left: 2px solid var(--track-video);
+}
+
+.tl-track[data-track-type="audio"] {
+  border-left: 2px solid var(--track-audio);
+}
+
+.tl-track[data-track-type="subtitle"] {
+  border-left: 2px solid var(--track-subtitle);
+}
+```
+
+---
+
+## Overriding Component Styles
+
+Override styles after importing `structure.css`:
+
+```css
+/* Increase clip corner radius */
+.tl-clip {
+  border-radius: var(--radius-sm);  /* 4px instead of default 2px */
+}
+
+/* Make the toolbar taller */
+.tl-toolbar {
+  height: 52px;
+}
+
+/* Increase font size in clip labels */
+.tl-clip-label {
+  font-size: var(--text-md);  /* 14px */
+}
+```
+
+<Callout title="Use CSS variables over hardcoded values">
+  Prefer `var(--text-sm)` over `12px`. This ensures your customizations stay aligned with the design system and respond correctly to future token updates.
+</Callout>
+
+---
+
+## `className` Prop
+
+All components accept a `className` prop for ad-hoc additions:
+
+```tsx
+<TimelineTrack
+  trackId="v1"
+  className="my-highlighted-track"
+/>
+```
+
+```css
+.my-highlighted-track {
+  background: var(--accent-subtle);
+}
+```
+
+---
+
+## `style` Prop
+
+For inline overrides:
+
+```tsx
+<TimelineClip
+  clipId={clip.id}
+  style={{ borderRadius: 6 }}
+/>
+```
+
+---
+
+## CSS Layers
+
+`@timelinx/ui` does not use `@layer` internally — all its styles are at the default layer. Your application-level styles in `@layer utilities` or `@layer components` will be overridden by `structure.css`.
+
+If you're using Tailwind CSS layers, place `@timelinx/ui` imports outside any layer:
+
+```css
+@import '@timelinx/ui/styles/presets/dark-pro';
+@import '@timelinx/ui/styles/structure';
+
+@layer utilities {
+  /* Your Tailwind utilities here */
+}
+```

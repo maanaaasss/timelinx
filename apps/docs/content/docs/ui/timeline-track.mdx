@@ -1,12 +1,14 @@
 ---
 title: TimelineTrack
-description: Track header row with controls for mute, lock, and track identity
+description: Track row component — header controls, clip area, virtual rendering, and renderClip customization
+icon: Rows3
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
 import { AutoTypeTable } from 'fumadocs-typescript/ui';
 import { generator } from '@/lib/generator';
 
-`TimelineTrack` renders a track header with the track icon, label, and controls for muting/hiding and locking the track.
+`TimelineTrack` renders the full horizontal row for one track: a left header column with track name and controls, and a right clip area that virtualizes clip rendering. It reads track data from the engine via `useTrack(trackId)` and subscribes only to that track's changes.
 
 ## Live Example
 
@@ -17,20 +19,26 @@ import { TimelineTrackExample } from '@/components/examples/timeline-track-examp
 ## Usage
 
 ```tsx
-import { TimelineTrack, TimelineProvider } from '@timelinx/ui';
+import { TimelineProvider } from '@timelinx/react';
+import { TimelineTrack } from '@timelinx/ui';
+import { useTrackIds } from '@timelinx/react';
 
-function App() {
+function TrackRows({ engine }) {
   return (
     <TimelineProvider engine={engine}>
-      <TimelineTrack
-        trackId="v1"
-        shortId="V1"
-        height={48}
-        clipCount={3}
-        onDelete={(trackId) => console.log('delete', trackId)}
-        onAddClip={(trackId) => console.log('add clip', trackId)}
-      />
+      <TrackList />
     </TimelineProvider>
+  );
+}
+
+function TrackList() {
+  const trackIds = useTrackIds();
+  return (
+    <>
+      {trackIds.map((id) => (
+        <TimelineTrack key={id} trackId={id} />
+      ))}
+    </>
   );
 }
 ```
@@ -43,6 +51,85 @@ function App() {
   type="TimelineTrackProps"
 />
 
+## Key Props
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `trackId` | `string` | Required. Identifies which track to render. |
+| `ppf` | `number` | Pixels per frame. If omitted, read from context. |
+| `scrollLeft` | `number` | Horizontal scroll offset. If omitted, read from context. |
+| `renderClip` | `(clip, props) => ReactNode` | Custom clip renderer. Replaces `TimelineClip`. |
+| `onDelete` | `(trackId: string) => void` | Called when the track delete button is pressed. |
+| `onAddClip` | `(trackId: string) => void` | Called when the add-clip button is pressed. |
+
+## What `TimelineTrack` Reads from Context
+
+`TimelineTrack` calls `useTrack(trackId)` which subscribes to the engine snapshot and returns only when that track's data changes:
+
+- `track.name`, `track.type` → header display
+- `track.muted`, `track.locked`, `track.solo` → control state
+- `track.height` → row height
+- `track.clips` → clip list for virtual rendering
+
+It does **not** re-render when other tracks change or when the playhead moves.
+
+## Virtual Clip Rendering
+
+`TimelineTrack` renders only the clips that intersect the current viewport:
+
+```
+visibleClips = clips.filter(clip =>
+  clip.timelineEnd > startFrame && clip.timelineStart < endFrame
+)
+```
+
+`startFrame` and `endFrame` come from `scrollLeft / ppf` and `(scrollLeft + containerWidth) / ppf`. Off-screen clips are unmounted. A 60-frame buffer is kept outside the viewport to prevent pop-in during fast scrolling.
+
+## Mute, Lock, and Solo Controls
+
+The track header controls dispatch operations directly:
+
+| Button | Operation dispatched |
+|--------|---------------------|
+| Mute 🔇 | `SET_TRACK_MUTED` |
+| Lock 🔒 | `SET_TRACK_LOCKED` |
+| Solo ✦ | `SET_TRACK_SOLO` |
+
+These calls go through `engine.dispatch()` — they are undoable.
+
+## Custom Clip Renderer
+
+Replace the built-in `TimelineClip` with your own component:
+
+```tsx
+function MyClip({ clip, ppf, scrollLeft, isSelected }) {
+  return (
+    <div
+      data-clip-id={clip.id}
+      style={{
+        position: 'absolute',
+        left: clip.timelineStart * ppf - scrollLeft,
+        width: (clip.timelineEnd - clip.timelineStart) * ppf,
+        height: '100%',
+        background: clip.color ?? 'var(--track-video)',
+        borderRadius: 'var(--radius-xs)',
+      }}
+    >
+      {clip.name ?? 'Clip'}
+    </div>
+  );
+}
+
+<TimelineTrack
+  trackId="v1"
+  renderClip={(clip, props) => <MyClip key={clip.id} clip={clip} {...props} />}
+/>
+```
+
+<Callout type="warn" title="Keep data-clip-id on the custom clip root">
+  The tool router reads `data-clip-id` from DOM elements to resolve which clip was clicked. Your custom clip component must set `data-clip-id={clip.id}` on its root element, or click/drag gestures will not be recognized.
+</Callout>
+
 ## Context Requirement
 
-`TimelineTrack` must be inside a `TimelineProvider`. It reads the track data and engine reference from context to render mute/lock controls and dispatch toggle actions.
+`TimelineTrack` must be rendered inside a `TimelineProvider`. It reads the engine, `ppf`, and scroll position from context if those props are not provided directly.

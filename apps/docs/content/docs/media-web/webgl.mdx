@@ -1,0 +1,155 @@
+---
+title: WebGL Compositor
+description: GPU-accelerated compositing of decoded video frames using WebGL 2
+icon: Layers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`WebGLCompositorAdapter` composites decoded video frames into a single output frame using WebGL 2. It applies per-clip transforms (position, scale, rotation, crop), blend modes, and opacity, then writes the result to a canvas.
+
+## Import
+
+```ts
+import { createWebGLCompositor, WebGLCompositorAdapter } from '@timelinx/media-web';
+```
+
+---
+
+## `createWebGLCompositor(config)`
+
+```ts
+function createWebGLCompositor(config: WebGLCompositorConfig): WebGLCompositorAdapter
+```
+
+### `WebGLCompositorConfig`
+
+```ts
+type WebGLCompositorConfig = {
+  canvas: HTMLCanvasElement | OffscreenCanvas;
+  width?: number;
+  height?: number;
+  antialias?: boolean;
+};
+```
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `canvas` | `HTMLCanvasElement \| OffscreenCanvas` | required | The output canvas. |
+| `width` | `number` | canvas.width | Compositor internal resolution. |
+| `height` | `number` | canvas.height | |
+| `antialias` | `boolean` | `false` | WebGL antialias hint. |
+
+---
+
+## How It Works
+
+The `Compositor` contract receives a `CompositeRequest`:
+
+```ts
+type CompositeRequest = {
+  readonly timelineFrame: TimelineFrame;
+  readonly layers: readonly CompositeLayer[];
+  readonly width: number;
+  readonly height: number;
+  readonly quality: PlaybackQuality;
+};
+```
+
+Each `CompositeLayer` has a decoded `VideoFrame` (from the `VideoDecoder`), plus transform, opacity, blend mode, and effects:
+
+```ts
+type CompositeLayer = {
+  readonly clipId: ClipId;
+  readonly trackId: TrackId;
+  readonly trackIndex: number;
+  readonly frame: VideoFrameResult;   // decoded bitmap
+  readonly transform: ClipTransform;
+  readonly opacity: number;
+  readonly blendMode: string;
+  readonly effects: readonly Effect[];
+};
+```
+
+The compositor renders layers bottom-up (highest `trackIndex` first), applying transform and blend mode for each.
+
+---
+
+## `ClipTransform` in the Compositor
+
+Each layer's `ClipTransform` maps to WebGL uniform values:
+
+| Transform field | WebGL operation |
+|----------------|----------------|
+| `x`, `y` | Translation in pixels |
+| `scaleX`, `scaleY` | Scale factors |
+| `rotation` | Rotation in degrees (converted to radians) |
+| `anchorX`, `anchorY` | Pivot point (0–1 normalized) |
+| `cropLeft/Right/Top/Bottom` | Texture coordinate clipping |
+
+---
+
+## Blend Modes
+
+The compositor supports CSS-compatible blend modes via WebGL fragment shaders:
+
+| Mode | WebGL shader |
+|------|-------------|
+| `'normal'` | Standard alpha compositing |
+| `'multiply'` | RGB channel multiplication |
+| `'screen'` | Inverse multiplication |
+| `'overlay'` | Combination of multiply and screen |
+| `'darken'` | Min of source and destination |
+| `'lighten'` | Max |
+| `'color-dodge'` | |
+| `'color-burn'` | |
+| `'hard-light'` | |
+| `'soft-light'` | |
+| `'difference'` | |
+| `'exclusion'` | |
+
+---
+
+## Passing to PipelineConfig
+
+```ts
+const compositorCanvas = document.getElementById('compositor-canvas') as HTMLCanvasElement;
+
+const engine = new TimelineEngine({
+  initialState,
+  pipeline: {
+    videoDecoder: createWebCodecsDecoder(),
+    compositor: createWebGLCompositor({
+      canvas: compositorCanvas,
+      width: 1920,
+      height: 1080,
+    }),
+  },
+  dimensions: { width: 1920, height: 1080 },
+});
+```
+
+<Callout title="Match compositor and engine dimensions">
+  Pass the same `width` and `height` to both the compositor config and `TimelineEngineOptions.dimensions`. A mismatch causes clipping or stretching.
+</Callout>
+
+---
+
+## Cleanup
+
+```ts
+compositor.close();
+```
+
+Releases the WebGL context, framebuffers, and textures. Call this when unmounting the editor or when the canvas is removed from the DOM.
+
+---
+
+## OffscreenCanvas for Workers
+
+```ts
+const offscreen = canvas.transferControlToOffscreen();
+const compositor = createWebGLCompositor({ canvas: offscreen });
+```
+
+`OffscreenCanvas` lets the compositor run in a worker thread, freeing the main thread for UI. Requires Chrome 69+ and careful postMessage ownership transfer.

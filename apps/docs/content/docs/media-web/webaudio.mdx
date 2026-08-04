@@ -1,0 +1,140 @@
+---
+title: Web Audio Waveform
+description: Audio waveform extraction using the Web Audio API for track visualization
+icon: AudioLines
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`WebAudioWaveformAdapter` decodes audio files using the Web Audio API and extracts peak amplitude data for waveform visualization in the timeline. It does not handle real-time audio playback — it is a preprocessing step that produces `WaveformData` consumed by `TimelineTrack` to render the audio waveform bar.
+
+## Import
+
+```ts
+import { createWebAudioWaveform, WebAudioWaveformAdapter } from '@timelinx/media-web';
+```
+
+---
+
+## `createWebAudioWaveform(config?)`
+
+```ts
+function createWebAudioWaveform(config?: WaveformConfig): WebAudioWaveformAdapter
+```
+
+### `WaveformConfig`
+
+```ts
+type WaveformConfig = {
+  samplesPerPixel?: number;
+  channelCount?: number;
+};
+```
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `samplesPerPixel` | `number` | `512` | How many audio samples are summarized per display pixel. Lower = higher resolution but slower. |
+| `channelCount` | `number` | `2` | Number of channels to extract. `1` = mono (averaged from source). |
+
+---
+
+## `extractWaveform(file, config?)`
+
+Decodes the file and returns peak amplitude data:
+
+```ts
+const adapter = createWebAudioWaveform();
+const data = await adapter.extractWaveform(file, { samplesPerPixel: 256 });
+```
+
+### `WaveformExtractionResult`
+
+```ts
+type WaveformExtractionResult = {
+  readonly data: WaveformData;
+  readonly duration: number;   // seconds
+  readonly sampleRate: number;
+};
+
+type WaveformData = {
+  readonly peaks: readonly WaveformPeak[];
+  readonly channelCount: number;
+  readonly sampleRate: number;
+};
+
+type WaveformPeak = {
+  readonly min: number;  // -1.0 to 0.0
+  readonly max: number;  // 0.0 to 1.0
+};
+```
+
+`peaks` has one entry per display pixel. Each entry contains the min and max amplitude in that window — render both to get the classic symmetric waveform shape.
+
+---
+
+## Rendering Waveform Data
+
+```tsx
+import { useRef, useEffect } from 'react';
+
+function WaveformCanvas({ data, width, height }: { data: WaveformData, width: number, height: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx || !data) return;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#4ade80';
+
+    const midY = height / 2;
+
+    data.peaks.forEach((peak, i) => {
+      const topY    = midY + peak.min * midY;
+      const bottomY = midY + peak.max * midY;
+      ctx.fillRect(i, topY, 1, bottomY - topY);
+    });
+  }, [data, width, height]);
+
+  return <canvas ref={canvasRef} width={width} height={height} />;
+}
+```
+
+---
+
+## Typical Usage Pattern
+
+Extract waveforms when the user imports audio files into the asset bin:
+
+```tsx
+import { useMediaAssets } from '@timelinx/ui';
+import { createWebAudioWaveform } from '@timelinx/media-web';
+
+const waveformAdapter = createWebAudioWaveform();
+
+async function onAudioFileImported(file: File, assetId: string) {
+  try {
+    const result = await waveformAdapter.extractWaveform(file);
+    // Store result.data alongside the asset for use in TimelineTrack
+    waveformCache.set(assetId, result.data);
+  } catch (err) {
+    console.error('Waveform extraction failed', err);
+  }
+}
+```
+
+<Callout title="Waveform extraction is a one-time cost">
+  Extract waveforms after import and cache them. You do not need to re-extract on every render or playback seek.
+</Callout>
+
+---
+
+## Feature Detection
+
+```ts
+function isWebAudioSupported(): boolean {
+  return typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined';
+}
+```
+
+Web Audio is available in all modern browsers. If unavailable, the waveform visualization degrades gracefully to a flat bar.

@@ -1,0 +1,256 @@
+---
+title: Custom Layout
+description: Composing a timeline editor from decomposed components without TimelineEditor
+icon: LayoutTemplate
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`TimelineEditor` is an all-in-one drop-in that assembles every panel into a pre-defined layout. When you need a different layout — a floating toolbar, a two-pane arrangement, an embedded minimal strip — you can compose the decomposed components directly.
+
+All components in `@timelinx/ui` are independently importable. They use `useTimelineContext()` internally to connect to the engine.
+
+## Full Layout vs Decomposed
+
+**Full layout — use when:**
+- You want to embed a complete NLE-like editor
+- You have no specific layout requirements
+
+```tsx
+<TimelineEditor engine={engine} />
+```
+
+**Decomposed — use when:**
+- You need a custom panel arrangement
+- You want to exclude panels (e.g., no asset bin)
+- You're integrating into an existing app shell
+- You need a minimal/embedded read-only strip
+
+---
+
+## `TimelineProvider`
+
+All decomposed components require a `TimelineProvider` parent:
+
+```tsx
+import { TimelineProvider } from '@timelinx/react';
+import { TimelineEngine } from '@timelinx/react';
+
+const engine = new TimelineEngine({ initialState });
+
+function CustomEditor() {
+  return (
+    <TimelineProvider engine={engine}>
+      <MyCustomLayout />
+    </TimelineProvider>
+  );
+}
+```
+
+`TimelineEditor` internally wraps its children in `TimelineProvider`. When using decomposed components, you provide it explicitly.
+
+---
+
+## Basic Decomposed Example
+
+A minimal layout with just the ruler and track area:
+
+```tsx
+import { TimelineProvider } from '@timelinx/react';
+import { TimelineRuler, TimelineTrack, TrackList } from '@timelinx/ui';
+import { useTrackIds } from '@timelinx/react';
+
+function MinimalTimeline({ engine }) {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <TimelineRuler />
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <TrackRows />
+        </div>
+      </div>
+    </TimelineProvider>
+  );
+}
+
+function TrackRows() {
+  const trackIds = useTrackIds();
+  return (
+    <>
+      {trackIds.map((id) => (
+        <TimelineTrack key={id} trackId={id} />
+      ))}
+    </>
+  );
+}
+```
+
+---
+
+## Two-Pane Layout
+
+Inspector on the right, timeline on the left:
+
+```tsx
+import {
+  TimelineProvider,
+  TimelineProvider as Provider,
+} from '@timelinx/react';
+import {
+  TimelineRuler,
+  TimelineTrack,
+  TimelineToolbar,
+  InspectorPanel,
+  TransportControls,
+} from '@timelinx/ui';
+import { useTrackIds } from '@timelinx/react';
+
+function TwoPaneEditor({ engine }) {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+        {/* Toolbar */}
+        <TimelineToolbar />
+
+        {/* Main area */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+          {/* Timeline pane */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <TimelineRuler />
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <TrackRows />
+            </div>
+            <TransportControls />
+          </div>
+
+          {/* Inspector pane */}
+          <div style={{ width: 280, borderLeft: '1px solid var(--border-default)' }}>
+            <InspectorPanel />
+          </div>
+        </div>
+
+      </div>
+    </TimelineProvider>
+  );
+}
+
+function TrackRows() {
+  const trackIds = useTrackIds();
+  return (
+    <>
+      {trackIds.map((id) => (
+        <TimelineTrack key={id} trackId={id} />
+      ))}
+    </>
+  );
+}
+```
+
+---
+
+## Floating Toolbar
+
+Absolute-positioned toolbar over the timeline:
+
+```tsx
+function EditorWithFloatingToolbar({ engine }) {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{ position: 'relative', height: '100%' }}>
+        {/* Timeline fills the space */}
+        <TimelineRuler />
+        <TrackRows />
+
+        {/* Toolbar floats over the top-left */}
+        <div style={{
+          position: 'absolute',
+          top: 8,
+          left: 8,
+          zIndex: 10,
+          background: 'var(--bg-surface-raised)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-md)',
+        }}>
+          <TimelineToolbar compact />
+        </div>
+      </div>
+    </TimelineProvider>
+  );
+}
+```
+
+---
+
+## Read-Only Embedded Strip
+
+An embedded strip for viewing a timeline without editing:
+
+```tsx
+import { TimelineProvider } from '@timelinx/react';
+import { TimelineRuler, TimelineTrack, TimelinePlayhead } from '@timelinx/ui';
+import { useTrackIds } from '@timelinx/react';
+
+function ReadOnlyStrip({ engine }) {
+  return (
+    <TimelineProvider engine={engine}>
+      <div style={{
+        pointerEvents: 'none',  // block all pointer interactions
+        height: 120,
+        overflow: 'hidden',
+        border: '1px solid var(--border-default)',
+        borderRadius: 'var(--radius-md)',
+      }}>
+        <TimelineRuler />
+        <TrackRows />
+        <TimelinePlayhead />
+      </div>
+    </TimelineProvider>
+  );
+}
+```
+
+<Callout title="pointerEvents: none vs locked tracks">
+  `pointerEvents: none` on the container prevents all DOM interaction. If you want to allow scrubbing but not editing, lock individual tracks with the `LOCK_TRACK` operation and leave pointer events enabled.
+</Callout>
+
+---
+
+## Available Decomposed Components
+
+| Component | Purpose |
+|-----------|---------|
+| `TimelineRuler` | Timecode ruler with frame ticks |
+| `TimelineTrack` | A single track row with its clips (requires `trackId` prop) |
+| `TimelinePlayhead` | The orange playhead line |
+| `TimelineToolbar` | Tool buttons and undo/redo |
+| `TrackList` | Left header column with track names and lock/mute controls |
+| `ZoomControls` | Zoom in/out and fit-to-window buttons |
+| `TransportControls` | Play, pause, stop, and timecode display |
+| `InspectorPanel` | Clip properties inspector |
+| `EffectsPanel` | Per-clip effects stack |
+| `AssetBin` | Registered assets list |
+| `CompositorPreview` | Video output preview canvas |
+| `MarkersPanel` | Marker list with jump-to |
+| `CommandPalette` | Keyboard-searchable command list |
+| `ExportDialog` | Export settings and progress |
+
+---
+
+## Custom Context Values
+
+`TimelineProvider` accepts optional context overrides:
+
+```tsx
+<TimelineProvider
+  engine={engine}
+  ppf={customPpf}           // override pixels-per-frame
+  scrollLeft={scrollLeft}   // controlled scroll
+  onScrollChange={setScrollLeft}
+>
+  {children}
+</TimelineProvider>
+```
+
+When `ppf` and `scrollLeft` are provided, the timeline becomes a fully controlled component. Manage these in state alongside the engine.

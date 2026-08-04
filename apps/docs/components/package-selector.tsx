@@ -12,6 +12,7 @@ import {
   Layout,
   Box,
   Pencil,
+  Video,
   ChevronsUpDown,
   Check,
 } from 'lucide-react';
@@ -48,6 +49,14 @@ const PACKAGES = [
     icon: Pencil,
     color: '#aa99ff',
     href: '/docs/react',
+  },
+  {
+    id: 'media-web',
+    name: 'Media Web',
+    subtitle: 'WebCodecs & WebGL media adapters',
+    icon: Video,
+    color: '#34d399',
+    href: '/docs/media-web',
   },
 ] as const;
 

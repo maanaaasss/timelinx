@@ -1,0 +1,129 @@
+---
+title: Thumbnail Extractor
+description: Generating clip thumbnails using hidden video elements for in-track display
+icon: Image
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`ThumbnailExtractorAdapter` generates still-frame thumbnails for video clips by seeking a hidden `<video>` element to the requested media frame and capturing to a canvas. Thumbnails are displayed inside `TimelineClip` rows.
+
+This adapter does not use WebCodecs — it works in all browsers that support `<video>`.
+
+## Import
+
+```ts
+import { createThumbnailExtractor, ThumbnailExtractorAdapter } from '@timelinx/media-web';
+```
+
+---
+
+## `createThumbnailExtractor(config?)`
+
+```ts
+function createThumbnailExtractor(config?: ThumbnailConfig): ThumbnailExtractorAdapter
+```
+
+### `ThumbnailConfig`
+
+```ts
+type ThumbnailConfig = {
+  width?: number;
+  height?: number;
+  quality?: number;
+  maxConcurrent?: number;
+};
+```
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `width` | `number` | `160` | Output thumbnail width in pixels |
+| `height` | `number` | `90` | Output thumbnail height in pixels |
+| `quality` | `number` | `0.7` | JPEG quality (0–1) |
+| `maxConcurrent` | `number` | `4` | Max concurrent video element seeks to prevent browser throttling |
+
+---
+
+## How It Works
+
+The adapter maintains a pool of hidden `<video>` elements. For each `ThumbnailRequest`:
+
+1. A video element is loaded with `src = objectURL(file)`.
+2. The element is seeked to `mediaFrame / fps` seconds.
+3. After `seeked` fires, the frame is captured to an `OffscreenCanvas` and converted to a JPEG data URL.
+4. The data URL is returned as `ThumbnailResult.bitmap`.
+
+<Callout title="Object URLs">
+  The adapter manages object URLs internally. Pass the source `File` object via `configureClip()` — the adapter handles `URL.createObjectURL()` and revocation.
+</Callout>
+
+---
+
+## `configureClip(clipId, file)`
+
+Register a source file for a clip before requesting thumbnails:
+
+```ts
+const extractor = createThumbnailExtractor({ width: 160, height: 90 });
+
+// Called when the user imports a file
+await extractor.configureClip('clip-1', videoFile);
+```
+
+---
+
+## Thumbnail Requests
+
+The `ThumbnailProvider` contract is called by `PlaybackEngine`:
+
+```ts
+// Called internally — shown here for reference
+const result = await extractor({
+  clipId: 'clip-1',
+  mediaFrame: toFrame(90),
+  width: 160,
+  height: 90,
+});
+// result.bitmap is a string (data URL) or ImageBitmap
+```
+
+---
+
+## Priority Queue
+
+The adapter includes a priority queue for managing large numbers of thumbnail requests efficiently. Visible clips get higher priority than off-screen clips:
+
+```ts
+import { ThumbnailQueue, ThumbnailCache } from '@timelinx/core';
+
+const queue = new ThumbnailQueue({ maxConcurrent: 4 });
+const cache = new ThumbnailCache({ maxSize: 200 });
+
+// Queue a request with priority
+queue.enqueue({
+  request: { clipId, mediaFrame, width, height },
+  priority: 'high',     // 'high' | 'normal' | 'low'
+  onResult: (result) => cache.set(result),
+});
+```
+
+---
+
+## Passing to PipelineConfig
+
+```ts
+import { createThumbnailExtractor } from '@timelinx/media-web';
+
+const thumbnailProvider = createThumbnailExtractor({ width: 160, height: 90 });
+
+const engine = new TimelineEngine({
+  initialState,
+  pipeline: {
+    videoDecoder: createWebCodecsDecoder(),
+    compositor: createWebGLCompositor({ canvas }),
+    thumbnailProvider,
+  },
+});
+```
+
+When `thumbnailProvider` is present, `TimelineClip` automatically renders thumbnail strips inside the clip row.
