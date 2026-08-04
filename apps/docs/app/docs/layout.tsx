@@ -6,8 +6,13 @@ import type { ReactNode } from 'react';
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout tree={source.pageTree} nav={{ title: 'Timelinx' }} sidebar={{ banner: <PackageSelector /> }} tabs={false}>
-      <ThemeBarGithub />
+    <DocsLayout
+      tree={source.pageTree}
+      nav={{ title: 'Timelinx' }}
+      sidebar={{ banner: <PackageSelector key="package-selector" /> }}
+      tabs={false}
+    >
+      <ThemeBarGithub key="theme-bar-github" />
       {children}
     </DocsLayout>
   );
