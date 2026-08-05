@@ -1,0 +1,173 @@
+---
+title: PreviewOverlay
+description: Interactive DOM overlay for the canvas compositor
+---
+
+The `PreviewOverlay` renders an interactive DOM layer on top of the `CompositorPreview` canvas. It enables click-to-select clips and displays selection handles.
+
+## Usage
+
+```tsx
+import { CompositorPreview, PreviewOverlay } from '@timelinx/ui';
+
+function Preview() {
+  return (
+    <div style={{ position: 'relative' }}>
+      <CompositorPreview />
+      <PreviewOverlay />
+    </div>
+  );
+}
+```
+
+> `PreviewOverlay` is automatically rendered inside `CompositorPreview` — you don't need to add it manually unless building a custom layout.
+
+## Coordinate System
+
+The overlay uses the same logical coordinate space as the canvas compositor:
+
+- **Canvas resolution:** 1920 × 1080 (logical pixels)
+- **Position origin:** Center of canvas (960, 540)
+- **Clip position:** `transform.positionX/Y` offsets from canvas center
+- **Percentage positioning:** All overlay elements use `%` units relative to the container
+
+### Screen → Canvas Conversion
+
+```
+canvasX = ((screenX - container.left) / container.width) * 1920
+canvasY = ((screenY - container.top) / container.height) * 1080
+```
+
+## Selection Box
+
+When a single clip is selected, a bordered box appears:
+
+- **Border:** `1px solid var(--selection)` (cyan)
+- **Shadow:** `var(--selection-ring)` glow
+- **Rotation:** Applied via CSS `transform: rotate()` with `transform-origin` at the anchor point
+- **Size:** Based on clip dimensions × scale transform
+
+## Handle Layout
+
+```
+    [NW]────[N]────[NE]
+     │               │
+    [W]    ●anchor   [E]
+     │               │
+    [SW]────[S]────[SE]
+              │
+              ○ (rotation handle)
+```
+
+| Handle | Position | Cursor |
+|--------|----------|--------|
+| NW, SE | Corners | `nwse-resize` |
+| NE, SW | Corners | `nesw-resize` |
+| N, S | Edge midpoints | `ns-resize` |
+| E, W | Edge midpoints | `ew-resize` |
+| Rotation | Above top-center | `crosshair` |
+
+All handles are 8×8px with `var(--selection)` background. The rotation handle has a 1px stem and 10px circular knob.
+
+> **Stage 3:** Handles are visual only. Drag logic is added in Stage 5.
+
+## Click to Select
+
+Clicking on the overlay tests clips in reverse z-order (top-most first):
+
+1. Convert screen coordinates to canvas logical coordinates (1920×1080)
+2. Test against clip AABB bounding boxes
+3. On hit: call `engine.setSelectedClipIds()`
+4. On miss: call `engine.clearSelection()`
+
+Hit testing uses axis-aligned bounding boxes (AABB), ignoring rotation for simplicity.
+
+## Drag to Move
+
+Dragging a selected clip moves it on the preview canvas:
+
+1. **Pointer down** on selection box → start drag, capture pointer
+2. **Pointer move** → calculate delta in canvas logical pixels, update draft position
+3. **Pointer up** → dispatch `SET_CLIP_TRANSFORM` once with final values
+4. **Escape** → cancel drag, revert to original position
+
+The drag uses provisional state — no engine dispatch during drag, only on commit.
+
+## Snap Indicators
+
+During drag, alignment guides appear when the dragged clip's edges align with other clips:
+
+### Edges Compared
+
+| Dragged Edge | Compared Against |
+|--------------|------------------|
+| Left | Left, right, center-X of other clips |
+| Right | Left, right, center-X of other clips |
+| Center-X | Left, right, center-X of other clips |
+| Top | Top, bottom, center-Y of other clips |
+| Bottom | Top, bottom, center-Y of other clips |
+| Center-Y | Top, bottom, center-Y of other clips |
+
+### Snap Threshold
+
+- **Visual snap line:** Appears when edge is within **8 screen pixels** of alignment
+- **Position snap:** Draft position adjusts to align exactly when within **2 canvas pixels**
+
+### Snap Line Appearance
+
+- **Style:** `1px dashed var(--selection)` (cyan dashed line)
+- **Horizontal lines:** Span full width at the matching Y position
+- **Vertical lines:** Span full height at the matching X position
+- **Pointer events:** None (does not interfere with drag)
+
+### Example
+
+```
+┌─────────────────────────────────────────┐
+│         ┌───────────┐                   │
+│         │  clip A   │                   │
+│         └───────────┘                   │
+│                   │ ← vertical snap line│
+│         ┌─────────┼─────┐               │
+│         │  clip B │     │               │
+│         └─────────┼─────┘               │
+│                   │                     │
+└─────────────────────────────────────────┘
+```
+
+## CSS Classes
+
+| Class | Description |
+|-------|-------------|
+| `.preview-overlay` | Root container (`position: absolute; inset: 0; pointer-events: none`) |
+| `.selection-box` | Selection border with rotation transform |
+| `.selection-box.is-dragging` | Active during drag (`cursor: grabbing`) |
+| `.selection-handle` | 8×8px resize handle at corners/edges |
+| `.rotation-handle` | Stem + knob above top-center |
+| `.rotation-handle-stem` | 1px line connecting to selection box |
+| `.rotation-handle-knob` | 10px circular grab target |
+| `.snap-line` | Alignment guide during drag |
+| `.snap-line--horizontal` | Horizontal snap line (full width) |
+| `.snap-line--vertical` | Vertical snap line (full height) |
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS class |
+
+## Architecture
+
+```
+CompositorPreview
+├── <canvas> (1920×1080, CSS-scaled)
+└── PreviewOverlay (absolute, inset: 0)
+    ├── SelectionBox (if clip selected)
+    │   ├── 8 resize handles (visual only)
+    │   └── rotation handle (visual only)
+    └── SnapLines (during drag only)
+        ├── horizontal snap lines
+        └── vertical snap lines
+```
+
+The overlay reads clip positions from the engine via `useAllTracks()` and selection state via `useSelectedClipIds()`. It does not write to the canvas — it's a pure DOM layer.

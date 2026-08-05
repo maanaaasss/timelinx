@@ -163,9 +163,11 @@
   color: var(--text-secondary);
   background: var(--bg-subtle);
   border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
   min-width: 200px;
 }
 
@@ -778,10 +780,12 @@
 .clip-timecode {
   overflow: hidden;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: 10px;
+  font-weight: var(--weight-medium);
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1267,6 +1271,98 @@
   pointer-events: none;
 }
 
+/* ── Preview Overlay (interactive selection) ── */
+.preview-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.preview-overlay .selection-box {
+  pointer-events: auto;
+  border: 1px solid var(--selection);
+  box-shadow: 0 0 0 1px var(--selection-ring), 0 0 12px var(--selection-glow);
+  cursor: grab;
+}
+
+.preview-overlay .selection-box.is-dragging {
+  cursor: grabbing;
+}
+
+.selection-handle {
+  pointer-events: auto;
+  background: var(--selection);
+  border: 1px solid var(--selection-on-fill);
+  border-radius: 1px;
+  cursor: nwse-resize;
+  z-index: 1;
+}
+
+.selection-handle[data-handle="n"],
+.selection-handle[data-handle="s"] {
+  cursor: ns-resize;
+}
+
+.selection-handle[data-handle="e"],
+.selection-handle[data-handle="w"] {
+  cursor: ew-resize;
+}
+
+.selection-handle[data-handle="ne"],
+.selection-handle[data-handle="sw"] {
+  cursor: nesw-resize;
+}
+
+.selection-handle[data-handle="nw"],
+.selection-handle[data-handle="se"] {
+  cursor: nwse-resize;
+}
+
+.rotation-handle {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: crosshair;
+  z-index: 2;
+}
+
+.rotation-handle-stem {
+  width: 1px;
+  height: 12px;
+  background: var(--selection);
+}
+
+.rotation-handle-knob {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--selection);
+  border: 1px solid var(--selection-on-fill);
+}
+
+/* ── Snap Lines (alignment guides during drag) ── */
+.snap-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 11;
+}
+
+.snap-line--horizontal {
+  left: 0;
+  width: 100%;
+  height: 0;
+  border-top: 1px dashed var(--selection);
+}
+
+.snap-line--vertical {
+  top: 0;
+  height: 100%;
+  width: 0;
+  border-left: 1px dashed var(--selection);
+}
+
 .preview-volume-bar {
   position: absolute;
   left: var(--space-3);
@@ -1485,7 +1581,7 @@
 }
 
 .bin-thumb--graphic {
-  background: conic-gradient(from 45deg at 50% 50%, #1e3a5f, #3b82f6, #6366f1, #a78bfa, #ec4899, #f59e0b, #10b981, #1e3a5f);
+  background: conic-gradient(from 45deg at 50% 50%, #1a2a3a, #3B82F6, #A855F7, #EC4899, #F59E0B, #10B981, #60A5FA, #1a2a3a);
   filter: saturate(0.6) brightness(0.5);
 }
 
@@ -1558,6 +1654,94 @@
 }
 
 .field-checkbox { width: 14px; height: 14px; accent-color: var(--accent); }
+
+/* ── NumberScrubber ── */
+.number-scrubber {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.number-scrubber:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--ring-focus);
+}
+
+.number-scrubber.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.number-scrubber-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 100%;
+  padding: 0 var(--space-1);
+  background: var(--bg-subtle);
+  border-right: 1px solid var(--border-faint);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.number-scrubber-label:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
+.number-scrubber.is-scrubbing .number-scrubber-label {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.number-scrubber.is-scrubbing {
+  border-color: var(--accent);
+}
+
+.number-scrubber-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--space-1);
+  border: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.number-scrubber-input::-webkit-outer-spin-button,
+.number-scrubber-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-scrubber-input::selection {
+  background: var(--accent-subtle);
+  color: var(--text-primary);
+}
 
 /* ── Lists ── */
 .marker-list, .caption-list, .transition-list,
@@ -1924,13 +2108,35 @@
 
 .status-value {
   color: var(--text-primary);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
+  font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
 }
 
 /* ============================================================
    Tabbed Panel (Right Panel)
    ============================================================ */
+
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  width: 280px;
+  height: 100%;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-faint);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.right-panel .panel-tabs {
+  flex-shrink: 0;
+}
+
+.right-panel .panel-tab-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
 
 .tabbed-panel {
   display: flex;

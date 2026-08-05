@@ -9,6 +9,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { usePlayheadFrame, useIsPlaying } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { useMediaAssets } from '../context/media-assets-context';
+import { PreviewOverlay } from './preview-overlay';
 import type { TimelineEngine } from '@timelinx/react';
 import type {
   TimelineState,
@@ -22,6 +23,10 @@ import type {
 } from '@timelinx/core';
 import { resolveFrame, toFrame } from '@timelinx/core';
 import type { ResolvedLayer } from '@timelinx/core';
+
+// Canvas logical resolution — coordinate space for all draw calls
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
 
 // ---------------------------------------------------------------------------
 // Effect → ctx.filter mapping
@@ -308,6 +313,10 @@ function findClipAndTrack(
 /**
  * Render all visible layers onto the canvas for the given frame.
  * This is the core compositing function.
+ *
+ * All draw calls use logical coordinates (CANVAS_W × CANVAS_H = 1920×1080).
+ * The canvas context is scaled to map these logical coordinates to the
+ * physical backing store pixels, ensuring sharp rendering on HiDPI displays.
  */
 export function renderCompositorFrame(
   options: CompositorRenderOptions,
@@ -320,10 +329,19 @@ export function renderCompositorFrame(
 
   const state = engine.getState();
   const fps = (state.timeline.fps as number) || 30;
-  const canvasW = canvas.width;
-  const canvasH = canvas.height;
 
-  // Clear to black
+  // Logical coordinate space — all draw calls use these values
+  const canvasW = CANVAS_W;
+  const canvasH = CANVAS_H;
+
+  // Reset transform before scaling (important after DPR/displaySize changes)
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  // Scale context to map logical coordinates → physical pixels
+  // canvas.width/height are the physical backing store size
+  ctx.scale(canvas.width / canvasW, canvas.height / canvasH);
+
+  // Clear to black (use logical coordinates)
   ctx.clearRect(0, 0, canvasW, canvasH);
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, canvasW, canvasH);
@@ -580,8 +598,12 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   const frameRef = useRef<number>(frame as number);
   frameRef.current = frame as number;
 
-  // The timeline's actual output resolution — internal canvas drawing buffer.
-  // This must NOT change based on container size; it is the compositor's render target.
+  // Tracks whether the canvas needs a redraw due to state changes (e.g., transform edits).
+  // Set to true by engine subscription, consumed by the render loop.
+  const needsRedrawRef = useRef<boolean>(true); // true on initial mount
+
+  // The timeline's logical output resolution — used as the coordinate space for all draw calls.
+  // All ctx.drawImage() and ctx.fillText() calls use these coordinates.
   const CANVAS_W = 1920;
   const CANVAS_H = 1080;
 
@@ -590,6 +612,10 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   // object-fit: contain does NOT work on <canvas>, only on <img> / <video>.
   const [displaySize, setDisplaySize] = useState<{ width: number; height: number } | null>(null);
 
+  // Device pixel ratio — tracked for Retina/HiDPI sharpness
+  const dprRef = useRef<number>(typeof window !== 'undefined' ? window.devicePixelRatio : 1);
+  const [dpr, setDpr] = useState<number>(dprRef.current);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -597,9 +623,28 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     };
   }, []);
 
+  // Listen for DPR changes (e.g., window moved to different monitor, or zoom change)
+  useEffect(() => {
+    const mql = window.matchMedia(`(resolution: ${dprRef.current}dppx)`);
+    const handleChange = () => {
+      const newDpr = window.devicePixelRatio;
+      if (newDpr !== dprRef.current) {
+        dprRef.current = newDpr;
+        setDpr(newDpr);
+      }
+    };
+    // Also listen to resize as a fallback (DPR can change on resize in some browsers)
+    window.addEventListener('resize', handleChange);
+    mql.addEventListener('change', handleChange);
+    return () => {
+      window.removeEventListener('resize', handleChange);
+      mql.removeEventListener('change', handleChange);
+    };
+  }, []);
+
   // T0-2: Sync pool to current engine state — evict elements for deleted clips.
-  // engine.subscribe fires whenever a transaction is committed. We collect all
-  // current clip IDs and release any pool entries not in that set.
+  // Also marks canvas as needing redraw when state changes (e.g., transform edits).
+  // engine.subscribe fires whenever a transaction is committed.
   useEffect(() => {
     const syncPool = () => {
       const state = engine.getState();
@@ -610,6 +655,8 @@ export const CompositorPreview = React.memo(function CompositorPreview({
         }
       }
       poolRef.current.syncToActiveClips(activeClipIds);
+      // Mark canvas as needing redraw for state changes (transform edits, etc.)
+      needsRedrawRef.current = true;
     };
     // Sync immediately on mount and on every subsequent state change
     syncPool();
@@ -650,6 +697,22 @@ export const CompositorPreview = React.memo(function CompositorPreview({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Update canvas backing store size when displaySize or DPR changes.
+  // This ensures sharp rendering on Retina/HiDPI displays.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !displaySize) return;
+
+    const physicalWidth = Math.floor(displaySize.width * dpr);
+    const physicalHeight = Math.floor(displaySize.height * dpr);
+
+    // Only update if dimensions actually changed (avoid unnecessary buffer reallocation)
+    if (canvas.width !== physicalWidth || canvas.height !== physicalHeight) {
+      canvas.width = physicalWidth;
+      canvas.height = physicalHeight;
+    }
+  }, [displaySize, dpr]);
+
   // Build the render options once (stable refs)
   const renderOptsRef = useRef<CompositorRenderOptions | null>(null);
   renderOptsRef.current = {
@@ -665,26 +728,45 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     const opts = renderOptsRef.current;
     if (!opts?.canvas) return;
     renderCompositorFrame(opts, frameRef.current);
+    needsRedrawRef.current = false;
   }, []);
 
-  // During playback: rAF loop
+  // During playback: continuous rAF loop.
+  // When paused: render on frame change or state change.
   useEffect(() => {
     if (isPlaying) {
+      // Continuous loop during playback
       const tick = () => {
         doRender();
         rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
       return () => cancelAnimationFrame(rafRef.current);
-    } else {
-      // When paused, render once on frame change (scrubbing)
-      doRender();
     }
+
+    // When paused, render immediately on frame or state change
+    doRender();
   }, [isPlaying, doRender, frame]);
 
+  // When paused and engine state changes (e.g., transform edit), trigger a redraw.
+  // This handles the case where state changes but frame doesn't.
+  useEffect(() => {
+    if (isPlaying) return; // Playing loop handles this already
+
+    // Start a rAF loop that only draws when needsRedrawRef is set
+    let rafId = 0;
+    const tick = () => {
+      if (needsRedrawRef.current) {
+        doRender();
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(rafId);
+  }, [isPlaying, doRender]);
+
   // Build inline CSS style for the canvas element.
-  // - Internal buffer dimensions are always CANVAS_W × CANVAS_H (set via the
-  //   width/height HTML attributes above).
   // - CSS display size is set via inline style so the canvas is drawn at the
   //   correct aspect-ratio-preserving size within the container, letterboxed
   //   or pillarboxed as needed.
@@ -696,14 +778,13 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     : { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' };
 
   return (
-    <div ref={containerRef} className={`media-preview${className ? ` ${className}` : ''}`}>
+    <div ref={containerRef} className={`media-preview${className ? ` ${className}` : ''}`} style={{ position: 'relative' }}>
       <canvas
         ref={canvasRef}
-        width={CANVAS_W}
-        height={CANVAS_H}
         className="media-preview-canvas"
         style={canvasStyle}
       />
+      <PreviewOverlay />
     </div>
   );
 });

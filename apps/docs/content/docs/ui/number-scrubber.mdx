@@ -1,0 +1,132 @@
+---
+title: NumberScrubber
+description: Draggable number input with scrub-to-edit
+---
+
+The `NumberScrubber` is a combined label + number input that supports drag-to-scrub. It's designed for inspector panels where precise numeric values need to be edited quickly.
+
+## Usage
+
+```tsx
+import { NumberScrubber } from '@timelinx/ui';
+
+function TransformPanel() {
+  const [x, setX] = useState(0);
+
+  return (
+    <NumberScrubber
+      label="X"
+      value={x}
+      onChange={(v) => setX(v)}      // local state during scrub
+      onCommit={(v) => dispatch(v)}  // engine dispatch on release
+      step={1}
+    />
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | — | Short label displayed in the scrubber badge (e.g., "X", "Y", "SX") |
+| `value` | `number` | — | Current value |
+| `onChange` | `(value: number) => void` | — | Called during scrub/typing for local state updates |
+| `onCommit` | `(value: number) => void` | — | Called on pointerup/blur/Enter to commit the final value |
+| `min` | `number` | — | Minimum allowed value |
+| `max` | `number` | — | Maximum allowed value |
+| `step` | `number` | `1` | Arrow key increment |
+| `shiftStep` | `number` | `10` | Arrow key increment with Shift held |
+| `disabled` | `boolean` | `false` | Disable all interactions |
+
+## Interaction Model
+
+### Mouse / Trackpad
+
+| Action | Behavior |
+|--------|----------|
+| **Drag label left/right** | Scrubs value (1px = 1 unit, accelerates after 100px) |
+| **Click label** | Focuses the input for typing |
+| **Click input** | Places cursor for text editing |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| **Arrow Up/Down** | Increment/decrement by `step` |
+| **Shift + Arrow** | Increment/decrement by `shiftStep` |
+| **Enter** | Commits current value, keeps focus |
+| **Escape** | Reverts to original value, blurs input |
+| **Tab** | Natural focus flow to next element |
+
+## History Safety
+
+The `onChange` / `onCommit` split prevents undo spam:
+
+- `onChange` updates local React state only — no engine dispatch
+- `onCommit` triggers `engine.dispatch` — creates a single history entry
+- A full scrub gesture (pointerdown → drag → pointerup) creates exactly one history entry
+
+## Accessibility
+
+- `role="spinbutton"` with `aria-valuemin`, `aria-valuemax`, `aria-valuenow`
+- `aria-label` set to the `label` prop
+- `inputMode="numeric"` for mobile keyboard hint
+
+## CSS Classes
+
+| Class | Description |
+|-------|-------------|
+| `.number-scrubber` | Root container |
+| `.number-scrubber-label` | Draggable label badge |
+| `.number-scrubber-input` | Text input for direct editing |
+| `.number-scrubber.is-scrubbing` | Active during drag interaction |
+| `.number-scrubber.is-disabled` | Disabled state |
+
+## Example: Inspector Integration
+
+```tsx
+import { NumberScrubber } from '@timelinx/ui';
+import { useClip, useEngine } from '@timelinx/react';
+
+function ClipTransform({ clipId }) {
+  const engine = useEngine();
+  const clip = useClip(engine, clipId);
+  const transform = clip?.transform;
+
+  if (!transform) return null;
+
+  const commit = (property, value) => {
+    engine.dispatch({
+      id: `set-${property}`,
+      label: `Set ${property}`,
+      timestamp: Date.now(),
+      operations: [{
+        type: 'SET_CLIP_TRANSFORM',
+        clipId,
+        transform: {
+          ...transform,
+          [property]: { ...transform[property], value },
+        },
+      }],
+    });
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <NumberScrubber
+        label="X"
+        value={transform.positionX.value}
+        onChange={() => {}}
+        onCommit={(v) => commit('positionX', v)}
+      />
+      <NumberScrubber
+        label="Y"
+        value={transform.positionY.value}
+        onChange={() => {}}
+        onCommit={(v) => commit('positionY', v)}
+      />
+    </div>
+  );
+}
+```

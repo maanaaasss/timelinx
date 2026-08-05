@@ -27,6 +27,9 @@ export type { TimelinePlayheadProps } from './components/timeline-playhead';
 export { ZoomControls } from './components/zoom-controls';
 export type { ZoomControlsProps } from './components/zoom-controls';
 
+export { NumberScrubber } from './components/number-scrubber';
+export type { NumberScrubberProps } from './components/number-scrubber';
+
 export { TrackList } from './components/track-list';
 export type { TrackListProps } from './components/track-list';
 
@@ -54,6 +57,9 @@ export type { MediaPreviewProps } from './components/media-preview';
 
 export { CompositorPreview } from './components/canvas-compositor';
 export type { CompositorPreviewProps } from './components/canvas-compositor';
+
+export { PreviewOverlay } from './components/preview-overlay';
+export type { PreviewOverlayProps } from './components/preview-overlay';
 
 export { ExportDialog } from './components/export-dialog';
 export type { ExportDialogProps } from './components/export-dialog';
@@ -176,3 +182,6 @@ export type {
 // ── Export (Phase 11) ────────────────────────────────────────────────────
 export { useExport } from './hooks/use-export';
 export type { ExportState, ExportStatus, UseExportReturn } from './hooks/use-export';
+
+// ── Provisional State Hooks ───────────────────────────────────────────────
+export { useProvisionalValue, useProvisionalTransform } from './hooks/use-provisional-value';
