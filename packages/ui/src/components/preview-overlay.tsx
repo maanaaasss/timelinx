@@ -387,6 +387,19 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
     return bounds;
   }, [tracks, selectedClipId]);
 
+  // Collect all clips with their bounds (for click hit testing)
+  const allClipBounds = useMemo(() => {
+    const bounds: ClipBounds[] = [];
+    for (const track of tracks) {
+      for (const clip of track.clips) {
+        if (clip.transform) {
+          bounds.push(getClipBounds(clip));
+        }
+      }
+    }
+    return bounds;
+  }, [tracks]);
+
   // Compute bounds with draft position if dragging
   const selectedBounds = useMemo(() => {
     if (!selectedClip) return null;

@@ -24,6 +24,10 @@ import type {
 import { resolveFrame, toFrame } from '@timelinx/core';
 import type { ResolvedLayer } from '@timelinx/core';
 
+// Canvas logical resolution — coordinate space for all draw calls
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
+
 // ---------------------------------------------------------------------------
 // Effect → ctx.filter mapping
 // ---------------------------------------------------------------------------
