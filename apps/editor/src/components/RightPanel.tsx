@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { InspectorPanel } from './InspectorPanel';
+import { InspectorPanel } from '@timelinx/ui';
 import { EffectsPanel } from './EffectsPanel';
 import { TransitionsPanel } from './TransitionsPanel';
 import { KeyframesPanel } from './KeyframesPanel';

@@ -41,3 +41,41 @@ function App() {
 ## Context Requirement
 
 `CompositorPreview` must be inside both a `TimelineProvider` and a `MediaAssetsProvider`. The timeline provider supplies clip and track state for compositing; the media assets provider supplies blob URLs and file data for rendering media frames.
+
+## HiDPI / Retina Support
+
+The compositor automatically handles high-DPI (Retina) displays for sharp rendering:
+
+- The canvas backing store is sized to match the physical pixel density (`canvas.width = cssWidth × devicePixelRatio`)
+- The drawing context is scaled so all draw calls use logical 1920×1080 coordinates
+- DPR changes are detected via `window.matchMedia('(resolution: ...)')` and `resize` events
+- No code changes are needed — existing `ctx.drawImage()` and `ctx.fillText()` calls work at logical coordinates
+
+### Coordinate System
+
+| Layer | Dimensions | Description |
+|-------|------------|-------------|
+| **Logical** | 1920 × 1080 | All draw calls, transforms, and clip positions use this space |
+| **CSS** | Aspect-ratio fit | Display size scaled to fit container (preserving 16:9) |
+| **Physical** | CSS × DPR | Canvas backing store pixels for sharp output |
+
+```
+┌─────────────────────────────────────────┐
+│ Container (CSS pixels)                  │
+│  ┌─────────────────────────────────┐    │
+│  │ Canvas display (CSS)            │    │
+│  │  ┌─────────────────────────┐    │    │
+│  │  │ Logical 1920×1080       │    │    │
+│  │  │ (all draw calls)        │    │    │
+│  │  └─────────────────────────┘    │    │
+│  └─────────────────────────────────┘    │
+│  Backing store: CSS.width × DPR         │
+│                CSS.height × DPR         │
+└─────────────────────────────────────────┘
+```
+
+### Performance Notes
+
+- The canvas buffer is only reallocated when display size or DPR actually changes
+- `ctx.setTransform()` is called before each render to reset and reapply the scale
+- The `requestAnimationFrame` loop is unaffected by DPR changes

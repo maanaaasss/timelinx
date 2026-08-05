@@ -55,7 +55,8 @@ export default function Home() {
         },
       ]}
     >
-      <div className="max-w-6xl mx-auto px-6 py-12 lg:py-20">
+      <div className="pointer-events-none fixed top-0 right-0 z-0 hidden h-full w-[30px] scale-x-[-1] bg-[url('/layout/ruler-x.svg')] bg-[length:30px_120px] bg-[position:0_0px] bg-repeat-y opacity-40 lg:block dark:opacity-20 dark:invert"></div>
+      <div className="max-w-6xl mx-auto px-6 py-12 lg:py-20 relative">
         {/* Hero */}
         <div className="flex flex-col items-start gap-6 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-fd-border bg-fd-secondary/60 text-xs font-medium text-fd-secondary-foreground">

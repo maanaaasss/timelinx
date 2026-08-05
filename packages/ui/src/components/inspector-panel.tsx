@@ -1,7 +1,8 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { useEngine, useSelectedClipIds, useClip } from '@timelinx/react';
+import React, { useCallback } from 'react';
+import { useSelectedClipIds, useClip } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { CollapsibleSection } from './collapsible-section';
+import { NumberScrubber } from './number-scrubber';
 import type { ClipId } from '@timelinx/core';
 
 function TransformIcon() {
@@ -28,58 +29,33 @@ export const InspectorPanel = React.memo(function InspectorPanel({
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
   const clip = useClip(selectedClipId ?? '');
 
-  const trackId = clip?.trackId ?? null;
+  const handleTransformCommit = useCallback(
+    (property: string, value: number) => {
+      if (!clip) return;
+      const currentTransform = clip.transform;
+      if (!currentTransform) return;
 
-  const [localValues, setLocalValues] = useState<Record<string, string>>({});
-  const [isTyping, setIsTyping] = useState(false);
-
-  useEffect(() => {
-    if (!isTyping && clip?.transform) {
-      setLocalValues({
-        positionX: String(clip.transform.positionX.value),
-        positionY: String(clip.transform.positionY.value),
-        scaleX: String(clip.transform.scaleX.value),
-        scaleY: String(clip.transform.scaleY.value),
-        rotation: String(clip.transform.rotation.value),
-        opacity: String(clip.transform.opacity.value),
+      engine.dispatch({
+        id: `set-transform-${Date.now()}`,
+        label: `Set ${property}`,
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'SET_CLIP_TRANSFORM',
+            clipId: clip.id as ClipId,
+            transform: {
+              ...currentTransform,
+              [property]: {
+                ...currentTransform[property as keyof typeof currentTransform],
+                value,
+              },
+            },
+          },
+        ],
       });
-    }
-  }, [clip?.transform, isTyping]);
-
-  const handleTransformChange = useCallback((property: string, rawValue: string) => {
-    setLocalValues((prev) => ({ ...prev, [property]: rawValue }));
-    setIsTyping(true);
-  }, []);
-
-  const handleTransformCommit = useCallback((property: string) => {
-    if (!clip || !trackId) return;
-    const currentTransform = clip.transform;
-    if (!currentTransform) return;
-
-    const rawValue = localValues[property];
-    const numValue = Number(rawValue);
-
-    if (rawValue === '' || rawValue === '-' || isNaN(numValue)) {
-      setLocalValues((prev) => ({ ...prev, [property]: String(currentTransform[property as keyof typeof currentTransform].value) }));
-      setIsTyping(false);
-      return;
-    }
-
-    engine.dispatch({
-      id: `set-transform-${Date.now()}`,
-      label: `Set ${property}`,
-      timestamp: Date.now(),
-      operations: [{
-        type: 'SET_CLIP_TRANSFORM',
-        clipId: clip.id as ClipId,
-        transform: {
-          ...currentTransform,
-          [property]: { ...currentTransform[property as keyof typeof currentTransform], value: numValue },
-        },
-      }],
-    });
-    setIsTyping(false);
-  }, [engine, clip, trackId, localValues]);
+    },
+    [engine, clip],
+  );
 
   if (!selectedClipId || !clip) {
     return (
@@ -123,88 +99,58 @@ export const InspectorPanel = React.memo(function InspectorPanel({
       <div className="panel-content">
         <CollapsibleSection title="Transform" icon={<TransformIcon />}>
           {transform ? (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
               <div className="field-pair">
-                <div className="field-group">
-                  <label className="field-label">X</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    step={1}
-                    value={localValues.positionX ?? String(transform.positionX.value)}
-                    onChange={(e) => handleTransformChange('positionX', e.target.value)}
-                    onBlur={() => handleTransformCommit('positionX')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('positionX'); }}
-                  />
-                </div>
-                <div className="field-group">
-                  <label className="field-label">Y</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    step={1}
-                    value={localValues.positionY ?? String(transform.positionY.value)}
-                    onChange={(e) => handleTransformChange('positionY', e.target.value)}
-                    onBlur={() => handleTransformCommit('positionY')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('positionY'); }}
-                  />
-                </div>
+                <NumberScrubber
+                  label="X"
+                  value={transform.positionX.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('positionX', v)}
+                  step={1}
+                />
+                <NumberScrubber
+                  label="Y"
+                  value={transform.positionY.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('positionY', v)}
+                  step={1}
+                />
               </div>
               <div className="field-pair">
-                <div className="field-group">
-                  <label className="field-label">Scale X</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    step={0.1}
-                    value={localValues.scaleX ?? String(transform.scaleX.value)}
-                    onChange={(e) => handleTransformChange('scaleX', e.target.value)}
-                    onBlur={() => handleTransformCommit('scaleX')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('scaleX'); }}
-                  />
-                </div>
-                <div className="field-group">
-                  <label className="field-label">Scale Y</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    step={0.1}
-                    value={localValues.scaleY ?? String(transform.scaleY.value)}
-                    onChange={(e) => handleTransformChange('scaleY', e.target.value)}
-                    onBlur={() => handleTransformCommit('scaleY')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('scaleY'); }}
-                  />
-                </div>
+                <NumberScrubber
+                  label="SX"
+                  value={transform.scaleX.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('scaleX', v)}
+                  step={0.1}
+                />
+                <NumberScrubber
+                  label="SY"
+                  value={transform.scaleY.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('scaleY', v)}
+                  step={0.1}
+                />
               </div>
               <div className="field-pair">
-                <div className="field-group">
-                  <label className="field-label">Rotation</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    step={1}
-                    value={localValues.rotation ?? String(transform.rotation.value)}
-                    onChange={(e) => handleTransformChange('rotation', e.target.value)}
-                    onBlur={() => handleTransformCommit('rotation')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('rotation'); }}
-                  />
-                </div>
-                <div className="field-group">
-                  <label className="field-label">Opacity</label>
-                  <input
-                    type="number"
-                    className="field-input"
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    value={localValues.opacity ?? String(transform.opacity.value)}
-                    onChange={(e) => handleTransformChange('opacity', e.target.value)}
-                    onBlur={() => handleTransformCommit('opacity')}
-                    onKeyDown={(e) => { if (e.key === 'Enter') handleTransformCommit('opacity'); }}
-                  />
-                </div>
+                <NumberScrubber
+                  label="R"
+                  value={transform.rotation.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('rotation', v)}
+                  step={1}
+                />
+                <NumberScrubber
+                  label="O"
+                  value={transform.opacity.value}
+                  onChange={() => {}}
+                  onCommit={(v) => handleTransformCommit('opacity', v)}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                />
               </div>
-            </>
+            </div>
           ) : (
             <div className="empty-state">
               <p>Clip has no transform data</p>

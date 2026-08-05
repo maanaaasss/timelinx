@@ -1,0 +1,165 @@
+---
+title: Provisional State Pattern
+description: Direct manipulation without undo-stack bloat
+---
+
+During direct manipulation (drag, scrub, resize), we update React local state only. The engine receives one dispatch on commit. This prevents undo-stack bloat and keeps interactions at 60fps.
+
+## The Problem
+
+If you dispatch on every pointer move during a drag:
+- 60 dispatches/second × 3 second drag = 180 history entries
+- User presses Cmd+Z once → only reverts 1/60th of the drag
+- Undo becomes useless for direct manipulation
+
+## The Solution
+
+Split interaction into three phases:
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   START     │───▶│   UPDATE    │───▶│   COMMIT    │
+│ (draft=orig)│    │ (draft=new) │    │ (dispatch)  │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
+1. **Start**: Capture original value, enter draft mode
+2. **Update**: Modify draft state only (no dispatch)
+3. **Commit**: Dispatch once with final value
+
+## NumberScrubber
+
+The `NumberScrubber` component implements this pattern natively:
+
+```tsx
+<NumberScrubber
+  label="X"
+  value={transform.positionX.value}
+  onChange={() => {}}  // no-op during scrub
+  onCommit={(v) => engine.dispatch({ ... })}  // single dispatch
+/>
+```
+
+### Interaction flow:
+
+1. **Pointer down on label** → `isScrubbing = true`, capture start position
+2. **Pointer move** → update `localValue` state only, call `onChange`
+3. **Pointer up** → call `onCommit` with final value, `isScrubbing = false`
+
+### Keyboard flow:
+
+1. **Arrow key** → update local value, call `onChange` + `onCommit` immediately
+2. **Enter** → commit current typed value
+3. **Escape** → revert to original value, no commit
+
+## Preview Overlay Drag
+
+The preview overlay implements the same pattern for clip position:
+
+```tsx
+// In preview-overlay.tsx
+const [isDragging, setIsDragging] = useState(false);
+const draftPosRef = useRef<{ x: number; y: number } | null>(null);
+
+// Start
+const handleDragPointerDown = (e) => {
+  setIsDragging(true);
+  draftPosRef.current = { x: transform.positionX.value, y: transform.positionY.value };
+};
+
+// Update
+const handleDragPointerMove = (e) => {
+  draftPosRef.current = { x: startX + dx, y: startY + dy };
+};
+
+// Commit
+const handleDragPointerUp = (e) => {
+  engine.dispatch({
+    type: 'SET_CLIP_TRANSFORM',
+    transform: { positionX: draftPosRef.current.x, positionY: draftPosRef.current.y }
+  });
+  setIsDragging(false);
+  draftPosRef.current = null;
+};
+
+// Cancel (Escape)
+useEffect(() => {
+  if (!isDragging) return;
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setIsDragging(false);
+      draftPosRef.current = null;
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [isDragging]);
+```
+
+## Reusable Hooks
+
+### `useProvisionalValue`
+
+For single-value provisional state:
+
+```tsx
+import { useProvisionalValue } from '@timelinx/ui';
+
+const [displayValue, start, update, commit, cancel] = useProvisionalValue(
+  transform.positionX.value,  // committed value
+  (v) => engine.dispatch({ ... }),  // commit callback
+);
+
+// Usage
+start();           // begin interaction
+update(delta);     // update draft
+commit();          // dispatch once
+cancel();          // revert to committed
+```
+
+### `useProvisionalTransform`
+
+For 2D position drag:
+
+```tsx
+import { useProvisionalTransform } from '@timelinx/ui';
+
+const [pos, startDrag, updateDrag, commitDrag, cancelDrag] = useProvisionalTransform(
+  transform,  // { positionX, positionY }
+  (x, y) => engine.dispatch({ ... }),  // commit callback
+);
+
+// Display position
+pos.positionX;
+pos.positionY;
+```
+
+## History Safety
+
+The engine's `pushWithCompression` is a safety net, but provisional state prevents dispatches during interaction:
+
+- **Without provisional state**: 60 dispatches/sec → compression helps but still noisy
+- **With provisional state**: 1 dispatch total → compression not needed
+
+If any dispatch leaks during drag (e.g., from a side effect), compression catches it.
+
+## Cursor States
+
+CSS cursor should reflect the interaction state:
+
+```css
+.selection-box { cursor: grab; }
+.selection-box.is-dragging { cursor: grabbing; }
+
+.number-scrubber-label { cursor: ew-resize; }
+.number-scrubber.is-scrubbing { cursor: ew-resize; }
+```
+
+## Related Components
+
+| Component | Provisional Mechanism |
+|-----------|----------------------|
+| `NumberScrubber` | Built-in (`isScrubbing` state) |
+| `PreviewOverlay` | Draft position ref |
+| `useProvisionalValue` | Generic hook |
+| `useProvisionalTransform` | 2D position hook |
