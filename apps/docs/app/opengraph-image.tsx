@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export default function OG() {
   return new ImageResponse(
@@ -48,6 +48,8 @@ export default function OG() {
         </div>
         <div
           style={{
+            display: 'flex',
+            flexDirection: 'column',
             color: '#ffffff',
             fontSize: '52px',
             fontWeight: 700,
@@ -56,8 +58,7 @@ export default function OG() {
             marginBottom: '24px',
           }}
         >
-          Timeline editor engine
-          <br />
+          <span>Timeline editor engine</span>
           <span style={{ color: '#a1a1aa' }}>for the browser</span>
         </div>
         <div
