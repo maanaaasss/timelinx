@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — High Contrast Theme
-   
-   WCAG AAA accessible with bold colors.
+   @timelinx/ui — High Contrast Theme v2.0
+
+   WCAG AAA accessible with bold amber/cyan palette.
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
@@ -9,98 +9,103 @@
 :root {
   color-scheme: dark;
 
-  /* ── Surfaces ── */
+  /* ── Surfaces — pure black base, maximum contrast ── */
   --bg-canvas:         #000000;
   --bg-app:            #050505;
-  --bg-panel:          #0a0a0a;
+  --bg-panel:          #0A0A0A;
   --bg-surface:        #111111;
   --bg-surface-raised: #161616;
-  --bg-surface-soft:   #131313;
-  --bg-subtle:         #0a0a0a;
+  --bg-surface-soft:   #0D0D0D;
+  --bg-subtle:         #080808;
   --bg-raised:         #161616;
-  --bg-hover:          rgba(255,255,255,0.1);
+  --bg-hover:          rgba(255,255,255,0.10);
   --bg-active:         rgba(255,255,255,0.14);
   --bg-overlay:        rgba(255,255,255,0.12);
   --bg-input:          #080808;
   --bg-input-focus:    #111111;
 
-  /* ── Borders ── */
-  --border-faint:      rgba(255,255,255,0.1);
+  /* ── Borders — high contrast ── */
+  --border-faint:      rgba(255,255,255,0.10);
   --border-subtle:     rgba(255,255,255,0.15);
   --border-default:    rgba(255,255,255,0.22);
   --border-strong:     rgba(255,255,255,0.35);
-  --border-focus:      #f59e0b;
+  --border-focus:      var(--accent-400);
 
-  /* ── Text ── */
-  --text-primary:      #ffffff;
-  --text-secondary:    rgba(255,255,255,0.8);
+  /* ── Text — maximum readability ── */
+  --text-primary:      #FFFFFF;
+  --text-secondary:    rgba(255,255,255,0.85);
   --text-tertiary:     rgba(255,255,255,0.55);
-  --text-disabled:     rgba(255,255,255,0.3);
+  --text-disabled:     rgba(255,255,255,0.30);
   --text-inverse:      #000000;
   --text-mono:         rgba(255,255,255,0.85);
 
-  /* ── Accent ── */
-  --accent:            #f59e0b;
-  --accent-hover:      #fbbf24;
-  --accent-active:     #d97706;
+  /* ── Accent — bright amber for maximum visibility ── */
+  --accent:            #F59E0B;
+  --accent-hover:      #FBBF24;
+  --accent-active:     #D97706;
   --accent-subtle:     rgba(245,158,11,0.15);
-  --accent-border:     rgba(245,158,11,0.5);
+  --accent-border:     rgba(245,158,11,0.50);
   --accent-glow:       rgba(245,158,11,0.25);
   --accent-on-fill:    #000000;
 
-  /* ── Selection — yellow for active/selected ── */
-  --selection:         #fbbf24;
-  --selection-ring:    rgba(251,191,36,0.50);
-  --selection-glow:    rgba(251,191,36,0.40);
-  --selection-handle:  #fbbf24;
+  /* ── Selection — bright cyan ── */
+  --selection:         #22D3EE;
+  --selection-ring:    rgba(34,211,238,0.50);
+  --selection-glow:    rgba(34,211,238,0.40);
+  --selection-handle:  #22D3EE;
   --selection-on-fill: #000000;
 
   /* ── Semantic ── */
-  --color-danger:      #ef4444;
+  --color-danger:      #EF4444;
   --color-danger-subtle: rgba(239,68,68,0.15);
-  --color-success:     #22c55e;
+  --color-success:     #22C55E;
   --color-success-subtle: rgba(34,197,94,0.15);
-  --color-warning:     #f59e0b;
-  --color-warning-subtle: rgba(245,158,11,0.15);
+  --color-warning:     #FBBF24;
+  --color-warning-subtle: rgba(251,191,36,0.15);
 
-  /* ── Track types ── */
-  --track-video:       #60a5fa;
+  /* ── Track types — high-contrast variants ── */
+  --track-video:       #60A5FA;
   --track-video-dim:   rgba(96,165,250,0.85);
   --track-video-bg:    rgba(96,165,250,0.12);
-  --track-video-border: rgba(96,165,250,0.4);
-  --track-audio:       #4ade80;
+  --track-video-border: rgba(96,165,250,0.40);
+
+  --track-audio:       #4ADE80;
   --track-audio-dim:   rgba(74,222,128,0.85);
   --track-audio-bg:    rgba(74,222,128,0.12);
-  --track-audio-border: rgba(74,222,128,0.4);
-  --track-subtitle:    #fbbf24;
+  --track-audio-border: rgba(74,222,128,0.40);
+
+  --track-subtitle:    #FBBF24;
   --track-subtitle-dim: rgba(251,191,36,0.85);
   --track-subtitle-bg: rgba(251,191,36,0.12);
-  --track-subtitle-border: rgba(251,191,36,0.4);
-  --track-image:       #c4b5fd;
-  --track-image-bg:    rgba(196,181,253,0.12);
-  --track-image-border: rgba(196,181,253,0.4);
-  --track-effect:      #34d399;
+  --track-subtitle-border: rgba(251,191,36,0.40);
+
+  --track-image:       #F472B6;
+  --track-image-bg:    rgba(244,114,182,0.12);
+  --track-image-border: rgba(244,114,182,0.40);
+
+  --track-effect:      #34D399;
   --track-effect-dim:  rgba(52,211,153,0.85);
   --track-effect-bg:   rgba(52,211,153,0.12);
-  --track-effect-border: rgba(52,211,153,0.4);
-  --track-music:       #a78bfa;
-  --track-music-dim:   rgba(167,139,250,0.85);
-  --track-music-bg:    rgba(167,139,250,0.12);
-  --track-music-border: rgba(167,139,250,0.4);
+  --track-effect-border: rgba(52,211,153,0.40);
 
-  /* ── Playhead ── */
-  --playhead-color:    #ef4444;
-  --playhead-shadow:   0 0 0 2px rgba(0,0,0,0.9), 0 0 14px rgba(239,68,68,0.5);
+  --track-music:       #C084FC;
+  --track-music-dim:   rgba(192,132,252,0.85);
+  --track-music-bg:    rgba(192,132,252,0.12);
+  --track-music-border: rgba(192,132,252,0.40);
+
+  /* ── Playhead — red for maximum distinction ── */
+  --playhead-color:    #EF4444;
+  --playhead-shadow:   0 0 0 2px rgba(0,0,0,0.9), 0 0 14px rgba(239,68,68,0.50);
 
   /* ── Scrollbar ── */
   --scrollbar-track:   transparent;
   --scrollbar-thumb:   rgba(255,255,255,0.18);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.3);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.30);
 
   /* ── Shadows ── */
-  --shadow-xs:         0 1px 2px rgba(0,0,0,0.3);
-  --shadow-sm:         0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md:         0 4px 12px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
-  --shadow-lg:         0 8px 24px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3);
-  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.7), 0 8px 16px rgba(0,0,0,0.4);
+  --shadow-xs:         0 1px 2px rgba(0,0,0,0.30);
+  --shadow-sm:         0 1px 3px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.30);
+  --shadow-md:         0 4px 12px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.30);
+  --shadow-lg:         0 8px 24px rgba(0,0,0,0.60), 0 4px 8px rgba(0,0,0,0.30);
+  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.70), 0 8px 16px rgba(0,0,0,0.40);
 }
