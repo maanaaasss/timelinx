@@ -5,20 +5,24 @@ icon: Rocket
 ---
 
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Database, Cpu, LayoutDashboard, Monitor } from 'lucide-react';
 
 ## What You're Building
 
 A fully functional timeline editor with video tracks, clip placement, zoom, drag-to-move, undo/redo, and keyboard shortcuts — running entirely in the browser.
 
 <Cards>
-  <Card title="@timelinx/core" href="/docs/core">
+  <Card title="Core" href="/docs/core" icon={<Database />}>
     The headless engine. Dispatch model, invariant validation, and undo history.
   </Card>
-  <Card title="@timelinx/react" href="/docs/react">
+  <Card title="React" href="/docs/react" icon={<Cpu />}>
     React bindings — `TimelineEngine`, hooks, and providers.
   </Card>
-  <Card title="@timelinx/ui" href="/docs/ui">
+  <Card title="UI" href="/docs/ui" icon={<LayoutDashboard />}>
     Drop-in components — tracks, clips, ruler, panels, and a complete editor surface.
+  </Card>
+  <Card title="Media Web" href="/docs/media-web" icon={<Monitor />}>
+    Browser-native adapters — WebCodecs decoding, WebAudio waveforms, WebGL compositing, and export.
   </Card>
 </Cards>
 
