@@ -48,9 +48,9 @@ pnpm add @timelinx/core
 
 ## Requirements
 
-- **TypeScript** ≥5.0 — the packages use `const` enums, branded types, and `satisfies`.
-- **Node.js** ≥22 — for local development and CI.
-- **React** ≥18 — `@timelinx/react` uses `useSyncExternalStore` which landed in React 18.
+- **TypeScript** ≥5.0  - the packages use `const` enums, branded types, and `satisfies`.
+- **Node.js** ≥22  - for local development and CI.
+- **React** ≥18  - `@timelinx/react` uses `useSyncExternalStore` which landed in React 18.
 
 ---
 
@@ -58,8 +58,8 @@ pnpm add @timelinx/core
 
 `@timelinx/ui` ships with a CSS design system. You must import two files:
 
-1. **A preset** — defines the color tokens (choose one)
-2. **Structure CSS** — defines the layout and component structure
+1. **A preset**  - defines the color tokens (choose one)
+2. **Structure CSS**  - defines the layout and component structure
 
 ```css
 /* In your global CSS file */
@@ -117,7 +117,7 @@ Import the CSS in `app/globals.css`:
 No special configuration is needed. Vite handles ES modules and CSS imports natively.
 
 ```ts
-// vite.config.ts — nothing special required
+// vite.config.ts  - nothing special required
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 

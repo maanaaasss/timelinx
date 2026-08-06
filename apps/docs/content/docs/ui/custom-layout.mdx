@@ -6,13 +6,13 @@ icon: LayoutTemplate
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`TimelineEditor` is an all-in-one drop-in that assembles every panel into a pre-defined layout. When you need a different layout — a floating toolbar, a two-pane arrangement, an embedded minimal strip — you can compose the decomposed components directly.
+`TimelineEditor` is an all-in-one drop-in that assembles every panel into a pre-defined layout. When you need a different layout  - a floating toolbar, a two-pane arrangement, an embedded minimal strip  - you can compose the decomposed components directly.
 
 All components in `@timelinx/ui` are independently importable. They use `useTimelineContext()` internally to connect to the engine.
 
 ## Full Layout vs Decomposed
 
-**Full layout — use when:**
+**Full layout  - use when:**
 - You want to embed a complete NLE-like editor
 - You have no specific layout requirements
 
@@ -20,7 +20,7 @@ All components in `@timelinx/ui` are independently importable. They use `useTime
 <TimelineEditor engine={engine} />
 ```
 
-**Decomposed — use when:**
+**Decomposed  - use when:**
 - You need a custom panel arrangement
 - You want to exclude panels (e.g., no asset bin)
 - You're integrating into an existing app shell

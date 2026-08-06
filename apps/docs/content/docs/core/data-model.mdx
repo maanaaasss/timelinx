@@ -1,6 +1,6 @@
 ---
 title: Data Model
-description: The shape of TimelineState and every entity inside it — Timeline, Track, Clip, and Asset
+description: The shape of TimelineState and every entity inside it  - Timeline, Track, Clip, and Asset
 icon: Database
 ---
 
@@ -39,7 +39,7 @@ const state = createTimelineState({
 });
 ```
 
-`assetRegistry` defaults to an empty `ReadonlyMap`. The runtime wrapper rejects `set`, `delete`, and `clear` calls — you mutate it only through `REGISTER_ASSET`, `UNREGISTER_ASSET`, and `SET_ASSET_STATUS` operations.
+`assetRegistry` defaults to an empty `ReadonlyMap`. The runtime wrapper rejects `set`, `delete`, and `clear` calls  - you mutate it only through `REGISTER_ASSET`, `UNREGISTER_ASSET`, and `SET_ASSET_STATUS` operations.
 
 ---
 
@@ -67,7 +67,7 @@ type Timeline = {
 |-------|------|-------|
 | `id` | `string` | Stable across edits. |
 | `name` | `string` | Display name shown in `TopNav`. |
-| `fps` | `FrameRate` | `{ num: number, den: number }` — rational. Use `frameRate(30)` or `frameRate(24000, 1001)` for 23.976. |
+| `fps` | `FrameRate` | `{ num: number, den: number }`  - rational. Use `frameRate(30)` or `frameRate(24000, 1001)` for 23.976. |
 | `duration` | `TimelineFrame` | Total length. Clips cannot extend past this. |
 | `version` | `number` | Increments by 1 on every accepted transaction. Hooks use it to detect staleness. |
 | `tracks` | `readonly Track[]` | Top-to-bottom visual order. V1 is index 0. |
@@ -123,10 +123,10 @@ type TrackType = 'video' | 'audio' | 'subtitle' | 'title';
 | `name` | `string` | required | Display label in the track header. |
 | `type` | `TrackType` | required | Clips and assets must share the same type. |
 | `locked` | `boolean` | `false` | Dispatch rejects all edits to a locked track. |
-| `muted` | `boolean` | `false` | Playback-only — muted tracks are excluded from the compositor. |
+| `muted` | `boolean` | `false` | Playback-only  - muted tracks are excluded from the compositor. |
 | `solo` | `boolean` | `false` | Only soloed tracks play when any track is soloed. |
 | `height` | `number` | `56` | Row height in pixels. UI enforces 36–140 range. |
-| `clips` | `readonly Clip[]` | `[]` | Always sorted ascending by `timelineStart`. This is an invariant — `checkInvariants()` rejects unsorted clips. |
+| `clips` | `readonly Clip[]` | `[]` | Always sorted ascending by `timelineStart`. This is an invariant  - `checkInvariants()` rejects unsorted clips. |
 | `captions` | `readonly Caption[]` | `[]` | Subtitle/title items. Available on `subtitle` and `title` tracks. |
 | `blendMode?` | `string` | `'normal'` | CSS blend mode for compositing. |
 | `opacity?` | `number` | `1` | 0–1. Values outside this range cause `INVALID_OPACITY` invariant violations. |
@@ -161,8 +161,8 @@ const audioTrack = createTrack({
 
 A clip is a time-bound viewport into an asset. It has two independent sets of bounds:
 
-- **Timeline bounds** — where the clip sits on the track
-- **Media bounds** — which portion of the source asset plays
+- **Timeline bounds**  - where the clip sits on the track
+- **Media bounds**  - which portion of the source asset plays
 
 ```
 Timeline:  |----[  clip  ]-----|
@@ -248,7 +248,7 @@ const clip = createClip({
 
 ## `Asset`
 
-Assets are media sources registered in `assetRegistry`. A single asset can be referenced by many clips — the registry stores the metadata once, clips store only the `assetId`.
+Assets are media sources registered in `assetRegistry`. A single asset can be referenced by many clips  - the registry stores the metadata once, clips store only the `assetId`.
 
 ```ts
 type Asset = FileAsset | GeneratorAsset;
@@ -288,7 +288,7 @@ type AssetStatus = 'online' | 'offline' | 'proxy-only' | 'missing';
 | `id` | `AssetId` | Branded string. Must be unique in `assetRegistry`. |
 | `name` | `string` | Display name in `AssetBin`. |
 | `mediaType` | `TrackType` | Must match the track type of any clip that references this asset. |
-| `filePath` | `string` | Path or URL to the source file. Core treats this as opaque — the media pipeline resolves it. |
+| `filePath` | `string` | Path or URL to the source file. Core treats this as opaque  - the media pipeline resolves it. |
 | `intrinsicDuration` | `TimelineFrame` | Full length of the source. `mediaOut` on clips cannot exceed this. |
 | `nativeFps` | `FrameRate` | Source frame rate. Used for media frame conversion. |
 | `sourceTimecodeOffset` | `TimelineFrame` | Where the source's own timecode starts (for media with embedded TC). |
@@ -310,7 +310,7 @@ const videoAsset = createAsset({
   sourceTimecodeOffset: toFrame(0),
 });
 
-// Generator asset (synthetic — no file)
+// Generator asset (synthetic  - no file)
 const colorBarAsset = createGeneratorAsset({
   id: 'asset-colorbars',
   name: 'Color Bars',

@@ -12,13 +12,13 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ```css
 /* globals.css */
-/* 1. Preset — defines all tokens */
+/* 1. Preset  - defines all tokens */
 @import '@timelinx/ui/styles/presets/dark-pro';
 
-/* 2. Structure — imports tokens, defines layout */
+/* 2. Structure  - imports tokens, defines layout */
 @import '@timelinx/ui/styles/structure';
 
-/* 3. Your overrides — come last to win specificity */
+/* 3. Your overrides  - come last to win specificity */
 :root {
   --accent: #7c3aed;  /* override amber accent with violet */
 }
@@ -46,7 +46,7 @@ The accent is used for the playhead, active tool highlight, focus rings, and pri
 
 ```css
 :root {
-  /* Primary accent — used on interactive elements */
+  /* Primary accent  - used on interactive elements */
   --accent:        #7c3aed;  /* violet instead of amber */
   --accent-hover:  #6d28d9;
   --accent-active: #5b21b6;
@@ -125,30 +125,30 @@ Each track type has a full color family: the fill, a 70% dimmed version, a 12% b
 
 ```css
 :root {
-  /* Video track — blue */
+  /* Video track  - blue */
   --track-video:        #3B82F6;
   --track-video-dim:    rgba(59,130,246,0.70);
   --track-video-bg:     rgba(59,130,246,0.12);
   --track-video-border: rgba(59,130,246,0.30);
 
-  /* Audio track — lighter blue */
+  /* Audio track  - lighter blue */
   --track-audio:        #60A5FA;
   --track-audio-bg:     rgba(96,165,250,0.12);
   --track-audio-border: rgba(96,165,250,0.30);
 
-  /* Subtitle track — amber */
+  /* Subtitle track  - amber */
   --track-subtitle:     #F59E0B;
   --track-subtitle-bg:  rgba(245,158,11,0.12);
 
-  /* Image/title track — pink */
+  /* Image/title track  - pink */
   --track-image:        #EC4899;
   --track-image-bg:     rgba(236,72,153,0.12);
 
-  /* Effect track — green */
+  /* Effect track  - green */
   --track-effect:       #10B981;
   --track-effect-bg:    rgba(16,185,129,0.12);
 
-  /* Music track — purple */
+  /* Music track  - purple */
   --track-music:        #A855F7;
   --track-music-bg:     rgba(168,85,247,0.12);
 }

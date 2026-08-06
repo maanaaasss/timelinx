@@ -1,12 +1,12 @@
 ---
 title: Time & Frames
-description: How Timelinx represents time — TimelineFrame, FrameRate, Timecode, and conversion helpers
+description: How Timelinx represents time  - TimelineFrame, FrameRate, Timecode, and conversion helpers
 icon: Clock
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-All positions, durations, and boundaries in `TimelineState` are stored as integer **frames**. There are no floats in the state model. This eliminates the class of bugs where sub-frame rounding errors accumulate across edits — a clip split at frame 450 will always land exactly at frame 450.
+All positions, durations, and boundaries in `TimelineState` are stored as integer **frames**. There are no floats in the state model. This eliminates the class of bugs where sub-frame rounding errors accumulate across edits  - a clip split at frame 450 will always land exactly at frame 450.
 
 ## `TimelineFrame`
 
@@ -25,7 +25,7 @@ const start = toFrame(0);
 const end   = toFrame(300);  // 300 frames
 ```
 
-`toFrame()` does no conversion — it only applies the brand. If you have a duration in seconds, convert first with `secondsToFrames()`.
+`toFrame()` does no conversion  - it only applies the brand. If you have a duration in seconds, convert first with `secondsToFrames()`.
 
 <Callout title="When to use toFrame()">
   Use `toFrame()` only when you know the value is already a frame count. For conversions from seconds or timecode, use the helpers below.
@@ -105,7 +105,7 @@ const frames = secondsToFrames(10, fps);  // 300 frames (10 × 30)
 const atHalf = secondsToFrames(0.5, fps); // 15 frames
 ```
 
-This is the most common conversion — use it when accepting user input in seconds or reading audio durations from the browser's `AudioBuffer`.
+This is the most common conversion  - use it when accepting user input in seconds or reading audio durations from the browser's `AudioBuffer`.
 
 ### `framesToSeconds(frames, fps)`
 
@@ -139,9 +139,9 @@ Drop-frame rates use semicolon as the frame separator: `'00:01:00;02'` (frames 0
 type Timecode = string;  // display format, e.g. '01:00:00:00'
 ```
 
-`Timecode` is a display type — it is used as the `startTimecode` on a timeline (the origin offset shown in the ruler) and as human-readable output. All internal state positions use `TimelineFrame`.
+`Timecode` is a display type  - it is used as the `startTimecode` on a timeline (the origin offset shown in the ruler) and as human-readable output. All internal state positions use `TimelineFrame`.
 
-**`toTimecode(frame, fps)`** converts a frame count to a `Timecode` string — it is an alias for `framesToTimecode`:
+**`toTimecode(frame, fps)`** converts a frame count to a `Timecode` string  - it is an alias for `framesToTimecode`:
 
 ```ts
 import { toTimecode, toFrame, frameRate } from '@timelinx/core';

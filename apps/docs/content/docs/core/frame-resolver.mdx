@@ -6,11 +6,11 @@ icon: Search
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Frame resolution is the process of answering "what clips are active at frame N?" This feeds the playback compositor, virtual rendering, and navigation (next/prev clip boundary). The helpers in this section are pure functions — they read from state and return results without side effects.
+Frame resolution is the process of answering "what clips are active at frame N?" This feeds the playback compositor, virtual rendering, and navigation (next/prev clip boundary). The helpers in this section are pure functions  - they read from state and return results without side effects.
 
 ## `resolveFrame(state, frame)`
 
-Returns the compositor request for a given timeline frame — every clip active at that position, in track order, with media frames calculated:
+Returns the compositor request for a given timeline frame  - every clip active at that position, in track order, with media frames calculated:
 
 ```ts
 import { resolveFrame } from '@timelinx/core';
@@ -71,7 +71,7 @@ import { getClipsAtFrame } from '@timelinx/core';
 const activeClips = getClipsAtFrame(track, playheadFrame);
 ```
 
-A clip is active if `clip.timelineStart <= frame < clip.timelineEnd`. Disabled clips (`enabled: false`) are included — callers decide whether to skip them.
+A clip is active if `clip.timelineStart <= frame < clip.timelineEnd`. Disabled clips (`enabled: false`) are included  - callers decide whether to skip them.
 
 ---
 

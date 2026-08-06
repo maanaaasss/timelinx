@@ -6,7 +6,7 @@ icon: AudioLines
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`WebAudioWaveformAdapter` decodes audio files using the Web Audio API and extracts peak amplitude data for waveform visualization in the timeline. It does not handle real-time audio playback — it is a preprocessing step that produces `WaveformData` consumed by `TimelineTrack` to render the audio waveform bar.
+`WebAudioWaveformAdapter` decodes audio files using the Web Audio API and extracts peak amplitude data for waveform visualization in the timeline. It does not handle real-time audio playback  - it is a preprocessing step that produces `WaveformData` consumed by `TimelineTrack` to render the audio waveform bar.
 
 ## Import
 
@@ -68,7 +68,7 @@ type WaveformPeak = {
 };
 ```
 
-`peaks` has one entry per display pixel. Each entry contains the min and max amplitude in that window — render both to get the classic symmetric waveform shape.
+`peaks` has one entry per display pixel. Each entry contains the min and max amplitude in that window  - render both to get the classic symmetric waveform shape.
 
 ---
 

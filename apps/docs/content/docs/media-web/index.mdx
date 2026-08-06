@@ -6,7 +6,7 @@ icon: Monitor
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`@timelinx/media-web` provides browser-native implementations of the pipeline contracts defined in `@timelinx/core`. The core package defines what a video decoder, compositor, and thumbnail provider look like — `@timelinx/media-web` implements them using WebCodecs, WebGL, Web Audio, and the MediaRecorder API.
+`@timelinx/media-web` provides browser-native implementations of the pipeline contracts defined in `@timelinx/core`. The core package defines what a video decoder, compositor, and thumbnail provider look like  - `@timelinx/media-web` implements them using WebCodecs, WebGL, Web Audio, and the MediaRecorder API.
 
 ## What This Package Provides
 
@@ -18,7 +18,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | `WebGLCompositorAdapter` | WebGL 2 | `Compositor` |
 | `SimpleExportAdapter` | MediaRecorder | export utility |
 
-Each adapter is a class that implements a single contract from `@timelinx/core/types/pipeline`. The adapters are independent — use only the ones you need.
+Each adapter is a class that implements a single contract from `@timelinx/core/types/pipeline`. The adapters are independent  - use only the ones you need.
 
 ---
 
@@ -33,7 +33,7 @@ Each adapter is a class that implements a single contract from `@timelinx/core/t
 | MediaRecorder | All modern | 14.1+ | All modern |
 
 <Callout type="warn" title="Firefox and WebCodecs">
-  WebCodecs is not available in Firefox. Use `isSupported()` on `WebCodecsDecoderAdapter` before passing it to the pipeline. Without a video decoder, you can still use the editor for editing — only playback is affected.
+  WebCodecs is not available in Firefox. Use `isSupported()` on `WebCodecsDecoderAdapter` before passing it to the pipeline. Without a video decoder, you can still use the editor for editing  - only playback is affected.
 </Callout>
 
 ---
@@ -67,10 +67,10 @@ if (!caps.webCodecs) {
 
 ## Pages in This Section
 
-- **[Pipeline](/docs/media-web/pipeline)** — Wiring all adapters into `TimelineEngine`
-- **[WebCodecs Decoder](/docs/media-web/webcodecs)** — Video frame decoding
-- **[Web Audio Waveform](/docs/media-web/webaudio)** — Waveform extraction
-- **[Thumbnail Extractor](/docs/media-web/thumbnails)** — In-track thumbnail generation
-- **[WebGL Compositor](/docs/media-web/webgl)** — GPU-accelerated compositing
-- **[Exporter](/docs/media-web/export)** — Recording and export via MediaRecorder
-- **[Web Workers](/docs/media-web/workers)** — Offloading heavy work off the main thread
+- **[Pipeline](/docs/media-web/pipeline)**  - Wiring all adapters into `TimelineEngine`
+- **[WebCodecs Decoder](/docs/media-web/webcodecs)**  - Video frame decoding
+- **[Web Audio Waveform](/docs/media-web/webaudio)**  - Waveform extraction
+- **[Thumbnail Extractor](/docs/media-web/thumbnails)**  - In-track thumbnail generation
+- **[WebGL Compositor](/docs/media-web/webgl)**  - GPU-accelerated compositing
+- **[Exporter](/docs/media-web/export)**  - Recording and export via MediaRecorder
+- **[Web Workers](/docs/media-web/workers)**  - Offloading heavy work off the main thread

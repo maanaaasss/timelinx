@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 `ThumbnailExtractorAdapter` generates still-frame thumbnails for video clips by seeking a hidden `<video>` element to the requested media frame and capturing to a canvas. Thumbnails are displayed inside `TimelineClip` rows.
 
-This adapter does not use WebCodecs — it works in all browsers that support `<video>`.
+This adapter does not use WebCodecs  - it works in all browsers that support `<video>`.
 
 ## Import
 
@@ -54,7 +54,7 @@ The adapter maintains a pool of hidden `<video>` elements. For each `ThumbnailRe
 4. The data URL is returned as `ThumbnailResult.bitmap`.
 
 <Callout title="Object URLs">
-  The adapter manages object URLs internally. Pass the source `File` object via `configureClip()` — the adapter handles `URL.createObjectURL()` and revocation.
+  The adapter manages object URLs internally. Pass the source `File` object via `configureClip()`  - the adapter handles `URL.createObjectURL()` and revocation.
 </Callout>
 
 ---
@@ -77,7 +77,7 @@ await extractor.configureClip('clip-1', videoFile);
 The `ThumbnailProvider` contract is called by `PlaybackEngine`:
 
 ```ts
-// Called internally — shown here for reference
+// Called internally  - shown here for reference
 const result = await extractor({
   clipId: 'clip-1',
   mediaFrame: toFrame(90),

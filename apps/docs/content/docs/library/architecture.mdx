@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: How the packages fit together — dependency graph, data flow, and internal module structure
+description: How the packages fit together  - dependency graph, data flow, and internal module structure
 icon: Layers
 ---
 
@@ -8,7 +8,7 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Box, Pencil, Layout, Video } from 'lucide-react';
 
-Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it — you can use any layer independently.
+Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it  - you can use any layer independently.
 
 ## Package Dependency Graph
 
@@ -71,7 +71,7 @@ graph TD
 
 ## Core Internal Architecture
 
-`@timelinx/core` is the foundation — a deterministic, frame-based editing kernel with zero runtime dependencies.
+`@timelinx/core` is the foundation  - a deterministic, frame-based editing kernel with zero runtime dependencies.
 
 ```mermaid
 graph TD
@@ -159,10 +159,10 @@ graph TD
 ```
 
 **Key design decisions:**
-- **Pure functions** — `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects.
-- **Branded IDs** — `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse.
-- **Frame-based time** — All positions are integer frames, eliminating floating-point drift.
-- **24 invariant types** — Every mutation is validated before it's applied.
+- **Pure functions**  - `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects.
+- **Branded IDs**  - `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse.
+- **Frame-based time**  - All positions are integer frames, eliminating floating-point drift.
+- **24 invariant types**  - Every mutation is validated before it's applied.
 
 ---
 
@@ -382,7 +382,7 @@ graph LR
     style OTIO fill:#34d399,stroke:#10b981,color:#000
 ```
 
-All state is plain objects — no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
+All state is plain objects  - no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
 
 ---
 

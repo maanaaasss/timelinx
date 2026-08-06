@@ -67,7 +67,7 @@ type ExportFormat = 'webm' | 'mp4' | 'gif';
 const exporter = createSimpleExporter();
 
 const result = await exporter.export(state, pipeline, config, (progress) => {
-  console.log(`${Math.round(progress.progress * 100)}% — ${progress.framesEncoded}/${progress.totalFrames} frames`);
+  console.log(`${Math.round(progress.progress * 100)}%  - ${progress.framesEncoded}/${progress.totalFrames} frames`);
 });
 ```
 

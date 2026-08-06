@@ -20,7 +20,7 @@ function Preview() {
 }
 ```
 
-> `PreviewOverlay` is automatically rendered inside `CompositorPreview` — you don't need to add it manually unless building a custom layout.
+> `PreviewOverlay` is automatically rendered inside `CompositorPreview`  - you don't need to add it manually unless building a custom layout.
 
 ## Coordinate System
 
@@ -91,7 +91,7 @@ Dragging a selected clip moves it on the preview canvas:
 3. **Pointer up** → dispatch `SET_CLIP_TRANSFORM` once with final values
 4. **Escape** → cancel drag, revert to original position
 
-The drag uses provisional state — no engine dispatch during drag, only on commit.
+The drag uses provisional state  - no engine dispatch during drag, only on commit.
 
 ## Snap Indicators
 
@@ -154,7 +154,7 @@ During drag, alignment guides appear when the dragged clip's edges align with ot
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `className` | `string` | — | Additional CSS class |
+| `className` | `string` |  - | Additional CSS class |
 
 ## Architecture
 
@@ -170,4 +170,4 @@ CompositorPreview
         └── vertical snap lines
 ```
 
-The overlay reads clip positions from the engine via `useAllTracks()` and selection state via `useSelectedClipIds()`. It does not write to the canvas — it's a pure DOM layer.
+The overlay reads clip positions from the engine via `useAllTracks()` and selection state via `useSelectedClipIds()`. It does not write to the canvas  - it's a pure DOM layer.

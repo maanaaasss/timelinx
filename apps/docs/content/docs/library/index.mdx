@@ -4,7 +4,7 @@ description: Introducing Timelinx, a browser-native timeline engine built for de
 icon: CircleQuestionMark
 ---
 
-The **Timelinx** framework refers to a combination of Core + React Bindings + UI Components. Timelinx is more of a mental framework — each layer can be a library on its own.
+The **Timelinx** framework refers to a combination of Core + React Bindings + UI Components. Timelinx is more of a mental framework  - each layer can be a library on its own.
 
 ## Philosophy
 
@@ -18,17 +18,17 @@ While most timeline libraries rely on mutable state objects, Timelinx treats eve
 
 ### Headless by design
 
-The core engine knows nothing about React, the DOM, or rendering. You can use it with any UI framework — or no framework at all.
+The core engine knows nothing about React, the DOM, or rendering. You can use it with any UI framework  - or no framework at all.
 
 Timelinx integrates tightly with your React project, bringing useful hooks and a good-looking UI.
 
-For React developers, you are still using standard hooks like `useSyncExternalStore`. There is nothing new — everything is familiar to you.
+For React developers, you are still using standard hooks like `useSyncExternalStore`. There is nothing new  - everything is familiar to you.
 
 ### Composable components
 
 The only thing `@timelinx/ui` offers is **User Interface**. The components are opinionated for bringing better timeline editing experience.
 
-Instead, we follow a flexible approach — use `TimelineEditor` for a complete editor, or compose individual components (`TimelineClip`, `TimelineRuler`, `ZoomControls`) to build your own.
+Instead, we follow a flexible approach  - use `TimelineEditor` for a complete editor, or compose individual components (`TimelineClip`, `TimelineRuler`, `ZoomControls`) to build your own.
 
 ### Validation at dispatch time
 
@@ -36,7 +36,7 @@ Traditionally, state managers validate on read or not at all.
 
 However, Timelinx validates every operation against **24 invariant types** before applying it. With a perfect dispatch-reject boundary, bugs are caught at dispatch time, not in production.
 
-You can fetch state and trust it — it has already been validated. It is always consistent and easy to debug.
+You can fetch state and trust it  - it has already been validated. It is always consistent and easy to debug.
 
 ### Minimal
 
