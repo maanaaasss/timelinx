@@ -5,52 +5,95 @@ icon: Package
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
 
 ## Package Overview
 
 | Package | Purpose | Peer dependencies |
 |---------|---------|-------------------|
 | `@timelinx/core` | Headless engine, types, dispatch, tools, serializers | None |
-| `@timelinx/react` | Hooks, context, `TimelineEngine` class | `react ≥18`, `@timelinx/core` |
-| `@timelinx/ui` | React components, CSS design system | `react ≥18`, `@timelinx/react`, `@timelinx/core` |
-| `@timelinx/media-web` | Browser media adapters | `react ≥18`, `@timelinx/core` (not on npm yet) |
+| `@timelinx/react` | Hooks, context, `TimelineEngine` class | `react >=18`, `@timelinx/core` |
+| `@timelinx/ui` | React components, CSS design system | `react >=18`, `@timelinx/react`, `@timelinx/core` |
+| `@timelinx/media-web` | Browser media adapters | `react >=18`, `@timelinx/core` (not on npm yet) |
 
 ---
 
 ## Installing
 
-**All-in-one (recommended for most apps):**
+<Tabs items={['All-in-one', 'Headless only', 'Core only']}>
+  <Tab value="All-in-one">
+    Recommended for most apps. Includes Core, React bindings, and UI components.
 
-```bash
-# pnpm
-pnpm add @timelinx/core @timelinx/react @timelinx/ui
+    <Tabs items={['pnpm', 'npm', 'yarn']}>
+      <Tab value="pnpm">
+        ```bash
+        pnpm add @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+      <Tab value="npm">
+        ```bash
+        npm install @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+      <Tab value="yarn">
+        ```bash
+        yarn add @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab value="Headless only">
+    For custom React components. Includes Core and React bindings, but no UI components.
 
-# npm
-npm install @timelinx/core @timelinx/react @timelinx/ui
+    <Tabs items={['pnpm', 'npm', 'yarn']}>
+      <Tab value="pnpm">
+        ```bash
+        pnpm add @timelinx/core @timelinx/react
+        ```
+      </Tab>
+      <Tab value="npm">
+        ```bash
+        npm install @timelinx/core @timelinx/react
+        ```
+      </Tab>
+      <Tab value="yarn">
+        ```bash
+        yarn add @timelinx/core @timelinx/react
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab value="Core only">
+    For scripts, server-side work, or non-React frameworks. Zero dependencies.
 
-# yarn
-yarn add @timelinx/core @timelinx/react @timelinx/ui
-```
-
-**Headless only (no UI, custom React components):**
-
-```bash
-pnpm add @timelinx/core @timelinx/react
-```
-
-**Core only (no React, scripts/server-side work):**
-
-```bash
-pnpm add @timelinx/core
-```
+    <Tabs items={['pnpm', 'npm', 'yarn']}>
+      <Tab value="pnpm">
+        ```bash
+        pnpm add @timelinx/core
+        ```
+      </Tab>
+      <Tab value="npm">
+        ```bash
+        npm install @timelinx/core
+        ```
+      </Tab>
+      <Tab value="yarn">
+        ```bash
+        yarn add @timelinx/core
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+</Tabs>
 
 ---
 
 ## Requirements
 
-- **TypeScript** ≥5.0  - the packages use `const` enums, branded types, and `satisfies`.
-- **Node.js** ≥22  - for local development and CI.
-- **React** ≥18  - `@timelinx/react` uses `useSyncExternalStore` which landed in React 18.
+- **TypeScript** >=5.0 - the packages use `const` enums, branded types, and `satisfies`.
+- **Node.js** >=22 - for local development and CI.
+- **React** >=18 - `@timelinx/react` uses `useSyncExternalStore` which landed in React 18.
 
 ---
 
@@ -58,20 +101,29 @@ pnpm add @timelinx/core
 
 `@timelinx/ui` ships with a CSS design system. You must import two files:
 
-1. **A preset**  - defines the color tokens (choose one)
-2. **Structure CSS**  - defines the layout and component structure
+<Steps>
+<Step>
+### Choose a preset
+
+Import one preset to define the color tokens:
 
 ```css
-/* In your global CSS file */
-
-/* Step 1: Choose a preset */
 @import '@timelinx/ui/styles/presets/dark-pro';  /* default dark theme */
 /* @import '@timelinx/ui/styles/presets/light'; */
 /* @import '@timelinx/ui/styles/presets/high-contrast'; */
+```
+</Step>
 
-/* Step 2: Import structure */
+<Step>
+### Import structure
+
+Import the structure CSS to define layout and component styles:
+
+```css
 @import '@timelinx/ui/styles/structure';
 ```
+</Step>
+</Steps>
 
 <Callout type="warn" title="Import order matters">
   Always import the preset before `structure`. The structure CSS references CSS variables defined by the preset. Reversing the order causes unstyled components.
@@ -85,8 +137,7 @@ The components will not render correctly without both imports. If you see unstyl
 
 `@timelinx/ui` and `@timelinx/react` are ES modules. Add them to `transpilePackages` in `next.config`:
 
-```ts
-// next.config.ts
+```ts title="next.config.ts"
 const nextConfig = {
   transpilePackages: ['@timelinx/ui', '@timelinx/react', '@timelinx/core'],
 };
@@ -116,8 +167,7 @@ Import the CSS in `app/globals.css`:
 
 No special configuration is needed. Vite handles ES modules and CSS imports natively.
 
-```ts
-// vite.config.ts  - nothing special required
+```ts title="vite.config.ts"
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -165,18 +215,17 @@ If the editor renders with a toolbar and empty track area, the installation is c
 
 ## Common Installation Errors
 
-**`Error: Cannot find module '@timelinx/ui/styles/presets/dark-pro'`**
-
-The package was not installed, or the path is wrong. Check that `@timelinx/ui` is in `node_modules` and that you are importing from the correct subpath.
-
-**Components render but are unstyled**
-
-CSS was not imported. Add the preset and structure imports to your global stylesheet.
-
-**`useEngine() called outside TimelineProvider`**
-
-All components that use `@timelinx/react` hooks must be rendered inside a `TimelineProvider`. Wrap your editor tree.
-
-**`ReferenceError: document is not defined`**
-
-You are importing `@timelinx/ui` in a Next.js server component. Add `'use client'` to the file.
+<Accordions>
+  <Accordion title="Cannot find module '@timelinx/ui/styles/presets/dark-pro'">
+    The package was not installed, or the path is wrong. Check that `@timelinx/ui` is in `node_modules` and that you are importing from the correct subpath.
+  </Accordion>
+  <Accordion title="Components render but are unstyled">
+    CSS was not imported. Add the preset and structure imports to your global stylesheet.
+  </Accordion>
+  <Accordion title="useEngine() called outside TimelineProvider">
+    All components that use `@timelinx/react` hooks must be rendered inside a `TimelineProvider`. Wrap your editor tree.
+  </Accordion>
+  <Accordion title="ReferenceError: document is not defined">
+    You are importing `@timelinx/ui` in a Next.js server component. Add `'use client'` to the file.
+  </Accordion>
+</Accordions>

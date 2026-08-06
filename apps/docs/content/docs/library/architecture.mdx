@@ -6,6 +6,7 @@ icon: Layers
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
 import { Box, Pencil, Layout, Video } from 'lucide-react';
 
 Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it  - you can use any layer independently.
@@ -159,10 +160,21 @@ graph TD
 ```
 
 **Key design decisions:**
-- **Pure functions**  - `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects.
-- **Branded IDs**  - `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse.
-- **Frame-based time**  - All positions are integer frames, eliminating floating-point drift.
-- **24 invariant types**  - Every mutation is validated before it's applied.
+
+<Accordions>
+  <Accordion title="Pure functions">
+    `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects. This makes the engine predictable, testable, and safe for concurrent access.
+  </Accordion>
+  <Accordion title="Branded IDs">
+    `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse. You cannot pass a `TrackId` where a `ClipId` is expected - TypeScript will catch it at compile time.
+  </Accordion>
+  <Accordion title="Frame-based time">
+    All positions are integer frames, eliminating floating-point drift. A 30fps timeline stores time as frame numbers (0, 1, 2, ...) not seconds (0.0, 0.033, 0.067, ...).
+  </Accordion>
+  <Accordion title="24 invariant types">
+    Every mutation is validated before it's applied. Invariants check for overlapping clips, negative durations, missing assets, locked tracks, and 20 other conditions.
+  </Accordion>
+</Accordions>
 
 ---
 
