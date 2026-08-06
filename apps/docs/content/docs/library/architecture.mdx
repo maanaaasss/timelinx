@@ -6,7 +6,7 @@ icon: Layers
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Database, Cpu, LayoutDashboard, Monitor } from 'lucide-react';
+import { Box, Pencil, Layout, Video } from 'lucide-react';
 
 Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it — you can use any layer independently.
 
@@ -53,16 +53,16 @@ graph TD
 ## The Layers
 
 <Cards>
-  <Card title="Core" href="/docs/core" icon={<Database />}>
+  <Card title="Core" href="/docs/core" icon={<Box style={{ color: '#c084fc' }} />}>
     The headless engine. Pure-function dispatch model for timeline state management. Zero runtime dependencies, no side effects.
   </Card>
-  <Card title="React" href="/docs/react" icon={<Cpu />}>
+  <Card title="React" href="/docs/react" icon={<Pencil style={{ color: '#aa99ff' }} />}>
     React bindings. Bridges the core engine to React's rendering model via `useSyncExternalStore`.
   </Card>
-  <Card title="UI" href="/docs/ui" icon={<LayoutDashboard />}>
+  <Card title="UI" href="/docs/ui" icon={<Layout style={{ color: '#60a5fa' }} />}>
     UI components. Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
   </Card>
-  <Card title="Media Web" href="/docs/media-web" icon={<Monitor />}>
+  <Card title="Media Web" href="/docs/media-web" icon={<Video style={{ color: '#34d399' }} />}>
     Web-native media adapters. WebCodecs decoding, WebAudio waveforms, thumbnail extraction, WebGL compositing, and export.
   </Card>
 </Cards>
