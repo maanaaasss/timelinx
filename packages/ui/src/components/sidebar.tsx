@@ -21,7 +21,7 @@ export interface SidebarProps {
 interface SidebarItem {
   id: string;
   label: string;
-  icon: React.ComponentType<any>;
+  icon: any;
 }
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
@@ -73,7 +73,7 @@ export const Sidebar = React.memo(function Sidebar({
       <div className="sidebar-spacer" />
       <button className="sidebar-btn" title="Settings">
         <span className="sidebar-btn-icon">
-          <Settings size={20} />
+          {React.createElement(Settings as any, { size: 20 })}
         </span>
         <span className="sidebar-btn-label">Settings</span>
       </button>

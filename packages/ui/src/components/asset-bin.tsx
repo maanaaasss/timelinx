@@ -224,20 +224,20 @@ export const AssetBin = React.memo(function AssetBin({
 
       <div className="bin-toolbar">
         <button className="bin-upload-btn" onClick={handleImport} title="Import assets" disabled={isImporting}>
-          <Upload size={14} />
+          {React.createElement(Upload as any, { size: 14 })}
           <span>{isImporting ? 'Importing...' : 'Upload'}</span>
         </button>
         <div className="bin-controls">
           <button className="bin-control-btn" title="Grid view">
-            <Grid3X3 size={14} />
+            {React.createElement(Grid3X3 as any, { size: 14 })}
           </button>
           <button className="bin-control-btn" title="Sort">
             <span>Sort</span>
-            <SlidersHorizontal size={10} />
+            {React.createElement(SlidersHorizontal as any, { size: 10 })}
           </button>
           <button className="bin-control-btn" title="Filter">
             <span>All</span>
-            <Filter size={10} />
+            {React.createElement(Filter as any, { size: 10 })}
           </button>
         </div>
       </div>

@@ -40,7 +40,7 @@ export function TransportControlsExample() {
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
-        <UITimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <TransportControls />
         </UITimelineProvider>
       </ReactTimelineProvider>

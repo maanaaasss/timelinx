@@ -65,10 +65,10 @@ export const TransportControls = React.memo(function TransportControls({
 
       <div className="transport-buttons">
         <button className="transport-btn" title="Skip to start" onClick={skipBack}>
-          <SkipBack size={18} />
+          {React.createElement(SkipBack as any, { size: 18 })}
         </button>
         <button className="transport-btn" title="Previous frame" onClick={stepBack}>
-          <ChevronLeft size={18} />
+          {React.createElement(ChevronLeft as any, { size: 18 })}
         </button>
         <button
           className={`transport-btn transport-btn--play${isPlaying ? ' active' : ''}`}
@@ -78,19 +78,19 @@ export const TransportControls = React.memo(function TransportControls({
           {isPlaying ? <IconPlayerPause size={20} /> : <IconPlayerPlay size={20} />}
         </button>
         <button className="transport-btn" title="Next frame" onClick={stepForward}>
-          <ChevronRight size={18} />
+          {React.createElement(ChevronRight as any, { size: 18 })}
         </button>
         <button className="transport-btn" title="Skip to end" onClick={skipForward}>
-          <SkipForward size={18} />
+          {React.createElement(SkipForward as any, { size: 18 })}
         </button>
       </div>
 
       <div className="transport-right">
         <button className="transport-btn-sm" title="Volume">
-          <Volume2 size={16} />
+          {React.createElement(Volume2 as any, { size: 16 })}
         </button>
         <button className="transport-btn-sm" title="Fullscreen">
-          <Maximize size={16} />
+          {React.createElement(Maximize as any, { size: 16 })}
         </button>
       </div>
     </div>

@@ -101,7 +101,7 @@ export function TrackListExample() {
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
-        <UITimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <div style={{ border: '1px solid var(--color-border, #333)', borderRadius: 4, overflow: 'hidden' }}>
             <TrackList
               trackHeights={trackHeights}

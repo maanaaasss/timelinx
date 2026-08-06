@@ -78,7 +78,7 @@ export function TimelineTrackExample() {
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
-        <UITimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <div style={{ display: 'flex', gap: 8 }}>
             <TimelineTrack
               trackId="v1"

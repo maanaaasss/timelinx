@@ -44,8 +44,8 @@ pnpm install
 
 # 3. Verify the environment
 pnpm typecheck   # TypeScript compilation check across all packages
-pnpm lint        # ESLint across packages with lint config
-pnpm test        # Full test suite (1451+ tests)
+pnpm lint        # ESLint across packages
+pnpm test        # Full test suite
 ```
 
 If any of these fail, do not proceed with development until the base environment is green.
@@ -60,14 +60,12 @@ timelinx/
 │   ├── core/          @timelinx/core      — Headless TypeScript engine
 │   ├── react/         @timelinx/react     — React adapter + hooks
 │   ├── ui/            @timelinx/ui        — Browser-native React components
-│   ├── media-web/     @timelinx/media-web — WebCodecs, WebAudio, thumbnails
-│   ├── collab/        @timelinx/collab    — CRDT collaboration layer
-│   └── ai/            @timelinx/ai        — AI operation layer
+│   └── media-web/     @timelinx/media-web — WebCodecs, WebAudio, thumbnails
 ├── apps/
-│   └── demo/          @timelinx/demo      — Public demo (excluded from workspace)
-├── docs/
-│   ├── phase-1/       Phase 1 completion reports
-│   └── phase-2/       Phase 2 CI/CD pipeline documentation
+│   ├── demo/          Public demo (excluded from workspace)
+│   ├── editor/        Main editor app (excluded from workspace)
+│   └── docs/          Documentation site (excluded from workspace)
+├── docs/              Internal docs, phase reports, guides
 ├── .github/
 │   ├── workflows/     CI and Release pipelines
 │   └── ISSUE_TEMPLATE/
@@ -76,6 +74,17 @@ timelinx/
 ├── LICENSE
 └── package.json       Root workspace configuration
 ```
+
+### Workspace vs Excluded Apps
+
+The pnpm workspace includes `packages/*` and `apps/*`, but **excludes** `demo`, `editor`, and `docs`. These excluded apps:
+
+- Install `@timelinx/*` from the **npm registry**, not workspace links
+- Have their own lockfiles (`package-lock.json` or equivalent)
+- Are **not** included in root `pnpm build`, `pnpm test`, or `pnpm lint`
+- Do **not** affect CI — only workspace packages are validated
+
+Any new standalone app must follow this pattern: add `!apps/<name>` to `pnpm-workspace.yaml`.
 
 ---
 
@@ -94,12 +103,11 @@ pnpm --filter @timelinx/ui build
 ```
 
 The build pipeline:
+
 1. `@timelinx/core` builds first (tsup, CJS + ESM + DTS)
 2. `@timelinx/react` builds second (depends on core)
 3. `@timelinx/media-web` builds third (depends on core)
-4. `@timelinx/ai` builds fourth (depends on core)
-5. `@timelinx/collab` builds fifth (depends on core)
-6. `@timelinx/ui` builds last (depends on core + react)
+4. `@timelinx/ui` builds last (depends on core + react)
 
 ---
 
@@ -113,8 +121,6 @@ pnpm test
 pnpm --filter @timelinx/core test
 pnpm --filter @timelinx/react test
 pnpm --filter @timelinx/media-web test
-pnpm --filter @timelinx/ai test
-pnpm --filter @timelinx/collab test
 
 # Run tests in watch mode (development)
 pnpm --filter @timelinx/core exec vitest
@@ -223,7 +229,7 @@ test(core): add hostile consumer tests for validators
 
 ### Examples
 
-```bash
+```
 feat(core): add transition effect system
 
 Implements EffectTrack, KeyframeCurve, and TransitionManager.
@@ -232,7 +238,7 @@ Supports linear, bezier, and step interpolation modes.
 Closes #42
 ```
 
-```bash
+```
 fix(react): prevent stale snapshot in useClip
 
 The useClip hook was returning a cached snapshot after
@@ -311,7 +317,7 @@ Internal packages use `workspace:*` for inter-package dependencies. This is safe
 
 **Critical constraint:** If you change an internal dependency string from a version range (e.g., `^1.0.0-beta.1`) to `workspace:*`, you must ensure the package is published via the automated pipeline (`pnpm changeset publish`), not via `npm publish`. The automated pipeline handles the rewrite correctly.
 
-**Why `workspace:*` is used:** When `@timelinx/react` depends on `@timelinx/core` via `workspace:*`, pnpm resolves to the local workspace copy during development. If a version range like `^1.0.0-beta.1` is used instead, pnpm may install a stale registry copy in the pnpm store, causing TypeScript to resolve against outdated declaration files (this exact issue caused the `beta.1` republish).
+**Why `workspace:*` is used:** When `@timelinx/react` depends on `@timelinx/core` via `workspace:*`, pnpm resolves to the local workspace copy during development. If a version range like `^1.0.0-beta.1` is used instead, pnpm may install a stale registry copy in the pnpm store, causing TypeScript to resolve against outdated declaration files.
 
 **If you encounter stale type errors** after adding exports to `@timelinx/core`:
 1. First try `rm -rf node_modules/.pnpm/@timelinx+core@*` and `pnpm install`
@@ -320,11 +326,11 @@ Internal packages use `workspace:*` for inter-package dependencies. This is safe
 
 ---
 
-## Demo App (`apps/demo`)
+## Excluded Apps
 
-The demo app is **excluded** from the pnpm workspace. It installs `@timelinx/core` and `@timelinx/react` from the npm registry (not workspace-linked) to verify they work for external consumers.
+### Demo App (`apps/demo`)
 
-To set up the demo:
+The demo app is excluded from the pnpm workspace. It installs `@timelinx/core` and `@timelinx/react` from the npm registry to verify they work for external consumers.
 
 ```bash
 cd apps/demo
@@ -333,7 +339,25 @@ npm run dev    # Start Vite dev server
 npm run build  # Production build
 ```
 
-The demo has its own `package-lock.json` and is not included in root `pnpm build`, `pnpm test`, or `pnpm lint`.
+### Editor App (`apps/editor`)
+
+The main editor application. Also excluded from the workspace and installs packages from npm.
+
+```bash
+cd apps/editor
+npm install
+npm run dev
+```
+
+### Docs Site (`apps/docs`)
+
+The documentation site built with fumadocs. Excluded from the workspace.
+
+```bash
+cd apps/docs
+npm install
+npm run dev
+```
 
 ---
 
