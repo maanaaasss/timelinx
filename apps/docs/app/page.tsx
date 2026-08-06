@@ -35,7 +35,7 @@ export default function Home() {
       links={[
         {
           text: 'Documentation',
-          url: '/docs/library',
+          url: '/docs/library/quick-start',
           active: 'nested-url',
         },
         {
@@ -82,7 +82,7 @@ export default function Home() {
               <ArrowRight className="size-4 ms-1.5" />
             </Link>
             <Link
-              href="/docs/library"
+              href="/docs/library/quick-start"
               className={buttonVariants({ variant: 'outline' })}
             >
               Read Docs
