@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "vite build && cp src/tokens.css dist/ && sed 's|@import .\\.\\./tokens\\.css.|@import \"./tokens.css\";|' src/styles/structure.css > dist/structure.css && mkdir -p dist/presets && cp src/presets/*.css dist/presets/",
+    "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist --skipLibCheck && cp src/tokens.css dist/ && sed 's|@import .\\.\\./tokens\\.css.|@import \"./tokens.css\";|' src/styles/structure.css > dist/structure.css && mkdir -p dist/presets && cp src/presets/*.css dist/presets/",
     "dev": "vite build --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
