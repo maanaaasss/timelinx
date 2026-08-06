@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm install && pnpm --filter @timelinx/docs build",
+  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile --filter @timelinx/docs... && cd apps/docs && pnpm build",
   "outputDirectory": ".next",
   "framework": "nextjs"
 }
