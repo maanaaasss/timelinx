@@ -1,6 +1,5 @@
 {
   "buildCommand": "pnpm install && pnpm --filter @timelinx/docs build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "rootDirectory": "apps/docs"
+  "framework": "nextjs"
 }
