@@ -58,7 +58,7 @@ function EditorApp({ initialState }) {
 ```
 
 <Callout type="warn" title="Canvas must exist before engine creation">
-  The WebGL compositor needs a canvas element at creation time. Use a ref and wait for it to be populated before constructing the engine. The `useMemo` dependency on `canvasRef.current` handles this — it re-runs once the canvas mounts.
+  The WebGL compositor needs a canvas element at creation time. Use a ref and wait for it to be populated before constructing the engine. The `useMemo` dependency on `canvasRef.current` handles this  - it re-runs once the canvas mounts.
 </Callout>
 
 ---
@@ -132,7 +132,7 @@ When the engine is no longer needed, close the adapters to release GPU and codec
 videoDecoder.close?.();
 compositor.close?.();
 
-// Or: nothing to clean up on the engine itself — the adapters manage their own resources
+// Or: nothing to clean up on the engine itself  - the adapters manage their own resources
 ```
 
 In React, clean up in a `useEffect` return:

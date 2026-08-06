@@ -49,7 +49,7 @@ The compositor automatically handles high-DPI (Retina) displays for sharp render
 - The canvas backing store is sized to match the physical pixel density (`canvas.width = cssWidth × devicePixelRatio`)
 - The drawing context is scaled so all draw calls use logical 1920×1080 coordinates
 - DPR changes are detected via `window.matchMedia('(resolution: ...)')` and `resize` events
-- No code changes are needed — existing `ctx.drawImage()` and `ctx.fillText()` calls work at logical coordinates
+- No code changes are needed  - existing `ctx.drawImage()` and `ctx.fillText()` calls work at logical coordinates
 
 ### Coordinate System
 

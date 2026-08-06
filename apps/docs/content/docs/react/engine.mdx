@@ -1,6 +1,6 @@
 ---
 title: TimelineEngine
-description: The React engine class — constructor options, methods, snapshot model, and lifetime management
+description: The React engine class  - constructor options, methods, snapshot model, and lifetime management
 icon: Cpu
 ---
 
@@ -41,7 +41,7 @@ new TimelineEngine(options: TimelineEngineOptions)
 | `defaultToolId` | `string` | `'selection'` | Which tool is active on mount. |
 | `getPixelsPerFrame` | `() => number` | `() => 10` | Returns current zoom level for snap radius calculation. Wire this to the UI provider's `ppf`. |
 | `onZoomChange` | `(ppf: number) => void` | noop | Called by `ZoomTool` when the user zooms. Update UI `ppf` state here. |
-| `pipeline` | `PipelineConfig` | none | Media backend — video decoder, compositor, thumbnail provider. Without this, the engine runs edit-only. |
+| `pipeline` | `PipelineConfig` | none | Media backend  - video decoder, compositor, thumbnail provider. Without this, the engine runs edit-only. |
 | `dimensions` | `{ width: number; height: number }` | `{ width: 1920, height: 1080 }` | Compositor canvas dimensions passed to `PlaybackEngine`. |
 | `clock` | `Clock` | `browserClock` | Time source for playback. Swap for `createTestClock()` in tests. |
 | `onMarkIn` | `() => void` | none | Called when the user presses the I key (mark in-point). |
@@ -156,7 +156,7 @@ pause(): void
 stop(): void
 ```
 
-`setPlayheadFrame` moves the playhead without playing. `play()` starts playback from the current frame — only available when `pipeline` was provided in the constructor. Without a pipeline, `play()` has no effect.
+`setPlayheadFrame` moves the playhead without playing. `play()` starts playback from the current frame  - only available when `pipeline` was provided in the constructor. Without a pipeline, `play()` has no effect.
 
 ---
 
@@ -167,7 +167,7 @@ subscribe(callback: () => void): () => void
 getSnapshot(): EngineSnapshot
 ```
 
-These are the `useSyncExternalStore` integration points. React hooks call these internally — you only need them when building a custom subscription outside React.
+These are the `useSyncExternalStore` integration points. React hooks call these internally  - you only need them when building a custom subscription outside React.
 
 The returned `subscribe` function returns an unsubscribe function:
 
@@ -183,7 +183,7 @@ unsubscribe();
 
 ## `EngineSnapshot`
 
-Hooks read from an `EngineSnapshot` — an immutable frozen object rebuilt after every state change:
+Hooks read from an `EngineSnapshot`  - an immutable frozen object rebuilt after every state change:
 
 ```ts
 type EngineSnapshot = {
@@ -205,7 +205,7 @@ type EngineSnapshot = {
 | Field | Notes |
 |-------|-------|
 | `state` | Current `TimelineState`. |
-| `stableTrackIds` | Track ID array. Stable reference — only replaced when track count or order changes. React hooks use this to mount/unmount per-track components without re-running on unrelated state changes. |
+| `stableTrackIds` | Track ID array. Stable reference  - only replaced when track count or order changes. React hooks use this to mount/unmount per-track components without re-running on unrelated state changes. |
 | `history` | `canUndo` and `canRedo` flags. Updated once when availability changes, not on every snapshot. |
 | `activeToolId` | String ID of the current tool. |
 | `cursor` | CSS cursor string for the current tool and hover state. |
@@ -214,7 +214,7 @@ type EngineSnapshot = {
 | `isPlaying` | `true` when playback is running. |
 | `selectedClipIds` | `ReadonlySet<string>` from the `SelectionTool`. |
 | `selectedCaptionIds` | `ReadonlySet<string>` of selected captions. |
-| `snapIndex` | Current snap index — rebuilt after every dispatch. |
+| `snapIndex` | Current snap index  - rebuilt after every dispatch. |
 | `change` | `StateChange` diff from the previous snapshot. Use with `useChange()` for coarse re-renders. |
 
 ---
@@ -232,7 +232,7 @@ function App() {
 }
 ```
 
-**Wrong — recreating on every render resets all state:**
+**Wrong  - recreating on every render resets all state:**
 
 ```tsx
 // ❌ Wrong: engine resets on every render

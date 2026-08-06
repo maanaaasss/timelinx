@@ -29,12 +29,12 @@ function TransformPanel() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `label` | `string` | — | Short label displayed in the scrubber badge (e.g., "X", "Y", "SX") |
-| `value` | `number` | — | Current value |
-| `onChange` | `(value: number) => void` | — | Called during scrub/typing for local state updates |
-| `onCommit` | `(value: number) => void` | — | Called on pointerup/blur/Enter to commit the final value |
-| `min` | `number` | — | Minimum allowed value |
-| `max` | `number` | — | Maximum allowed value |
+| `label` | `string` |  - | Short label displayed in the scrubber badge (e.g., "X", "Y", "SX") |
+| `value` | `number` |  - | Current value |
+| `onChange` | `(value: number) => void` |  - | Called during scrub/typing for local state updates |
+| `onCommit` | `(value: number) => void` |  - | Called on pointerup/blur/Enter to commit the final value |
+| `min` | `number` |  - | Minimum allowed value |
+| `max` | `number` |  - | Maximum allowed value |
 | `step` | `number` | `1` | Arrow key increment |
 | `shiftStep` | `number` | `10` | Arrow key increment with Shift held |
 | `disabled` | `boolean` | `false` | Disable all interactions |
@@ -63,8 +63,8 @@ function TransformPanel() {
 
 The `onChange` / `onCommit` split prevents undo spam:
 
-- `onChange` updates local React state only — no engine dispatch
-- `onCommit` triggers `engine.dispatch` — creates a single history entry
+- `onChange` updates local React state only  - no engine dispatch
+- `onCommit` triggers `engine.dispatch`  - creates a single history entry
 - A full scrub gesture (pointerdown → drag → pointerup) creates exactly one history entry
 
 ## Accessibility

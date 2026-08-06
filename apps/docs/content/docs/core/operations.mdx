@@ -1,6 +1,6 @@
 ---
 title: Operations Reference
-description: Every OperationPrimitive in @timelinx/core — what it does, what it requires, and why it rejects
+description: Every OperationPrimitive in @timelinx/core  - what it does, what it requires, and why it rejects
 icon: Zap
 ---
 
@@ -113,7 +113,7 @@ Place a new clip on a track.
 { type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId }
 ```
 
-The clip's `assetId` must exist in `assetRegistry` at the time of validation. The clip's `trackId` field is ignored — the `trackId` in the operation is authoritative.
+The clip's `assetId` must exist in `assetRegistry` at the time of validation. The clip's `trackId` field is ignored  - the `trackId` in the operation is authoritative.
 
 **Rejects with:** `ASSET_MISSING`, `TYPE_MISMATCH`, `OVERLAP`, `LOCKED_TRACK`, `OUT_OF_BOUNDS`, `DUPLICATE_ID`, `MEDIA_BOUNDS_INVALID`
 
@@ -389,16 +389,16 @@ Updates resolution, pixel aspect ratio, audio sample rate, or field order. Only 
 `Marker` is a discriminated union:
 
 ```ts
-// Point marker — single frame
+// Point marker  - single frame
 { type: 'point', id, frame, label, color, scope, linkedClipId }
 
-// Range marker — frame range
+// Range marker  - frame range
 { type: 'range', id, frameStart, frameEnd, label, color, scope, linkedClipId }
 ```
 
 `scope` values: `'global'` | `'personal'` | `'export'`
 
-`linkedClipId` — when set, this marker moves with the referenced clip during ripple operations.
+`linkedClipId`  - when set, this marker moves with the referenced clip during ripple operations.
 
 ---
 
@@ -473,7 +473,7 @@ Attaches a beat grid to the timeline for music-aligned editing. The snap index g
 { type: 'INSERT_GENERATOR'; generator: Generator; trackId: TrackId; atFrame: TimelineFrame }
 ```
 
-Creates a synthetic clip from a generator definition. Generators produce content without a source file — color bars, tone generators, countdown leaders. The engine creates the asset and clip together.
+Creates a synthetic clip from a generator definition. Generators produce content without a source file  - color bars, tone generators, countdown leaders. The engine creates the asset and clip together.
 
 ```ts
 {
@@ -696,10 +696,10 @@ Attaches a transition to a clip. Only one transition per clip is allowed. The tr
 
 `Transition` fields:
 - `id: TransitionId`
-- `type: TransitionType` — e.g. `'dissolve' | 'wipe' | 'push'`
+- `type: TransitionType`  - e.g. `'dissolve' | 'wipe' | 'push'`
 - `durationFrames: number`
-- `alignment: TransitionAlignment` — `'start' | 'end' | 'center'`
-- `params: Record<string, number | string>` — type-specific parameters
+- `alignment: TransitionAlignment`  - `'start' | 'end' | 'center'`
+- `params: Record<string, number | string>`  - type-specific parameters
 
 **Rejects with:** already has a transition (use `DELETE_TRANSITION` first)
 
@@ -731,9 +731,9 @@ Attaches a transition to a clip. Only one transition per clip is allowed. The tr
 
 `TransitionAlignment`: `'start'` | `'end'` | `'center'`
 
-- `'start'` — transition starts at the clip's cut point
-- `'end'` — transition ends at the cut point
-- `'center'` — transition straddles the cut point equally
+- `'start'`  - transition starts at the clip's cut point
+- `'end'`  - transition ends at the cut point
+- `'center'`  - transition straddles the cut point equally
 
 ---
 
@@ -836,7 +836,7 @@ if (!result.accepted) {
       showError('Asset not found. Re-link the source file and try again.');
       break;
     case 'LOCKED_TRACK':
-      // silently ignore — user tried to edit a locked track
+      // silently ignore  - user tried to edit a locked track
       break;
     default:
       console.error('[dispatch]', result.reason, result.message);

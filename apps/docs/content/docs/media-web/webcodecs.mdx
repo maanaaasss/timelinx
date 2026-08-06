@@ -35,7 +35,7 @@ WebCodecs is supported in Chrome 94+, Edge 94+, and Safari 16.4+. It is not avai
 
 ## `createWebCodecsDecoder(config?)`
 
-Factory function — creates an adapter instance:
+Factory function  - creates an adapter instance:
 
 ```ts
 function createWebCodecsDecoder(config?: WebCodecsDecoderConfig): WebCodecsDecoderAdapter
@@ -81,7 +81,7 @@ If not called, the adapter attempts auto-configuration on the first decode reque
 The adapter is called by `PlaybackEngine` during playback:
 
 ```ts
-// Called internally by PlaybackEngine — you don't call this directly
+// Called internally by PlaybackEngine  - you don't call this directly
 const result = await decoder.decode({
   clipId: 'clip-1',
   mediaFrame: toFrame(450),
@@ -93,8 +93,8 @@ const result = await decoder.decode({
 Decoded frames are cached by `{ clipId, mediaFrame }`. On cache hit, the frame is returned immediately. Cache entries are evicted after a configurable TTL (default 2 seconds).
 
 `quality` values:
-- `'full'` — decode at full resolution
-- `'draft'` — decode at reduced resolution for fast scrubbing
+- `'full'`  - decode at full resolution
+- `'draft'`  - decode at reduced resolution for fast scrubbing
 
 ---
 
@@ -133,7 +133,7 @@ const result = await decoder.decode(request).catch((err) => {
 });
 ```
 
-`PlaybackEngine` skips frames that fail to decode. Persistent decode errors cause playback to stall — handle `onError` in `TimelineEngineOptions` to surface this to the user.
+`PlaybackEngine` skips frames that fail to decode. Persistent decode errors cause playback to stall  - handle `onError` in `TimelineEngineOptions` to surface this to the user.
 
 <Callout type="warn" title="Codec configuration">
   WebCodecs requires a specific codec string (e.g., `'avc1.42001E'`). Your media import flow must extract this from the source file and register it with `configureDecoder()` before playback starts. The codec string can be obtained from a `<video>` element's `videoTracks[0].getCapabilities()` or from an MP4 demuxer.

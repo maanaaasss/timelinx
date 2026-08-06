@@ -16,7 +16,7 @@ type SnapPoint = {
   readonly type: SnapPointType;
   readonly priority: number;
   readonly trackId: TrackId | null;  // null = timeline-wide (playhead, markers)
-  readonly sourceId: string;         // clipId, markerId — for exclusion
+  readonly sourceId: string;         // clipId, markerId  - for exclusion
 };
 
 type SnapPointType =
@@ -95,7 +95,7 @@ if (snapPoint !== null) {
 }
 ```
 
-The radius is specified in pixels — `nearest()` converts it to frames using `radiusPx / ppf`. At higher zoom levels, the snap radius covers fewer frames; at lower zoom, it covers more. This means snapping always feels the same distance to the user regardless of zoom.
+The radius is specified in pixels  - `nearest()` converts it to frames using `radiusPx / ppf`. At higher zoom levels, the snap radius covers fewer frames; at lower zoom, it covers more. This means snapping always feels the same distance to the user regardless of zoom.
 
 Returns `null` if no snap point is within the radius.
 

@@ -6,7 +6,7 @@ icon: Wrench
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-The tool system maps pointer and keyboard events to timeline operations. Every editing gesture — drag to move a clip, click to select, trim an edge — flows through a tool. Tools read from snap context, produce provisional state during gestures, and commit transactions on release.
+The tool system maps pointer and keyboard events to timeline operations. Every editing gesture  - drag to move a clip, click to select, trim an edge  - flows through a tool. Tools read from snap context, produce provisional state during gestures, and commit transactions on release.
 
 The engine owns the active tool. UI components forward events to the engine; the engine dispatches to the tool; the tool returns provisional state or a transaction.
 
@@ -75,13 +75,13 @@ type TimelinePointerEvent = {
 };
 ```
 
-`frame`, `trackId`, and `clipId` are resolved by the tool router from the DOM. Tools receive the resolved context — they do not read from the DOM directly.
+`frame`, `trackId`, and `clipId` are resolved by the tool router from the DOM. Tools receive the resolved context  - they do not read from the DOM directly.
 
 ---
 
 ## `ProvisionalState`
 
-During a drag, a tool returns `ProvisionalState` from `onPointerMove`. This state is stored in the engine but never dispatched — it is for preview only.
+During a drag, a tool returns `ProvisionalState` from `onPointerMove`. This state is stored in the engine but never dispatched  - it is for preview only.
 
 ```ts
 type ProvisionalState = {
@@ -122,7 +122,7 @@ const activeTool = getActiveTool(registry);
 const withCustom = registerTool(registry, new MyCustomTool());
 ```
 
-`activateTool` and `registerTool` return a new registry — the input is not mutated.
+`activateTool` and `registerTool` return a new registry  - the input is not mutated.
 
 The `TimelineEngine` manages the registry internally. In React apps you call `engine.activateTool(toolId)` rather than manipulating the registry directly.
 
@@ -132,7 +132,7 @@ The `TimelineEngine` manages the registry internally. In React apps you call `en
 
 `TimelineEngine` registers 12 tools by default. All can be activated by string ID.
 
-### `SelectionTool` — `'selection'`
+### `SelectionTool`  - `'selection'`
 
 The default tool. Handles the most complex gesture set.
 
@@ -142,11 +142,11 @@ The default tool. Handles the most complex gesture set.
 **Drag** near a trim handle (within snap radius): trims that edge instead.
 **Drag** on empty space: draws a rubber-band region and selects all clips inside.
 
-Commits: `MOVE_CLIP`, `RESIZE_CLIP`, or no-op (selection change only — selection is engine state, not dispatch state).
+Commits: `MOVE_CLIP`, `RESIZE_CLIP`, or no-op (selection change only  - selection is engine state, not dispatch state).
 
 ---
 
-### `RazorTool` — `'razor'`
+### `RazorTool`  - `'razor'`
 
 **Click** on a clip: slices it at the pointer frame. Commits `SLICE_CLIP`.
 
@@ -154,7 +154,7 @@ The cursor changes to a razor icon over clips. Snaps to the snap index when with
 
 ---
 
-### `RippleTrimTool` — `'ripple-trim'`
+### `RippleTrimTool`  - `'ripple-trim'`
 
 **Drag** near a clip edge: trims that edge and ripple-shifts all subsequent clips on the same track to close or expand the gap.
 
@@ -162,7 +162,7 @@ Commits a transaction with `RESIZE_CLIP` for the trimmed clip and `MOVE_CLIP` fo
 
 ---
 
-### `RollTrimTool` — `'roll-trim'`
+### `RollTrimTool`  - `'roll-trim'`
 
 **Drag** the shared edge between two adjacent clips: extends one and shrinks the other by the same amount. The total timeline duration of the two clips stays constant.
 
@@ -170,15 +170,15 @@ Commits: `RESIZE_CLIP` for both the outgoing and incoming clip in one transactio
 
 ---
 
-### `SlipTool` — `'slip'`
+### `SlipTool`  - `'slip'`
 
-**Drag** horizontally on a clip: keeps the timeline position fixed and moves the media window (`mediaIn` / `mediaOut`) — changing which frames of the source play without changing the clip's timeline position.
+**Drag** horizontally on a clip: keeps the timeline position fixed and moves the media window (`mediaIn` / `mediaOut`)  - changing which frames of the source play without changing the clip's timeline position.
 
 Commits: `SET_MEDIA_BOUNDS`.
 
 ---
 
-### `SlideTool` — `'slide'`
+### `SlideTool`  - `'slide'`
 
 **Drag** a clip: moves the clip and ripple-adjusts the neighbors to keep the total edit duration constant. Neighboring clips are trimmed to fill or accept the space.
 
@@ -186,7 +186,7 @@ Commits: `MOVE_CLIP` + `RESIZE_CLIP` on neighbors.
 
 ---
 
-### `RippleDeleteTool` — `'ripple-delete'`
+### `RippleDeleteTool`  - `'ripple-delete'`
 
 **Click** on a clip: deletes the clip and shifts all subsequent clips left to close the gap.
 
@@ -194,7 +194,7 @@ Commits: `DELETE_CLIP` + `MOVE_CLIP` for each following clip.
 
 ---
 
-### `RippleInsertTool` — `'ripple-insert'`
+### `RippleInsertTool`  - `'ripple-insert'`
 
 **Drag** onto a track: pushes all clips at or after the pointer frame right by the drag width, then inserts a new clip.
 
@@ -202,13 +202,13 @@ Commits: `MOVE_CLIP` for each affected clip + `INSERT_CLIP`.
 
 ---
 
-### `HandTool` — `'hand'`
+### `HandTool`  - `'hand'`
 
-**Drag**: pans the timeline view. Does not commit any timeline operations — scroll position is UI state, not document state.
+**Drag**: pans the timeline view. Does not commit any timeline operations  - scroll position is UI state, not document state.
 
 ---
 
-### `TransitionTool` — `'transition'`
+### `TransitionTool`  - `'transition'`
 
 **Click** near a clip edge (within transition zone): adds a dissolve transition centered on the cut point. **Drag** on an existing transition handle: adjusts its duration.
 
@@ -216,7 +216,7 @@ Commits: `ADD_TRANSITION` or `SET_TRANSITION_DURATION`.
 
 ---
 
-### `KeyframeTool` — `'keyframe'`
+### `KeyframeTool`  - `'keyframe'`
 
 **Click** on an effect parameter graph lane: adds a keyframe at the pointer frame. **Drag** an existing keyframe: moves it.
 
@@ -224,7 +224,7 @@ Commits: `ADD_KEYFRAME` or `MOVE_KEYFRAME`.
 
 ---
 
-### `ZoomTool` — `'zoom'`
+### `ZoomTool`  - `'zoom'`
 
 **Click**: zooms in one step centered on the pointer frame. **Alt + click**: zooms out. **Drag**: defines a zoom region to fill the viewport.
 
@@ -234,7 +234,7 @@ Zoom changes are UI state only. The tool calls `options.onZoomChange(ppf)` from 
 
 ## Registering Custom Tools
 
-Pass additional tools via `TimelineEngineOptions.tools`. They are merged with the defaults — the same tool ID overwrites the built-in.
+Pass additional tools via `TimelineEngineOptions.tools`. They are merged with the defaults  - the same tool ID overwrites the built-in.
 
 ```ts
 import { TimelineEngine } from '@timelinx/react';

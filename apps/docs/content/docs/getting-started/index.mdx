@@ -3,7 +3,11 @@ title: Getting Started
 description: Install Timelinx and commit your first frame-accurate edit
 ---
 
-This guide builds a minimal edit using `@timelinx/core`, then shows where the React and UI packages fit when you are ready to render an editor. The examples use frame values on purpose: Timelinx stores timeline time as branded integer frames, not milliseconds or floating seconds.
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+This guide builds a minimal edit using Core, then shows where the React and UI packages fit when you are ready to render an editor. The examples use frame values on purpose: Timelinx stores timeline time as branded integer frames, not milliseconds or floating seconds.
 
 ## Prerequisites
 
@@ -13,17 +17,52 @@ This guide builds a minimal edit using `@timelinx/core`, then shows where the Re
 
 ## Install
 
-```bash
-npm install @timelinx/core
-```
+<Tabs items={['Core only', 'Full stack']}>
+  <Tab value="Core only">
+    For headless data and validation. Zero dependencies.
 
-For React apps:
+    <Tabs items={['pnpm', 'npm', 'yarn']}>
+      <Tab value="pnpm">
+        ```bash
+        pnpm add @timelinx/core
+        ```
+      </Tab>
+      <Tab value="npm">
+        ```bash
+        npm install @timelinx/core
+        ```
+      </Tab>
+      <Tab value="yarn">
+        ```bash
+        yarn add @timelinx/core
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+  <Tab value="Full stack">
+    For React apps with UI components.
 
-```bash
-npm install @timelinx/core @timelinx/react @timelinx/ui
-```
+    <Tabs items={['pnpm', 'npm', 'yarn']}>
+      <Tab value="pnpm">
+        ```bash
+        pnpm add @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+      <Tab value="npm">
+        ```bash
+        npm install @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+      <Tab value="yarn">
+        ```bash
+        yarn add @timelinx/core @timelinx/react @timelinx/ui
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+</Tabs>
 
-Use the thinnest layer that solves your problem: `@timelinx/core` for headless data and validation, `@timelinx/react` for subscription-safe React state, and `@timelinx/ui` for ready editor surfaces and panels.
+Use the thinnest layer that solves your problem: Core for headless data and validation, React for subscription-safe React state, and UI for ready editor surfaces and panels.
 
 ## Build The Initial State
 
@@ -64,7 +103,9 @@ let state = createTimelineState({
 });
 ```
 
-The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+<Callout type="info">
+  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+</Callout>
 
 ## Commit A Track
 
@@ -176,7 +217,7 @@ if (canUndo(history)) {
 }
 ```
 
-For a React editor, the `@timelinx/react` engine wraps this pattern with a `HistoryStack`, snapshots, subscriptions, tools, snapping, playback, keyboard routing, and dispatch.
+For a React editor, the React engine wraps this pattern with a `HistoryStack`, snapshots, subscriptions, tools, snapping, playback, keyboard routing, and dispatch.
 
 ## Render With React And UI
 
@@ -205,7 +246,17 @@ Import the UI styles once in your application entrypoint:
 
 ## What To Read Next
 
-- [Core architecture](/docs/core/architecture) explains the package boundaries and mutation path.
-- [Dispatch model](/docs/core/dispatch-model) explains accepted and rejected transactions.
-- [React integration](/docs/react) explains provider setup, hooks, tools, and snapshots.
-- [UI components](/docs/ui) maps the editor surface and reusable panels.
+<Cards>
+  <Card href="/docs/core/architecture" title="Core Architecture">
+    Explains the package boundaries and mutation path.
+  </Card>
+  <Card href="/docs/core/dispatch-model" title="Dispatch Model">
+    Explains accepted and rejected transactions.
+  </Card>
+  <Card href="/docs/react" title="React Integration">
+    Explains provider setup, hooks, tools, and snapshots.
+  </Card>
+  <Card href="/docs/ui" title="UI Components">
+    Maps the editor surface and reusable panels.
+  </Card>
+</Cards>

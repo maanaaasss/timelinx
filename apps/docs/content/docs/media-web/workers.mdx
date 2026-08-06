@@ -63,7 +63,7 @@ function extractWaveformInWorker(file: File, assetId: string): Promise<WaveformD
 ```
 
 <Callout title="Transfer ArrayBuffer ownership">
-  Pass `[arrayBuffer]` as the second argument to `postMessage` to transfer the buffer to the worker without copying. The buffer becomes unusable on the main thread after this — read all metadata you need before posting.
+  Pass `[arrayBuffer]` as the second argument to `postMessage` to transfer the buffer to the worker without copying. The buffer becomes unusable on the main thread after this  - read all metadata you need before posting.
 </Callout>
 
 ---
@@ -119,7 +119,7 @@ thumbnailWorker.onmessage = (e: MessageEvent<ThumbnailWorkerResponse>) => {
 
 ## Worker Lifecycle
 
-Workers are persistent — create one instance per worker type and reuse it for the lifetime of the editor session:
+Workers are persistent  - create one instance per worker type and reuse it for the lifetime of the editor session:
 
 ```ts
 // Create once (outside components)

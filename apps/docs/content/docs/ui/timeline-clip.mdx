@@ -1,6 +1,6 @@
 ---
 title: TimelineClip
-description: Individual clip rendering — layout, thumbnail strips, selection, provisionals, and customization
+description: Individual clip rendering  - layout, thumbnail strips, selection, provisionals, and customization
 icon: Film
 ---
 
@@ -75,7 +75,7 @@ left:  clip.timelineStart × ppf - scrollLeft
 width: (clip.timelineEnd - clip.timelineStart) × ppf
 ```
 
-It never controls its own top/height — those come from the `TimelineTrack` container.
+It never controls its own top/height  - those come from the `TimelineTrack` container.
 
 ## Ghost Clips
 
@@ -156,5 +156,5 @@ Replace `TimelineClip` entirely with a custom component by rendering inside `Tim
 ```
 
 <Callout title="Standalone component">
-  `TimelineClip` is a pure presentational component — it does not use React context or hooks. All data is passed via props. You can render it outside a `TimelineProvider` for static previews or storybook stories.
+  `TimelineClip` is a pure presentational component  - it does not use React context or hooks. All data is passed via props. You can render it outside a `TimelineProvider` for static previews or storybook stories.
 </Callout>

@@ -8,8 +8,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Playback in Timelinx is split across two classes with a clear separation of concerns:
 
-- **`PlayheadController`** — manages the playhead position. Knows about frame rate, loop regions, and playback rate. Never calls `dispatch()`.
-- **`PlaybackEngine`** — coordinates between `PlayheadController` events and the media pipeline. Requests decoded frames at the current playhead position.
+- **`PlayheadController`**  - manages the playhead position. Knows about frame rate, loop regions, and playback rate. Never calls `dispatch()`.
+- **`PlaybackEngine`**  - coordinates between `PlayheadController` events and the media pipeline. Requests decoded frames at the current playhead position.
 
 `TimelineEngine` owns both, wired together via the `pipeline` constructor option.
 
@@ -22,7 +22,7 @@ import { PlayheadController } from '@timelinx/core';
 
 const controller = new PlayheadController(
   { durationFrames: toFrame(9000), fps: frameRate(30) },
-  browserClock, // optional — defaults to nodeClock in non-browser
+  browserClock, // optional  - defaults to nodeClock in non-browser
 );
 ```
 

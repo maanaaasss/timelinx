@@ -5,42 +5,80 @@ icon: Rocket
 ---
 
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Box, Pencil, Layout, Video } from 'lucide-react';
 
 ## What You're Building
 
-A fully functional timeline editor with video tracks, clip placement, zoom, drag-to-move, undo/redo, and keyboard shortcuts — running entirely in the browser.
+A fully functional timeline editor with video tracks, clip placement, zoom, drag-to-move, undo/redo, and keyboard shortcuts - running entirely in the browser.
 
 <Cards>
-  <Card title="@timelinx/core" href="/docs/core">
+  <Card title="Core" href="/docs/core" icon={<Box style={{ color: '#c084fc' }} />}>
     The headless engine. Dispatch model, invariant validation, and undo history.
   </Card>
-  <Card title="@timelinx/react" href="/docs/react">
-    React bindings — `TimelineEngine`, hooks, and providers.
+  <Card title="React" href="/docs/react" icon={<Pencil style={{ color: '#aa99ff' }} />}>
+    React bindings - `TimelineEngine`, hooks, and providers.
   </Card>
-  <Card title="@timelinx/ui" href="/docs/ui">
-    Drop-in components — tracks, clips, ruler, panels, and a complete editor surface.
+  <Card title="UI" href="/docs/ui" icon={<Layout style={{ color: '#60a5fa' }} />}>
+    Drop-in components - tracks, clips, ruler, panels, and a complete editor surface.
+  </Card>
+  <Card title="Media Web" href="/docs/media-web" icon={<Video style={{ color: '#34d399' }} />}>
+    Browser-native adapters - WebCodecs decoding, WebAudio waveforms, WebGL compositing, and export.
   </Card>
 </Cards>
 
 ## Prerequisites
 
-- Node.js ≥ 22
-- React ≥ 18 (Next.js, Vite, or any setup)
-- TypeScript ≥ 5.0
+- Node.js >= 22
+- React >= 18 (Next.js, Vite, or any setup)
+- TypeScript >= 5.0
+
+<Callout type="info">
+  TypeScript is not required, but strongly recommended. All packages are written in TypeScript with full type definitions.
+</Callout>
 
 ## Install
 
-```bash
-pnpm add @timelinx/core @timelinx/react @timelinx/ui
-```
+<Steps>
+<Step>
+### Install packages
 
-Then add the CSS to your global stylesheet. Both imports are required:
+<Tabs items={['pnpm', 'npm', 'yarn']}>
+  <Tab value="pnpm">
+    ```bash
+    pnpm add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </Tab>
+  <Tab value="npm">
+    ```bash
+    npm install @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn add @timelinx/core @timelinx/react @timelinx/ui
+    ```
+  </Tab>
+</Tabs>
+</Step>
 
-```css
-/* globals.css */
+<Step>
+### Add CSS imports
+
+Add the CSS to your global stylesheet. Both imports are required:
+
+```css title="globals.css"
 @import '@timelinx/ui/styles/presets/dark-pro';
 @import '@timelinx/ui/styles/structure';
 ```
+
+<Callout type="warn">
+  Both CSS imports are required. The preset defines colors and tokens, while structure defines layout and component styles.
+</Callout>
+</Step>
+</Steps>
 
 See [Installation](/docs/library/installation) for Next.js, Vite, and framework-specific notes.
 
@@ -90,7 +128,7 @@ const result = dispatch(emptyState, {
   label: 'Setup timeline',
   timestamp: Date.now(),
   operations: [
-    // 1. Register the asset first — clips must reference an existing asset
+    // 1. Register the asset first - clips must reference an existing asset
     { type: 'REGISTER_ASSET', asset: videoAsset },
     // 2. Add the track
     { type: 'ADD_TRACK', track: videoTrack },
@@ -112,11 +150,15 @@ const result = dispatch(emptyState, {
 });
 
 if (!result.accepted) {
-  throw new Error(`Setup failed: ${result.reason} — ${result.message}`);
+  throw new Error(`Setup failed: ${result.reason} - ${result.message}`);
 }
 
 export const initialState = result.nextState;
 ```
+
+<Callout type="info">
+  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+</Callout>
 
 ## Render the Editor
 
@@ -141,7 +183,7 @@ export default function EditorPage() {
 }
 ```
 
-`TimelineEditor` gives you: toolbar, ruler, track list, clip drag and resize, zoom controls, transport, sidebar, and keyboard shortcuts — all wired to the engine.
+`TimelineEditor` gives you: toolbar, ruler, track list, clip drag and resize, zoom controls, transport, sidebar, and keyboard shortcuts - all wired to the engine.
 
 ## Run It
 
@@ -149,7 +191,7 @@ export default function EditorPage() {
 pnpm dev
 ```
 
-Open the page. You should see a dark timeline editor with one video track and a clip at the start. Try dragging the clip, pressing ⌘Z to undo, and using the zoom controls.
+Open the page. You should see a dark timeline editor with one video track and a clip at the start. Try dragging the clip, pressing Cmd+Z to undo, and using the zoom controls.
 
 ## What's Next
 
@@ -161,7 +203,7 @@ Open the page. You should see a dark timeline editor with one video track and a 
     How transactions, operations, and invariants work.
   </Card>
   <Card href="/docs/react/engine" title="TimelineEngine">
-    Full engine API — methods, options, and snapshot model.
+    Full engine API - methods, options, and snapshot model.
   </Card>
   <Card href="/docs/ui/theming" title="Theming">
     Customize colors, fonts, and layout with CSS tokens.
@@ -171,14 +213,14 @@ Open the page. You should see a dark timeline editor with one video track and a 
 ## FAQ
 
 <Accordions>
-  <Accordion id="headless" title="Can I use only @timelinx/core without React?">
-    Yes. `@timelinx/core` is headless — no React, no DOM. Use it for server-side processing, tests, or with any other UI framework.
+  <Accordion id="headless" title="Can I use only Core without React?">
+    Yes. Core is headless - no React, no DOM. Use it for server-side processing, tests, or with any other UI framework.
   </Accordion>
   <Accordion id="typescript" title="Is TypeScript required?">
     Not required, but strongly recommended. All packages are written in TypeScript with full type definitions. Operations, state, and hook return types are fully typed.
   </Accordion>
   <Accordion id="register-asset" title="Why do I need REGISTER_ASSET before INSERT_CLIP?">
-    Clips reference assets by ID. The dispatcher validates that `assetId` exists in `assetRegistry` before accepting `INSERT_CLIP`. This prevents orphan clips that reference non-existent media — a common source of broken project files.
+    Clips reference assets by ID. The dispatcher validates that `assetId` exists in `assetRegistry` before accepting `INSERT_CLIP`. This prevents orphan clips that reference non-existent media - a common source of broken project files.
   </Accordion>
   <Accordion id="persist" title="How do I save and restore the timeline?">
     State is serializable JSON. Pass it through `serializeProject()` for versioned storage:
@@ -195,7 +237,7 @@ Open the page. You should see a dark timeline editor with one video track and a 
     const state = deserializeProject(saved); // handles migrations
     ```
   </Accordion>
-  <Accordion id="editor-height" title="TimelineEditor has no height — how do I fix it?">
+  <Accordion id="editor-height" title="TimelineEditor has no height - how do I fix it?">
     `TimelineEditor` fills its container. Give the container an explicit height:
 
     ```tsx
