@@ -18,9 +18,9 @@ export const TopNav = React.memo(function TopNav({
     <header className={`top-nav${className ? ` ${className}` : ''}`}>
       <div className="top-nav-left">
         <button className="top-nav-btn" title="Back" onClick={onBack}>
-          <ChevronLeft size={18} />
+          {React.createElement(ChevronLeft as any, { size: 18 })}
         </button>
-        <Cloud size={18} />
+        {React.createElement(Cloud as any, { size: 18 })}
         <span>Uploaded</span>
       </div>
 
@@ -31,13 +31,13 @@ export const TopNav = React.memo(function TopNav({
           </svg>
         </button>
         <span>{projectName}</span>
-        <ChevronDown size={14} />
+        {React.createElement(ChevronDown as any, { size: 14 })}
       </div>
 
       <div className="top-nav-right">
         <button className="top-nav-export-btn" onClick={onExport}>
           <span>Export</span>
-          <Download size={14} />
+          {React.createElement(Download as any, { size: 14 })}
         </button>
       </div>
     </header>

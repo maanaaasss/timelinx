@@ -1,5 +1,0 @@
-{
-  "installCommand": "cd ../.. && pnpm install",
-  "buildCommand": "cd ../.. && pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && pnpm --filter @timelinx/ui build && pnpm --filter @timelinx/docs build",
-  "outputDirectory": "../../apps/docs/.next"
-}

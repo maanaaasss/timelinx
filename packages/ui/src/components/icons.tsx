@@ -39,9 +39,9 @@ export interface IconProps {
 
 const SW = 1.75;
 
-function makeIcon(Icon: LucideIcon, opts?: { fill?: string }) {
+function makeIcon(Icon: any, opts?: { fill?: string }) {
   return function IconComponent({ size = 14, className, style }: IconProps) {
-    return <Icon size={size} strokeWidth={SW} className={className} style={style} fill={opts?.fill ?? 'none'} />;
+    return React.createElement(Icon, { size, strokeWidth: SW, className, style, fill: opts?.fill ?? 'none' });
   };
 }
 
