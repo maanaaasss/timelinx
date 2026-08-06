@@ -70,7 +70,7 @@ export function TimelineRulerExample() {
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
-        <UITimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <div style={{ overflowX: 'auto', height: 48, border: '1px solid var(--color-border, #333)', borderRadius: 4 }}>
             <TimelineRuler totalWidth={2400} />
           </div>

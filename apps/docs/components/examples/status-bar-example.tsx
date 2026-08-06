@@ -43,7 +43,7 @@ export function StatusBarExample() {
         Timeline content area
       </div>
       <ReactTimelineProvider engine={engine}>
-        <UITimelineProvider engine={engine}>
+        <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <StatusBar />
         </UITimelineProvider>
       </ReactTimelineProvider>
