@@ -8,7 +8,9 @@
     "@timelinx/core": "1.0.0-beta.1",
     "@timelinx/media-web": "1.0.0-beta.1",
     "@timelinx/react": "1.0.0-beta.3",
-    "@timelinx/ui": "1.0.0-beta.1"
+    "@timelinx/ui": "1.0.0-beta.1",
+    "@timelinx/docs": "0.0.1",
+    "@timelinx/timeline-prototype": "0.0.0"
   },
   "changesets": [
     "add-caption-and-generator-exports",
@@ -29,6 +31,7 @@
     "react-caption-gesture-routing",
     "react-error-boundaries",
     "selection-ripple-trim-default",
+    "timeline-v2-components",
     "tool-router-destroy",
     "ui-first-public-release",
     "validation-tolerance"

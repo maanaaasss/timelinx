@@ -1,10 +1,9 @@
 import { useState, useCallback } from 'react';
 import { createEditorEngine } from './createEditorEngine';
 import { createDemoEngine } from './createDemoEngine';
-import { TimelineEditor, TimelineProvider } from '@timelinx/ui';
+import { TimelineLayout, TimelineProvider } from '@timelinx/ui';
 import { TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 import { RightPanel } from './components/RightPanel';
-import { createClip, toFrame, toClipId, toTrackId, toAssetId } from '@timelinx/core';
 import '@timelinx/ui/styles/tokens';
 import '@timelinx/ui/styles/presets/dark-pro';
 import '@timelinx/ui/styles/structure';
@@ -14,8 +13,6 @@ const globalStyle = `
   html, body, #root { height: 100%; width: 100%; overflow: hidden; }
   body { background: #1c1f26; }
 `;
-
-let _clipSeq = 0;
 
 function App() {
   const [engine, setEngine] = useState(() => createEditorEngine());
@@ -30,45 +27,6 @@ function App() {
     setEngine(createEditorEngine());
     setIsDemoMode(false);
   }, []);
-
-  const handleAssetDrop = useCallback(
-    (drop: { assetId: string; trackId: string; frame: number }) => {
-      const state = engine.getState();
-      const asset = state.assetRegistry.get(toAssetId(drop.assetId));
-      if (!asset) return;
-
-      const duration = asset.intrinsicDuration as number;
-      const startFrame = drop.frame;
-      const endFrame = startFrame + duration;
-
-      const clipId = toClipId(`clip-drop-${Date.now()}-${++_clipSeq}`);
-      const clip = createClip({
-        id: clipId,
-        assetId: drop.assetId,
-        trackId: drop.trackId,
-        timelineStart: toFrame(startFrame),
-        timelineEnd: toFrame(endFrame),
-        mediaIn: toFrame(0),
-        mediaOut: toFrame(duration),
-      });
-
-      const currentDuration = state.timeline.duration as number;
-      const newDuration = Math.max(currentDuration, endFrame);
-
-      engine.dispatch({
-        id: `drop-asset-${clipId}`,
-        label: `Drop ${asset.name} onto timeline`,
-        timestamp: Date.now(),
-        operations: [
-          { type: 'INSERT_CLIP', trackId: toTrackId(drop.trackId), clip },
-          ...(newDuration > currentDuration
-            ? [{ type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(newDuration) }]
-            : []),
-        ],
-      });
-    },
-    [engine],
-  );
 
   return (
     <>
@@ -102,15 +60,10 @@ function App() {
               </button>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <TimelineEditor
-                engine={engine}
-                showSidebar={true}
-                showTopNav={true}
-                showTransportControls={true}
-                showMediaBrowser={true}
+              <TimelineLayout
                 showToolbar={true}
-                projectName="Video Popular Vlog_Duplicate"
-                onAssetDrop={handleAssetDrop}
+                showRuler={true}
+                showStatusBar={true}
               />
             </div>
             <RightPanel />

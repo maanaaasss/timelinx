@@ -152,6 +152,7 @@
   --space-4:  16px;
   --space-5:  20px;
   --space-6:  24px;
+  --space-7:  28px;
   --space-8:  32px;
   --space-10: 40px;
   --space-12: 48px;
@@ -190,6 +191,16 @@
   --scale-press:        0.97;
   --translate-hover-y:  -1px;
 
+  /* ── State overlays ── */
+  --state-hover:       rgba(255,255,255,0.04);
+  --state-active:      rgba(255,255,255,0.06);
+  --state-focus:       rgba(255,255,255,0.08);
+
+  /* ── Transitions ── */
+  --transition-fast: 80ms ease;
+  --transition-base: 150ms ease;
+  --transition-slow: 250ms ease;
+
   /* ── Scrollbar ── */
   --scrollbar-track:       transparent;
   --scrollbar-thumb:       rgba(255,255,255,0.08);
@@ -211,6 +222,13 @@
   --tl-separator:       var(--border-faint);
   --tl-snap-color:      var(--selection);
   --tl-timecode-color:  var(--text-secondary);
+  --tl-grid-line:       rgba(255,255,255,0.04);
+  --tl-clip-selected-border: var(--selection);
+  --tl-clip-drag-shadow: var(--shadow-md);
+  --tl-trim-handle-bg: rgba(255,255,255,0.50);
+  --tl-trim-handle-active-bg: rgba(255,255,255,0.15);
+  --tl-playhead-shadow: 0 0 10px var(--selection-glow);
+  --tl-ring-accent: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
 }
 
 /* ── Base resets ── */

@@ -1,0 +1,90 @@
+---
+title: Timeline
+description: Frame-accurate video timeline component with clips, playhead, and keyboard shortcuts
+---
+
+## Usage
+
+```tsx
+import { TimelineLayout, TimelineProvider } from '@timelinx/ui';
+import { TimelineEngine, createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+import { TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
+
+function Editor() {
+  const engine = useMemo(() => new TimelineEngine({
+    initialState: createTimelineState({
+      timeline: createTimeline({
+        id: 'tl-1',
+        name: 'My Timeline',
+        fps: frameRate(30),
+        duration: toFrame(9000),
+      }),
+    }),
+  }), []);
+
+  return (
+    <ReactTimelineProvider engine={engine}>
+      <TimelineProvider engine={engine}>
+        <TimelineLayout />
+      </TimelineProvider>
+    </ReactTimelineProvider>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | — | Additional CSS class |
+| `showToolbar` | `boolean` | `true` | Show toolbar with tool buttons, timecode, and zoom |
+| `showRuler` | `boolean` | `true` | Show time ruler with tick marks |
+| `showStatusBar` | `boolean` | `true` | Show status bar with frame info |
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/Pause |
+| `←` / `→` | Nudge playhead ±1 frame (±10 with Shift) |
+| `↑` / `↓` | Nudge selected clip ±1 frame |
+| `Delete` | Remove selected clip |
+| `+` / `-` | Zoom in/out |
+
+## Features
+
+- **Click-to-seek**: Click empty track area to move playhead
+- **Click-to-select**: Click clip to select, Ctrl/Cmd+click for multi-select
+- **Drag-to-move**: Drag clip body to reposition on timeline
+- **Trim handles**: Drag left/right edges to adjust clip start/end
+- **Snap-to-frame**: Clips snap to frame boundaries during drag
+- **Playhead drag**: Drag the red playhead line or ruler triangle to scrub
+- **Zoom slider**: Adjust pixels-per-frame, double-click to reset
+- **Adaptive ruler**: Label density adjusts based on zoom level
+- **Empty tracks**: Show "Drop media here" placeholder
+
+## CSS
+
+Import timeline styles:
+
+```tsx
+import '@timelinx/ui/styles/structure';
+```
+
+Timeline uses the `.tl-` prefix for all classes. V2 components use `.tl-v2-` prefix for clip and playhead classes to avoid conflicts with existing components.
+
+## Architecture
+
+`TimelineLayout` reads engine state from `TimelineContext` (provided by `TimelineProvider`). All child components access the engine via context — no prop drilling needed.
+
+```
+TimelineLayout
+├── TimelineToolbarV2 (tool buttons, timecode, zoom)
+├── TimelineRulerV2 (canvas-rendered ticks, playhead triangle)
+├── TimelineTrackAreaV2 (scrollable track rows)
+│   └── TrackRow × N
+│       ├── TrackHeader (sticky left, name, mute/solo/lock)
+│       └── TrackBody (grid lines, clips)
+│           └── Clip × N (draggable, trimmable)
+└── StatusBar
+```
