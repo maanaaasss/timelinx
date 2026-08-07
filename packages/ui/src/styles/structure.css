@@ -2659,3 +2659,485 @@
 }
 
 .export-retry-btn:hover { opacity: 0.9; }
+
+/* ============================================================
+   TIMELINE COMPONENTS
+   Migrated from timeline-prototype. All classes use .tl- prefix.
+   ============================================================ */
+
+/* ── Timeline Layout ── */
+
+.tl-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-panel);
+  overflow: hidden;
+  outline: none;
+}
+
+.tl-layout:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent-subtle);
+}
+
+.tl-ruler-wrapper {
+  position: relative;
+  height: var(--ruler-height);
+  min-height: var(--ruler-height);
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+  margin-left: var(--track-header-width);
+}
+
+.tl-ruler-canvas {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tl-status-bar {
+  height: 24px;
+  min-height: 24px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-faint);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  gap: var(--space-4);
+}
+
+/* ── Toolbar ── */
+
+.tl-toolbar-v2 {
+  height: var(--toolbar-height);
+  min-height: var(--toolbar-height);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-faint);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  gap: var(--space-3);
+}
+
+.tl-toolbar-tools {
+  display: flex;
+  gap: 2px;
+}
+
+.tl-toolbar-btn {
+  width: var(--space-7);
+  height: var(--space-7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  will-change: transform;
+  transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast), transform 40ms;
+}
+
+.tl-toolbar-btn:hover {
+  color: var(--text-secondary);
+  background: var(--state-hover);
+}
+
+.tl-toolbar-btn:active {
+  transform: scale(0.96);
+}
+
+.tl-toolbar-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+.tl-toolbar-btn.is-active {
+  color: #fff;
+  background: var(--selection);
+  border-color: var(--selection);
+}
+
+.tl-toolbar-timecode {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.tl-toolbar-zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ── Zoom Slider ── */
+
+.tl-zoom-slider {
+  width: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.tl-zoom-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--space-1);
+  border-radius: var(--radius-xs);
+  background: linear-gradient(
+    to right,
+    var(--selection) 0%,
+    var(--selection) var(--zoom-pct, 50%),
+    var(--bg-input) var(--zoom-pct, 50%),
+    var(--bg-input) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.tl-zoom-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tl-zoom-slider-input:hover::-webkit-slider-thumb,
+.tl-zoom-slider-input:active::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.tl-zoom-slider-input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tl-zoom-slider-input:hover::-moz-range-thumb,
+.tl-zoom-slider-input:active::-moz-range-thumb {
+  opacity: 1;
+}
+
+.tl-zoom-slider-input::-moz-range-track {
+  height: var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--bg-input);
+}
+
+/* ── Tracks ── */
+
+.tl-track-area {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.tl-track-row {
+  display: flex;
+  height: var(--track-height);
+  min-width: max-content;
+}
+
+.tl-track-header {
+  height: var(--track-height);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  background: var(--bg-surface-soft);
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-faint);
+  gap: var(--space-1);
+  user-select: none;
+}
+
+.tl-track-header-drag {
+  color: var(--text-tertiary);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.tl-track-header-drag:hover {
+  opacity: 0.8;
+}
+
+.tl-track-header-name {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: var(--weight-medium);
+}
+
+.tl-track-header-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.tl-track-header-btn {
+  width: var(--space-5);
+  height: var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  will-change: transform;
+  transition: color var(--transition-fast), background var(--transition-fast), transform 40ms;
+}
+
+.tl-track-header-btn:hover {
+  color: var(--text-secondary);
+  background: var(--state-hover);
+}
+
+.tl-track-header-btn:active {
+  transform: scale(0.92);
+}
+
+.tl-track-header-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+.tl-track-header-btn.is-active {
+  color: var(--selection);
+}
+
+.tl-track-body {
+  flex: 1;
+  position: relative;
+  height: var(--track-height);
+  border-bottom: 1px solid var(--border-faint);
+  overflow: hidden;
+  cursor: default;
+}
+
+.tl-track-body-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── Empty Track ── */
+
+.tl-empty-track {
+  position: absolute;
+  inset: var(--space-2);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.tl-empty-track span {
+  font-size: var(--text-xs);
+  color: var(--text-disabled);
+  user-select: none;
+}
+
+/* ── Clips ── */
+
+@keyframes tl-selection-flash {
+  0%   { opacity: 0.7; }
+  50%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.tl-v2-clip {
+  position: absolute;
+  top: var(--space-1);
+  height: calc(var(--track-height) - 8px);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  min-width: 6px;
+  will-change: transform;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform 40ms;
+}
+
+.tl-v2-clip:hover {
+  border-color: var(--text-tertiary);
+}
+
+.tl-v2-clip:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+.tl-v2-clip:active:not(.is-dragging) {
+  transform: scale(0.99);
+}
+
+.tl-v2-clip.is-selected {
+  z-index: 2;
+  border-color: var(--tl-clip-selected-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px var(--tl-clip-selected-border), var(--tl-playhead-shadow);
+  animation: tl-selection-flash 200ms ease;
+}
+
+.tl-v2-clip.is-dragging {
+  opacity: 0.85;
+  box-shadow: var(--tl-clip-drag-shadow);
+  cursor: grabbing;
+  z-index: 5;
+  animation: none;
+}
+
+.tl-v2-clip.is-dragging.is-selected {
+  box-shadow: var(--tl-clip-drag-shadow), 0 0 0 1px var(--tl-clip-selected-border), var(--tl-playhead-shadow);
+}
+
+.tl-v2-clip-move-zone {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.tl-v2-clip-move-zone:active {
+  cursor: grabbing;
+}
+
+.tl-v2-clip-label {
+  position: relative;
+  z-index: 1;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  padding: var(--space-1) 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.tl-v2-clip-trim-handle {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  background: transparent;
+  cursor: col-resize;
+  z-index: 2;
+  transition: background var(--transition-fast);
+}
+
+.tl-v2-clip-trim-handle:hover {
+  background: var(--tl-trim-handle-bg);
+}
+
+.tl-v2-clip.is-dragging .tl-v2-clip-trim-handle {
+  background: var(--tl-trim-handle-active-bg);
+}
+
+.tl-v2-clip-trim-handle--left {
+  left: 0;
+  cursor: w-resize;
+}
+
+.tl-v2-clip-trim-handle--right {
+  right: 0;
+  cursor: e-resize;
+}
+
+/* ── Snap Guide ── */
+
+.tl-snap-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tl-snap-color);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 8;
+}
+
+/* ── Ruler Playhead ── */
+
+.tl-ruler-playhead-wrapper {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  cursor: ew-resize;
+  z-index: 10;
+  padding: 0 var(--space-1);
+}
+
+.tl-ruler-playhead {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--playhead-color);
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+  pointer-events: none;
+}
+
+/* ── Playhead ── */
+
+.tl-v2-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--playhead-color);
+  pointer-events: none;
+  z-index: 10;
+  transition: left var(--transition-fast);
+}
+
+.tl-v2-playhead.is-dragging {
+  transition: none;
+}
+
+.tl-v2-playhead-hit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 22px;
+  cursor: ew-resize;
+  pointer-events: auto;
+  z-index: 11;
+}
+
+.tl-v2-playhead-hit:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}

@@ -185,3 +185,44 @@ export type { ExportState, ExportStatus, UseExportReturn } from './hooks/use-exp
 
 // ── Provisional State Hooks ───────────────────────────────────────────────
 export { useProvisionalValue, useProvisionalTransform } from './hooks/use-provisional-value';
+
+// ── Timeline V2 Components (migrated from prototype) ─────────────────────
+export { TimelineLayout } from './components/timeline/timeline-layout';
+export type { TimelineLayoutProps } from './components/timeline/timeline-layout';
+
+export { TimelineToolbarV2 } from './components/timeline/timeline-toolbar';
+export type { TimelineToolbarV2Props, ToolId } from './components/timeline/timeline-toolbar';
+
+export { TimelineRulerV2 } from './components/timeline/timeline-ruler';
+export type { TimelineRulerV2Props } from './components/timeline/timeline-ruler';
+
+export { TimelineTrackAreaV2 } from './components/timeline/timeline-track-area';
+export type { TimelineTrackAreaV2Props } from './components/timeline/timeline-track-area';
+
+export { TrackRow } from './components/timeline/track-row';
+export type { TrackRowProps } from './components/timeline/track-row';
+
+export { TrackHeader } from './components/timeline/track-header';
+export type { TrackHeaderProps } from './components/timeline/track-header';
+
+export { TrackBody } from './components/timeline/track-body';
+export type { TrackBodyProps } from './components/timeline/track-body';
+
+export { TrackList as TrackListV2 } from './components/timeline/track-list';
+export type { TrackListProps as TrackListV2Props } from './components/timeline/track-list';
+
+export { Clip as ClipV2 } from './components/timeline/clip';
+export type { ClipProps as ClipV2Props } from './components/timeline/clip';
+
+export { Playhead as PlayheadV2 } from './components/timeline/playhead';
+export type { PlayheadProps as PlayheadV2Props } from './components/timeline/playhead';
+
+export { RulerPlayhead } from './components/timeline/ruler-playhead';
+export type { RulerPlayheadProps } from './components/timeline/ruler-playhead';
+
+export { ZoomSlider } from './components/timeline/zoom-slider';
+export type { ZoomSliderProps } from './components/timeline/zoom-slider';
+
+// ── Timeline V2 Hooks ────────────────────────────────────────────────────
+export { useTimelineKeyboard } from './hooks/use-timeline-keyboard';
+export type { UseTimelineKeyboardOptions } from './hooks/use-timeline-keyboard';

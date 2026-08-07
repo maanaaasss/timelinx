@@ -1,6 +1,6 @@
 {
   "name": "@timelinx/ui",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Modern browser-native React timeline UI. Drop-in components built on @timelinx/core and @timelinx/react.",
   "type": "module",
   "main": "./dist/index.cjs",
