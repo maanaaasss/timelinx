@@ -3,8 +3,8 @@
   "root": true,
   "pages": [
     "---Introduction---",
-    "quick-start",
     "index",
+    "quick-start",
     "installation",
     "concepts",
     "architecture"

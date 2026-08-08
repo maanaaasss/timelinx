@@ -14,9 +14,9 @@ export default async function Page(props: {
 }) {
   const params = await props.params;
 
-  // Redirect /docs to quickstart
+  // Redirect /docs to "What is Timelinx"
   if (!params.slug || params.slug.length === 0) {
-    redirect('/docs/library/quick-start');
+    redirect('/docs/library');
   }
 
   const page = source.getPage(params.slug);
@@ -48,7 +48,7 @@ export async function generateMetadata(props: {
   if (!params.slug || params.slug.length === 0) {
     return {
       title: 'Timelinx',
-      description: 'Redirecting to quickstart...',
+      description: 'Redirecting to documentation...',
     };
   }
 
