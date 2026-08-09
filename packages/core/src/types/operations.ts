@@ -53,6 +53,9 @@ export type OperationPrimitive =
   | { type: 'REORDER_TRACK';     trackId: TrackId; newIndex: number }
   | { type: 'SET_TRACK_HEIGHT';  trackId: TrackId; height: number }
   | { type: 'SET_TRACK_NAME';    trackId: TrackId; name: string }
+  | { type: 'SET_TRACK_MUTE';    trackId: TrackId; muted: boolean }
+  | { type: 'SET_TRACK_LOCK';    trackId: TrackId; locked: boolean }
+  | { type: 'SET_TRACK_SOLO';    trackId: TrackId; solo: boolean }
   // — Asset operations —
   | { type: 'REGISTER_ASSET';    asset: Asset }
   | { type: 'UNREGISTER_ASSET';  assetId: AssetId }

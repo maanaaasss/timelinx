@@ -38,11 +38,22 @@ export function TimelineLayout({
   const [rulerScrollLeft, setRulerScrollLeft] = useState(0);
   const [activeTool, setActiveTool] = useState<ToolId>('select');
 
+  const TOOL_MAP: Record<ToolId, string> = {
+    select: 'selection',
+    razor: 'razor',
+    hand: 'hand',
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
   const rulerContainerRef = useRef<HTMLDivElement>(null);
 
   const tracks = timeline.tracks;
   const allClips = tracks.flatMap((t: any) => t.clips);
+
+  const handleToolChange = useCallback((tool: ToolId) => {
+    setActiveTool(tool);
+    engine.activateTool(TOOL_MAP[tool]);
+  }, [engine]);
 
   const handleTrackScroll = useCallback((scrollLeft: number) => {
     setRulerScrollLeft(scrollLeft);
@@ -80,7 +91,7 @@ export function TimelineLayout({
       {showToolbar && (
         <TimelineToolbarV2
           activeTool={activeTool}
-          onToolChange={setActiveTool}
+          onToolChange={handleToolChange}
           currentTime={currentFrame}
           fps={fps}
           zoom={ppf}

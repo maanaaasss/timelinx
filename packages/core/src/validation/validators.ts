@@ -91,7 +91,10 @@ export function validateOperation(
     case 'SET_SEQUENCE_SETTINGS':  return null; // always valid
     case 'SET_TIMELINE_START_TC':  return null; // always valid
     case 'SET_TRACK_HEIGHT':       return null; // always valid
-    case 'SET_TRACK_NAME':         return null; // always valid
+    case 'SET_TRACK_NAME':    return null; // always valid
+    case 'SET_TRACK_MUTE':    return validateTrackExists(state, op.trackId);
+    case 'SET_TRACK_LOCK':    return validateTrackExists(state, op.trackId);
+    case 'SET_TRACK_SOLO':    return validateTrackExists(state, op.trackId);
 
     default: {
       const _exhaustive: never = op;
@@ -239,6 +242,16 @@ function validateSetTimelineDuration(
 // ---------------------------------------------------------------------------
 // Track validators
 // ---------------------------------------------------------------------------
+
+function validateTrackExists(
+  state: TimelineState,
+  trackId: string,
+): Rejection | null {
+  if (!state.timeline.tracks.some((t) => t.id === trackId)) {
+    return { reason: 'OUT_OF_BOUNDS', message: `Track '${trackId}' not found.` };
+  }
+  return null;
+}
 
 function validateAddTrack(
   state: TimelineState,
