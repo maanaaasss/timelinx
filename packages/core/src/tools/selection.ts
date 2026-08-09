@@ -65,6 +65,47 @@ function liveClip(state: TimelineState, id: ClipId): Clip | undefined {
   return findClipById(state, id);
 }
 
+function validMultiClipDelta(
+  state: TimelineState,
+  selectedIds: ReadonlySet<ClipId>,
+  originalPositions: Map<ClipId, OriginalPosition>,
+  proposedDelta: number,
+): number {
+  let minDelta = -Infinity;
+  let maxDelta = Infinity;
+
+  for (const id of selectedIds) {
+    const orig = originalPositions.get(id);
+    if (!orig) continue;
+    const duration = (orig.timelineEnd as number) - (orig.timelineStart as number);
+    const newStart = (orig.timelineStart as number) + proposedDelta;
+    const newEnd = (orig.timelineEnd as number) + proposedDelta;
+
+    maxDelta = Math.min(maxDelta, (state.timeline.duration as number) - (orig.timelineEnd as number));
+    minDelta = Math.max(minDelta, -(orig.timelineStart as number));
+
+    const track = state.timeline.tracks.find((t) => t.id === orig.trackId);
+    if (!track) continue;
+
+    for (const other of track.clips) {
+      if (selectedIds.has(other.id)) continue;
+      const otherStart = other.timelineStart as number;
+      const otherEnd = other.timelineEnd as number;
+      if (newStart < otherEnd && newEnd > otherStart) {
+        if (proposedDelta >= 0) {
+          maxDelta = Math.min(maxDelta, otherStart - (orig.timelineEnd as number));
+        } else {
+          minDelta = Math.max(minDelta, otherEnd - (orig.timelineStart as number));
+        }
+      }
+    }
+  }
+
+  if (proposedDelta > maxDelta) return maxDelta;
+  if (proposedDelta < minDelta) return minDelta;
+  return proposedDelta;
+}
+
 function hitEdge(
   clip: Clip,
   clientX: number,
@@ -414,7 +455,10 @@ export class SelectionTool implements ITool {
 
       const rawAnchor    = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
       const snappedAnchor = ctx.snap(rawAnchor, [...this.selected]);
-      const snappedDelta  = (snappedAnchor - anchorOrig.timelineStart) as TimelineFrame;
+      const rawDelta     = (snappedAnchor - anchorOrig.timelineStart) as number;
+      const clampedDelta = validMultiClipDelta(
+        ctx.state, this.selected, this.originalPositions, rawDelta,
+      );
 
       const ghosts: Clip[] = [];
       for (const id of this.selected) {
@@ -424,8 +468,8 @@ export class SelectionTool implements ITool {
         if (!orig) continue;
         ghosts.push({
           ...c,
-          timelineStart: (orig.timelineStart + snappedDelta) as TimelineFrame,
-          timelineEnd:   (orig.timelineEnd   + snappedDelta) as TimelineFrame,
+          timelineStart: ((orig.timelineStart as number) + clampedDelta) as TimelineFrame,
+          timelineEnd:   ((orig.timelineEnd   as number) + clampedDelta) as TimelineFrame,
         });
       }
 
@@ -680,9 +724,12 @@ export class SelectionTool implements ITool {
     const frameDelta    = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
     const rawAnchor     = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
     const snappedAnchor = ctx.snap(rawAnchor, [...savedSelected]);
-    const snappedDelta  = (snappedAnchor - anchorOrig.timelineStart) as TimelineFrame;
+    const rawDelta      = (snappedAnchor - anchorOrig.timelineStart) as number;
+    const clampedDelta  = validMultiClipDelta(
+      ctx.state, savedSelected, savedOrigPositions, rawDelta,
+    );
 
-    if (snappedDelta === 0) return null;
+    if (clampedDelta === 0) return null;
 
     const operations = [...savedSelected].flatMap(id => {
       const orig = savedOrigPositions.get(id);
@@ -690,7 +737,7 @@ export class SelectionTool implements ITool {
       return [{
         type:             'MOVE_CLIP' as const,
         clipId:           id,
-        newTimelineStart: (orig.timelineStart + snappedDelta) as TimelineFrame,
+        newTimelineStart: ((orig.timelineStart as number) + clampedDelta) as TimelineFrame,
       }];
     });
 
