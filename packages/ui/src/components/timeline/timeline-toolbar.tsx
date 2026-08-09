@@ -20,7 +20,7 @@ export interface TimelineToolbarV2Props {
 
 const tools: { id: ToolId; icon: typeof MousePointer2; label: string }[] = [
   { id: 'select', icon: MousePointer2, label: 'Select (V)' },
-  { id: 'razor', icon: Scissors, label: 'Razor (C)' },
+  { id: 'razor', icon: Scissors, label: 'Razor (B)' },
   { id: 'hand', icon: Hand, label: 'Hand (H)' },
 ];
 

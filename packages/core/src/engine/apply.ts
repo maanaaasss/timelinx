@@ -197,6 +197,18 @@ export function applyOperation(
       return updateTrack(state, op.trackId, (t) => ({ ...t, name: op.name }));
     }
 
+    case 'SET_TRACK_MUTE': {
+      return updateTrack(state, op.trackId, (t) => ({ ...t, muted: op.muted }));
+    }
+
+    case 'SET_TRACK_LOCK': {
+      return updateTrack(state, op.trackId, (t) => ({ ...t, locked: op.locked }));
+    }
+
+    case 'SET_TRACK_SOLO': {
+      return updateTrack(state, op.trackId, (t) => ({ ...t, solo: op.solo }));
+    }
+
     // — Asset operations ——————————————————————————————————————————————————
 
     case 'REGISTER_ASSET': {

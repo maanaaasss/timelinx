@@ -28,7 +28,7 @@ export function TrackRow({
 }: TrackRowProps) {
   return (
     <div className="tl-track-row">
-      <TrackHeader track={track} />
+      <TrackHeader track={track} engine={engine} />
       <TrackBody
         track={track}
         clips={clips}
