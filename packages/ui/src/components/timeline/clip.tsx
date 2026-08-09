@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import type { Clip as ClipType, TimelineFrame } from '@timelinx/core';
+import type { Clip as ClipType, TimelineFrame, TimelineState } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
 import { cn } from '../../shared/cn';
 
@@ -21,6 +21,66 @@ type DragMode = 'move' | 'trim-left' | 'trim-right';
 
 const SNAP_THRESHOLD_PX = 4;
 const MIN_DURATION_PX = 6;
+
+function clampToNeighbors(
+  state: TimelineState,
+  clipId: string,
+  newStart: number,
+  duration: number,
+): number {
+  const track = state.timeline.tracks.find((t) =>
+    t.clips.some((c) => c.id === clipId),
+  );
+  if (!track) return Math.max(0, newStart);
+  const others = track.clips.filter((c) => c.id !== clipId);
+  let minStart = 0;
+  let maxStart = (state.timeline.duration as number) - duration;
+  for (const other of others) {
+    const otherEnd = other.timelineEnd as number;
+    const otherStart = other.timelineStart as number;
+    if (otherEnd <= newStart + duration && otherEnd > minStart) {
+      minStart = otherEnd;
+    }
+    if (otherStart >= newStart && otherStart - duration < maxStart) {
+      maxStart = otherStart - duration;
+    }
+  }
+  return Math.max(minStart, Math.min(maxStart, newStart));
+}
+
+function clampEdgeToNeighbor(
+  state: TimelineState,
+  clipId: string,
+  edge: 'start' | 'end',
+  newFrame: number,
+): number {
+  const track = state.timeline.tracks.find((t) =>
+    t.clips.some((c) => c.id === clipId),
+  );
+  if (!track) return Math.max(0, newFrame);
+  const clip = track.clips.find((c) => c.id === clipId);
+  if (!clip) return Math.max(0, newFrame);
+  const others = track.clips.filter((c) => c.id !== clipId);
+  if (edge === 'start') {
+    let bound = 0;
+    for (const other of others) {
+      const otherEnd = other.timelineEnd as number;
+      if (otherEnd <= (clip.timelineStart as number) && otherEnd > bound) {
+        bound = otherEnd;
+      }
+    }
+    return Math.max(bound, newFrame);
+  } else {
+    let bound = state.timeline.duration as number;
+    for (const other of others) {
+      const otherStart = other.timelineStart as number;
+      if (otherStart >= (clip.timelineEnd as number) && otherStart < bound) {
+        bound = otherStart;
+      }
+    }
+    return Math.min(bound, newFrame);
+  }
+}
 
 export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -109,15 +169,18 @@ export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
       if (drag.mode === 'move') {
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
-        const delta = Math.round(snapped - drag.origStart);
+        const duration = drag.origEnd - drag.origStart;
+        const clampedStart = clampToNeighbors(engine.getState(), clip.id, snapped, duration);
+        const delta = Math.round(clampedStart - drag.origStart);
         setDraftDelta(delta);
-        setSnapGuideX(Math.max(0, snapped) * ppf);
+        setSnapGuideX(Math.max(0, clampedStart) * ppf);
       } else if (drag.mode === 'trim-left') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
         const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
-        const clamped = Math.min(snapped - drag.origStart, maxDelta);
+        const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'start', snapped);
+        const clamped = Math.min(neighborClamped - drag.origStart, maxDelta);
         setDraftTrimStart(clamped);
         setSnapGuideX(Math.max(0, drag.origStart + clamped) * ppf);
       } else if (drag.mode === 'trim-right') {
@@ -125,7 +188,8 @@ export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
         const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
-        const clamped = Math.max(snapped - drag.origEnd, -maxDelta);
+        const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'end', snapped);
+        const clamped = Math.max(neighborClamped - drag.origEnd, -maxDelta);
         setDraftTrimEnd(clamped);
         setSnapGuideX((drag.origEnd + clamped) * ppf);
       }
@@ -147,8 +211,10 @@ export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
       if (drag.mode === 'move') {
         const raw = drag.origStart + dFrames;
         const snapped = Math.max(0, snapToFrame(raw));
-        newStart = snapped as TimelineFrame;
-        newEnd = (snapped + (drag.origEnd - drag.origStart)) as TimelineFrame;
+        const duration = drag.origEnd - drag.origStart;
+        const clampedStart = clampToNeighbors(engine.getState(), clip.id, snapped, duration);
+        newStart = clampedStart as TimelineFrame;
+        newEnd = (clampedStart + duration) as TimelineFrame;
         engine.dispatch({
           id: crypto.randomUUID(),
           label: 'Move clip',
@@ -160,7 +226,8 @@ export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
         const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
-        const clamped = Math.min(snapped - drag.origStart, maxDelta);
+        const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'start', snapped);
+        const clamped = Math.min(neighborClamped - drag.origStart, maxDelta);
         newStart = Math.max(0, drag.origStart + clamped) as TimelineFrame;
         engine.dispatch({
           id: crypto.randomUUID(),
@@ -173,7 +240,8 @@ export function Clip({ clip, clipType, ppf, engine, isSelected }: ClipProps) {
         const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
-        const clamped = Math.max(snapped - drag.origEnd, -maxDelta);
+        const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'end', snapped);
+        const clamped = Math.max(neighborClamped - drag.origEnd, -maxDelta);
         newEnd = (drag.origEnd + clamped) as TimelineFrame;
         engine.dispatch({
           id: crypto.randomUUID(),
