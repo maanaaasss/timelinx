@@ -1,8 +1,16 @@
 /* ═══════════════════════════════════════════════════════════
-   @timelinx/ui — Dark Pro Preset v2.0
+   @timelinx/ui — Dark Pro Preset v2.1
 
    Premiere Pro-inspired. Instrument-black canvas.
    Amber LED accents. Cyan selection. Zero generic AI tells.
+
+   Import this preset (instead of tokens.css directly) to get
+   the dark theme. It imports tokens.css first, then overrides
+   every surface, text, shadow, and state token with dark values.
+
+   Usage:
+     @import '@timelinx/ui/styles/presets/dark-pro';
+     @import '@timelinx/ui/styles/structure';
    ═══════════════════════════════════════════════════════════ */
 
 @import '../tokens.css';
@@ -24,6 +32,7 @@
   --bg-overlay:        #242430;
   --bg-input:          #18181E;
   --bg-input-focus:    #1E1E26;
+  --bg-sunken:         rgba(255,255,255,0.06);
 
   /* ── Borders ── */
   --border-faint:      rgba(255,255,255,0.04);
@@ -40,18 +49,7 @@
   --text-inverse:      #0C0C10;
   --text-mono:         #B4B4C8;
 
-  /* ── Accent — warm amber LED ── */
-  --accent-50:         #FDF3E8;
-  --accent-100:        #FAD9A8;
-  --accent-200:        #F5B94C;
-  --accent-300:        #EE9D1E;
-  --accent-400:        #E07A2F;
-  --accent-500:        #C4641A;
-  --accent-600:        #A34E0E;
-
-  --accent:            var(--accent-400);
-  --accent-hover:      var(--accent-300);
-  --accent-active:     var(--accent-500);
+  /* ── Accent overrides — same hue, dark context ── */
   --accent-subtle:     rgba(224,122,47,0.12);
   --accent-border:     rgba(224,122,47,0.30);
   --accent-glow:       rgba(224,122,47,0.08);
@@ -59,95 +57,101 @@
 
   /* ── Selection — electric cyan ── */
   --selection:         #00C2FF;
-  --selection-ring:    #1ABFFF;
+  --selection-ring:    rgba(26,191,255,0.30);
   --selection-glow:    rgba(0,194,255,0.12);
   --selection-handle:  #00C2FF;
   --selection-on-fill: #0C0C10;
 
   /* ── Semantic ── */
-  --color-danger:      #EF4444;
-  --color-danger-subtle: rgba(239,68,68,0.10);
-  --color-success:     #22C55E;
+  --color-danger:         #EF4444;
+  --color-danger-subtle:  rgba(239,68,68,0.10);
+  --color-success:        #22C55E;
   --color-success-subtle: rgba(34,197,94,0.10);
-  --color-warning:     #F59E0B;
+  --color-warning:        #F59E0B;
   --color-warning-subtle: rgba(245,158,11,0.10);
 
   /* ── Track types ── */
-  --track-video:       #3B82F6;
-  --track-video-dim:   rgba(59,130,246,0.70);
-  --track-video-bg:    rgba(59,130,246,0.12);
-  --track-video-border: rgba(59,130,246,0.30);
+  --track-video:         #3B82F6;
+  --track-video-dim:     rgba(59,130,246,0.70);
+  --track-video-bg:      rgba(59,130,246,0.12);
+  --track-video-border:  rgba(59,130,246,0.30);
   --track-video-solid:        #2563EB;
   --track-video-border-solid: #1D4ED8;
 
-  --track-audio:       #60A5FA;
-  --track-audio-dim:   rgba(96,165,250,0.70);
-  --track-audio-bg:    rgba(96,165,250,0.12);
-  --track-audio-border: rgba(96,165,250,0.30);
+  --track-audio:         #60A5FA;
+  --track-audio-dim:     rgba(96,165,250,0.70);
+  --track-audio-bg:      rgba(96,165,250,0.12);
+  --track-audio-border:  rgba(96,165,250,0.30);
   --track-audio-solid:        #3B82F6;
   --track-audio-border-solid: #2563EB;
 
-  --track-subtitle:    #F59E0B;
-  --track-subtitle-dim: rgba(245,158,11,0.70);
-  --track-subtitle-bg: rgba(245,158,11,0.12);
+  --track-subtitle:      #F59E0B;
+  --track-subtitle-dim:  rgba(245,158,11,0.70);
+  --track-subtitle-bg:   rgba(245,158,11,0.12);
   --track-subtitle-border: rgba(245,158,11,0.30);
   --track-subtitle-solid:        #D97706;
   --track-subtitle-border-solid: #B45309;
 
-  --track-image:       #EC4899;
-  --track-image-bg:    rgba(236,72,153,0.12);
-  --track-image-border: rgba(236,72,153,0.30);
+  --track-image:         #EC4899;
+  --track-image-bg:      rgba(236,72,153,0.12);
+  --track-image-border:  rgba(236,72,153,0.30);
   --track-image-solid:        #DB2777;
   --track-image-border-solid: #BE185D;
 
-  --track-effect:      #10B981;
-  --track-effect-dim:  rgba(16,185,129,0.70);
-  --track-effect-bg:   rgba(16,185,129,0.12);
+  --track-effect:        #10B981;
+  --track-effect-dim:    rgba(16,185,129,0.70);
+  --track-effect-bg:     rgba(16,185,129,0.12);
   --track-effect-border: rgba(16,185,129,0.30);
   --track-effect-solid:        #059669;
   --track-effect-border-solid: #047857;
 
-  --track-music:       #A855F7;
-  --track-music-dim:   rgba(168,85,247,0.70);
-  --track-music-bg:    rgba(168,85,247,0.12);
-  --track-music-border: rgba(168,85,247,0.30);
+  --track-music:         #A855F7;
+  --track-music-dim:     rgba(168,85,247,0.70);
+  --track-music-bg:      rgba(168,85,247,0.12);
+  --track-music-border:  rgba(168,85,247,0.30);
   --track-music-solid:        #9333EA;
   --track-music-border-solid: #7E22CE;
 
-  /* ── Glow ── */
-  --glow-video:        rgba(59,130,246,0.12);
-  --glow-audio:        rgba(96,165,250,0.12);
-  --glow-subtitle:     rgba(245,158,11,0.12);
-  --glow-image:        rgba(236,72,153,0.12);
-  --glow-effect:       rgba(16,185,129,0.12);
-  --glow-music:        rgba(168,85,247,0.12);
-
-  /* ── Snap ── */
-  --tl-snap-color:     var(--selection);
-  --tl-snap-glow:      rgba(0,194,255,0.20);
-
-  /* ── Playhead — amber LED with glow ── */
-  --playhead-color:    var(--accent-400);
-  --playhead-shadow:   0 0 8px rgba(224,122,47,0.4);
-
-  /* ── Scrollbar ── */
-  --scrollbar-track:   transparent;
-  --scrollbar-thumb:   rgba(255,255,255,0.08);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.14);
+  /* ── Glow values ── */
+  --glow-video:     rgba(59,130,246,0.12);
+  --glow-audio:     rgba(96,165,250,0.12);
+  --glow-subtitle:  rgba(245,158,11,0.12);
+  --glow-image:     rgba(236,72,153,0.12);
+  --glow-effect:    rgba(16,185,129,0.12);
+  --glow-music:     rgba(168,85,247,0.12);
 
   /* ── Shadows ── */
-  --shadow-xs:         0 1px 2px rgba(0,0,0,0.30);
-  --shadow-sm:         0 2px 8px rgba(0,0,0,0.40);
-  --shadow-md:         0 4px 16px rgba(0,0,0,0.50);
-  --shadow-lg:         0 8px 32px rgba(0,0,0,0.60);
-  --shadow-overlay:    0 16px 48px rgba(0,0,0,0.70);
+  --shadow-xs:      0 1px 2px rgba(0,0,0,0.30);
+  --shadow-sm:      0 2px 8px rgba(0,0,0,0.40);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.50);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.60);
+  --shadow-overlay: 0 16px 48px rgba(0,0,0,0.70);
 
-  /* ── Radius ── */
-  --radius-none:       0px;
-  --radius-xs:         2px;
-  --radius-sm:         4px;
-  --radius-md:         6px;
-  --radius-lg:         8px;
-  --radius-xl:         12px;
-  --radius-full:       999px;
+  /* ── State overlays ── */
+  --state-hover:  rgba(255,255,255,0.04);
+  --state-active: rgba(255,255,255,0.06);
+  --state-focus:  rgba(255,255,255,0.08);
+
+  /* ── Scrollbar ── */
+  --scrollbar-thumb:       rgba(255,255,255,0.08);
+  --scrollbar-thumb-hover: rgba(255,255,255,0.14);
+
+  /* ── Rings ── */
+  --ring-surface: inset 0 0 0 1px var(--border-subtle);
+  --ring-raised:  inset 0 0 0 1px var(--border-default);
+  --ring-accent:  0 0 0 2px var(--accent-subtle);
+  --ring-focus:   0 0 0 2px rgba(224,122,47,0.30);
+
+  /* ── Playhead — amber LED with glow ── */
+  --playhead-color:  var(--accent-400);
+  --playhead-shadow: 0 0 8px rgba(224,122,47,0.40);
+
+  /* ── Timeline dark overrides ── */
+  --tl-snap-color:      var(--selection);
+  --tl-snap-glow:       rgba(0,194,255,0.20);
+  --tl-grid-line:       rgba(255,255,255,0.04);
+  --tl-trim-handle-bg:        rgba(255,255,255,0.50);
+  --tl-trim-handle-active-bg: rgba(255,255,255,0.15);
+  --tl-playhead-shadow: 0 0 10px var(--selection-glow);
+  --tl-ring-accent:     0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
 }

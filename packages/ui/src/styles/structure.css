@@ -1985,6 +1985,399 @@
   font-weight: var(--weight-medium);
 }
 
+/* ── Effect Card (Stage 3.1) ── */
+.tl-effect-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.tl-effect-card:hover {
+  border-color: var(--border-default);
+}
+
+.tl-effect-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-faint);
+}
+
+.tl-effect-drag-handle {
+  color: var(--text-tertiary);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.tl-effect-drag-handle:hover {
+  opacity: 0.8;
+}
+
+.tl-effect-card-label {
+  flex: 1;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tl-effect-toggle {
+  margin: 0;
+  padding: 0;
+}
+
+.tl-effect-toggle .toggle-row-label {
+  display: none;
+}
+
+.tl-effect-toggle .toggle-row-checkbox {
+  width: 28px;
+  height: 14px;
+}
+
+.tl-effect-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tl-effect-card:hover .tl-effect-delete-btn {
+  opacity: 1;
+}
+
+.tl-effect-delete-btn:hover {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+.tl-effect-card-body {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tl-effect-param {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tl-effect-param-label {
+  flex: 0 0 80px;
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tl-effect-param-control {
+  flex: 1;
+  min-width: 0;
+}
+
+.tl-effect-param-unit {
+  flex: 0 0 24px;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.tl-effect-param-select {
+  width: 100%;
+  height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.tl-effect-param-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring-focus);
+}
+
+.tl-effect-param-input {
+  width: 100%;
+  height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.tl-effect-param-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring-focus);
+}
+
+/* ── Keyframe Track (Stage 3.2) ── */
+.tl-keyframe-track-container {
+  position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.tl-keyframe-track-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.tl-keyframe-track-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--text-secondary);
+}
+
+.tl-keyframe-track-count {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.tl-keyframe-track {
+  position: relative;
+  height: 60px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-faint);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+.tl-keyframe-track-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tl-keyframe-track-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-faint);
+  opacity: 0.5;
+}
+
+.tl-keyframe {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  z-index: 2;
+  transition: transform 40ms;
+}
+
+.tl-keyframe:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.tl-keyframe:active {
+  cursor: grabbing;
+}
+
+.tl-keyframe.is-selected {
+  z-index: 3;
+}
+
+.tl-keyframe.is-dragging {
+  cursor: grabbing;
+  z-index: 4;
+}
+
+.tl-keyframe-diamond {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  border: 2px solid var(--bg-canvas);
+  border-radius: 2px;
+  transform: rotate(45deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: background var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.tl-keyframe:hover .tl-keyframe-diamond {
+  background: var(--accent-hover, var(--accent));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.tl-keyframe.is-selected .tl-keyframe-diamond {
+  background: var(--selection);
+  border-color: var(--selection);
+  box-shadow: 0 0 0 2px var(--selection-ring), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.tl-keyframe.is-dragging .tl-keyframe-diamond {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Keyframe Context Menu ── */
+.tl-keyframe-context-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  padding: var(--space-1) 0;
+}
+
+.tl-keyframe-context-menu-header {
+  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tl-keyframe-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.tl-keyframe-context-menu-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tl-keyframe-context-menu-delete {
+  color: var(--color-danger);
+}
+
+.tl-keyframe-context-menu-delete:hover {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+.tl-keyframe-context-menu-separator {
+  height: 1px;
+  background: var(--border-faint);
+  margin: var(--space-1) 0;
+}
+
+/* ── Transition Handle (Stage 3.3) ── */
+.tl-transition-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: transparent;
+  cursor: ew-resize;
+  z-index: 5;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.tl-transition-handle:hover {
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.tl-transition-handle.is-dragging {
+  background: var(--accent);
+  opacity: 0.8;
+}
+
+.tl-transition-visual {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    var(--accent-muted, rgba(99, 102, 241, 0.2)) 4px,
+    var(--accent-muted, rgba(99, 102, 241, 0.2)) 8px
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+  border-left: 1px dashed var(--accent);
+  border-right: 1px dashed var(--accent);
+}
+
+/* ── Transition Alignment (Segmented Control) ── */
+.tl-transition-alignment {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-faint);
+}
+
+.tl-transition-alignment-btn {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tl-transition-alignment-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tl-transition-alignment-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-on-fill, white);
+  box-shadow: var(--shadow-xs);
+}
+
 /* ── Deprecated notice ── */
 .deprecated-notice {
   padding: var(--space-2) var(--space-3);
@@ -2490,10 +2883,10 @@
 }
 
 .export-dialog {
-  background: var(--bg-panel, #1e2030);
-  border: 1px solid var(--border-faint, rgba(255,255,255,0.1));
-  border-radius: var(--radius-lg, 12px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
   width: 420px;
   max-width: 90vw;
   overflow: hidden;
@@ -2545,14 +2938,14 @@
 .export-progress-bar-track {
   width: 100%;
   height: 6px;
-  background: var(--bg-sunken, rgba(255,255,255,0.08));
+  background: var(--bg-sunken);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .export-progress-bar-fill {
   height: 100%;
-  background: var(--accent, #5b7ff5);
+  background: var(--accent);
   border-radius: 3px;
   transition: width 0.2s ease;
 }
@@ -2582,7 +2975,7 @@
 }
 
 .export-error-message code {
-  background: var(--bg-sunken, rgba(255,255,255,0.08));
+  background: var(--bg-sunken);
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 12px;
@@ -2600,10 +2993,10 @@
 .export-download-link {
   display: inline-block;
   padding: 8px 16px;
-  background: var(--accent, #5b7ff5);
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-on-fill);
   text-decoration: none;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 8px;
@@ -2653,9 +3046,9 @@
 .export-cancel-btn:hover { background: rgba(244, 67, 54, 0.25); }
 
 .export-retry-btn {
-  background: var(--accent, #5b7ff5);
+  background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--accent-on-fill);
 }
 
 .export-retry-btn:hover { opacity: 0.9; }
@@ -2859,7 +3252,8 @@
   min-width: max-content;
 }
 
-.tl-track-header {
+/* V2 track header — scoped to .tl-track-row to avoid collision with V1 .tl-track-header (line 336) */
+.tl-track-row > .tl-track-header {
   height: var(--track-height);
   display: flex;
   align-items: center;
@@ -3140,4 +3534,164 @@
 .tl-v2-playhead-hit:focus-visible {
   outline: none;
   box-shadow: var(--tl-ring-accent);
+}
+
+/* ── Context Menu ── */
+
+.tl-context-menu {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 4px 0;
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tl-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.tl-context-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+/* ── Rename Inputs ── */
+
+.tl-v2-clip-rename-input,
+.tl-track-header-rename-input {
+  background: var(--bg-input, var(--bg-app));
+  border: 1px solid var(--border-focus);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  padding: 1px 4px;
+  outline: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.tl-v2-clip-rename-input {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+}
+
+.tl-track-header-rename-input {
+  flex: 1;
+  min-width: 40px;
+}
+
+/* ── Toolbar Separator ── */
+
+.tl-toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border-faint);
+  margin: 0 4px;
+}
+
+/* ── Toggle Row ── */
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+}
+
+.toggle-row-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.toggle-row-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ── Color Dot ── */
+
+.color-dot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-dot-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.color-dot-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-dot-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* ── Track Header Resize Handle ── */
+
+.tl-track-header-resize {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  cursor: ns-resize;
+  background: transparent;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.tl-track-header-resize::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 1px;
+  background: var(--border-subtle);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.tl-track-header-resize:hover {
+  background: rgba(var(--accent-rgb, 99,102,241), 0.1);
+}
+
+.tl-track-header-resize:hover::after {
+  opacity: 1;
+}
+
+.tl-track-header-resize:active {
+  background: rgba(var(--accent-rgb, 99,102,241), 0.2);
 }
