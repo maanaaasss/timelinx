@@ -2,6 +2,9 @@ import React from 'react';
 import { usePlayheadFrame, useIsPlaying } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 
+/**
+ * @deprecated Legacy V1 `TimelinePlayheadProps`. Use `PlayheadV2Props` or `RulerPlayheadProps` instead.
+ */
 export interface TimelinePlayheadProps {
   totalHeight: number;
   topOffset?: number;
@@ -9,6 +12,9 @@ export interface TimelinePlayheadProps {
   style?: React.CSSProperties;
 }
 
+/**
+ * @deprecated Legacy V1 `TimelinePlayhead`. Use `PlayheadV2` or `RulerPlayhead` instead.
+ */
 export const TimelinePlayhead = React.memo(function TimelinePlayhead({
   totalHeight,
   topOffset = 0,

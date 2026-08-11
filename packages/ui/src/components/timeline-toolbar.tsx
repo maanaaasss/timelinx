@@ -23,10 +23,16 @@ import {
   IconSnap,
 } from './icons';
 
+/**
+ * @deprecated Legacy V1 `TimelineToolbarProps`. Use `TimelineToolbarV2Props` instead.
+ */
 export interface TimelineToolbarProps {
   className?: string;
 }
 
+/**
+ * @deprecated Legacy V1 `TimelineToolbar`. Use `TimelineToolbarV2` instead.
+ */
 export const TimelineToolbar = React.memo(function TimelineToolbar({
   className,
 }: TimelineToolbarProps) {
