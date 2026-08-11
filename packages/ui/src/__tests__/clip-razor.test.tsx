@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import {
   createTimeline,
@@ -9,10 +9,9 @@ import {
   createAsset,
   toFrame,
   frameRate,
-  toTrackId,
 } from '@timelinx/core';
 import { TimelineEngine } from '@timelinx/react';
-import { TimelineCtx } from '../context/timeline-context';
+import { TimelineProvider } from '../context/timeline-context';
 import { Clip } from '../components/timeline/clip';
 
 function createTestSetup() {
@@ -89,7 +88,7 @@ describe('Clip Razor Tool End-to-End', () => {
     const ppf = 10;
 
     const { container } = render(
-      <TimelineCtx.Provider value={{ engine, ppf, setPpf: () => {} }}>
+      <TimelineProvider engine={engine} initialPpf={ppf}>
         <Clip
           clip={clip}
           clipType="video"
@@ -97,7 +96,7 @@ describe('Clip Razor Tool End-to-End', () => {
           engine={engine}
           isSelected={false}
         />
-      </TimelineCtx.Provider>
+      </TimelineProvider>
     );
 
     const clipEl = container.querySelector('.tl-v2-clip') as HTMLElement;
@@ -142,7 +141,7 @@ describe('Clip Razor Tool End-to-End', () => {
     const ppf = 10;
 
     const { container } = render(
-      <TimelineCtx.Provider value={{ engine, ppf, setPpf: () => {} }}>
+      <TimelineProvider engine={engine} initialPpf={ppf}>
         <Clip
           clip={clip}
           clipType="video"
@@ -150,7 +149,7 @@ describe('Clip Razor Tool End-to-End', () => {
           engine={engine}
           isSelected={false}
         />
-      </TimelineCtx.Provider>
+      </TimelineProvider>
     );
 
     const clipEl = container.querySelector('.tl-v2-clip') as HTMLElement;
