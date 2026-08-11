@@ -1,23 +1,62 @@
 ---
 title: Core Architecture
-description: Package boundaries, data flow, and runtime responsibilities inside @timelinx/core
+description: Package boundaries, module topology, data flow, and runtime responsibilities inside @timelinx/core
 ---
 
-`@timelinx/core` is designed as a deterministic editing kernel. It stores timeline state in plain TypeScript data, accepts edit intent as transactions, validates the result, and returns a new state. That separation lets the same model power a custom canvas, a React editor, server-side import/export jobs, tests, and future collaboration layers.
+`@timelinx/core` is designed as a deterministic, framework-agnostic editing kernel. It stores timeline state in plain TypeScript data structures, accepts edit intent as transactions, validates operations against strict invariants, and returns a new immutable state. That separation allows the exact same kernel to power browser React editors, headless server processing, background workers, tests, and future collaboration backends.
 
-The core rule: do not mutate tracks, clips, markers, or asset registries directly in application code. Build a `Transaction`, call `dispatch()`, and render the returned `nextState` only when the transaction is accepted.
+The central rule: do not mutate tracks, clips, markers, or asset registries directly in application code. Build a `Transaction`, call `dispatch()`, and render the returned `nextState` only when the transaction is accepted.
 
-## Package Boundary
+## Architecture Diagram
 
-| Area | Responsibility |
-|------|----------------|
-| Types | `TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, IDs, `TimelineFrame`, `OperationPrimitive`, and timeline metadata types. |
-| Engine | Dispatch, apply, history, playback, timeline engine wrapper, frame resolver, serializers, import/export helpers, indexes, and virtual windows. |
-| Validation | `validateOperation()` before each primitive and `checkInvariants()` after the proposed state is built. |
-| Tools | Pointer/key editing tools that produce transactions and provisional drag state. |
-| Systems | Queries, asset registry helpers, and reusable validation helpers. |
+```mermaid
+graph TD
+    subgraph CONSUMERS["Consumers & Adapters"]
+        EXT["React Adapters • Headless Editors • Background Workers • CLI / Node.js"]
+    end
 
-The boundary is intentionally narrow. `core` can understand editing concepts such as snapping, ripple movement, frame resolution, keyframes, captions, markers, and playback contracts. It cannot understand DOM events, React components, CSS, browser layout, or app-specific storage.
+    subgraph CORE["packages/core Boundary"]
+        direction TB
+
+        PUB["Public Surface<br/><code>index.ts</code> • <code>public-api.ts</code> • subpath exports"]
+
+        subgraph MODULES["Core Modules"]
+            direction LR
+            RUN["Runtime Modules<br/><code>TimelineEngine</code>, tools,<br/>history, snap index"]
+            MUT["Mutation Core<br/><code>dispatch()</code> → validate → apply → invariants"]
+            SPEC["Specialized Exports<br/><code>serialization</code> & <code>media</code><br/>import, export, worker contracts"]
+        end
+
+        TYPES["Types & Factories<br/><code>TimelineState</code>, <code>Transaction</code>, <code>Clip</code>, <code>Track</code>, <code>Asset</code>, branded IDs"]
+    end
+
+    EXT --> PUB
+    PUB -->|"dispatch"| MUT
+    PUB -->|"tools / engine"| RUN
+    PUB -->|"subpaths"| SPEC
+    RUN -->|"transactions"| MUT
+    TYPES -->|"state + ops"| MUT
+
+    style EXT fill:#f4f4f5,stroke:#a1a1aa,color:#18181b
+    style CORE fill:transparent,stroke:#6366f1,stroke-width:2px,stroke-dasharray: 6 6
+    style PUB fill:#e0e7ff,stroke:#6366f1,color:#1e1b4b,stroke-width:2px
+    style MUT fill:#4f46e5,stroke:#3730a3,color:#ffffff,stroke-width:2px
+    style RUN fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    style SPEC fill:#f1f5f9,stroke:#64748b,color:#0f172a
+    style TYPES fill:#f8fafc,stroke:#94a3b8,color:#1e293b
+```
+
+## Architectural Layers
+
+| Layer | Responsibility & Exports |
+|-------|--------------------------|
+| **Public Surface** | Single entry point (`index.ts`, `public-api.ts`, and subpath exports) exposing canonical functions and types while encapsulating internal state updates. |
+| **Mutation Core** | Pure function pipeline: `dispatch(state, transaction)` validates rolling state, applies operations immutably, and runs full-document invariant checks before committing. |
+| **Runtime Modules** | Editing tools (selection, razor, ripple, slip, etc.), `TimelineEngine` container, `HistoryStack` (undo/redo), and `SnapIndexManager`. |
+| **Specialized Exports** | Non-UI domain contracts including `serialization` (JSON, OTIO, EDL, AAF, FCPXML) and `media` (WebCodecs/audio worker contracts). |
+| **Types & Factories** | Canonical TypeScript types (`TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, `Transaction`) and branded ID constructors (`toFrame`, `toTrackId`, etc.). |
+
+The package boundary is intentionally narrow. `core` handles snapping, ripple transforms, frame resolution, keyframes, captions, markers, and playback contracts. It has zero knowledge of DOM events, React components, CSS, browser layout, or storage drivers.
 
 ## Data Model
 
