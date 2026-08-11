@@ -28,30 +28,25 @@ High-Level Design (HLD) and Low-Level Design (LLD) for the timeline editing kern
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           @timelinx/core                                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  TYPES           │  Canonical data: TimelineState, Clip, Track, Asset,       │
-│                  │  OperationPrimitive, Transaction, TimelineFrame, IDs     │
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  ENGINE          │  dispatch() → validate → apply → invariants → nextState   │
-│                  │  HistoryStack (past / present / future)                   │
-│                  │  TimelineEngine (optional OOP wrapper + legacy API)        │
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  VALIDATION      │  Per-op validators (before apply)                          │
-│                  │  checkInvariants() (after full proposed state)            │
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  OPERATIONS      │  apply.ts: pure applier per OperationPrimitive             │
-│                  │  clip/track/timeline/ripple: compound Transaction builders│
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  TOOLS           │  ITool: onPointerDown/Move/Up, onKeyDown/Up, onCancel     │
-│                  │  Registry, NoOpTool, ProvisionalState for ghosts         │
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  SNAP            │  SnapIndex (ClipStart/End, Playhead; Phase 2: Marker, etc.)│
-│                  │  buildSnapIndex(), nearest(), toggleSnap()                 │
-├──────────────────┼──────────────────────────────────────────────────────────┤
-│  SYSTEMS         │  Queries (findClipById, getClipsAtFrame, …)               │
-│                  │  Asset registry helpers; validation helpers               │
-└──────────────────┴──────────────────────────────────────────────────────────┘
+│                          Consumers & Adapters                               │
+│                (React, Headless Editors, Node, Workers)                     │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │ dispatch / tools / subpaths
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Public Surface (packages/core)                      │
+│                index.ts  •  public-api.ts  •  subpath exports              │
+├──────────────────────────────┬──────────────────────────────┬───────────────┤
+│       Runtime Modules        │        Mutation Core         │  Specialized  │
+│                              │                              │    Exports    │
+│  TimelineEngine, tools,      │  dispatch(state, tx)         │               │
+│  HistoryStack, snap index    │   ├─ validate (rolling)      │  serialization│
+│                              │   ├─ apply (pure update)     │  media        │
+│                              │   └─ invariants (full doc)   │  contracts    │
+├──────────────────────────────┴──────────────────────────────┴───────────────┤
+│                               Types & Factories                             │
+│   TimelineState  •  Transaction  •  Clip  •  Track  •  Asset  •  Branded IDs│
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 1.4 Data Flow (Mutation Path)

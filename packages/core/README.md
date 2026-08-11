@@ -122,10 +122,35 @@ const fcpxml = exportToFCPXML(state);
 
 ## Architecture
 
-- **Immutable state** — every operation returns a new object; unchanged clips keep their reference identity
-- **Rolling-state validation** — each op in a compound transaction is validated against the result of the previous op
-- **Branded types** — `TimelineFrame`, `ClipId`, `TrackId` are distinct types at compile time
-- **No DOM, no React** — safe to use in Workers, Node.js, or Electron main process
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          Consumers & Adapters                               │
+│                (React, Headless Editors, Node, Workers)                     │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         Public Surface (packages/core)                      │
+│                index.ts  •  public-api.ts  •  subpath exports              │
+├──────────────────────────────┬──────────────────────────────┬───────────────┤
+│       Runtime Modules        │        Mutation Core         │  Specialized  │
+│                              │                              │    Exports    │
+│  TimelineEngine, tools,      │  dispatch(state, tx)         │               │
+│  HistoryStack, snap index    │   ├─ validate (rolling)      │  serialization│
+│                              │   ├─ apply (pure update)     │  media        │
+│                              │   └─ invariants (full doc)   │  contracts    │
+├──────────────────────────────┴──────────────────────────────┴───────────────┤
+│                               Types & Factories                             │
+│   TimelineState  •  Transaction  •  Clip  •  Track  •  Asset  •  Branded IDs│
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+- **Single Mutation Entry** — `dispatch(state, transaction)` is the sole entry point for updating document state.
+- **Rolling-State Validation** — each operation in a compound transaction is validated against the state produced by prior operations.
+- **Two-Layer Invariants** — `validateOperation()` guards individual ops; `checkInvariants()` validates full-document health post-apply.
+- **Strict Immutability** — state updates use structural sharing; unchanged clips maintain reference identity.
+- **Branded Compile-Time Safety** — `TimelineFrame`, `ClipId`, `TrackId`, and `AssetId` prevent argument position bugs.
+- **Zero DOM Dependencies** — runs in browser threads, Node.js, Web Workers, and server processes.
 
 ## API Reference
 
