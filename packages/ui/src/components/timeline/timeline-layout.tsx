@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { FrameRate } from '@timelinx/core';
-import { toTrackId } from '@timelinx/core';
+import { toTrackId, createTrack } from '@timelinx/core';
 import {
   useTimelineWithEngine,
   usePlayheadFrame,
@@ -42,6 +42,8 @@ export function TimelineLayout({
   // on pointer-up via handleHeightChange → SET_TRACK_HEIGHT.
   const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
 
+  // Declared outside render cycle in the module, but kept here to avoid
+  // breaking the existing shape. In future extract to module scope.
   const TOOL_MAP: Record<ToolId, string> = {
     select: 'selection',
     razor: 'razor',
@@ -79,8 +81,24 @@ export function TimelineLayout({
     setPpf(Math.max(ZOOM_MIN, ppf / 1.5));
   }, [ppf, setPpf]);
 
-  // Persist track height to engine state AND update local override so
-  // the row reflects the new height immediately while the rAF settles.
+  const handleAddTrack = useCallback((type: 'video' | 'audio') => {
+    const trackCount = tracks.length;
+    const newTrack = createTrack({
+      id: crypto.randomUUID(),
+      name: type === 'video' ? `V${trackCount + 1}` : `A${trackCount + 1}`,
+      type,
+    });
+    engine.dispatch({
+      id: crypto.randomUUID(),
+      label: `Add ${type} track`,
+      timestamp: Date.now(),
+      operations: [{ type: 'ADD_TRACK', track: newTrack }],
+    });
+  }, [engine, tracks.length]);
+
+  // Persist track height to engine state. The local override is set during
+  // the live drag gesture; after engine commit we clear it so undo/redo
+  // (which modifies engine state) isn't masked by a stale local value.
   const handleHeightChange = useCallback((trackId: string, height: number) => {
     setTrackHeights((prev) => ({ ...prev, [trackId]: height }));
     engine.dispatch({
@@ -89,6 +107,12 @@ export function TimelineLayout({
       timestamp: Date.now(),
       operations: [{ type: 'SET_TRACK_HEIGHT', trackId: toTrackId(trackId), height }],
     });
+    // Clear local override: engine is now the source of truth for this track.
+    setTrackHeights((prev) => {
+      const next = { ...prev };
+      delete next[trackId];
+      return next;
+    });
   }, [engine]);
 
   useTimelineKeyboard({
@@ -96,6 +120,7 @@ export function TimelineLayout({
     engine,
     onZoomIn: handleZoomIn,
     onZoomOut: handleZoomOut,
+    onToolChange: (toolId) => handleToolChange(toolId as ToolId),
   });
 
   return (
@@ -115,6 +140,7 @@ export function TimelineLayout({
           zoomMax={ZOOM_MAX}
           zoomDefault={ZOOM_DEFAULT}
           onZoomChange={handleZoomChange}
+          onAddTrack={handleAddTrack}
         />
       )}
       {showRuler && (
