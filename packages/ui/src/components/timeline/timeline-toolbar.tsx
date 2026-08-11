@@ -1,5 +1,5 @@
 import type { FrameRate } from '@timelinx/core';
-import { MousePointer2, Scissors, Hand, ZoomIn, ZoomOut } from 'lucide-react';
+import { MousePointer2, Scissors, Hand, ZoomIn, ZoomOut, Plus } from 'lucide-react';
 import { cn } from '../../shared/cn';
 import { frameToTimecode } from '../../shared/time';
 import { ZoomSlider } from './zoom-slider';
@@ -16,12 +16,13 @@ export interface TimelineToolbarV2Props {
   zoomMax: number;
   zoomDefault: number;
   onZoomChange: (v: number) => void;
+  onAddTrack?: (type: 'video' | 'audio') => void;
 }
 
 const tools: { id: ToolId; icon: typeof MousePointer2; label: string }[] = [
   { id: 'select', icon: MousePointer2, label: 'Select (V)' },
-  { id: 'razor', icon: Scissors, label: 'Razor (B)' },
-  { id: 'hand', icon: Hand, label: 'Hand (H)' },
+  { id: 'razor',  icon: Scissors,      label: 'Razor / Blade (B)' },
+  { id: 'hand',   icon: Hand,          label: 'Hand (H)' },
 ];
 
 export function TimelineToolbarV2({
@@ -34,9 +35,11 @@ export function TimelineToolbarV2({
   zoomMax,
   zoomDefault,
   onZoomChange,
+  onAddTrack,
 }: TimelineToolbarV2Props) {
   return (
     <div className="tl-toolbar-v2">
+      {/* Tool group */}
       <div className="tl-toolbar-tools">
         {tools.map(({ id, icon: Icon, label }) => (
           <button
@@ -50,14 +53,18 @@ export function TimelineToolbarV2({
         ))}
       </div>
 
+      <div className="tl-toolbar-separator" />
+
+      {/* Timecode */}
       <div className="tl-toolbar-timecode">
         {frameToTimecode(currentTime, fps)}
       </div>
 
+      {/* Zoom */}
       <div className="tl-toolbar-zoom">
         <button
           className="tl-toolbar-btn"
-          title="Zoom out"
+          title="Zoom out (–)"
           onClick={() => onZoomChange(Math.max(zoomMin, zoom / 1.5))}
         >
           <ZoomOut size={14} />
@@ -71,12 +78,37 @@ export function TimelineToolbarV2({
         />
         <button
           className="tl-toolbar-btn"
-          title="Zoom in"
+          title="Zoom in (+)"
           onClick={() => onZoomChange(Math.min(zoomMax, zoom * 1.5))}
         >
           <ZoomIn size={14} />
         </button>
       </div>
+
+      {/* Add track (optional) */}
+      {onAddTrack && (
+        <>
+          <div className="tl-toolbar-separator" />
+          <div className="tl-toolbar-tools">
+            <button
+              className="tl-toolbar-btn"
+              title="Add video track"
+              onClick={() => onAddTrack('video')}
+            >
+              <Plus size={13} />
+              <span style={{ fontSize: 10, marginLeft: 2 }}>V</span>
+            </button>
+            <button
+              className="tl-toolbar-btn"
+              title="Add audio track"
+              onClick={() => onAddTrack('audio')}
+            >
+              <Plus size={13} />
+              <span style={{ fontSize: 10, marginLeft: 2 }}>A</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

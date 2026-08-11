@@ -6,6 +6,7 @@ export interface UseTimelineKeyboardOptions {
   engine: TimelineEngine;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onToolChange?: (toolId: string) => void;
 }
 
 export function useTimelineKeyboard({
@@ -13,6 +14,7 @@ export function useTimelineKeyboard({
   engine,
   onZoomIn,
   onZoomOut,
+  onToolChange,
 }: UseTimelineKeyboardOptions) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -23,13 +25,47 @@ export function useTimelineKeyboard({
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
       const shift = e.shiftKey ? 10 : 1;
-      const snapshot = engine.getSnapshot();
       const currentFrame = engine.getPlayheadFrame();
 
       switch (e.code) {
+        // ── Tool shortcuts ────────────────────────────────────────────────
+        case 'KeyV':
+          if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+            e.preventDefault();
+            onToolChange?.('select');
+          }
+          break;
+
+        case 'KeyB':
+          if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+            e.preventDefault();
+            onToolChange?.('razor');
+          }
+          break;
+
+        case 'KeyH':
+          if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+            e.preventDefault();
+            onToolChange?.('hand');
+          }
+          break;
+
+        // ── Undo / Redo ───────────────────────────────────────────────────
+        case 'KeyZ':
+          if (e.metaKey || e.ctrlKey) {
+            e.preventDefault();
+            if (e.shiftKey) {
+              engine.redo();
+            } else {
+              engine.undo();
+            }
+          }
+          break;
+
+        // ── Playhead navigation ───────────────────────────────────────────
         case 'Space':
           e.preventDefault();
-          // Toggle play/pause if playback engine exists
+          // Toggle play/pause when playback engine is available
           break;
 
         case 'ArrowLeft':
@@ -42,64 +78,29 @@ export function useTimelineKeyboard({
           engine.seekTo((currentFrame + shift) as any);
           break;
 
-        case 'ArrowUp':
-          if (snapshot.selectedClipIds.size > 0) {
-            e.preventDefault();
-            snapshot.selectedClipIds.forEach((id) => {
-              const clip = engine.getState().timeline.tracks
-                .flatMap((t: any) => t.clips)
-                .find((c: any) => c.id === id);
-              if (clip) {
-                const dur = clip.timelineEnd - clip.timelineStart;
-                const newStart = Math.max(0, clip.timelineStart - shift);
-                engine.dispatch({
-                  id: crypto.randomUUID(),
-                  label: 'Nudge clip',
-                  timestamp: Date.now(),
-                  operations: [{ type: 'MOVE_CLIP', clipId: id, newTimelineStart: newStart as any }],
-                } as any);
-              }
-            });
-          }
-          break;
-
-        case 'ArrowDown':
-          if (snapshot.selectedClipIds.size > 0) {
-            e.preventDefault();
-            snapshot.selectedClipIds.forEach((id) => {
-              const clip = engine.getState().timeline.tracks
-                .flatMap((t: any) => t.clips)
-                .find((c: any) => c.id === id);
-              if (clip) {
-                const newStart = clip.timelineStart + shift;
-                engine.dispatch({
-                  id: crypto.randomUUID(),
-                  label: 'Nudge clip',
-                  timestamp: Date.now(),
-                  operations: [{ type: 'MOVE_CLIP', clipId: id, newTimelineStart: newStart as any }],
-                } as any);
-              }
-            });
-          }
-          break;
-
+        // ── Delete selected clips (single transaction) ────────────────────
         case 'Delete':
-        case 'Backspace':
+        case 'Backspace': {
+          const snapshot = engine.getSnapshot();
           if (snapshot.selectedClipIds.size > 0) {
             e.preventDefault();
-            snapshot.selectedClipIds.forEach((id) => {
-              engine.dispatch({
-                id: crypto.randomUUID(),
-                label: 'Delete clip',
-                timestamp: Date.now(),
-                operations: [{ type: 'DELETE_CLIP', clipId: id }],
-              } as any);
-            });
+            const ops = [...snapshot.selectedClipIds].map((id) => ({
+              type: 'DELETE_CLIP' as const,
+              clipId: id,
+            }));
+            engine.dispatch({
+              id: crypto.randomUUID(),
+              label: ops.length === 1 ? 'Delete clip' : `Delete ${ops.length} clips`,
+              timestamp: Date.now(),
+              operations: ops,
+            } as any);
             engine.clearSelection();
             containerRef.current?.focus();
           }
           break;
+        }
 
+        // ── Zoom ─────────────────────────────────────────────────────────
         case 'Equal':
         case 'NumpadAdd':
           e.preventDefault();
@@ -113,7 +114,7 @@ export function useTimelineKeyboard({
           break;
       }
     },
-    [containerRef, engine, onZoomIn, onZoomOut],
+    [containerRef, engine, onZoomIn, onZoomOut, onToolChange],
   );
 
   useEffect(() => {
