@@ -1,6 +1,7 @@
 import { useRef, useCallback, type MouseEvent } from 'react';
 import type { Track, Clip as ClipType } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
+import { useActiveToolId } from '@timelinx/react';
 import { Clip } from './clip';
 
 export interface TrackBodyProps {
@@ -23,6 +24,13 @@ function getClipType(clip: ClipType, tracks: readonly Track[]): 'video' | 'audio
   return 'video';
 }
 
+const toolCursors: Record<string, string> = {
+  razor:     'crosshair',
+  hand:      'grab',
+  selection: 'default',
+  select:    'default',
+};
+
 export function TrackBody({
   clips,
   ppf,
@@ -35,6 +43,13 @@ export function TrackBody({
 }: TrackBodyProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const gridIntervalPx = ppf * fps;
+
+  const activeToolId = useActiveToolId(engine);
+  const cursor = toolCursors[activeToolId] ?? 'default';
+
+  // Sort clips by timelineStart so we can find the next clip for each clip
+  // (needed for the transition drag handle in Clip.tsx).
+  const sortedClips = [...clips].sort((a, b) => (a.timelineStart as number) - (b.timelineStart as number));
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
@@ -56,7 +71,7 @@ export function TrackBody({
       className="tl-track-body"
       style={{
         width: totalWidth,
-        cursor: 'text',
+        cursor,
       } as React.CSSProperties}
       onClick={handleClick}
     >
@@ -71,7 +86,7 @@ export function TrackBody({
           <span>Drop media here</span>
         </div>
       )}
-      {clips.map((clip) => (
+      {sortedClips.map((clip, i) => (
         <Clip
           key={clip.id}
           clip={clip}
@@ -79,6 +94,7 @@ export function TrackBody({
           ppf={ppf}
           engine={engine}
           isSelected={selectedClipIds.has(clip.id)}
+          nextClip={sortedClips[i + 1] ?? null}
         />
       ))}
     </div>
