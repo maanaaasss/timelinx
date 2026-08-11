@@ -13,10 +13,15 @@
       "types": "./dist/index.d.ts"
     },
     "./styles/structure": "./dist/structure.css",
+    "./styles/structure.css": "./dist/structure.css",
     "./styles/tokens": "./dist/tokens.css",
+    "./styles/tokens.css": "./dist/tokens.css",
     "./styles/presets/dark-pro": "./dist/presets/dark-pro.css",
+    "./styles/presets/dark-pro.css": "./dist/presets/dark-pro.css",
     "./styles/presets/light": "./dist/presets/light.css",
-    "./styles/presets/high-contrast": "./dist/presets/high-contrast.css"
+    "./styles/presets/light.css": "./dist/presets/light.css",
+    "./styles/presets/high-contrast": "./dist/presets/high-contrast.css",
+    "./styles/presets/high-contrast.css": "./dist/presets/high-contrast.css"
   },
   "files": [
     "dist",
