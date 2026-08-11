@@ -127,6 +127,9 @@ const ClipRow = React.memo(function ClipRow({
   );
 });
 
+/**
+ * @deprecated V1 `TimelineEditorProps` is deprecated. Use `TimelineLayoutProps` with `TimelineLayout` and `TimelineProvider` instead.
+ */
 export interface TimelineEditorProps {
   engine: TimelineEngine;
   initialPpf?: number;
@@ -144,6 +147,9 @@ export interface TimelineEditorProps {
   onExport?: () => void;
 }
 
+/**
+ * @deprecated V1 `TimelineEditor` monolithic container is deprecated. Use `TimelineLayout` from `@timelinx/ui` with `TimelineProvider` (or composable V2 panel components) instead.
+ */
 export function TimelineEditor({
   engine,
   initialPpf = 4,

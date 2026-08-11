@@ -4,6 +4,9 @@ import { IconVideo, IconMusic, IconSubtitle } from './icons';
 import { frameToTimecode } from '../shared/time';
 import { getEffectColor } from '../shared/effect-colors';
 
+/**
+ * @deprecated Legacy V1 `TimelineClipProps`. Use `ClipV2Props` instead.
+ */
 export interface TimelineClipProps {
   clip: Clip;
   trackId: string;
@@ -19,7 +22,10 @@ export interface TimelineClipProps {
   thumbnails?: ReadonlyMap<string, string>;
 }
 
-function getClipIcon(trackType?: string) {
+/**
+ * @deprecated Legacy V1 `TimelineClip`. Use `ClipV2` instead.
+ */
+export function getClipIcon(trackType?: string) {
   switch (trackType) {
     case 'audio': return IconMusic;
     case 'subtitle': return IconSubtitle;

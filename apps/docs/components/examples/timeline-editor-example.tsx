@@ -1,6 +1,6 @@
 'use client';
 
-import { TimelineEditor } from '@timelinx/ui';
+import { TimelineLayout, TimelineProvider } from '@timelinx/ui';
 import { TimelineEngine } from '@timelinx/react';
 import {
   createTimeline,
@@ -86,7 +86,9 @@ export function TimelineEditorExample() {
 
   return (
     <div style={{ height: 500, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
-      <TimelineEditor engine={engine} />
+      <TimelineProvider engine={engine}>
+        <TimelineLayout />
+      </TimelineProvider>
     </div>
   );
 }

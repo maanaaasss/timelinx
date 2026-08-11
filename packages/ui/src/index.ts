@@ -4,23 +4,35 @@
  * Core structural timeline components.
  */
 
-// ── Base Timeline Components ───────────────────────────────────────────────
+// ── Legacy V1 Base Timeline Components (Deprecated) ─────────────────────────
+/** @deprecated Legacy V1 TimelineEditor. Use `TimelineLayout` with `TimelineProvider` or composable V2 components instead. */
 export { TimelineEditor } from './components/timeline-editor';
+/** @deprecated Legacy V1 TimelineEditorProps. Use `TimelineLayoutProps` instead. */
 export type { TimelineEditorProps } from './components/timeline-editor';
 
+/** @deprecated Legacy V1 TimelineToolbar. Use `TimelineToolbarV2` instead. */
 export { TimelineToolbar } from './components/timeline-toolbar';
+/** @deprecated Legacy V1 TimelineToolbarProps. Use `TimelineToolbarV2Props` instead. */
 export type { TimelineToolbarProps } from './components/timeline-toolbar';
 
+/** @deprecated Legacy V1 TimelineRuler. Use `TimelineRulerV2` instead. */
 export { TimelineRuler } from './components/timeline-ruler';
+/** @deprecated Legacy V1 TimelineRulerProps. Use `TimelineRulerV2Props` instead. */
 export type { TimelineRulerProps } from './components/timeline-ruler';
 
+/** @deprecated Legacy V1 TimelineTrack. Use `TrackRow` / `TrackHeader` / `TrackBody` instead. */
 export { TimelineTrack } from './components/timeline-track';
+/** @deprecated Legacy V1 TimelineTrackProps. Use `TrackRowProps` instead. */
 export type { TimelineTrackProps } from './components/timeline-track';
 
+/** @deprecated Legacy V1 TimelineClip. Use `ClipV2` instead. */
 export { TimelineClip } from './components/timeline-clip';
+/** @deprecated Legacy V1 TimelineClipProps. Use `ClipV2Props` instead. */
 export type { TimelineClipProps } from './components/timeline-clip';
 
+/** @deprecated Legacy V1 TimelinePlayhead. Use `PlayheadV2` or `RulerPlayhead` instead. */
 export { TimelinePlayhead } from './components/timeline-playhead';
+/** @deprecated Legacy V1 TimelinePlayheadProps. Use `PlayheadV2Props` instead. */
 export type { TimelinePlayheadProps } from './components/timeline-playhead';
 
 // ── Decomposed Components ──────────────────────────────────────────────────

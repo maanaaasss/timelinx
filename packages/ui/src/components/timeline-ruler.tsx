@@ -4,12 +4,18 @@ import { useTimelineContext } from '../context/timeline-context';
 import { rulerTickInterval } from '../shared/time';
 import { toFrame } from '@timelinx/core';
 
+/**
+ * @deprecated Legacy V1 `TimelineRulerProps`. Use `TimelineRulerV2Props` instead.
+ */
 export interface TimelineRulerProps {
   totalWidth: number;
   className?: string;
   style?: React.CSSProperties;
 }
 
+/**
+ * @deprecated Legacy V1 `TimelineRuler`. Use `TimelineRulerV2` instead.
+ */
 export const TimelineRuler = React.memo(function TimelineRuler({
   totalWidth,
   className,

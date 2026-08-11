@@ -20,6 +20,9 @@ declare module '@timelinx/react' {
   }
 }
 
+/**
+ * @deprecated Legacy V1 `TimelineTrackProps`. Use `TrackRowProps`, `TrackHeaderProps`, or `TrackBodyProps` instead.
+ */
 export interface TimelineTrackProps {
   trackId: string;
   shortId: string;
