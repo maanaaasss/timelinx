@@ -39,6 +39,7 @@
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "eslint": "^9.28.0",
     "globals": "^16.1.0",
+    "playwright": "^1.62.1",
     "typescript-eslint": "^8.33.0"
   }
 }

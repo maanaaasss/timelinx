@@ -2,7 +2,7 @@
 @import 'fumadocs-ui/style.css';
 
 /* Timelinx design tokens and structure */
-@import '@timelinx/ui/styles/tokens';
+@import '@timelinx/ui/styles/presets/dark-pro';
 @import '@timelinx/ui/styles/structure';
 
 /* Default dark theme */
