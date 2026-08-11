@@ -14,6 +14,8 @@ export interface TimelineTrackAreaV2Props {
   engine: TimelineEngine;
   onSeek: (frame: number) => void;
   onScrollHorizontal: (scrollLeft: number) => void;
+  heights?: Record<string, number>;
+  onHeightChange?: (trackId: string, height: number) => void;
 }
 
 export function TimelineTrackAreaV2({
@@ -26,6 +28,8 @@ export function TimelineTrackAreaV2({
   engine,
   onSeek,
   onScrollHorizontal,
+  heights,
+  onHeightChange,
 }: TimelineTrackAreaV2Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +53,8 @@ export function TimelineTrackAreaV2({
         selectedClipIds={selectedClipIds}
         engine={engine}
         onSeek={onSeek}
+        heights={heights}
+        onHeightChange={onHeightChange}
       />
       <Playhead engine={engine} ppf={ppf} />
     </div>

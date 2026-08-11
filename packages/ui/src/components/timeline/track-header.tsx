@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import type { Track } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
 import { cn } from '../../shared/cn';
@@ -17,6 +18,10 @@ export interface TrackHeaderProps {
   track: Track;
   engine: TimelineEngine;
   isSelected?: boolean;
+  /** Current resolved height — passed through from TrackRow for context. */
+  height?: number;
+  /** Called by resize gesture; propagates up to TimelineLayout → engine. */
+  onHeightChange?: (trackId: string, height: number) => void;
 }
 
 const trackTypeIcon: Record<string, typeof Video> = {
@@ -32,14 +37,16 @@ const trackTypeColorVar: Record<string, string> = {
 export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
   const TypeIcon = trackTypeIcon[track.type] ?? Video;
 
-  const dispatch = (label: string, op: any) => {
+  // Memoized so button onClick handlers don't get new function references
+  // every render when unrelated state changes.
+  const dispatch = useCallback((label: string, op: any) => {
     engine.dispatch({
       id: crypto.randomUUID(),
       label,
       timestamp: Date.now(),
       operations: [op],
     });
-  };
+  }, [engine]);
 
   return (
     <div

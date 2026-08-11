@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, type CSSProperties } from 'react';
-import type { FrameRate, TimelineFrame } from '@timelinx/core';
+import type { FrameRate } from '@timelinx/core';
 import { rulerTickInterval, frameToTimecode } from '../../shared/time';
 import { RulerPlayhead } from './ruler-playhead';
 
@@ -11,12 +11,25 @@ export interface TimelineRulerV2Props {
   currentTime: number;
   onSeek: (frame: number) => void;
   containerRef?: React.RefObject<HTMLDivElement | null>;
+  inPoint?: number | null;
+  outPoint?: number | null;
 }
 
-export function TimelineRulerV2({ fps, ppf, duration, scrollLeft, currentTime, onSeek, containerRef: externalContainerRef }: TimelineRulerV2Props) {
+export function TimelineRulerV2({
+  fps,
+  ppf,
+  duration,
+  scrollLeft,
+  currentTime,
+  onSeek,
+  containerRef: externalContainerRef,
+  inPoint,
+  outPoint,
+}: TimelineRulerV2Props) {
   const internalRef = useRef<HTMLDivElement>(null);
   const containerRef = externalContainerRef ?? internalRef;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   const { major: majorIntervalFrames } = rulerTickInterval(ppf, fps);
   const totalWidth = duration * ppf;
@@ -50,6 +63,7 @@ export function TimelineRulerV2({ fps, ppf, duration, scrollLeft, currentTime, o
     const rect = container.getBoundingClientRect();
     const w = rect.width;
     const h = rect.height;
+    if (w === 0 || h === 0) return;
 
     canvas.width = w * dpr;
     canvas.height = h * dpr;
@@ -61,13 +75,28 @@ export function TimelineRulerV2({ fps, ppf, duration, scrollLeft, currentTime, o
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, w, h);
 
+    // Read colors from CSS custom properties so we respect light/dark theme.
+    const style = getComputedStyle(container);
+    const minorTickColor  = style.getPropertyValue('--tl-grid-line').trim()  || 'rgba(255,255,255,0.04)';
+    const majorTickColor  = style.getPropertyValue('--border-default').trim() || 'rgba(255,255,255,0.10)';
+    const labelColor      = style.getPropertyValue('--text-tertiary').trim()  || '#8888A0';
+    const inOutRangeColor = style.getPropertyValue('--accent-subtle').trim()  || 'rgba(224,122,47,0.08)';
+
     const startFrame = Math.floor(scrollLeft / ppf);
-    const endFrame = Math.ceil((scrollLeft + w) / ppf);
+    const endFrame   = Math.ceil((scrollLeft + w) / ppf);
+
+    // In/Out point shading
+    if (inPoint != null && outPoint != null && outPoint > inPoint) {
+      const inX  = Math.round(inPoint  * ppf - scrollLeft);
+      const outX = Math.round(outPoint * ppf - scrollLeft);
+      ctx.fillStyle = inOutRangeColor;
+      ctx.fillRect(inX, 0, outX - inX, h);
+    }
 
     // Minor ticks
     const minorStep = Math.max(1, Math.round(ppf / 4));
     const firstMinor = Math.floor(startFrame / minorStep) * minorStep;
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = minorTickColor;
     ctx.lineWidth = 1;
     for (let f = firstMinor; f <= endFrame; f += minorStep) {
       const x = Math.round(f * ppf - scrollLeft) + 0.5;
@@ -79,9 +108,9 @@ export function TimelineRulerV2({ fps, ppf, duration, scrollLeft, currentTime, o
 
     // Major ticks + labels
     const firstMajor = Math.floor(startFrame / majorIntervalFrames) * majorIntervalFrames;
-    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.strokeStyle = majorTickColor;
     ctx.lineWidth = 1;
-    ctx.fillStyle = '#8888A0';
+    ctx.fillStyle = labelColor;
     ctx.font = '10px "JetBrains Mono", monospace';
     ctx.textBaseline = 'top';
 
@@ -91,24 +120,36 @@ export function TimelineRulerV2({ fps, ppf, duration, scrollLeft, currentTime, o
       ctx.moveTo(x, 0);
       ctx.lineTo(x, h);
       ctx.stroke();
-
-      const seconds = f / fps;
       ctx.fillText(frameToTimecode(f, fps), x + 3, 2);
     }
-  }, [fps, ppf, scrollLeft, majorIntervalFrames, containerRef]);
+  }, [fps, ppf, scrollLeft, majorIntervalFrames, containerRef, inPoint, outPoint]);
+
+  // Schedule draw via rAF to batch rapid updates (zoom + scroll can fire
+  // on the same frame). Cancel any pending rAF before scheduling a new one.
+  const scheduleDraw = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      draw();
+    });
+  }, [draw]);
 
   useEffect(() => {
-    draw();
-  }, [draw]);
+    scheduleDraw();
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [scheduleDraw]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    const observer = new ResizeObserver(() => draw());
+    const observer = new ResizeObserver(() => scheduleDraw());
     observer.observe(container);
     return () => observer.disconnect();
-  }, [draw, containerRef]);
+  }, [scheduleDraw, containerRef]);
 
   const wrapperStyle: CSSProperties = {
     position: 'relative',

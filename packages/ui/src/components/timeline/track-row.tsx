@@ -13,6 +13,10 @@ export interface TrackRowProps {
   selectedClipIds: ReadonlySet<string>;
   engine: TimelineEngine;
   onSeek: (frame: number) => void;
+  /** Override height from local state (track-resize in progress).
+   *  Falls back to track.height from engine state. */
+  height?: number;
+  onHeightChange?: (trackId: string, height: number) => void;
 }
 
 export function TrackRow({
@@ -25,10 +29,24 @@ export function TrackRow({
   selectedClipIds,
   engine,
   onSeek,
+  height,
+  onHeightChange,
 }: TrackRowProps) {
+  // Use the override height when a resize gesture is in progress;
+  // fall back to the engine-committed height stored on the track.
+  const resolvedHeight = height ?? track.height;
+
   return (
-    <div className="tl-track-row">
-      <TrackHeader track={track} engine={engine} />
+    <div
+      className="tl-track-row"
+      style={{ height: resolvedHeight, minHeight: resolvedHeight }}
+    >
+      <TrackHeader
+        track={track}
+        engine={engine}
+        height={resolvedHeight}
+        onHeightChange={onHeightChange}
+      />
       <TrackBody
         track={track}
         clips={clips}

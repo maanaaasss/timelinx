@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { FrameRate } from '@timelinx/core';
+import { toTrackId } from '@timelinx/core';
 import {
   useTimelineWithEngine,
   usePlayheadFrame,
@@ -37,6 +38,9 @@ export function TimelineLayout({
 
   const [rulerScrollLeft, setRulerScrollLeft] = useState(0);
   const [activeTool, setActiveTool] = useState<ToolId>('select');
+  // Local height overrides during live resize gestures. Committed to engine
+  // on pointer-up via handleHeightChange → SET_TRACK_HEIGHT.
+  const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
 
   const TOOL_MAP: Record<ToolId, string> = {
     select: 'selection',
@@ -75,6 +79,18 @@ export function TimelineLayout({
     setPpf(Math.max(ZOOM_MIN, ppf / 1.5));
   }, [ppf, setPpf]);
 
+  // Persist track height to engine state AND update local override so
+  // the row reflects the new height immediately while the rAF settles.
+  const handleHeightChange = useCallback((trackId: string, height: number) => {
+    setTrackHeights((prev) => ({ ...prev, [trackId]: height }));
+    engine.dispatch({
+      id: crypto.randomUUID(),
+      label: 'Resize track',
+      timestamp: Date.now(),
+      operations: [{ type: 'SET_TRACK_HEIGHT', trackId: toTrackId(trackId), height }],
+    });
+  }, [engine]);
+
   useTimelineKeyboard({
     containerRef,
     engine,
@@ -111,6 +127,8 @@ export function TimelineLayout({
             currentTime={currentFrame}
             onSeek={handleSeek}
             containerRef={rulerContainerRef}
+            inPoint={timeline.inPoint}
+            outPoint={timeline.outPoint}
           />
         </div>
       )}
@@ -124,6 +142,8 @@ export function TimelineLayout({
         engine={engine}
         onSeek={handleSeek}
         onScrollHorizontal={handleTrackScroll}
+        heights={trackHeights}
+        onHeightChange={handleHeightChange}
       />
       {showStatusBar && (
         <div className="tl-status-bar">
