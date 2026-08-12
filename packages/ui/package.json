@@ -43,7 +43,7 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@timelinx/core": "workspace:*",
     "@timelinx/react": "workspace:*",
@@ -81,6 +81,6 @@
     "access": "public"
   },
   "dependencies": {
-    "lucide-react": "^1.21.0"
+    "lucide-react": "^1.31.0"
   }
 }
