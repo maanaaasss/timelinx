@@ -19,6 +19,7 @@ export default defineConfig({
       '@timelinx/ui/styles/structure.css': path.resolve(__dirname, '../../packages/ui/src/styles/structure.css'),
       '@timelinx/ui/styles/structure': path.resolve(__dirname, '../../packages/ui/src/styles/structure.css'),
       '@timelinx/ui': path.resolve(__dirname, '../../packages/ui/src/index.ts'),
+      '@timelinx/ui/': path.resolve(__dirname, '../../packages/ui/src/'),
     },
     dedupe: ['react', 'react-dom']
   },
