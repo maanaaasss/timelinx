@@ -1,0 +1,11 @@
+# Global Codeowners
+*                       @maanaaasss
+
+# Workflows & CI
+/.github/workflows/     @maanaaasss
+
+# Core Engine & Architecture
+/packages/core/         @maanaaasss
+/packages/react/        @maanaaasss
+/packages/ui/           @maanaaasss
+/packages/media-web/    @maanaaasss
