@@ -12,7 +12,7 @@
   "dependencies": {
     "@timelinx/core": "workspace:*",
     "@timelinx/react": "workspace:*",
-    "lucide-react": "^0.511.0",
+    "lucide-react": "^1.30.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
