@@ -38,7 +38,7 @@
     "@timelinx/core": "workspace:*",
     "@vitest/coverage-v8": "^2.1.9",
     "tsup": "^8.0.0",
-    "typescript": "~5.9.3",
+    "typescript": "~7.0.2",
     "vitest": "^2.1.9"
   },
   "license": "MIT"
