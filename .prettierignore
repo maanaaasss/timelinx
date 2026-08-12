@@ -1,0 +1,10 @@
+dist
+build
+coverage
+node_modules
+.next
+.turbo
+pnpm-lock.yaml
+graphify-out
+*.min.js
+*.log
