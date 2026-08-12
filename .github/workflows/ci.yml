@@ -18,7 +18,7 @@ env:
 
 jobs:
   validate:
-    name: Build & Test (Node ${{ matrix.node-version }})
+    name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -55,3 +55,17 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  ci-status:
+    name: Build & Test
+    needs: validate
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Verify matrix status
+        run: |
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "ERROR: Matrix validation failed"
+            exit 1
+          fi
+          echo "All matrix checks passed successfully!"
