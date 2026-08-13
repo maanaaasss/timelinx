@@ -1,5 +1,5 @@
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "!apps/demo"
-  - "!apps/editor"
+  - 'packages/*'
+  - 'apps/*'
+  - '!apps/demo'
+  - '!apps/editor'

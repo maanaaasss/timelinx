@@ -9,7 +9,7 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "build": "pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && pnpm --filter @timelinx/media-web build && pnpm --filter @timelinx/ai build && pnpm --filter @timelinx/collab build && pnpm --filter @timelinx/ui build && pnpm --filter @timelinx/editor build",
+    "build": "pnpm -r --if-present build",
     "build:apps": "pnpm --filter @timelinx/demo build && pnpm --filter @timelinx/editor build && pnpm --filter @timelinx/creator-editor build && pnpm --filter @timelinx/podcast-editor build && pnpm --filter @timelinx/pro-timeline build && pnpm --filter @timelinx/template-editor build && pnpm --filter @timelinx/headless-example build && pnpm --filter @timelinx/nl-command-demo build && pnpm --filter @timelinx/collab-demo build",
     "dev": "pnpm --filter @timelinx/demo dev",
     "dev:editor": "pnpm --filter @timelinx/editor dev",
@@ -20,9 +20,9 @@
     "dev:headless": "pnpm --filter @timelinx/headless-example dev",
     "dev:nl": "pnpm --filter @timelinx/nl-command-demo dev",
     "dev:collab": "pnpm --filter @timelinx/collab-demo dev",
-    "test": "pnpm --filter @timelinx/core test && pnpm --filter @timelinx/react test && pnpm --filter @timelinx/media-web test && pnpm --filter @timelinx/ai test && pnpm --filter @timelinx/collab test && pnpm --filter @timelinx/editor test",
-    "lint": "pnpm --filter @timelinx/core lint && pnpm --filter @timelinx/react lint && pnpm --filter @timelinx/ui lint && pnpm --filter @timelinx/media-web lint && pnpm --filter @timelinx/ai lint && pnpm --filter @timelinx/collab lint && pnpm --filter @timelinx/editor lint",
-    "typecheck": "pnpm --filter @timelinx/core exec tsc --noEmit && pnpm --filter @timelinx/react exec tsc --noEmit && pnpm --filter @timelinx/media-web exec tsc --noEmit && pnpm --filter @timelinx/collab exec tsc --noEmit && pnpm --filter @timelinx/ai exec tsc --noEmit && pnpm --filter @timelinx/ui exec tsc --noEmit && pnpm --filter @timelinx/editor exec tsc --noEmit",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
@@ -36,7 +36,10 @@
     "overrides": {
       "@types/react": "^19.2.0",
       "@types/react-dom": "^19.2.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && pnpm --filter @timelinx/ui build && next build",
+    "build": "next build",
     "start": "next start"
   },
   "dependencies": {

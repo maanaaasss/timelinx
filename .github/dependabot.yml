@@ -1,44 +1,39 @@
 version: 2
 updates:
-  # GitHub Actions
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
-    open-pull-requests-limit: 5
-    labels:
-      - 'dependencies'
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'ci'
+    groups:
+      github-actions:
+        patterns:
+          - '*'
 
-  # npm/pnpm packages — patch & minor bumps grouped into one PR
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
     groups:
-      non-major-dependencies:
+      timelinx-workspace-dev:
+        dependency-type: 'development'
         update-types:
           - 'minor'
           - 'patch'
-    labels:
-      - 'dependencies'
-    commit-message:
-      prefix: 'chore(deps):'
-
-  # npm/pnpm packages — major bumps as separate PRs
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 2
-    ignore:
-      - update-types:
+        patterns:
+          - '*'
+      timelinx-workspace-runtime:
+        dependency-type: 'production'
+        update-types:
           - 'minor'
           - 'patch'
-    labels:
-      - 'dependencies'
-      - 'major-bump'
-    reviewers:
-      - 'maanaaasss'
-    commit-message:
-      prefix: 'chore(deps-dev):'
+        patterns:
+          - '*'
