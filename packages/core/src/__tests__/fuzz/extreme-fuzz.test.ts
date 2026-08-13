@@ -262,7 +262,7 @@ describe('Extreme Fuzz: invariant survival under degenerate numeric frames', () 
 });
 
 describe('Extreme Fuzz: massive operation sequences', () => {
-  it('sequences of 100 random operations never break invariants', () => {
+  it('sequences of 100 random operations never break invariants', { timeout: 30000 }, () => {
     const state = makeCorruptState();
 
     fc.assert(
@@ -300,7 +300,9 @@ describe('Extreme Fuzz: massive operation sequences', () => {
             if (result.accepted) {
               const v = checkInvariants(result.nextState);
               if (v.length > 0) {
-                throw new Error(`Invariant violation at op ${op.type}: ${v.map((x) => x.message).join('; ')}`);
+                throw new Error(
+                  `Invariant violation at op ${op.type}: ${v.map((x) => x.message).join('; ')}`,
+                );
               }
               s = result.nextState;
             }

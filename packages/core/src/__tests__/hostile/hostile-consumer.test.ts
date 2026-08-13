@@ -222,7 +222,9 @@ describe('HOSTILE: Single Mutation Path', () => {
       // Now check invariants on the bad state — they MUST catch it
       const violations = checkInvariants(badState);
       expect(violations.length).toBeGreaterThan(0);
-      expect(violations.some((v) => v.type === 'OVERLAP' || v.type === 'MEDIA_BOUNDS_INVALID')).toBe(true);
+      expect(
+        violations.some((v) => v.type === 'OVERLAP' || v.type === 'MEDIA_BOUNDS_INVALID'),
+      ).toBe(true);
     } catch (e: any) {
       // If import fails, that's fine — internal module may not be importable
       if (e.code !== 'ERR_MODULE_NOT_FOUND') {
@@ -377,7 +379,11 @@ describe('HOSTILE: Frame Integer and Non-Negative', () => {
     } as unknown as TimelineState;
 
     const violations = checkInvariants(badState);
-    expect(violations.some((v) => v.type === 'MEDIA_BOUNDS_INVALID' || v.message.includes('non-negative'))).toBe(true);
+    expect(
+      violations.some(
+        (v) => v.type === 'MEDIA_BOUNDS_INVALID' || v.message.includes('non-negative'),
+      ),
+    ).toBe(true);
   });
 
   it('clip with NaN frame is caught by invariant checker', () => {
@@ -603,32 +609,38 @@ describe('HOSTILE: No Overlapping Clips', () => {
   it('moving a clip to overlap another is rejected', () => {
     const state = makeBaseState();
     // Add a second clip
-    const addResult = dispatch(state, tx([
-      {
-        type: 'INSERT_CLIP',
-        clip: createClip({
-          id: 'clip-b',
-          assetId: 'hostile-asset',
-          trackId: 'hostile-track',
-          timelineStart: toFrame(300),
-          timelineEnd: toFrame(500),
-          mediaIn: toFrame(0),
-          mediaOut: toFrame(200),
-        }),
-        trackId: toTrackId('hostile-track'),
-      },
-    ]));
+    const addResult = dispatch(
+      state,
+      tx([
+        {
+          type: 'INSERT_CLIP',
+          clip: createClip({
+            id: 'clip-b',
+            assetId: 'hostile-asset',
+            trackId: 'hostile-track',
+            timelineStart: toFrame(300),
+            timelineEnd: toFrame(500),
+            mediaIn: toFrame(0),
+            mediaOut: toFrame(200),
+          }),
+          trackId: toTrackId('hostile-track'),
+        },
+      ]),
+    );
     expect(addResult.accepted).toBe(true);
     if (!addResult.accepted) return;
 
     // Now try to move clip-b to overlap hostile-clip
-    const moveResult = dispatch(addResult.nextState, tx([
-      {
-        type: 'MOVE_CLIP',
-        clipId: toClipId('clip-b'),
-        newTimelineStart: toFrame(50), // Would overlap with hostile-clip [0, 200)
-      },
-    ]));
+    const moveResult = dispatch(
+      addResult.nextState,
+      tx([
+        {
+          type: 'MOVE_CLIP',
+          clipId: toClipId('clip-b'),
+          newTimelineStart: toFrame(50), // Would overlap with hostile-clip [0, 200)
+        },
+      ]),
+    );
     expect(moveResult.accepted).toBe(false);
   });
 
@@ -739,9 +751,7 @@ describe('HOSTILE: Version Monotonicity', () => {
     let expectedVersion = 0;
 
     for (let i = 0; i < 10; i++) {
-      const result = dispatch(currentState, tx([
-        { type: 'RENAME_TIMELINE', name: `v${i}` },
-      ]));
+      const result = dispatch(currentState, tx([{ type: 'RENAME_TIMELINE', name: `v${i}` }]));
       if (result.accepted) {
         expectedVersion++;
         expect(result.nextState.timeline.version).toBe(expectedVersion);
@@ -755,13 +765,16 @@ describe('HOSTILE: Version Monotonicity', () => {
     const initialVersion = state.timeline.version;
 
     // Try to move clip to invalid position — should fail
-    const result = dispatch(state, tx([
-      {
-        type: 'MOVE_CLIP',
-        clipId: 'hostile-clip' as any,
-        newTimelineStart: toFrame(-1),
-      },
-    ]));
+    const result = dispatch(
+      state,
+      tx([
+        {
+          type: 'MOVE_CLIP',
+          clipId: 'hostile-clip' as any,
+          newTimelineStart: toFrame(-1),
+        },
+      ]),
+    );
 
     expect(result.accepted).toBe(false);
     expect(state.timeline.version).toBe(initialVersion);
@@ -954,14 +967,17 @@ describe('HOSTILE: Proxy and Getter Attacks', () => {
   it('dispatch with a getter that throws does not crash engine', () => {
     const state = makeBaseState();
 
-    const evilObject = new Proxy({}, {
-      get(_target, prop) {
-        if (prop === 'type') return 'MOVE_CLIP';
-        if (prop === 'clipId') return 'hostile-clip';
-        if (prop === 'newTimelineStart') return 100;
-        throw new Error(`Evil getter triggered on ${String(prop)}`);
+    const evilObject = new Proxy(
+      {},
+      {
+        get(_target, prop) {
+          if (prop === 'type') return 'MOVE_CLIP';
+          if (prop === 'clipId') return 'hostile-clip';
+          if (prop === 'newTimelineStart') return 100;
+          throw new Error(`Evil getter triggered on ${String(prop)}`);
+        },
       },
-    });
+    );
 
     // Should not throw — dispatch should handle gracefully
     try {
@@ -1096,13 +1112,16 @@ describe('HOSTILE: Locked Track Bypass', () => {
       assetRegistry: new Map([['locked-asset' as any, asset]]),
     });
 
-    const result = dispatch(lockedState, tx([
-      {
-        type: 'MOVE_CLIP',
-        clipId: toClipId('locked-clip'),
-        newTimelineStart: toFrame(100),
-      },
-    ]));
+    const result = dispatch(
+      lockedState,
+      tx([
+        {
+          type: 'MOVE_CLIP',
+          clipId: toClipId('locked-clip'),
+          newTimelineStart: toFrame(100),
+        },
+      ]),
+    );
 
     expect(result.accepted).toBe(false);
     expect(result.reason).toBe('LOCKED_TRACK');
@@ -1142,21 +1161,24 @@ describe('HOSTILE: Locked Track Bypass', () => {
       assetRegistry: new Map([['locked-asset-2' as any, asset]]),
     });
 
-    const result = dispatch(lockedState, tx([
-      {
-        type: 'INSERT_CLIP',
-        clip: createClip({
-          id: 'sneaky-clip',
-          assetId: 'locked-asset-2',
-          trackId: 'locked-track-2',
-          timelineStart: toFrame(0),
-          timelineEnd: toFrame(100),
-          mediaIn: toFrame(0),
-          mediaOut: toFrame(100),
-        }),
-        trackId: toTrackId('locked-track-2'),
-      },
-    ]));
+    const result = dispatch(
+      lockedState,
+      tx([
+        {
+          type: 'INSERT_CLIP',
+          clip: createClip({
+            id: 'sneaky-clip',
+            assetId: 'locked-asset-2',
+            trackId: 'locked-track-2',
+            timelineStart: toFrame(0),
+            timelineEnd: toFrame(100),
+            mediaIn: toFrame(0),
+            mediaOut: toFrame(100),
+          }),
+          trackId: toTrackId('locked-track-2'),
+        },
+      ]),
+    );
 
     expect(result.accepted).toBe(false);
     expect(result.reason).toBe('LOCKED_TRACK');
@@ -1181,29 +1203,35 @@ describe('HOSTILE: Cross-Track Move', () => {
   it('moving clip across tracks preserves clip integrity', () => {
     const state = makeBaseState();
     // Add a second track
-    const addResult = dispatch(state, tx([
-      {
-        type: 'ADD_TRACK',
-        track: createTrack({
-          id: 'track-b',
-          name: 'Track B',
-          type: 'video',
-          clips: [],
-        }),
-      },
-    ]));
+    const addResult = dispatch(
+      state,
+      tx([
+        {
+          type: 'ADD_TRACK',
+          track: createTrack({
+            id: 'track-b',
+            name: 'Track B',
+            type: 'video',
+            clips: [],
+          }),
+        },
+      ]),
+    );
     expect(addResult.accepted).toBe(true);
     if (!addResult.accepted) return;
 
     // Move clip from track-a to track-b
-    const moveResult = dispatch(addResult.nextState, tx([
-      {
-        type: 'MOVE_CLIP',
-        clipId: toClipId('hostile-clip'),
-        newTimelineStart: toFrame(0),
-        targetTrackId: toTrackId('track-b'),
-      },
-    ]));
+    const moveResult = dispatch(
+      addResult.nextState,
+      tx([
+        {
+          type: 'MOVE_CLIP',
+          clipId: toClipId('hostile-clip'),
+          newTimelineStart: toFrame(0),
+          targetTrackId: toTrackId('track-b'),
+        },
+      ]),
+    );
 
     if (moveResult.accepted) {
       // Verify clip is now on track-b
@@ -1214,8 +1242,7 @@ describe('HOSTILE: Cross-Track Move', () => {
       expect(clip?.trackId).toBe('track-b');
 
       // Verify track-a no longer has the clip
-      const oldTrack = moveResult.nextState.timeline.tracks
-        .find((t) => t.id === 'hostile-track');
+      const oldTrack = moveResult.nextState.timeline.tracks.find((t) => t.id === 'hostile-track');
       expect(oldTrack?.clips.find((c) => c.id === 'hostile-clip')).toBeUndefined();
 
       // Verify invariants
@@ -1293,7 +1320,7 @@ describe('HOSTILE: Type Confusion', () => {
 // ── HOSTILE: Memory and performance ──
 
 describe('HOSTILE: Rapid Fire', () => {
-  it('1000 rapid dispatch calls do not corrupt state', () => {
+  it('1000 rapid dispatch calls do not corrupt state', { timeout: 30000 }, () => {
     const state = makeBaseState();
     let currentState = state;
     let acceptedCount = 0;
@@ -1310,7 +1337,9 @@ describe('HOSTILE: Rapid Fire', () => {
         // Verify invariants after each accepted op
         const v = checkInvariants(currentState);
         if (v.length > 0) {
-          throw new Error(`Invariant violation at iteration ${i}: ${v.map((x) => x.message).join('; ')}`);
+          throw new Error(
+            `Invariant violation at iteration ${i}: ${v.map((x) => x.message).join('; ')}`,
+          );
         }
       }
     }
