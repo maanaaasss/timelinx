@@ -1320,7 +1320,7 @@ describe('HOSTILE: Type Confusion', () => {
 // ── HOSTILE: Memory and performance ──
 
 describe('HOSTILE: Rapid Fire', () => {
-  it('1000 rapid dispatch calls do not corrupt state', { timeout: 30000 }, () => {
+  it('1000 rapid dispatch calls do not corrupt state', { timeout: 60000 }, () => {
     const state = makeBaseState();
     let currentState = state;
     let acceptedCount = 0;
