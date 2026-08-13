@@ -36,7 +36,10 @@
     "overrides": {
       "@types/react": "^19.2.0",
       "@types/react-dom": "^19.2.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",
