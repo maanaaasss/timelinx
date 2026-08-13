@@ -1,15 +1,44 @@
 version: 2
 updates:
-  # Maintain dependencies for GitHub Actions
+  # GitHub Actions
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 5
+    labels:
+      - 'dependencies'
 
-  # Maintain npm/pnpm packages in root and monorepo
+  # npm/pnpm packages — patch & minor bumps grouped into one PR
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'weekly'
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    groups:
+      non-major-dependencies:
+        update-types:
+          - 'minor'
+          - 'patch'
+    labels:
+      - 'dependencies'
+    commit-message:
+      prefix: 'chore(deps):'
+
+  # npm/pnpm packages — major bumps as separate PRs
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 2
+    ignore:
+      - update-types:
+          - 'minor'
+          - 'patch'
+    labels:
+      - 'dependencies'
+      - 'major-bump'
+    reviewers:
+      - 'maanaaasss'
+    commit-message:
+      prefix: 'chore(deps-dev):'
