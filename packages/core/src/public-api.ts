@@ -1,5 +1,5 @@
 /**
- * @webpacked-timeline/core — Public API (Phase 0)
+ * @timelinx/core — Public API (Phase 0)
  *
  * This is the stable contract surface. Everything here is intentional and minimal.
  * Internal files are not exported and may change without notice.

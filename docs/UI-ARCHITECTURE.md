@@ -6,23 +6,23 @@ packages/ui/ARCHITECTURE.md
 Content:
 
 ════════════════════════════════════════════════════════
-@webpacked-timeline/ui — Architecture & Contract
+@timelinx/ui — Architecture & Contract
 ════════════════════════════════════════════════════════
 
 ## Philosophy
 
-@webpacked-timeline/ui is not a component library.
+@timelinx/ui is not a component library.
 It is a component distribution system.
 
-When you run `npx @webpacked-timeline/ui add clip`, a clip.tsx
+When you run `npx @timelinx/ui add clip`, a clip.tsx
 lands in YOUR project. You own it. Edit every pixel,
 every animation, every class. There are no version
 conflicts, no !important fights, no "the library
 doesn't support that prop."
 
 The only things you import from @timeline packages
-are @webpacked-timeline/core (types + engine) and
-@webpacked-timeline/react (hooks). Never the UI.
+are @timelinx/core (types + engine) and
+@timelinx/react (hooks). Never the UI.
 
 ## What gets copied into your project
 
@@ -89,11 +89,11 @@ Components MUST NOT:
      frame comes from the engine)
   - Embed tool logic (tools live in core)
   - Import from other copied components
-    (import only from _shared/ and @webpacked-timeline/*)
+    (import only from _shared/ and @timelinx/*)
 
 ## Tool system
 
-Tool state is managed entirely by @webpacked-timeline/core.
+Tool state is managed entirely by @timelinx/core.
 Components respect tool mode — they do not define it.
 
 engine.activateTool('razor')   // switch tool
@@ -101,7 +101,7 @@ engine.getActiveToolId()       // read active tool
 useActiveToolId(engine)        // React hook
 
 The timeline-root component attaches the ToolRouter
-(from @webpacked-timeline/react) to its DOM container.
+(from @timelinx/react) to its DOM container.
 All pointer events flow: DOM → ToolRouter → ITool.
 Components never handle pointer events directly
 for tool purposes.
@@ -129,7 +129,7 @@ Override any token:
 ## Themes
 
 Themes are CSS files that override token values.
-Install: npx @webpacked-timeline/ui add theme --theme=dark-pro
+Install: npx @timelinx/ui add theme --theme=dark-pro
 
 Available themes:
   dark-pro    (default, DaVinci-inspired)
@@ -141,14 +141,14 @@ Available themes:
 Presets are convenience installers. Not locked
 bundles. Fully editable after install.
 
-  npx @webpacked-timeline/ui add --preset=minimal
+  npx @timelinx/ui add --preset=minimal
     Installs: timeline-root, track, clip,
               playhead, ruler
 
-  npx @webpacked-timeline/ui add --preset=video-editor
+  npx @timelinx/ui add --preset=video-editor
     Installs: all Tier 1–4 components
 
-  npx @webpacked-timeline/ui add --preset=audio-editor
+  npx @timelinx/ui add --preset=audio-editor
     Installs: timeline-root, track, clip,
               waveform, playhead, ruler, toolbar
 
@@ -157,28 +157,28 @@ bundles. Fully editable after install.
 Copied files belong to you. The CLI never
 silently overwrites them.
 
-  npx @webpacked-timeline/ui diff clip
+  npx @timelinx/ui diff clip
     Shows what changed between your version
     and the latest registry version.
 
-  npx @webpacked-timeline/ui update clip
+  npx @timelinx/ui update clip
     Shows diff first, then asks for confirmation.
     Use --force to skip confirmation.
 
-  npx @webpacked-timeline/ui update clip --force
+  npx @timelinx/ui update clip --force
     Overwrites without confirmation.
 
 ## Performance policy
 
 Components mount only visible clips.
-useVisibleClips(engine, window) from @webpacked-timeline/react
+useVisibleClips(engine, window) from @timelinx/react
 returns VirtualClipEntry[] with isVisible flags.
 
 Timeline renders ALL tracks but only mounts clip
 components where isVisible === true.
 
 Future (Phase P): full windowed virtualization
-using @webpacked-timeline/core TrackIndex for O(log n) lookup.
+using @timelinx/core TrackIndex for O(log n) lookup.
 
 ## Accessibility policy
 
@@ -206,7 +206,7 @@ These are explicitly out of scope:
 
 Every component follows this structure:
 
-  1. Imports (@webpacked-timeline/react, _shared/, react)
+  1. Imports (@timelinx/react, _shared/, react)
   2. Props interface (documented with JSDoc)
   3. Component function
   4. Internal sub-components (if needed, in same file)

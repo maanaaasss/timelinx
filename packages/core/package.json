@@ -41,8 +41,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:legacy": "tsx src/__tests__/edge-case-tests.ts && tsx src/__tests__/stress-tests.ts && tsx src/__tests__/phase2-tests.ts"
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "timeline",

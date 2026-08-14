@@ -1,12 +1,12 @@
 /**
- * @webpacked-timeline/core — Media Utilities
+ * @timelinx/core — Media Utilities
  *
  * Sub-path export for subtitle import, marker search, and thumbnail/worker contracts.
  *
  * @example
  * ```ts
- * import { parseSRT, parseVTT } from '@webpacked-timeline/core/media';
- * import { findMarkersByColor } from '@webpacked-timeline/core/media';
+ * import { parseSRT, parseVTT } from '@timelinx/core/media';
+ * import { findMarkersByColor } from '@timelinx/core/media';
  * ```
  */
 

@@ -1,13 +1,13 @@
 /**
- * @webpacked-timeline/core — Serialization & Export
+ * @timelinx/core — Serialization & Export
  *
  * Sub-path export for timeline serialization and interchange formats.
  *
  * @example
  * ```ts
- * import { serializeTimeline, deserializeTimeline } from '@webpacked-timeline/core/serialization';
- * import { exportToOTIO } from '@webpacked-timeline/core/serialization';
- * import { exportToEDL } from '@webpacked-timeline/core/serialization';
+ * import { serializeTimeline, deserializeTimeline } from '@timelinx/core/serialization';
+ * import { exportToOTIO } from '@timelinx/core/serialization';
+ * import { exportToEDL } from '@timelinx/core/serialization';
  * ```
  */
 

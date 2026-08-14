@@ -5,8 +5,8 @@
  * Prevents accidental omissions from public-api.ts.
  *
  * Non-MVP features are in sub-paths:
- *   - @webpacked-timeline/core/serialization (serialize, export formats)
- *   - @webpacked-timeline/core/media (subtitles, markers, thumbnails)
+ *   - @timelinx/core/serialization (serialize, export formats)
+ *   - @timelinx/core/media (subtitles, markers, thumbnails)
  */
 
 import { describe, it, expect } from 'vitest';

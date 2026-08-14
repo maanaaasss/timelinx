@@ -187,7 +187,7 @@ Exports: factories (createTimeline, createTrack, createClip, createAsset, create
 ### 3.1 Text Mind Map
 
 ```
-@webpacked-timeline/core
+@timelinx/core
 ├── RULES
 │   ├── Three-layer (core → no React/DOM)
 │   ├── Single mutation: dispatch(state, transaction)
@@ -276,7 +276,7 @@ Exports: factories (createTimeline, createTrack, createClip, createAsset, create
 
 ```mermaid
 mindmap
-  root((@webpacked-timeline/core))
+  root((@timelinx/core))
     RULES
       Three-layer
       Single mutation dispatch
