@@ -1,5 +1,5 @@
 /**
- * @webpacked-timeline/core - Internal API
+ * @timelinx/core - Internal API
  * 
  * This file exports internal systems, operations, and utilities.
  * 

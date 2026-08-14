@@ -19,7 +19,7 @@
  *   Ghost id is NEVER written to committed state — real clip gets new id at onPointerUp.
  *
  * RULES:
- *   - Zero imports from React, DOM, @webpacked-timeline/react, @webpacked-timeline/ui
+ *   - Zero imports from React, DOM, @timelinx/react, @timelinx/ui
  *   - onPointerMove never dispatches
  *   - onPointerUp never mutates instance state (capture-before-reset)
  *   - Every instance variable appears in onCancel()

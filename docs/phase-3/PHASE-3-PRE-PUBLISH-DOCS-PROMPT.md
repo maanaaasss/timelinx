@@ -32,7 +32,7 @@ For both packages, verify (and fix if missing/wrong):
 
 ## 4. Fix the tarball bloat problem before it repeats
 
-The old `@webpacked-timeline/core` publish shipped 5.9MB unpacked for a package whose real build output is a few hundred KB — almost certainly no `files` allowlist.
+The old `@timelinx/core` publish shipped 5.9MB unpacked for a package whose real build output is a few hundred KB — almost certainly no `files` allowlist.
 
 1. Check whether `core` and `react` package.json have a `files` field. If not, add one (typically `["dist"]`, plus anything else genuinely needed like a package-level README if you want one bundled).
 2. Run `npm pack --dry-run` in each package directory and report the actual file list and resulting tarball size that would be published. Confirm it's just `dist/` + `package.json` + `LICENSE`/`README` — not source, tests, or config files.
