@@ -27,8 +27,8 @@ Do not stop at "code works and build passes." Always commit, push, open a PR, an
 
 ## Package Discipline
 
-- `apps/demo`, `apps/editor` are **excluded** from the pnpm workspace
-- They install `@timelinx/*` from the **npm registry**, not workspace links
+- `apps/editor` is **excluded** from the pnpm workspace
+- It installs `@timelinx/*` from the **npm registry**, not workspace links
 - `apps/docs` is **included** in the workspace and uses `workspace:*` links
 - Any new standalone app must follow this same pattern: add `!apps/<name>` to `pnpm-workspace.yaml`
 
