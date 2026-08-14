@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import path from 'node:path';
 
-const ARTIFACT_DIR = '/Users/manas/.gemini/antigravity-ide/brain/9122ce73-5010-450e-b775-bb6d5c94c350';
+const ARTIFACT_DIR = process.env.ARTIFACT_DIR || './artifacts';
 
 async function runDocsTest() {
   console.log('[Docs Test] Launching Chromium...');

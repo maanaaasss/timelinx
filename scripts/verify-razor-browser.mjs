@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import path from 'node:path';
 
-const ARTIFACT_DIR = '/Users/manas/.gemini/antigravity-ide/brain/9122ce73-5010-450e-b775-bb6d5c94c350';
+const ARTIFACT_DIR = process.env.ARTIFACT_DIR || './artifacts';
 
 async function runBrowserTest() {
   console.log('[Browser Test] Launching Chromium...');
@@ -38,11 +38,15 @@ async function runBrowserTest() {
   const box = await firstClip.boundingBox();
   if (!box) throw new Error('Could not find bounding box for first clip');
 
-  console.log(`[Browser Test] First clip box: x=${box.x}, y=${box.y}, w=${box.width}, h=${box.height}`);
+  console.log(
+    `[Browser Test] First clip box: x=${box.x}, y=${box.y}, w=${box.width}, h=${box.height}`,
+  );
   const clickX = box.x + Math.round(box.width / 2);
   const clickY = box.y + Math.round(box.height / 2);
 
-  console.log(`[Browser Test] Performing real mouse click at (${clickX}, ${clickY}) in razor mode...`);
+  console.log(
+    `[Browser Test] Performing real mouse click at (${clickX}, ${clickY}) in razor mode...`,
+  );
   await page.mouse.click(clickX, clickY);
   await page.waitForTimeout(300);
 
@@ -58,7 +62,9 @@ async function runBrowserTest() {
   await page.waitForTimeout(300);
 
   const clipsAfterShiftCut = await page.locator('.tl-v2-clip').count();
-  console.log(`[Browser Test] Clips rendered after Shift+click multi-track cut: ${clipsAfterShiftCut}`);
+  console.log(
+    `[Browser Test] Clips rendered after Shift+click multi-track cut: ${clipsAfterShiftCut}`,
+  );
   await page.screenshot({ path: path.join(ARTIFACT_DIR, '04_after_shift_razor_cut.png') });
 
   await browser.close();
