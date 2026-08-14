@@ -45,6 +45,7 @@ coverage/
 
 # Next.js
 .next/
+next-env.d.ts
 
 # Agent config
 .agents/

@@ -10,16 +10,9 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
-    "build:apps": "pnpm --filter @timelinx/demo build && pnpm --filter @timelinx/editor build && pnpm --filter @timelinx/creator-editor build && pnpm --filter @timelinx/podcast-editor build && pnpm --filter @timelinx/pro-timeline build && pnpm --filter @timelinx/template-editor build && pnpm --filter @timelinx/headless-example build && pnpm --filter @timelinx/nl-command-demo build && pnpm --filter @timelinx/collab-demo build",
-    "dev": "pnpm --filter @timelinx/demo dev",
+    "dev": "pnpm --filter @timelinx/docs dev",
     "dev:editor": "pnpm --filter @timelinx/editor dev",
-    "dev:creator": "pnpm --filter @timelinx/creator-editor dev",
-    "dev:podcast": "pnpm --filter @timelinx/podcast-editor dev",
-    "dev:pro": "pnpm --filter @timelinx/pro-timeline dev",
-    "dev:template": "pnpm --filter @timelinx/template-editor dev",
-    "dev:headless": "pnpm --filter @timelinx/headless-example dev",
-    "dev:nl": "pnpm --filter @timelinx/nl-command-demo dev",
-    "dev:collab": "pnpm --filter @timelinx/collab-demo dev",
+    "dev:docs": "pnpm --filter @timelinx/docs dev",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "pnpm -r --if-present typecheck",
@@ -28,8 +21,14 @@
     "ci": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
     "changeset": "changeset"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "timeline",
+    "nle",
+    "video-editor",
+    "typescript",
+    "browser"
+  ],
+  "author": "Timeline Contributors",
   "license": "MIT",
   "packageManager": "pnpm@10.28.2",
   "pnpm": {
