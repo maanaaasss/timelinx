@@ -118,7 +118,11 @@ function makeRoundTripState() {
   const effect = createEffect(toEffectId('eff-1'), 'blur', 'preComposite', []);
   state = applyOperation(state, { type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect });
   const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 10);
-  state = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
+  state = applyOperation(state, {
+    type: 'ADD_TRANSITION',
+    clipId: toClipId('clip-1'),
+    transition: trans,
+  });
   expect(checkInvariants(state)).toEqual([]);
   return state;
 }

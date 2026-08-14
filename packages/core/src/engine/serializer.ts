@@ -75,10 +75,7 @@ export type AssetRemapCallback = (asset: FileAsset) => FileAsset;
  * Walk assetRegistry; for each FileAsset replace with remap(asset).
  * GeneratorAssets unchanged. Returns new state (immutable).
  */
-export function remapAssetPaths(
-  state: TimelineState,
-  remap: AssetRemapCallback,
-): TimelineState {
+export function remapAssetPaths(state: TimelineState, remap: AssetRemapCallback): TimelineState {
   const next = new Map<AssetId, Asset>();
   for (const [id, asset] of state.assetRegistry) {
     if (asset.kind === 'file') {

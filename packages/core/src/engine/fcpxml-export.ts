@@ -6,8 +6,7 @@
 
 import type { TimelineState } from '../types/state';
 import type { Clip } from '../types/clip';
-import type { Track } from '../types/track';
-import type { Asset, FileAsset, GeneratorAsset } from '../types/asset';
+import type { FileAsset, GeneratorAsset } from '../types/asset';
 
 // ---------------------------------------------------------------------------
 // Options
@@ -23,10 +22,7 @@ export type FCPXMLExportOptions = {
 // ---------------------------------------------------------------------------
 
 function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 /**
@@ -48,10 +44,7 @@ const DEFAULT_HEIGHT = 1080;
 // Export
 // ---------------------------------------------------------------------------
 
-export function exportToFCPXML(
-  state: TimelineState,
-  options?: FCPXMLExportOptions,
-): string {
+export function exportToFCPXML(state: TimelineState, options?: FCPXMLExportOptions): string {
   const libraryName = xmlEscape(options?.libraryName ?? 'Library');
   const eventName = xmlEscape(options?.eventName ?? state.timeline.name ?? 'Event');
   const timelineName = xmlEscape(state.timeline.name ?? 'Project');
@@ -67,7 +60,9 @@ export function exportToFCPXML(
 
   // Format
   const frameDuration = fps > 0 ? `1/${fps}s` : '1/30s';
-  lines.push(`${indent(2)}<format id="r1" name="FFVideoFormat${DEFAULT_WIDTH}x${DEFAULT_HEIGHT}p${fps}" frameDuration="${frameDuration}" width="${DEFAULT_WIDTH}" height="${DEFAULT_HEIGHT}"/>`);
+  lines.push(
+    `${indent(2)}<format id="r1" name="FFVideoFormat${DEFAULT_WIDTH}x${DEFAULT_HEIGHT}p${fps}" frameDuration="${frameDuration}" width="${DEFAULT_WIDTH}" height="${DEFAULT_HEIGHT}"/>`,
+  );
 
   // One <asset> per FileAsset
   const fileAssets = Array.from(state.assetRegistry.values()).filter((a) => a.kind === 'file');
@@ -79,7 +74,9 @@ export function exportToFCPXML(
     const duration = toFCPTime(fa.intrinsicDuration as number, fps);
     const hasVideo = fa.mediaType === 'video' ? '1' : '0';
     const hasAudio = fa.mediaType === 'audio' ? '1' : '0';
-    lines.push(`${indent(2)}<asset id="${id}" name="${name}" src="${src}" duration="${duration}" hasVideo="${hasVideo}" hasAudio="${hasAudio}"/>`);
+    lines.push(
+      `${indent(2)}<asset id="${id}" name="${name}" src="${src}" duration="${duration}" hasVideo="${hasVideo}" hasAudio="${hasAudio}"/>`,
+    );
   }
 
   // One <effect> per GeneratorAsset
@@ -105,11 +102,14 @@ export function exportToFCPXML(
     totalDurationFrames = last.timelineEnd as number;
   }
   const totalDuration = toFCPTime(totalDurationFrames, fps);
-  lines.push(`${indent(4)}<sequence duration="${totalDuration}" format="r1" tcStart="0s" tcFormat="NDF">`);
+  lines.push(
+    `${indent(4)}<sequence duration="${totalDuration}" format="r1" tcStart="0s" tcFormat="NDF">`,
+  );
   lines.push(`${indent(5)}<spine>`);
 
   // Primary video track: clip and gap elements
-  const videoTrack = state.timeline.tracks.find((t) => t.type === 'video') ?? state.timeline.tracks[0];
+  const videoTrack =
+    state.timeline.tracks.find((t) => t.type === 'video') ?? state.timeline.tracks[0];
   if (videoTrack) {
     let cursor = 0;
     for (const clip of videoTrack.clips) {
@@ -118,7 +118,9 @@ export function exportToFCPXML(
       if (gapFrames > 0) {
         const gapOffset = toFCPTime(start, fps);
         const gapDur = toFCPTime(gapFrames, fps);
-        lines.push(`${indent(6)}<gap name="Gap" offset="${gapOffset}" duration="${gapDur}" start="0s"/>`);
+        lines.push(
+          `${indent(6)}<gap name="Gap" offset="${gapOffset}" duration="${gapDur}" start="0s"/>`,
+        );
       }
       const asset = state.assetRegistry.get(clip.assetId);
       const dur = clipDurationFrames(clip);
@@ -130,15 +132,25 @@ export function exportToFCPXML(
       if (asset?.kind === 'generator') {
         const ga = asset as GeneratorAsset;
         const ref = xmlEscape(ga.id);
-        lines.push(`${indent(6)}<clip name="${clipId}" offset="${offset}" duration="${durationStr}" start="${mediaStart}" tcFormat="NDF">`);
-        lines.push(`${indent(7)}<generator ref="${ref}" offset="0s" duration="${durationStr}" start="0s">`);
-        lines.push(`${indent(8)}<param name="Generator" value="${xmlEscape(ga.generatorDef.type)}"/>`);
+        lines.push(
+          `${indent(6)}<clip name="${clipId}" offset="${offset}" duration="${durationStr}" start="${mediaStart}" tcFormat="NDF">`,
+        );
+        lines.push(
+          `${indent(7)}<generator ref="${ref}" offset="0s" duration="${durationStr}" start="0s">`,
+        );
+        lines.push(
+          `${indent(8)}<param name="Generator" value="${xmlEscape(ga.generatorDef.type)}"/>`,
+        );
         lines.push(`${indent(7)}</generator>`);
         lines.push(`${indent(6)}</clip>`);
       } else {
         const ref = asset ? xmlEscape(asset.id) : 'missing';
-        lines.push(`${indent(6)}<clip name="${clipId}" offset="${offset}" duration="${durationStr}" start="${mediaStart}" tcFormat="NDF">`);
-        lines.push(`${indent(7)}<video ref="${ref}" offset="0s" duration="${durationStr}" start="0s"/>`);
+        lines.push(
+          `${indent(6)}<clip name="${clipId}" offset="${offset}" duration="${durationStr}" start="${mediaStart}" tcFormat="NDF">`,
+        );
+        lines.push(
+          `${indent(7)}<video ref="${ref}" offset="0s" duration="${durationStr}" start="0s"/>`,
+        );
         lines.push(`${indent(6)}</clip>`);
       }
       cursor = clip.timelineEnd as number;
@@ -156,7 +168,9 @@ export function exportToFCPXML(
       const asset = state.assetRegistry.get(clip.assetId);
       const ref = asset ? xmlEscape(asset.id) : 'missing';
       const clipId = xmlEscape(clip.id);
-      lines.push(`${indent(6)}<asset-clip ref="${ref}" name="${clipId}" offset="${offset}" duration="${durationStr}" start="0s" role="dialogue"/>`);
+      lines.push(
+        `${indent(6)}<asset-clip ref="${ref}" name="${clipId}" offset="${offset}" duration="${durationStr}" start="0s" role="dialogue"/>`,
+      );
     }
   }
 

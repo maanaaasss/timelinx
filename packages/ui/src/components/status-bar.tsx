@@ -1,5 +1,10 @@
 import React from 'react';
-import { useTimelineWithEngine, useSelectedClipIds, useActiveToolId, usePlayheadFrame } from '@timelinx/react';
+import {
+  useTimelineWithEngine,
+  useSelectedClipIds,
+  useActiveToolId,
+  usePlayheadFrame,
+} from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { frameToTimecode } from '../shared/time';
 
@@ -7,9 +12,7 @@ export interface StatusBarProps {
   className?: string;
 }
 
-export const StatusBar = React.memo(function StatusBar({
-  className,
-}: StatusBarProps) {
+export const StatusBar = React.memo(function StatusBar({ className }: StatusBarProps) {
   const { engine } = useTimelineContext();
   const timeline = useTimelineWithEngine(engine);
   const selectedClipIds = useSelectedClipIds(engine);
@@ -18,10 +21,7 @@ export const StatusBar = React.memo(function StatusBar({
 
   const fps = Number(timeline?.fps ?? 30);
   const duration = Number(timeline?.duration ?? 0);
-  const totalClips = (timeline?.tracks ?? []).reduce(
-    (sum, track) => sum + track.clips.length,
-    0,
-  );
+  const totalClips = (timeline?.tracks ?? []).reduce((sum, track) => sum + track.clips.length, 0);
 
   return (
     <div className={`status-bar${className ? ` ${className}` : ''}`}>

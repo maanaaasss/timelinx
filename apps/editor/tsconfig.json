@@ -27,8 +27,12 @@
       "@timelinx/ui/styles/presets/dark-pro": ["../../packages/ui/src/presets/dark-pro.css"],
       "@timelinx/ui/styles/presets/light.css": ["../../packages/ui/src/presets/light.css"],
       "@timelinx/ui/styles/presets/light": ["../../packages/ui/src/presets/light.css"],
-      "@timelinx/ui/styles/presets/high-contrast.css": ["../../packages/ui/src/presets/high-contrast.css"],
-      "@timelinx/ui/styles/presets/high-contrast": ["../../packages/ui/src/presets/high-contrast.css"],
+      "@timelinx/ui/styles/presets/high-contrast.css": [
+        "../../packages/ui/src/presets/high-contrast.css"
+      ],
+      "@timelinx/ui/styles/presets/high-contrast": [
+        "../../packages/ui/src/presets/high-contrast.css"
+      ],
       "@timelinx/ui/styles/structure.css": ["../../packages/ui/src/styles/structure.css"],
       "@timelinx/ui/styles/structure": ["../../packages/ui/src/styles/structure.css"],
       "@timelinx/ui/*": ["../../packages/ui/src/*"]

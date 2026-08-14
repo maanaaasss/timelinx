@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 `ThumbnailExtractorAdapter` generates still-frame thumbnails for video clips by seeking a hidden `<video>` element to the requested media frame and capturing to a canvas. Thumbnails are displayed inside `TimelineClip` rows.
 
-This adapter does not use WebCodecs  - it works in all browsers that support `<video>`.
+This adapter does not use WebCodecs - it works in all browsers that support `<video>`.
 
 ## Import
 
@@ -21,7 +21,7 @@ import { createThumbnailExtractor, ThumbnailExtractorAdapter } from '@timelinx/m
 ## `createThumbnailExtractor(config?)`
 
 ```ts
-function createThumbnailExtractor(config?: ThumbnailConfig): ThumbnailExtractorAdapter
+function createThumbnailExtractor(config?: ThumbnailConfig): ThumbnailExtractorAdapter;
 ```
 
 ### `ThumbnailConfig`
@@ -35,12 +35,12 @@ type ThumbnailConfig = {
 };
 ```
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `width` | `number` | `160` | Output thumbnail width in pixels |
-| `height` | `number` | `90` | Output thumbnail height in pixels |
-| `quality` | `number` | `0.7` | JPEG quality (0–1) |
-| `maxConcurrent` | `number` | `4` | Max concurrent video element seeks to prevent browser throttling |
+| Field           | Type     | Default | Notes                                                            |
+| --------------- | -------- | ------- | ---------------------------------------------------------------- |
+| `width`         | `number` | `160`   | Output thumbnail width in pixels                                 |
+| `height`        | `number` | `90`    | Output thumbnail height in pixels                                |
+| `quality`       | `number` | `0.7`   | JPEG quality (0–1)                                               |
+| `maxConcurrent` | `number` | `4`     | Max concurrent video element seeks to prevent browser throttling |
 
 ---
 
@@ -54,7 +54,8 @@ The adapter maintains a pool of hidden `<video>` elements. For each `ThumbnailRe
 4. The data URL is returned as `ThumbnailResult.bitmap`.
 
 <Callout title="Object URLs">
-  The adapter manages object URLs internally. Pass the source `File` object via `configureClip()`  - the adapter handles `URL.createObjectURL()` and revocation.
+  The adapter manages object URLs internally. Pass the source `File` object via `configureClip()` -
+  the adapter handles `URL.createObjectURL()` and revocation.
 </Callout>
 
 ---
@@ -102,7 +103,7 @@ const cache = new ThumbnailCache({ maxSize: 200 });
 // Queue a request with priority
 queue.enqueue({
   request: { clipId, mediaFrame, width, height },
-  priority: 'high',     // 'high' | 'normal' | 'low'
+  priority: 'high', // 'high' | 'normal' | 'low'
   onResult: (result) => cache.set(result),
 });
 ```

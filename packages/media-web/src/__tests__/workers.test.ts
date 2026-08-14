@@ -93,10 +93,7 @@ function makeThumbnailRequest(
   };
 }
 
-function makeWaveformRequest(
-  requestId = 'req-1',
-  buckets = 100,
-): WaveformRequest {
+function makeWaveformRequest(requestId = 'req-1', buckets = 100): WaveformRequest {
   return {
     requestId,
     assetId: 'asset-1' as any,
@@ -284,9 +281,7 @@ describe('ThumbnailWorkerClient', () => {
       const worker = MockWorker.instances[0];
       worker.simulateMessage(makeThumbnailResult('clip-1', 0));
 
-      expect(onResult).toHaveBeenCalledWith(
-        expect.objectContaining({ clipId: 'clip-1' }),
-      );
+      expect(onResult).toHaveBeenCalledWith(expect.objectContaining({ clipId: 'clip-1' }));
       client.terminate();
     });
 
@@ -397,7 +392,8 @@ describe('ThumbnailWorkerClient', () => {
       worker.simulateMessage(makeThumbnailResult('clip-1', 0));
 
       // Should process high-priority clip-4 and normal clip-3, not evicted clip-2
-      const sentMessages = worker.getMessageLog()
+      const sentMessages = worker
+        .getMessageLog()
         .filter((m: any) => m.type === 'request')
         .map((m: any) => m.payload.request.clipId);
 
@@ -532,9 +528,7 @@ describe('WaveformWorkerClient', () => {
       const worker = MockWorker.instances[0];
       worker.simulateMessage(makeWaveformResult('req-1', 10));
 
-      expect(onComplete).toHaveBeenCalledWith(
-        expect.objectContaining({ requestId: 'req-1' }),
-      );
+      expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ requestId: 'req-1' }));
       client.terminate();
     });
 

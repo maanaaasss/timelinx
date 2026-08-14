@@ -8,7 +8,14 @@
 
 import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { TimelineEngine } from '../engine';
-import type { TimelinePointerEvent, TimelineKeyEvent, Modifiers, ClipId, TrackId, CaptionId } from '@timelinx/core';
+import type {
+  TimelinePointerEvent,
+  TimelineKeyEvent,
+  Modifiers,
+  ClipId,
+  TrackId,
+  CaptionId,
+} from '@timelinx/core';
 import type { TimelineFrame } from '@timelinx/core';
 
 export type ToolRouterOptions = {
@@ -125,11 +132,7 @@ function convertPointerEvent(
   getPixelsPerFrame: () => number,
   getScrollLeft: () => number,
 ): TimelinePointerEvent {
-  return convertPointerEventFromSnapshot(
-    snapshotPointerEvent(e),
-    getPixelsPerFrame,
-    getScrollLeft,
-  );
+  return convertPointerEventFromSnapshot(snapshotPointerEvent(e), getPixelsPerFrame, getScrollLeft);
 }
 
 function extractModifiers(e: ReactPointerEvent | ReactKeyboardEvent): Modifiers {

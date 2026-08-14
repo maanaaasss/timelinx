@@ -33,8 +33,8 @@ export const CURRENT_SCHEMA_VERSION = 2 as const;
 // ---------------------------------------------------------------------------
 
 export type TimelineState = {
-  readonly schemaVersion: number;        // must equal CURRENT_SCHEMA_VERSION
-  readonly timeline:      Timeline;
+  readonly schemaVersion: number; // must equal CURRENT_SCHEMA_VERSION
+  readonly timeline: Timeline;
   readonly assetRegistry: AssetRegistry;
 };
 
@@ -43,15 +43,14 @@ export type TimelineState = {
 // ---------------------------------------------------------------------------
 
 export function createTimelineState(params: {
-  timeline:       Timeline;
+  timeline: Timeline;
   assetRegistry?: AssetRegistry;
 }): TimelineState {
-  const registry: AssetRegistry =
-    params.assetRegistry ?? new Map<AssetId, Asset>();
+  const registry: AssetRegistry = params.assetRegistry ?? new Map<AssetId, Asset>();
 
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    timeline:      params.timeline,
+    timeline: params.timeline,
     assetRegistry: registry,
   };
 }

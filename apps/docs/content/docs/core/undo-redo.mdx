@@ -10,11 +10,7 @@ Timelinx history is snapshot-based. A committed edit stores the accepted `Timeli
 `HistoryStack` is the newer history implementation. It supports limits, transaction-aware compression, checkpoints, serialization, and restore.
 
 ```ts
-import {
-  DEFAULT_COMPRESSION_POLICY,
-  HistoryStack,
-  dispatch,
-} from '@timelinx/core';
+import { DEFAULT_COMPRESSION_POLICY, HistoryStack, dispatch } from '@timelinx/core';
 
 const history = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY);
 history.push({
@@ -30,10 +26,7 @@ history.push({
 const result = dispatch(initialState, transaction);
 
 if (result.accepted) {
-  history.pushWithCompression(
-    { state: result.nextState, transaction },
-    transaction,
-  );
+  history.pushWithCompression({ state: result.nextState, transaction }, transaction);
 }
 ```
 
@@ -62,14 +55,7 @@ if (next !== null) {
 The older pure helper API is still exported for compatibility and simple integrations:
 
 ```ts
-import {
-  canUndo,
-  createHistory,
-  getCurrentState,
-  pushHistory,
-  redo,
-  undo,
-} from '@timelinx/core';
+import { canUndo, createHistory, getCurrentState, pushHistory, redo, undo } from '@timelinx/core';
 
 let history = createHistory(initialState);
 

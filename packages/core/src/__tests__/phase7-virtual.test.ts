@@ -11,10 +11,7 @@ import { createClip, toClipId } from '../types/clip';
 import { createAsset } from '../types/asset';
 import { toTimecode } from '../types/frame';
 import type { TimelineState } from '../types/state';
-import {
-  getVisibleClips,
-  getVisibleFrameRange,
-} from '../engine/virtual-window';
+import { getVisibleClips, getVisibleFrameRange } from '../engine/virtual-window';
 import { diffStates } from '../types/state-change';
 
 const FPS = 30;
@@ -184,13 +181,13 @@ describe('Phase 7 — getVisibleFrameRange', () => {
   it('17. Correct startFrame from scrollLeft + ppf', () => {
     const win = getVisibleFrameRange(100, 50, 2);
     expect(win.startFrame).toEqual(toFrame(Math.floor(50 / 2)));
-    expect((win.startFrame as number)).toBe(25);
+    expect(win.startFrame as number).toBe(25);
   });
 
   it('18. Correct endFrame from scrollLeft + width + ppf', () => {
     const win = getVisibleFrameRange(100, 50, 2);
     expect(win.endFrame).toEqual(toFrame(Math.ceil((50 + 100) / 2)));
-    expect((win.endFrame as number)).toBe(75);
+    expect(win.endFrame as number).toBe(75);
   });
 
   it('19. Returns VirtualWindow with pixelsPerFrame', () => {

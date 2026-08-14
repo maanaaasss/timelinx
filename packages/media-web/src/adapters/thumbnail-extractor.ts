@@ -5,10 +5,7 @@
  * Implements the @timelinx/core ThumbnailProvider contract.
  */
 
-import type {
-  ThumbnailRequest,
-  ThumbnailResult,
-} from '@timelinx/core';
+import type { ThumbnailRequest, ThumbnailResult } from '@timelinx/core';
 import type { ClipId, TimelineFrame } from '@timelinx/core';
 
 // ---------------------------------------------------------------------------
@@ -101,9 +98,7 @@ export class ThumbnailExtractorAdapter {
       );
     }
     if (width <= 0 || height <= 0) {
-      throw new Error(
-        `Thumbnail dimensions must be positive, got ${width}x${height}`,
-      );
+      throw new Error(`Thumbnail dimensions must be positive, got ${width}x${height}`);
     }
 
     let canvas: OffscreenCanvas | HTMLCanvasElement;
@@ -120,7 +115,7 @@ export class ThumbnailExtractorAdapter {
     // Draw a placeholder
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D | null;
     if (ctx) {
-      const hue = (request.mediaFrame as number * 3) % 360;
+      const hue = ((request.mediaFrame as number) * 3) % 360;
       ctx.fillStyle = `hsl(${hue}, 60%, 40%)`;
       ctx.fillRect(0, 0, width, height);
 
@@ -151,9 +146,7 @@ export class ThumbnailExtractorAdapter {
   /**
    * Extract multiple thumbnails in batch.
    */
-  async extractBatch(
-    requests: ThumbnailRequest[],
-  ): Promise<ThumbnailResult[]> {
+  async extractBatch(requests: ThumbnailRequest[]): Promise<ThumbnailResult[]> {
     const results: ThumbnailResult[] = new Array(requests.length);
     const semaphore: Promise<void>[] = [];
 
@@ -246,8 +239,6 @@ export class ThumbnailExtractorAdapter {
 /**
  * Create a thumbnail extractor adapter with default configuration.
  */
-export function createThumbnailExtractor(
-  config?: ThumbnailConfig,
-): ThumbnailExtractorAdapter {
+export function createThumbnailExtractor(config?: ThumbnailConfig): ThumbnailExtractorAdapter {
   return new ThumbnailExtractorAdapter(config);
 }

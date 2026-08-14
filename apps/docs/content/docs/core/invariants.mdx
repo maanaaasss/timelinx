@@ -7,13 +7,13 @@ Invariants are whole-document checks that run after a transaction has produced a
 
 ## Violation Categories
 
-| Area | Examples |
-|------|----------|
-| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references. |
-| Track structure | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references. |
-| Clip time | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`. |
-| Editorial metadata | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`. |
-| Effects | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
+| Area                | Examples                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references.                                         |
+| Track structure     | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references.    |
+| Clip time           | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`.                     |
+| Editorial metadata  | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`.                 |
+| Effects             | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
 
 ## Why Invariants Exist
 
@@ -63,9 +63,7 @@ import { checkInvariants } from '@timelinx/core';
 const violations = checkInvariants(importedState);
 
 if (violations.length > 0) {
-  throw new Error(
-    violations.map((violation) => violation.message).join('\n'),
-  );
+  throw new Error(violations.map((violation) => violation.message).join('\n'));
 }
 ```
 

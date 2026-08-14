@@ -61,9 +61,18 @@ export function usePlayhead(engine: PlaybackEngine): UsePlayheadResult {
   const play = useCallback(() => engine.play(), [engine]);
   const pause = useCallback(() => engine.pause(), [engine]);
   const seekTo = useCallback((frame: TimelineFrame) => engine.seekTo(frame), [engine]);
-  const setPlaybackRate = useCallback((rate: PlaybackRate) => engine.setPlaybackRate(rate), [engine]);
-  const setQuality = useCallback((quality: PlaybackQuality) => engine.setQuality(quality), [engine]);
-  const setLoopRegion = useCallback((region: LoopRegion | null) => engine.setLoopRegion(region), [engine]);
+  const setPlaybackRate = useCallback(
+    (rate: PlaybackRate) => engine.setPlaybackRate(rate),
+    [engine],
+  );
+  const setQuality = useCallback(
+    (quality: PlaybackQuality) => engine.setQuality(quality),
+    [engine],
+  );
+  const setLoopRegion = useCallback(
+    (region: LoopRegion | null) => engine.setLoopRegion(region),
+    [engine],
+  );
   const setPreroll = useCallback((frames: number) => engine.setPreroll(frames), [engine]);
   const setPostroll = useCallback((frames: number) => engine.setPostroll(frames), [engine]);
   const seekToStart = useCallback(() => engine.seekToStart(), [engine]);
@@ -77,27 +86,42 @@ export function usePlayhead(engine: PlaybackEngine): UsePlayheadResult {
     else engine.play();
   }, [engine]);
 
-  return useMemo(() => ({
-    ...state,
-    play,
-    pause,
-    seekTo,
-    setPlaybackRate,
-    setQuality,
-    setLoopRegion,
-    setPreroll,
-    setPostroll,
-    seekToStart,
-    seekToEnd,
-    seekToNextClipBoundary,
-    seekToPrevClipBoundary,
-    seekToNextMarker,
-    seekToPrevMarker,
-    toggle,
-  }), [
-    state, play, pause, seekTo, setPlaybackRate, setQuality,
-    setLoopRegion, setPreroll, setPostroll, seekToStart, seekToEnd,
-    seekToNextClipBoundary, seekToPrevClipBoundary, seekToNextMarker,
-    seekToPrevMarker, toggle,
-  ]);
+  return useMemo(
+    () => ({
+      ...state,
+      play,
+      pause,
+      seekTo,
+      setPlaybackRate,
+      setQuality,
+      setLoopRegion,
+      setPreroll,
+      setPostroll,
+      seekToStart,
+      seekToEnd,
+      seekToNextClipBoundary,
+      seekToPrevClipBoundary,
+      seekToNextMarker,
+      seekToPrevMarker,
+      toggle,
+    }),
+    [
+      state,
+      play,
+      pause,
+      seekTo,
+      setPlaybackRate,
+      setQuality,
+      setLoopRegion,
+      setPreroll,
+      setPostroll,
+      seekToStart,
+      seekToEnd,
+      seekToNextClipBoundary,
+      seekToPrevClipBoundary,
+      seekToNextMarker,
+      seekToPrevMarker,
+      toggle,
+    ],
+  );
 }

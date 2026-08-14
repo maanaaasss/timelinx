@@ -22,10 +22,15 @@ import { TrackList, TimelineProvider } from '@timelinx/ui';
 <TimelineProvider engine={engine}>
   <TrackList
     trackHeights={{ v1: 80, a1: 68 }}
-    onTrackHeightChange={(id, h) => setHeights(prev => ({ ...prev, [id]: h }))}
-    clipCounts={new Map([['v1', 3], ['a1', 1]])}
+    onTrackHeightChange={(id, h) => setHeights((prev) => ({ ...prev, [id]: h }))}
+    clipCounts={
+      new Map([
+        ['v1', 3],
+        ['a1', 1],
+      ])
+    }
   />
-</TimelineProvider>
+</TimelineProvider>;
 ```
 
 ## Props

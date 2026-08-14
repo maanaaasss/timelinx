@@ -52,7 +52,12 @@ type OTIOItem = {
   name?: string;
   source_range?: OTIOTimeRange;
   media_reference?: OTIOMediaRef;
-  effects?: Array<{ name?: string; effect_name?: string; enabled?: boolean; metadata?: { params?: unknown[] } }>;
+  effects?: Array<{
+    name?: string;
+    effect_name?: string;
+    enabled?: boolean;
+    metadata?: { params?: unknown[] };
+  }>;
 };
 type OTIOTrack = { OTIO_SCHEMA?: string; kind?: string; children?: OTIOItem[] };
 type OTIODoc = {
@@ -164,7 +169,9 @@ export function importFromOTIO(doc: unknown, options?: OTIOImportOptions): Timel
               mediaType: trackType,
               generatorDef: {
                 id: toGeneratorId(assetIdStr),
-                type: (['solid', 'bars', 'countdown', 'noise', 'text'].includes(genKind) ? genKind : 'solid') as GeneratorType,
+                type: (['solid', 'bars', 'countdown', 'noise', 'text'].includes(genKind)
+                  ? genKind
+                  : 'solid') as GeneratorType,
                 params: {},
                 duration: toFrame(Math.max(1, durationFrames)),
                 name: genKind,

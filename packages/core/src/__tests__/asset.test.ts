@@ -37,9 +37,13 @@ describe('createAsset factory', () => {
 
   it('status defaults to "online"', () => {
     const asset = createAsset({
-      id: 'x', name: 'x', mediaType: 'audio',
-      filePath: '/a.wav', intrinsicDuration: toFrame(100),
-      nativeFps: 30, sourceTimecodeOffset: toFrame(0),
+      id: 'x',
+      name: 'x',
+      mediaType: 'audio',
+      filePath: '/a.wav',
+      intrinsicDuration: toFrame(100),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
     });
     expect(asset.status).toBe('online');
   });
@@ -48,9 +52,14 @@ describe('createAsset factory', () => {
     const statuses = ['online', 'offline', 'proxy-only', 'missing'] as const;
     for (const status of statuses) {
       const a = createAsset({
-        id: 's', name: 's', mediaType: 'video',
-        filePath: '/f.mp4', intrinsicDuration: toFrame(100),
-        nativeFps: 24, sourceTimecodeOffset: toFrame(0), status,
+        id: 's',
+        name: 's',
+        mediaType: 'video',
+        filePath: '/f.mp4',
+        intrinsicDuration: toFrame(100),
+        nativeFps: 24,
+        sourceTimecodeOffset: toFrame(0),
+        status,
       });
       expect(a.status).toBe(status);
     }
@@ -59,9 +68,13 @@ describe('createAsset factory', () => {
   it('supports all TrackType values as mediaType', () => {
     for (const t of ['video', 'audio', 'subtitle', 'title'] as const) {
       const a = createAsset({
-        id: t, name: t, mediaType: t,
-        filePath: '/f', intrinsicDuration: toFrame(1),
-        nativeFps: 24, sourceTimecodeOffset: toFrame(0),
+        id: t,
+        name: t,
+        mediaType: t,
+        filePath: '/f',
+        intrinsicDuration: toFrame(1),
+        nativeFps: 24,
+        sourceTimecodeOffset: toFrame(0),
       });
       expect(a.mediaType).toBe(t);
     }

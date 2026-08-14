@@ -16,7 +16,6 @@ import {
   createAsset,
   toFrame,
   toTimecode,
-  frameRate,
   toTrackId,
   toClipId,
   toAssetId,
@@ -27,7 +26,6 @@ import type { VirtualWindow } from '@timelinx/core';
 import { TimelineEngine } from '../engine';
 import {
   useTrackIds,
-  useTrack,
   useClip,
   useClips,
   useMarkers,
@@ -38,7 +36,7 @@ import {
   usePlayheadFrame,
   useIsPlaying,
 } from '../hooks/index';
-import { useVirtualWindow, useVisibleClips } from '../hooks/use-virtual-window';
+import { useVisibleClips } from '../hooks/use-virtual-window';
 import { createToolRouter } from '../adapter/tool-router';
 
 const FPS = 30;
@@ -204,11 +202,13 @@ function buildIntegrationEngine(): {
   return { engine, clock, tick };
 }
 
-function makePointerEvent(overrides: {
-  clientX?: number;
-  clientY?: number;
-  buttons?: number;
-} = {}): React.PointerEvent {
+function makePointerEvent(
+  overrides: {
+    clientX?: number;
+    clientY?: number;
+    buttons?: number;
+  } = {},
+): React.PointerEvent {
   return {
     clientX: overrides.clientX ?? 0,
     clientY: overrides.clientY ?? 0,
@@ -224,7 +224,9 @@ function makePointerEvent(overrides: {
   } as unknown as React.PointerEvent;
 }
 
-function makeKeyEvent(overrides: { key?: string; code?: string; shiftKey?: boolean } = {}): React.KeyboardEvent {
+function makeKeyEvent(
+  overrides: { key?: string; code?: string; shiftKey?: boolean } = {},
+): React.KeyboardEvent {
   return {
     key: overrides.key ?? ' ',
     code: overrides.code ?? 'Space',
@@ -275,7 +277,7 @@ describe('Integration — Edit + hooks round-trip', () => {
   it('2. dispatch MOVE_CLIP → useClip returns updated startFrame', () => {
     const clipId = 'v1-c1';
     const { result } = renderHook(() => useClip(engine, clipId));
-    expect((result.current!.timelineStart as number)).toBe(0);
+    expect(result.current!.timelineStart as number).toBe(0);
     act(() => {
       engine.dispatch({
         id: 'move',
@@ -286,7 +288,7 @@ describe('Integration — Edit + hooks round-trip', () => {
         ],
       });
     });
-    expect((result.current!.timelineStart as number)).toBe(100);
+    expect(result.current!.timelineStart as number).toBe(100);
   });
 
   it('3. dispatch DELETE_CLIP → useClips no longer contains deleted clip', () => {
@@ -376,7 +378,7 @@ describe('Integration — Edit + hooks round-trip', () => {
     act(() => {
       engine.undo();
     });
-    expect((result.current!.timelineStart as number)).toBe(originalStart);
+    expect(result.current!.timelineStart as number).toBe(originalStart);
   });
 
   it('8. redo() → useClip returns moved position', () => {
@@ -396,7 +398,7 @@ describe('Integration — Edit + hooks round-trip', () => {
     act(() => {
       engine.undo();
     });
-    expect((result.current!.timelineStart as number)).toBe(0);
+    expect(result.current!.timelineStart as number).toBe(0);
     let didRedo: boolean;
     act(() => {
       didRedo = engine.redo();
@@ -404,7 +406,7 @@ describe('Integration — Edit + hooks round-trip', () => {
     expect(didRedo).toBe(true);
     const clip = engine.getSnapshot().state.timeline.tracks[0]!.clips.find((c) => c.id === clipId);
     expect(clip!.timelineStart).toBe(newStart);
-    expect((result.current!.timelineStart as number)).toBe(newStart);
+    expect(result.current!.timelineStart as number).toBe(newStart);
   });
 
   it('9. dispatch ADD_MARKER → useMarkers updates', () => {
@@ -509,10 +511,7 @@ describe('Integration — Tool interaction round-trip', () => {
       engine.handlePointerDown(syntheticEvent, modifiers);
     });
     act(() => {
-      engine.handlePointerUp(
-        { ...syntheticEvent, buttons: 0 },
-        modifiers,
-      );
+      engine.handlePointerUp({ ...syntheticEvent, buttons: 0 }, modifiers);
     });
     expect(result.current.length).toBe(countBefore + 1);
   });
@@ -687,9 +686,7 @@ describe('Integration — Virtual rendering', () => {
         id: 'add',
         label: 'Add',
         timestamp: 0,
-        operations: [
-          { type: 'INSERT_CLIP', trackId: toTrackId('v1'), clip: newClip },
-        ],
+        operations: [{ type: 'INSERT_CLIP', trackId: toTrackId('v1'), clip: newClip }],
       });
     });
     expect(result.current.filter((e) => e.isVisible).length).toBe(countBefore + 1);
@@ -732,11 +729,11 @@ describe('Integration — Compression', () => {
         });
       }
     });
-    expect((result.current!.timelineStart as number)).toBe(originalStart + 50);
+    expect(result.current!.timelineStart as number).toBe(originalStart + 50);
     act(() => {
       engine.undo();
     });
-    expect((result.current!.timelineStart as number)).toBe(originalStart);
+    expect(result.current!.timelineStart as number).toBe(originalStart);
   });
 });
 
@@ -783,9 +780,7 @@ describe('Integration — Keyboard', () => {
       getPixelsPerFrame: () => PPF,
     });
     act(() => {
-      handlers.onKeyDown(
-        makeKeyEvent({ key: 'ArrowRight', code: 'ArrowRight', shiftKey: true }),
-      );
+      handlers.onKeyDown(makeKeyEvent({ key: 'ArrowRight', code: 'ArrowRight', shiftKey: true }));
     });
     expect(result.current).toBe(300);
   });

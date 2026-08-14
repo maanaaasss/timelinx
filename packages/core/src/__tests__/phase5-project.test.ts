@@ -4,13 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import {
-  createProject,
-  toProjectId,
-  createBin,
-  toBinId,
-  type BinItem,
-} from '../types/project';
+import { createProject, toProjectId, createBin, toBinId, type BinItem } from '../types/project';
 
 import {
   addTimeline,
@@ -89,7 +83,10 @@ describe('Phase 5 — addTimeline / removeTimeline', () => {
   });
 
   it('removeTimeline removes by timelineId', () => {
-    const p = createProject(toProjectId('p1'), 'P1', [makeTimelineState('a'), makeTimelineState('b')]);
+    const p = createProject(toProjectId('p1'), 'P1', [
+      makeTimelineState('a'),
+      makeTimelineState('b'),
+    ]);
     const next = removeTimeline(p, 'a');
     expect(next.timelines).toHaveLength(1);
     expect(next.timelines[0]!.timeline.id).toBe('b');
@@ -155,7 +152,9 @@ describe('Phase 5 — addItemToBin / removeItemFromBin / moveItemBetweenBins', (
 
   it('addItemToBin throws on missing bin', () => {
     const p = createProject(toProjectId('p1'), 'P1');
-    expect(() => addItemToBin(p, toBinId('missing'), { kind: 'asset', assetId: 'a' as any })).toThrow();
+    expect(() =>
+      addItemToBin(p, toBinId('missing'), { kind: 'asset', assetId: 'a' as any }),
+    ).toThrow();
   });
 
   it('removeItemFromBin removes matching item', () => {
@@ -167,7 +166,10 @@ describe('Phase 5 — addItemToBin / removeItemFromBin / moveItemBetweenBins', (
   });
 
   it('moveItemBetweenBins moves item correctly', () => {
-    const p0 = addBin(addBin(createProject(toProjectId('p1'), 'P1'), createBin(toBinId('a'), 'A')), createBin(toBinId('b'), 'B'));
+    const p0 = addBin(
+      addBin(createProject(toProjectId('p1'), 'P1'), createBin(toBinId('a'), 'A')),
+      createBin(toBinId('b'), 'B'),
+    );
     const item: BinItem = { kind: 'sequence', timelineId: 'tl-1' };
     const p1 = addItemToBin(p0, toBinId('a'), item);
     const next = moveItemBetweenBins(p1, toBinId('a'), toBinId('b'), item);
@@ -184,7 +186,10 @@ describe('Phase 5 — Project serializer', () => {
   });
 
   it('deserializeProject round-trips project', () => {
-    const p0 = createProject(toProjectId('p1'), 'P1', [makeTimelineState('tl-1'), makeTimelineState('tl-2')]);
+    const p0 = createProject(toProjectId('p1'), 'P1', [
+      makeTimelineState('tl-1'),
+      makeTimelineState('tl-2'),
+    ]);
     const p1 = addBin(p0, createBin(toBinId('b1'), 'Root'));
     const raw1 = serializeProject(p1);
     const restored = deserializeProject(raw1);
@@ -215,4 +220,3 @@ describe('Phase 5 — Project serializer', () => {
     expect(() => deserializeProject(JSON.stringify(parsed))).toThrow(SerializationError);
   });
 });
-

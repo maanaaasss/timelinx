@@ -27,7 +27,14 @@ export function getFriendlyTrackLabel(
   allTrackIds: readonly string[],
   trackTypes: Map<string, string>,
 ): string {
-  const prefix = type === 'video' ? 'Video' : type === 'audio' ? 'Audio' : type === 'subtitle' ? 'Subtitles' : 'Track';
+  const prefix =
+    type === 'video'
+      ? 'Video'
+      : type === 'audio'
+        ? 'Audio'
+        : type === 'subtitle'
+          ? 'Subtitles'
+          : 'Track';
   let idx = 1;
   for (const tid of allTrackIds) {
     if (tid === trackId) break;
@@ -44,9 +51,22 @@ export function rulerTickInterval(
   const TICK_MIN_GAP = 6;
 
   const candidates = [
-    1, 2, 5, 10, 15, 30,
-    fps, fps * 2, fps * 5, fps * 10, fps * 30, fps * 60, fps * 300,
-    fps * 600, fps * 1800, fps * 3600,
+    1,
+    2,
+    5,
+    10,
+    15,
+    30,
+    fps,
+    fps * 2,
+    fps * 5,
+    fps * 10,
+    fps * 30,
+    fps * 60,
+    fps * 300,
+    fps * 600,
+    fps * 1800,
+    fps * 3600,
   ];
 
   const major =

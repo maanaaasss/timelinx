@@ -12,10 +12,7 @@ import type { Clip } from '../types/clip';
 import type { TimelineState } from '../types/state';
 import type { Transaction } from '../types/operations';
 import type { HistoryEntry } from '../engine/history';
-import {
-  NO_COMPRESSION,
-  DEFAULT_COMPRESSION_POLICY,
-} from '../types/compression';
+import { NO_COMPRESSION, DEFAULT_COMPRESSION_POLICY } from '../types/compression';
 import { TransactionCompressor } from '../engine/transaction-compressor';
 import { HistoryStack } from '../engine/history';
 import { SerializationError } from '../engine/serialization-error';
@@ -135,7 +132,10 @@ describe('Phase 7 — HistoryStack compression', () => {
     stack.push(e0);
     stack.pushWithCompression(e1, e1.transaction);
     expect(stack.getCurrentState()?.timeline.name).toBe('S1');
-    stack.pushWithCompression(makeEntry(makeState('S2'), 'MOVE_CLIP'), makeEntry(makeState('S2'), 'MOVE_CLIP').transaction);
+    stack.pushWithCompression(
+      makeEntry(makeState('S2'), 'MOVE_CLIP'),
+      makeEntry(makeState('S2'), 'MOVE_CLIP').transaction,
+    );
     expect(stack.getCurrentState()?.timeline.name).toBe('S2');
   });
 
@@ -155,8 +155,14 @@ describe('Phase 7 — HistoryStack compression', () => {
     const clock = vi.fn().mockReturnValue(1000).mockReturnValueOnce(1000).mockReturnValueOnce(1100);
     const stack = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY, clock);
     stack.push(makeEntry(makeState('S0'), 'MOVE_CLIP'));
-    stack.pushWithCompression(makeEntry(makeState('S1'), 'MOVE_CLIP'), makeEntry(makeState('S1'), 'MOVE_CLIP').transaction);
-    stack.pushWithCompression(makeEntry(makeState('S2'), 'SET_IN_POINT'), makeEntry(makeState('S2'), 'SET_IN_POINT').transaction);
+    stack.pushWithCompression(
+      makeEntry(makeState('S1'), 'MOVE_CLIP'),
+      makeEntry(makeState('S1'), 'MOVE_CLIP').transaction,
+    );
+    stack.pushWithCompression(
+      makeEntry(makeState('S2'), 'SET_IN_POINT'),
+      makeEntry(makeState('S2'), 'SET_IN_POINT').transaction,
+    );
     expect(stack.getCurrentState()?.timeline.name).toBe('S2');
   });
 
@@ -164,8 +170,14 @@ describe('Phase 7 — HistoryStack compression', () => {
     const clock = vi.fn().mockReturnValue(1000).mockReturnValueOnce(1000).mockReturnValueOnce(1100);
     const stack = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY, clock);
     stack.push(makeEntry(makeState('S0'), 'MOVE_CLIP'));
-    stack.pushWithCompression(makeEntry(makeState('S1'), 'MOVE_CLIP'), makeEntry(makeState('S1'), 'MOVE_CLIP').transaction);
-    stack.pushWithCompression(makeEntry(makeState('S2'), 'MOVE_CLIP'), makeEntry(makeState('S2'), 'MOVE_CLIP').transaction);
+    stack.pushWithCompression(
+      makeEntry(makeState('S1'), 'MOVE_CLIP'),
+      makeEntry(makeState('S1'), 'MOVE_CLIP').transaction,
+    );
+    stack.pushWithCompression(
+      makeEntry(makeState('S2'), 'MOVE_CLIP'),
+      makeEntry(makeState('S2'), 'MOVE_CLIP').transaction,
+    );
     stack.undo();
     expect(stack.getCurrentState()?.timeline.name).toBe('S0');
   });
@@ -174,8 +186,14 @@ describe('Phase 7 — HistoryStack compression', () => {
     const clock = vi.fn().mockReturnValue(1000).mockReturnValueOnce(1000).mockReturnValueOnce(1100);
     const stack = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY, clock);
     stack.push(makeEntry(makeState('S0'), 'MOVE_CLIP'));
-    stack.pushWithCompression(makeEntry(makeState('S1'), 'MOVE_CLIP'), makeEntry(makeState('S1'), 'MOVE_CLIP').transaction);
-    stack.pushWithCompression(makeEntry(makeState('S2'), 'MOVE_CLIP'), makeEntry(makeState('S2'), 'MOVE_CLIP').transaction);
+    stack.pushWithCompression(
+      makeEntry(makeState('S1'), 'MOVE_CLIP'),
+      makeEntry(makeState('S1'), 'MOVE_CLIP').transaction,
+    );
+    stack.pushWithCompression(
+      makeEntry(makeState('S2'), 'MOVE_CLIP'),
+      makeEntry(makeState('S2'), 'MOVE_CLIP').transaction,
+    );
     stack.undo();
     stack.redo();
     expect(stack.getCurrentState()?.timeline.name).toBe('S2');

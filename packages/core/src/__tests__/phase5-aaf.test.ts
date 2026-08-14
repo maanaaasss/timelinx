@@ -132,7 +132,7 @@ describe('Phase 5 — AAF export', () => {
   it('one MasterMob per clip', () => {
     const state = makeAAFFixtureState();
     const aaf = exportToAAF(state);
-    const masterMobs = (aaf.match(/<MasterMob/g)) ?? [];
+    const masterMobs = aaf.match(/<MasterMob/g) ?? [];
     expect(masterMobs.length).toBe(5);
   });
 
@@ -146,7 +146,7 @@ describe('Phase 5 — AAF export', () => {
   it('CompositionMob has one TimelineMobSlot per track', () => {
     const state = makeAAFFixtureState();
     const aaf = exportToAAF(state);
-    const slots = (aaf.match(/<TimelineMobSlot slotID=/g)) ?? [];
+    const slots = aaf.match(/<TimelineMobSlot slotID=/g) ?? [];
     expect(slots.length).toBe(2);
   });
 

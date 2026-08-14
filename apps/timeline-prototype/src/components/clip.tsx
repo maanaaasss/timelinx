@@ -24,7 +24,15 @@ type DragMode = 'move' | 'trim-left' | 'trim-right';
 const SNAP_THRESHOLD_PX = 4;
 const MIN_DURATION_PX = 6;
 
-export function Clip({ clip, clipType, ppf, fps: _fps, isSelected, onSelect, onUpdate }: ClipProps) {
+export function Clip({
+  clip,
+  clipType,
+  ppf,
+  fps: _fps,
+  isSelected,
+  onSelect,
+  onUpdate,
+}: ClipProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [draftDelta, setDraftDelta] = useState(0);
   const [draftTrimStart, setDraftTrimStart] = useState(0);
@@ -116,7 +124,7 @@ export function Clip({ clip, clipType, ppf, fps: _fps, isSelected, onSelect, onU
         setSnapGuideX(Math.max(0, snapped) * ppf);
       } else if (drag.mode === 'trim-left') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
         const clamped = Math.min(snapped - drag.origStart, maxDelta);
@@ -124,7 +132,7 @@ export function Clip({ clip, clipType, ppf, fps: _fps, isSelected, onSelect, onU
         setSnapGuideX(Math.max(0, drag.origStart + clamped) * ppf);
       } else if (drag.mode === 'trim-right') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
         const clamped = Math.max(snapped - drag.origEnd, -maxDelta);
@@ -153,14 +161,14 @@ export function Clip({ clip, clipType, ppf, fps: _fps, isSelected, onSelect, onU
         newEnd = (snapped + (drag.origEnd - drag.origStart)) as TimelineFrame;
       } else if (drag.mode === 'trim-left') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
         const clamped = Math.min(snapped - drag.origStart, maxDelta);
         newStart = Math.max(0, drag.origStart + clamped) as TimelineFrame;
       } else if (drag.mode === 'trim-right') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
         const clamped = Math.max(snapped - drag.origEnd, -maxDelta);
@@ -222,10 +230,7 @@ export function Clip({ clip, clipType, ppf, fps: _fps, isSelected, onSelect, onU
         onPointerMove={isDragging ? handlePointerMove : undefined}
         onPointerUp={isDragging ? handlePointerUp : undefined}
       >
-        <div
-          className="tl-clip-move-zone"
-          onPointerDown={handleMovePointerDown}
-        />
+        <div className="tl-clip-move-zone" onPointerDown={handleMovePointerDown} />
         <span className="tl-clip-label">{clip.name ?? 'Untitled'}</span>
         <div
           className="tl-clip-trim-handle tl-clip-trim-handle--left"

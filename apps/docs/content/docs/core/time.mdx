@@ -6,7 +6,7 @@ icon: Clock
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-All positions, durations, and boundaries in `TimelineState` are stored as integer **frames**. There are no floats in the state model. This eliminates the class of bugs where sub-frame rounding errors accumulate across edits  - a clip split at frame 450 will always land exactly at frame 450.
+All positions, durations, and boundaries in `TimelineState` are stored as integer **frames**. There are no floats in the state model. This eliminates the class of bugs where sub-frame rounding errors accumulate across edits - a clip split at frame 450 will always land exactly at frame 450.
 
 ## `TimelineFrame`
 
@@ -22,13 +22,14 @@ A branded integer. The brand prevents accidentally passing a raw number (like a 
 import { toFrame } from '@timelinx/core';
 
 const start = toFrame(0);
-const end   = toFrame(300);  // 300 frames
+const end = toFrame(300); // 300 frames
 ```
 
-`toFrame()` does no conversion  - it only applies the brand. If you have a duration in seconds, convert first with `secondsToFrames()`.
+`toFrame()` does no conversion - it only applies the brand. If you have a duration in seconds, convert first with `secondsToFrames()`.
 
 <Callout title="When to use toFrame()">
-  Use `toFrame()` only when you know the value is already a frame count. For conversions from seconds or timecode, use the helpers below.
+  Use `toFrame()` only when you know the value is already a frame count. For conversions from
+  seconds or timecode, use the helpers below.
 </Callout>
 
 ---
@@ -37,31 +38,31 @@ const end   = toFrame(300);  // 300 frames
 
 ```ts
 type FrameRate = {
-  readonly num: number;  // numerator
-  readonly den: number;  // denominator
+  readonly num: number; // numerator
+  readonly den: number; // denominator
 };
 ```
 
 Frame rates are stored as rational fractions to represent drop-frame rates without floating-point loss:
 
-| Frame rate | Rational | `frameRate()` call |
-|-----------|----------|-------------------|
-| 24 fps | 24/1 | `frameRate(24)` |
-| 25 fps | 25/1 | `frameRate(25)` |
-| 30 fps | 30/1 | `frameRate(30)` |
+| Frame rate        | Rational   | `frameRate()` call       |
+| ----------------- | ---------- | ------------------------ |
+| 24 fps            | 24/1       | `frameRate(24)`          |
+| 25 fps            | 25/1       | `frameRate(25)`          |
+| 30 fps            | 30/1       | `frameRate(30)`          |
 | 23.976 fps (drop) | 24000/1001 | `frameRate(24000, 1001)` |
-| 29.97 fps (drop) | 30000/1001 | `frameRate(30000, 1001)` |
-| 59.94 fps (drop) | 60000/1001 | `frameRate(60000, 1001)` |
-| 60 fps | 60/1 | `frameRate(60)` |
+| 29.97 fps (drop)  | 30000/1001 | `frameRate(30000, 1001)` |
+| 59.94 fps (drop)  | 60000/1001 | `frameRate(60000, 1001)` |
+| 60 fps            | 60/1       | `frameRate(60)`          |
 
 **`frameRate(num, den?)` shorthand:**
 
 ```ts
 import { frameRate } from '@timelinx/core';
 
-const fps30     = frameRate(30);           // { num: 30, den: 1 }
-const fps2997   = frameRate(30000, 1001);  // { num: 30000, den: 1001 }
-const fps23976  = frameRate(24000, 1001);  // { num: 24000, den: 1001 }
+const fps30 = frameRate(30); // { num: 30, den: 1 }
+const fps2997 = frameRate(30000, 1001); // { num: 30000, den: 1001 }
+const fps23976 = frameRate(24000, 1001); // { num: 24000, den: 1001 }
 ```
 
 **Preset constants (`FrameRates`):**
@@ -69,13 +70,13 @@ const fps23976  = frameRate(24000, 1001);  // { num: 24000, den: 1001 }
 ```ts
 import { FrameRates } from '@timelinx/core';
 
-FrameRates.fps24     // { num: 24, den: 1 }
-FrameRates.fps25     // { num: 25, den: 1 }
-FrameRates.fps30     // { num: 30, den: 1 }
-FrameRates.fps2997   // { num: 30000, den: 1001 }
-FrameRates.fps23976  // { num: 24000, den: 1001 }
-FrameRates.fps60     // { num: 60, den: 1 }
-FrameRates.fps5994   // { num: 60000, den: 1001 }
+FrameRates.fps24; // { num: 24, den: 1 }
+FrameRates.fps25; // { num: 25, den: 1 }
+FrameRates.fps30; // { num: 30, den: 1 }
+FrameRates.fps2997; // { num: 30000, den: 1001 }
+FrameRates.fps23976; // { num: 24000, den: 1001 }
+FrameRates.fps60; // { num: 60, den: 1 }
+FrameRates.fps5994; // { num: 60000, den: 1001 }
 ```
 
 **`isDropFrame(fps)`:**
@@ -83,8 +84,8 @@ FrameRates.fps5994   // { num: 60000, den: 1001 }
 ```ts
 import { isDropFrame } from '@timelinx/core';
 
-isDropFrame(frameRate(30))           // false
-isDropFrame(frameRate(30000, 1001))  // true
+isDropFrame(frameRate(30)); // false
+isDropFrame(frameRate(30000, 1001)); // true
 ```
 
 Drop-frame rates have `den === 1001`. Non-integer frame rates use drop-frame timecode numbering to stay aligned with real-world clock time.
@@ -101,19 +102,19 @@ Convert a duration or position in seconds to frames:
 import { secondsToFrames, frameRate } from '@timelinx/core';
 
 const fps = frameRate(30);
-const frames = secondsToFrames(10, fps);  // 300 frames (10 × 30)
+const frames = secondsToFrames(10, fps); // 300 frames (10 × 30)
 const atHalf = secondsToFrames(0.5, fps); // 15 frames
 ```
 
-This is the most common conversion  - use it when accepting user input in seconds or reading audio durations from the browser's `AudioBuffer`.
+This is the most common conversion - use it when accepting user input in seconds or reading audio durations from the browser's `AudioBuffer`.
 
 ### `framesToSeconds(frames, fps)`
 
 ```ts
 import { framesToSeconds, toFrame, frameRate } from '@timelinx/core';
 
-framesToSeconds(toFrame(300), frameRate(30));  // 10.0
-framesToSeconds(toFrame(1),   frameRate(24));  // 0.0416...
+framesToSeconds(toFrame(300), frameRate(30)); // 10.0
+framesToSeconds(toFrame(1), frameRate(24)); // 0.0416...
 ```
 
 ### `framesToTimecode(frames, fps)`
@@ -123,10 +124,10 @@ Returns a display string in `HH:MM:SS:FF` format:
 ```ts
 import { framesToTimecode, toFrame, frameRate } from '@timelinx/core';
 
-framesToTimecode(toFrame(0),    frameRate(30));  // '00:00:00:00'
-framesToTimecode(toFrame(30),   frameRate(30));  // '00:00:01:00'
-framesToTimecode(toFrame(1799), frameRate(30));  // '00:00:59:29'
-framesToTimecode(toFrame(1800), frameRate(30));  // '00:01:00:00'
+framesToTimecode(toFrame(0), frameRate(30)); // '00:00:00:00'
+framesToTimecode(toFrame(30), frameRate(30)); // '00:00:01:00'
+framesToTimecode(toFrame(1799), frameRate(30)); // '00:00:59:29'
+framesToTimecode(toFrame(1800), frameRate(30)); // '00:01:00:00'
 ```
 
 Drop-frame rates use semicolon as the frame separator: `'00:01:00;02'` (frames 0 and 1 are skipped at minute boundaries).
@@ -136,17 +137,17 @@ Drop-frame rates use semicolon as the frame separator: `'00:01:00;02'` (frames 0
 ## `Timecode`
 
 ```ts
-type Timecode = string;  // display format, e.g. '01:00:00:00'
+type Timecode = string; // display format, e.g. '01:00:00:00'
 ```
 
-`Timecode` is a display type  - it is used as the `startTimecode` on a timeline (the origin offset shown in the ruler) and as human-readable output. All internal state positions use `TimelineFrame`.
+`Timecode` is a display type - it is used as the `startTimecode` on a timeline (the origin offset shown in the ruler) and as human-readable output. All internal state positions use `TimelineFrame`.
 
-**`toTimecode(frame, fps)`** converts a frame count to a `Timecode` string  - it is an alias for `framesToTimecode`:
+**`toTimecode(frame, fps)`** converts a frame count to a `Timecode` string - it is an alias for `framesToTimecode`:
 
 ```ts
 import { toTimecode, toFrame, frameRate } from '@timelinx/core';
 
-const tc = toTimecode(toFrame(3600), frameRate(30));  // '00:02:00:00'
+const tc = toTimecode(toFrame(3600), frameRate(30)); // '00:02:00:00'
 ```
 
 ---
@@ -179,7 +180,7 @@ const timeline = createTimeline({
   id: 'tl-1',
   name: 'My Edit',
   fps,
-  duration: secondsToFrames(600, fps),  // 10 minutes
+  duration: secondsToFrames(600, fps), // 10 minutes
 });
 ```
 

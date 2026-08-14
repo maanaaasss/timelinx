@@ -36,7 +36,7 @@ export function createTestClock(): {
   tick: (ms: number) => void;
   getCallbacks: () => ClockCallback[];
 } {
-  const pending: Array< { id: number; cb: ClockCallback }> = [];
+  const pending: Array<{ id: number; cb: ClockCallback }> = [];
   let idCounter = 0;
   let currentTime = 0;
 

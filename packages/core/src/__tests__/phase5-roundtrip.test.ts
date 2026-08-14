@@ -48,7 +48,11 @@ function makeTx(label: string, operations: OperationPrimitive[]): Transaction {
   return { id: `tx-${++txCounter}`, label, timestamp: Date.now(), operations };
 }
 
-function applyTx(state: ReturnType<typeof createTimelineState>, label: string, ops: OperationPrimitive[]) {
+function applyTx(
+  state: ReturnType<typeof createTimelineState>,
+  label: string,
+  ops: OperationPrimitive[],
+) {
   const result = dispatch(state, makeTx(label, ops));
   expect(result.accepted).toBe(true);
   if (!result.accepted) throw new Error(result.message);
@@ -77,10 +81,22 @@ function buildComplexState() {
   const audioTrack2Id = toTrackId('audioTrack2');
 
   state = applyTx(state, 'Add tracks', [
-    { type: 'ADD_TRACK', track: createTrack({ id: videoTrack1Id, name: 'V1', type: 'video', clips: [] }) },
-    { type: 'ADD_TRACK', track: createTrack({ id: videoTrack2Id, name: 'V2', type: 'video', clips: [] }) },
-    { type: 'ADD_TRACK', track: createTrack({ id: audioTrack1Id, name: 'A1', type: 'audio', clips: [] }) },
-    { type: 'ADD_TRACK', track: createTrack({ id: audioTrack2Id, name: 'A2', type: 'audio', clips: [] }) },
+    {
+      type: 'ADD_TRACK',
+      track: createTrack({ id: videoTrack1Id, name: 'V1', type: 'video', clips: [] }),
+    },
+    {
+      type: 'ADD_TRACK',
+      track: createTrack({ id: videoTrack2Id, name: 'V2', type: 'video', clips: [] }),
+    },
+    {
+      type: 'ADD_TRACK',
+      track: createTrack({ id: audioTrack1Id, name: 'A1', type: 'audio', clips: [] }),
+    },
+    {
+      type: 'ADD_TRACK',
+      track: createTrack({ id: audioTrack2Id, name: 'A2', type: 'audio', clips: [] }),
+    },
   ]);
 
   // Assets (3)
@@ -147,7 +163,10 @@ function buildComplexState() {
   state = applyTx(state, 'Set in/out + beat grid', [
     { type: 'SET_IN_POINT', frame: toFrame(30) },
     { type: 'SET_OUT_POINT', frame: toFrame(5370) },
-    { type: 'ADD_BEAT_GRID', beatGrid: { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) } },
+    {
+      type: 'ADD_BEAT_GRID',
+      beatGrid: { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) },
+    },
   ]);
 
   // Clips (6 total)
@@ -401,9 +420,7 @@ describe('Phase 5 — Round-trip gate', () => {
   it('effect on clip1 preserved (keyframes intact)', () => {
     const { state, ids } = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
-    const clip1 = round.timeline.tracks
-      .flatMap((t) => t.clips)
-      .find((c) => c.id === ids.clip1Id)!;
+    const clip1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === ids.clip1Id)!;
     expect(clip1.effects).toBeDefined();
     expect(clip1.effects![0]!.effectType).toBe('blur');
     expect(clip1.effects![0]!.keyframes).toHaveLength(2);
@@ -529,14 +546,21 @@ describe('Phase 5 — Round-trip gate', () => {
   it('exportToAAF contains MasterMob for each of the 6 clips', () => {
     const { state, ids } = buildComplexState();
     const xml = exportToAAF(state);
-    const clipIds: ClipId[] = [ids.clip1Id, ids.clip2Id, ids.clip3Id, ids.clip4Id, ids.clip5Id, ids.clip6Id];
+    const clipIds: ClipId[] = [
+      ids.clip1Id,
+      ids.clip2Id,
+      ids.clip3Id,
+      ids.clip4Id,
+      ids.clip5Id,
+      ids.clip6Id,
+    ];
     clipIds.forEach((id) => expect(xml).toContain(`mobID="${id}"`));
   });
 
   it('CompositionMob has 4 TimelineMobSlots', () => {
     const { state } = buildComplexState();
     const xml = exportToAAF(state);
-    const slots = (xml.match(/<TimelineMobSlot slotID=/g)) ?? [];
+    const slots = xml.match(/<TimelineMobSlot slotID=/g) ?? [];
     expect(slots).toHaveLength(4);
   });
 
@@ -641,4 +665,3 @@ function makeMinimalTimelineState(timelineId: string) {
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[asset.id, asset]]) });
 }
-

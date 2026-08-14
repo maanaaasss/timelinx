@@ -26,10 +26,7 @@ export function getMarkerAnchor(marker: Marker): TimelineFrame {
  * Returns the media-space frame for a clip at the given timeline frame.
  * mediaFrame = timelineFrame - clip.timelineStart + clip.mediaIn
  */
-export function mediaFrameForClip(
-  clip: Clip,
-  timelineFrame: TimelineFrame,
-): TimelineFrame {
+export function mediaFrameForClip(clip: Clip, timelineFrame: TimelineFrame): TimelineFrame {
   const t = timelineFrame as number;
   const start = clip.timelineStart as number;
   const mediaIn = (clip.mediaIn ?? toFrame(0)) as number;
@@ -143,10 +140,7 @@ export function findPrevClipBoundary(
  * Returns the marker with the smallest anchor strictly after fromFrame.
  * Point markers use .frame; range markers use .frameStart as anchor.
  */
-export function findNextMarker(
-  state: TimelineState,
-  fromFrame: TimelineFrame,
-): Marker | null {
+export function findNextMarker(state: TimelineState, fromFrame: TimelineFrame): Marker | null {
   const from = fromFrame as number;
   let best: Marker | null = null;
   let bestAnchor = Infinity;
@@ -163,10 +157,7 @@ export function findNextMarker(
 /**
  * Returns the marker with the largest anchor strictly before fromFrame.
  */
-export function findPrevMarker(
-  state: TimelineState,
-  fromFrame: TimelineFrame,
-): Marker | null {
+export function findPrevMarker(state: TimelineState, fromFrame: TimelineFrame): Marker | null {
   const from = fromFrame as number;
   let best: Marker | null = null;
   let bestAnchor = -Infinity;

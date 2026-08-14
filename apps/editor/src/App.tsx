@@ -34,14 +34,16 @@ function App() {
       <ReactTimelineProvider engine={engine}>
         <TimelineProvider engine={engine}>
           <div style={{ display: 'flex', width: '100vw', height: '100vh', position: 'relative' }}>
-            <div style={{
-              position: 'absolute',
-              top: 8,
-              right: 296,
-              zIndex: 1000,
-              display: 'flex',
-              gap: 6,
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 296,
+                zIndex: 1000,
+                display: 'flex',
+                gap: 6,
+              }}
+            >
               <button
                 onClick={isDemoMode ? handleLoadBlank : handleLoadDemo}
                 style={{
@@ -60,11 +62,7 @@ function App() {
               </button>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <TimelineLayout
-                showToolbar={true}
-                showRuler={true}
-                showStatusBar={true}
-              />
+              <TimelineLayout showToolbar={true} showRuler={true} showStatusBar={true} />
             </div>
             <RightPanel />
           </div>

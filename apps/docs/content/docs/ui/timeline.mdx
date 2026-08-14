@@ -7,20 +7,30 @@ description: Frame-accurate video timeline component with clips, playhead, and k
 
 ```tsx
 import { TimelineLayout, TimelineProvider } from '@timelinx/ui';
-import { TimelineEngine, createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
+import {
+  TimelineEngine,
+  createTimeline,
+  createTimelineState,
+  toFrame,
+  frameRate,
+} from '@timelinx/core';
 import { TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 
 function Editor() {
-  const engine = useMemo(() => new TimelineEngine({
-    initialState: createTimelineState({
-      timeline: createTimeline({
-        id: 'tl-1',
-        name: 'My Timeline',
-        fps: frameRate(30),
-        duration: toFrame(9000),
+  const engine = useMemo(
+    () =>
+      new TimelineEngine({
+        initialState: createTimelineState({
+          timeline: createTimeline({
+            id: 'tl-1',
+            name: 'My Timeline',
+            fps: frameRate(30),
+            duration: toFrame(9000),
+          }),
+        }),
       }),
-    }),
-  }), []);
+    [],
+  );
 
   return (
     <ReactTimelineProvider engine={engine}>
@@ -34,22 +44,22 @@ function Editor() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | `string` | — | Additional CSS class |
-| `showToolbar` | `boolean` | `true` | Show toolbar with tool buttons, timecode, and zoom |
-| `showRuler` | `boolean` | `true` | Show time ruler with tick marks |
-| `showStatusBar` | `boolean` | `true` | Show status bar with frame info |
+| Prop            | Type      | Default | Description                                        |
+| --------------- | --------- | ------- | -------------------------------------------------- |
+| `className`     | `string`  | —       | Additional CSS class                               |
+| `showToolbar`   | `boolean` | `true`  | Show toolbar with tool buttons, timecode, and zoom |
+| `showRuler`     | `boolean` | `true`  | Show time ruler with tick marks                    |
+| `showStatusBar` | `boolean` | `true`  | Show status bar with frame info                    |
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Space` | Play/Pause |
+| Key       | Action                                   |
+| --------- | ---------------------------------------- |
+| `Space`   | Play/Pause                               |
 | `←` / `→` | Nudge playhead ±1 frame (±10 with Shift) |
-| `↑` / `↓` | Nudge selected clip ±1 frame |
-| `Delete` | Remove selected clip |
-| `+` / `-` | Zoom in/out |
+| `↑` / `↓` | Nudge selected clip ±1 frame             |
+| `Delete`  | Remove selected clip                     |
+| `+` / `-` | Zoom in/out                              |
 
 ## Features
 

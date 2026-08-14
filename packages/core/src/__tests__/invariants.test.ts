@@ -19,7 +19,7 @@ import { toFrame, FrameRates, toTimecode } from '../types/frame';
 function makeBaseState() {
   const assetId = toAssetId('asset-1');
   const trackId = toTrackId('track-1');
-  const clipId  = toClipId('clip-1');
+  const clipId = toClipId('clip-1');
 
   const asset = createAsset({
     id: 'asset-1',
@@ -123,13 +123,13 @@ describe('checkInvariants — OVERLAP', () => {
       mediaOut: toFrame(150),
     });
 
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
     const violations = checkInvariants(badState);
     expect(violations.length).toBeGreaterThanOrEqual(1);
-    expect(violations.some(v => v.type === 'OVERLAP')).toBe(true);
+    expect(violations.some((v) => v.type === 'OVERLAP')).toBe(true);
   });
 
   it('does NOT flag adjacent clips [0..100] and [100..200]', () => {
@@ -143,8 +143,8 @@ describe('checkInvariants — OVERLAP', () => {
       mediaIn: toFrame(0),
       mediaOut: toFrame(100),
     });
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t,
     );
     const s = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
     expect(checkInvariants(s)).toEqual([]);
@@ -163,12 +163,14 @@ describe('checkInvariants — ASSET_MISSING', () => {
       mediaIn: toFrame(0),
       mediaOut: toFrame(100),
     });
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, clip2] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'ASSET_MISSING' && v.entityId === 'clip-ghost')).toBe(true);
+    expect(violations.some((v) => v.type === 'ASSET_MISSING' && v.entityId === 'clip-ghost')).toBe(
+      true,
+    );
   });
 });
 
@@ -185,12 +187,12 @@ describe('checkInvariants — MEDIA_BOUNDS_INVALID', () => {
       mediaIn: toFrame(0),
       mediaOut: toFrame(700), // > intrinsicDuration(600)
     });
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClip] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClip] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'MEDIA_BOUNDS_INVALID')).toBe(true);
+    expect(violations.some((v) => v.type === 'MEDIA_BOUNDS_INVALID')).toBe(true);
   });
 
   it('flags a clip with mediaIn < 0', () => {
@@ -201,16 +203,16 @@ describe('checkInvariants — MEDIA_BOUNDS_INVALID', () => {
       trackId: 'track-1',
       timelineStart: toFrame(200),
       timelineEnd: toFrame(300),
-      mediaIn: toFrame(0),  // will be manually cast below
+      mediaIn: toFrame(0), // will be manually cast below
       mediaOut: toFrame(100),
     });
     // Force negative mediaIn by type cast (testing invariant checker, not factory)
     const badClipNeg = { ...badClip, mediaIn: -5 as ReturnType<typeof toFrame> };
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClipNeg] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClipNeg] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
-    expect(checkInvariants(badState).some(v => v.type === 'MEDIA_BOUNDS_INVALID')).toBe(true);
+    expect(checkInvariants(badState).some((v) => v.type === 'MEDIA_BOUNDS_INVALID')).toBe(true);
   });
 });
 
@@ -231,7 +233,7 @@ describe('checkInvariants — TRACK_TYPE_MISMATCH', () => {
     const audioClip = createClip({
       id: 'clip-audio-on-video',
       assetId: 'audio-asset',
-      trackId: 'track-1',  // track-1 is a VIDEO track
+      trackId: 'track-1', // track-1 is a VIDEO track
       timelineStart: toFrame(200),
       timelineEnd: toFrame(400),
       mediaIn: toFrame(0),
@@ -239,15 +241,15 @@ describe('checkInvariants — TRACK_TYPE_MISMATCH', () => {
     });
     const newRegistry = new Map(state.assetRegistry);
     newRegistry.set(assetId, audioAsset);
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, audioClip] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, audioClip] } : t,
     );
     const badState = {
       ...state,
       assetRegistry: newRegistry,
       timeline: { ...state.timeline, tracks: newTracks },
     };
-    expect(checkInvariants(badState).some(v => v.type === 'TRACK_TYPE_MISMATCH')).toBe(true);
+    expect(checkInvariants(badState).some((v) => v.type === 'TRACK_TYPE_MISMATCH')).toBe(true);
   });
 });
 
@@ -263,11 +265,11 @@ describe('checkInvariants — CLIP_BEYOND_TIMELINE', () => {
       mediaIn: toFrame(0),
       mediaOut: toFrame(200),
     });
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClip] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [...t.clips, badClip] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
-    expect(checkInvariants(badState).some(v => v.type === 'CLIP_BEYOND_TIMELINE')).toBe(true);
+    expect(checkInvariants(badState).some((v) => v.type === 'CLIP_BEYOND_TIMELINE')).toBe(true);
   });
 });
 
@@ -276,10 +278,10 @@ describe('checkInvariants — SPEED_INVALID', () => {
     const state = makeBaseState();
     const clipFromState = state.timeline.tracks[0]!.clips[0]!;
     const badClip = { ...clipFromState, speed: -1 };
-    const newTracks = state.timeline.tracks.map(t =>
-      t.id === 'track-1' ? { ...t, clips: [badClip] } : t
+    const newTracks = state.timeline.tracks.map((t) =>
+      t.id === 'track-1' ? { ...t, clips: [badClip] } : t,
     );
     const badState = { ...state, timeline: { ...state.timeline, tracks: newTracks } };
-    expect(checkInvariants(badState).some(v => v.type === 'SPEED_INVALID')).toBe(true);
+    expect(checkInvariants(badState).some((v) => v.type === 'SPEED_INVALID')).toBe(true);
   });
 });

@@ -16,23 +16,23 @@ type Transaction = {
 
 ## Key Properties
 
-| Property | Meaning |
-|----------|---------|
-| Atomic | If any primitive rejects, none of the transaction is committed. Callers keep rendering the previous state. |
-| Ordered | Operations apply in array order. Later operations validate against the rolling state from earlier operations. |
+| Property         | Meaning                                                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Atomic           | If any primitive rejects, none of the transaction is committed. Callers keep rendering the previous state.                         |
+| Ordered          | Operations apply in array order. Later operations validate against the rolling state from earlier operations.                      |
 | History-friendly | One accepted transaction should become one history entry. A split, ripple trim, or paste operation should undo as one user action. |
-| Serializable | Transactions are plain data. They can be logged, tested, compressed, replayed, or produced by tools and AI suggestion layers. |
+| Serializable     | Transactions are plain data. They can be logged, tested, compressed, replayed, or produced by tools and AI suggestion layers.      |
 
 ## Operation Groups
 
-| Group | Operations |
-|-------|------------|
-| Clip | `MOVE_CLIP`, `RESIZE_CLIP`, `SLICE_CLIP`, `DELETE_CLIP`, `INSERT_CLIP`, `SET_MEDIA_BOUNDS`, `SET_CLIP_*`. |
-| Track | `ADD_TRACK`, `DELETE_TRACK`, `REORDER_TRACK`, `SET_TRACK_HEIGHT`, `SET_TRACK_NAME`, blend and opacity updates. |
-| Asset | `REGISTER_ASSET`, `UNREGISTER_ASSET`, `SET_ASSET_STATUS`. |
-| Timeline | `RENAME_TIMELINE`, `SET_TIMELINE_DURATION`, `SET_TIMELINE_START_TC`, `SET_SEQUENCE_SETTINGS`. |
-| Markers and ranges | Marker operations, in/out points, and beat grid operations. |
-| Creative metadata | Captions, effects, keyframes, transitions, link groups, track groups, transform, and audio properties. |
+| Group              | Operations                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Clip               | `MOVE_CLIP`, `RESIZE_CLIP`, `SLICE_CLIP`, `DELETE_CLIP`, `INSERT_CLIP`, `SET_MEDIA_BOUNDS`, `SET_CLIP_*`.      |
+| Track              | `ADD_TRACK`, `DELETE_TRACK`, `REORDER_TRACK`, `SET_TRACK_HEIGHT`, `SET_TRACK_NAME`, blend and opacity updates. |
+| Asset              | `REGISTER_ASSET`, `UNREGISTER_ASSET`, `SET_ASSET_STATUS`.                                                      |
+| Timeline           | `RENAME_TIMELINE`, `SET_TIMELINE_DURATION`, `SET_TIMELINE_START_TC`, `SET_SEQUENCE_SETTINGS`.                  |
+| Markers and ranges | Marker operations, in/out points, and beat grid operations.                                                    |
+| Creative metadata  | Captions, effects, keyframes, transitions, link groups, track groups, transform, and audio properties.         |
 
 These primitives are intentionally lower-level than UI actions. A UI action can map to one primitive or many.
 
@@ -41,9 +41,7 @@ These primitives are intentionally lower-level than UI actions. A UI action can 
 Split a clip by replacing it with two clips in one transaction:
 
 ```ts
-const mediaSplit = toFrame(
-  original.mediaIn + (splitFrame - original.timelineStart),
-);
+const mediaSplit = toFrame(original.mediaIn + (splitFrame - original.timelineStart));
 
 const result = dispatch(state, {
   id: 'tx-split-clip',

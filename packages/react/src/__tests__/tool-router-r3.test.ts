@@ -5,7 +5,6 @@
  * Mock React.PointerEvent / React.KeyboardEvent with plain objects.
  */
 
-import type { PointerEvent as ReactPointerEvent, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import {
@@ -18,7 +17,6 @@ import {
   toTimecode,
   frameRate,
   toTrackId,
-  toAssetId,
   NoOpTool,
 } from '@timelinx/core';
 import type { VirtualWindow } from '@timelinx/core';
@@ -83,13 +81,15 @@ let engine: TimelineEngine;
 const ppf = 10;
 let scrollLeft = 0;
 
-function makeReactPointerEvent(overrides: Partial<{
-  clientX: number;
-  clientY: number;
-  buttons: number;
-  shiftKey: boolean;
-  ctrlKey: boolean;
-}> = {}): React.PointerEvent {
+function makeReactPointerEvent(
+  overrides: Partial<{
+    clientX: number;
+    clientY: number;
+    buttons: number;
+    shiftKey: boolean;
+    ctrlKey: boolean;
+  }> = {},
+): React.PointerEvent {
   return {
     clientX: overrides.clientX ?? 50,
     clientY: overrides.clientY ?? 24,
@@ -105,12 +105,14 @@ function makeReactPointerEvent(overrides: Partial<{
   } as unknown as React.PointerEvent;
 }
 
-function makeReactKeyEvent(overrides: Partial<{
-  key: string;
-  code: string;
-  shiftKey: boolean;
-  preventDefault: () => void;
-}> = {}): React.KeyboardEvent {
+function makeReactKeyEvent(
+  overrides: Partial<{
+    key: string;
+    code: string;
+    shiftKey: boolean;
+    preventDefault: () => void;
+  }> = {},
+): React.KeyboardEvent {
   return {
     key: overrides.key ?? 'x',
     code: overrides.code ?? 'KeyX',
@@ -242,9 +244,7 @@ describe('createToolRouter', () => {
   it('10. Modifiers (shiftKey, ctrlKey) passed through', () => {
     const router = createToolRouter({ engine, getPixelsPerFrame: () => ppf });
     const spy = vi.spyOn(engine, 'handlePointerDown');
-    router.onPointerDown(
-      makeReactPointerEvent({ shiftKey: true, ctrlKey: true }),
-    );
+    router.onPointerDown(makeReactPointerEvent({ shiftKey: true, ctrlKey: true }));
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy.mock.calls[0]![1]).toEqual({
       shift: true,
@@ -260,11 +260,10 @@ describe('createToolRouter', () => {
 describe('useToolRouter', () => {
   it('11. Returns stable handlers reference across re-renders (same engine)', () => {
     const getPixelsPerFrame = () => ppf;
-    const { result, rerender } = renderHook(
-      () =>
-        useToolRouter(engine, {
-          getPixelsPerFrame,
-        }),
+    const { result, rerender } = renderHook(() =>
+      useToolRouter(engine, {
+        getPixelsPerFrame,
+      }),
     );
     const first = result.current;
     rerender();
@@ -278,8 +277,7 @@ describe('useToolRouter', () => {
       defaultToolId: 'noop',
     });
     const { result, rerender } = renderHook(
-      ({ eng }) =>
-        useToolRouter(eng, { getPixelsPerFrame: () => ppf }),
+      ({ eng }) => useToolRouter(eng, { getPixelsPerFrame: () => ppf }),
       { initialProps: { eng: engine } },
     );
     const first = result.current;
@@ -292,9 +290,7 @@ describe('useToolRouter', () => {
 
 describe('useVirtualWindow', () => {
   it('13. Returns correct startFrame and endFrame for given viewport/scroll/ppf', () => {
-    const { result } = renderHook(() =>
-      useVirtualWindow(engine, 100, 0, 10),
-    );
+    const { result } = renderHook(() => useVirtualWindow(engine, 100, 0, 10));
     expect(result.current.startFrame).toBe(0);
     expect(result.current.endFrame).toBe(10);
     expect(result.current.pixelsPerFrame).toBe(10);
@@ -302,8 +298,7 @@ describe('useVirtualWindow', () => {
 
   it('14. Returns new window when scrollLeft changes', () => {
     const { result, rerender } = renderHook(
-      ({ scroll }: { scroll: number }) =>
-        useVirtualWindow(engine, 100, scroll, 10),
+      ({ scroll }: { scroll: number }) => useVirtualWindow(engine, 100, scroll, 10),
       { initialProps: { scroll: 0 } },
     );
     const w0 = result.current;
@@ -313,9 +308,7 @@ describe('useVirtualWindow', () => {
   });
 
   it('15. Returns same reference when nothing changes', () => {
-    const { result, rerender } = renderHook(() =>
-      useVirtualWindow(engine, 100, 0, 10),
-    );
+    const { result, rerender } = renderHook(() => useVirtualWindow(engine, 100, 0, 10));
     const w0 = result.current;
     rerender();
     expect(result.current).toBe(w0);
@@ -361,9 +354,7 @@ describe('useVisibleClips', () => {
         id: 'add',
         label: 'Add clip',
         timestamp: 0,
-        operations: [
-          { type: 'INSERT_CLIP', trackId: toTrackId('track-1'), clip: newClip },
-        ],
+        operations: [{ type: 'INSERT_CLIP', trackId: toTrackId('track-1'), clip: newClip }],
       });
     });
     expect(dispatched!.accepted).toBe(true);

@@ -7,7 +7,16 @@ import type { ClipId, Effect, Keyframe, KeyframeId, EffectId } from '@timelinx/c
 
 function KeyframesIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="6" cy="12" r="3" />
       <circle cx="18" cy="12" r="3" />
       <line x1="9" y1="12" x2="15" y2="12" />
@@ -46,29 +55,36 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
       id: `add-keyframe-${Date.now()}`,
       label: 'Add keyframe',
       timestamp: Date.now(),
-      operations: [{
-        type: 'ADD_KEYFRAME',
-        clipId: selectedClipId as ClipId,
-        effectId: selectedEffect.id,
-        keyframe,
-      }],
+      operations: [
+        {
+          type: 'ADD_KEYFRAME',
+          clipId: selectedClipId as ClipId,
+          effectId: selectedEffect.id,
+          keyframe,
+        },
+      ],
     });
   }, [engine, selectedClipId, selectedEffect, playheadFrame]);
 
-  const handleDeleteKeyframe = useCallback((keyframeId: string) => {
-    if (!selectedClipId || !selectedEffect) return;
-    engine.dispatch({
-      id: `delete-keyframe-${Date.now()}`,
-      label: 'Delete keyframe',
-      timestamp: Date.now(),
-      operations: [{
-        type: 'DELETE_KEYFRAME',
-        clipId: selectedClipId as ClipId,
-        effectId: selectedEffect.id,
-        keyframeId: keyframeId as KeyframeId,
-      }],
-    });
-  }, [engine, selectedClipId, selectedEffect]);
+  const handleDeleteKeyframe = useCallback(
+    (keyframeId: string) => {
+      if (!selectedClipId || !selectedEffect) return;
+      engine.dispatch({
+        id: `delete-keyframe-${Date.now()}`,
+        label: 'Delete keyframe',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'DELETE_KEYFRAME',
+            clipId: selectedClipId as ClipId,
+            effectId: selectedEffect.id,
+            keyframeId: keyframeId as KeyframeId,
+          },
+        ],
+      });
+    },
+    [engine, selectedClipId, selectedEffect],
+  );
 
   if (!selectedClipId) {
     return (
@@ -105,11 +121,7 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
     <div className={`inspector-panel${className ? ` ${className}` : ''}`}>
       <div className="panel-header">
         <h3 className="panel-title">Keyframes</h3>
-        <button
-          className="panel-action-btn"
-          disabled={!selectedEffect}
-          onClick={handleAddKeyframe}
-        >
+        <button className="panel-action-btn" disabled={!selectedEffect} onClick={handleAddKeyframe}>
           + Add
         </button>
       </div>
@@ -122,7 +134,9 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
             onChange={(e) => setSelectedEffectIdx(Number(e.target.value))}
           >
             {effects.map((ef, i) => (
-              <option key={ef.id} value={i}>{ef.effectType} ({(ef.id as string).slice(0, 8)})</option>
+              <option key={ef.id} value={i}>
+                {ef.effectType} ({(ef.id as string).slice(0, 8)})
+              </option>
             ))}
           </select>
         </div>
@@ -134,22 +148,24 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
           </div>
         ) : (
           <ul className="keyframe-list">
-            {[...keyframes].sort((a, b) => (a.frame as number) - (b.frame as number)).map((kf) => (
-              <li key={kf.id as string} className="keyframe-item">
-                <div className="keyframe-info">
-                  <span className="keyframe-frame">f{String(kf.frame)}</span>
-                  <span className="keyframe-value">{kf.value.toFixed(2)}</span>
-                  <span className="keyframe-easing">{kf.easing.kind}</span>
-                </div>
-                <button
-                  className="keyframe-delete-btn"
-                  title="Delete keyframe"
-                  onClick={() => handleDeleteKeyframe(kf.id as string)}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
+            {[...keyframes]
+              .sort((a, b) => (a.frame as number) - (b.frame as number))
+              .map((kf) => (
+                <li key={kf.id as string} className="keyframe-item">
+                  <div className="keyframe-info">
+                    <span className="keyframe-frame">f{String(kf.frame)}</span>
+                    <span className="keyframe-value">{kf.value.toFixed(2)}</span>
+                    <span className="keyframe-easing">{kf.easing.kind}</span>
+                  </div>
+                  <button
+                    className="keyframe-delete-btn"
+                    title="Delete keyframe"
+                    onClick={() => handleDeleteKeyframe(kf.id as string)}
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
           </ul>
         )}
       </div>

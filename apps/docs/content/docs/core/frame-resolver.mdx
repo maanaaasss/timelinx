@@ -6,11 +6,11 @@ icon: Search
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Frame resolution is the process of answering "what clips are active at frame N?" This feeds the playback compositor, virtual rendering, and navigation (next/prev clip boundary). The helpers in this section are pure functions  - they read from state and return results without side effects.
+Frame resolution is the process of answering "what clips are active at frame N?" This feeds the playback compositor, virtual rendering, and navigation (next/prev clip boundary). The helpers in this section are pure functions - they read from state and return results without side effects.
 
 ## `resolveFrame(state, frame)`
 
-Returns the compositor request for a given timeline frame  - every clip active at that position, in track order, with media frames calculated:
+Returns the compositor request for a given timeline frame - every clip active at that position, in track order, with media frames calculated:
 
 ```ts
 import { resolveFrame } from '@timelinx/core';
@@ -33,7 +33,7 @@ type ResolvedLayer = {
   readonly clipId: ClipId;
   readonly trackId: TrackId;
   readonly trackIndex: number;
-  readonly mediaFrame: TimelineFrame;  // frame in asset to decode
+  readonly mediaFrame: TimelineFrame; // frame in asset to decode
   readonly transform: ClipTransform;
   readonly opacity: number;
   readonly blendMode: string;
@@ -71,7 +71,7 @@ import { getClipsAtFrame } from '@timelinx/core';
 const activeClips = getClipsAtFrame(track, playheadFrame);
 ```
 
-A clip is active if `clip.timelineStart <= frame < clip.timelineEnd`. Disabled clips (`enabled: false`) are included  - callers decide whether to skip them.
+A clip is active if `clip.timelineStart <= frame < clip.timelineEnd`. Disabled clips (`enabled: false`) are included - callers decide whether to skip them.
 
 ---
 
@@ -171,8 +171,8 @@ Long timelines can have thousands of clips. Only render the clips visible in the
 type VirtualWindow = {
   readonly startFrame: TimelineFrame;
   readonly endFrame: TimelineFrame;
-  readonly vpWidth: number;  // viewport width in pixels
-  readonly ppf: number;      // pixels per frame (zoom)
+  readonly vpWidth: number; // viewport width in pixels
+  readonly ppf: number; // pixels per frame (zoom)
 };
 ```
 
@@ -202,5 +202,6 @@ const { startFrame, endFrame } = getVisibleFrameRange(state, window);
 Use these to drive `useVisibleClips()` from `@timelinx/react`, which subscribes to engine state changes and returns only the clips in the current viewport.
 
 <Callout title="Virtual rendering is opt-in">
-  `TimelineEditor` from `@timelinx/ui` handles virtual rendering automatically. You only need these helpers when building a custom timeline canvas.
+  `TimelineEditor` from `@timelinx/ui` handles virtual rendering automatically. You only need these
+  helpers when building a custom timeline canvas.
 </Callout>

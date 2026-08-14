@@ -51,30 +51,30 @@ function TimelineView() {
 
 All hooks accept an optional `engine` argument for use outside `TimelineProvider`. Inside the provider, they read from context automatically.
 
-| Hook | Returns | Re-renders when |
-|------|---------|-----------------|
-| `useEngine()` | `TimelineEngine` | — (stable ref) |
-| `useTimeline(engine?)` | `Timeline` | timeline metadata changes |
-| `useTrackIds(engine?)` | `string[]` | tracks added/removed/reordered |
-| `useTrack(engine?, trackId)` | `Track \| null` | that track changes |
-| `useClip(engine?, clipId)` | `Clip \| null` | that clip changes |
-| `useClips(engine?, trackId)` | `Clip[]` | any clip on track changes |
-| `useMarkers(engine?)` | `Marker[]` | markers change |
-| `useHistory(engine?)` | `{ canUndo, canRedo }` | history changes |
-| `usePlayheadFrame(engine?)` | `TimelineFrame` | every frame tick |
-| `useIsPlaying(engine?)` | `boolean` | play/pause toggle |
-| `useActiveToolId(engine?)` | `string` | tool switch |
-| `useActiveTool(engine?)` | `ITool` | tool switch |
-| `useProvisional(engine?)` | `ProvisionalState \| null` | drag preview |
-| `useSelectedClipIds(engine?)` | `ReadonlySet<string>` | selection changes |
-| `useCursor(engine?)` | `string` | cursor style changes |
-| `useCanUndo(engine?)` | `boolean` | undo availability |
-| `useCanRedo(engine?)` | `boolean` | redo availability |
-| `useChange(engine?)` | `StateChange` | any state diff |
-| `usePlaybackEngine(engine?)` | `PlaybackEngine \| null` | — |
-| `usePlayhead(engine?)` | `UsePlayheadResult` | playhead state |
-| `useVirtualWindow(engine, vpWidth, scrollLeft, ppf)` | `VirtualWindow` | viewport changes |
-| `useVisibleClips(engine, window)` | `VirtualClipEntry[]` | visible clips change |
+| Hook                                                 | Returns                    | Re-renders when                |
+| ---------------------------------------------------- | -------------------------- | ------------------------------ |
+| `useEngine()`                                        | `TimelineEngine`           | — (stable ref)                 |
+| `useTimeline(engine?)`                               | `Timeline`                 | timeline metadata changes      |
+| `useTrackIds(engine?)`                               | `string[]`                 | tracks added/removed/reordered |
+| `useTrack(engine?, trackId)`                         | `Track \| null`            | that track changes             |
+| `useClip(engine?, clipId)`                           | `Clip \| null`             | that clip changes              |
+| `useClips(engine?, trackId)`                         | `Clip[]`                   | any clip on track changes      |
+| `useMarkers(engine?)`                                | `Marker[]`                 | markers change                 |
+| `useHistory(engine?)`                                | `{ canUndo, canRedo }`     | history changes                |
+| `usePlayheadFrame(engine?)`                          | `TimelineFrame`            | every frame tick               |
+| `useIsPlaying(engine?)`                              | `boolean`                  | play/pause toggle              |
+| `useActiveToolId(engine?)`                           | `string`                   | tool switch                    |
+| `useActiveTool(engine?)`                             | `ITool`                    | tool switch                    |
+| `useProvisional(engine?)`                            | `ProvisionalState \| null` | drag preview                   |
+| `useSelectedClipIds(engine?)`                        | `ReadonlySet<string>`      | selection changes              |
+| `useCursor(engine?)`                                 | `string`                   | cursor style changes           |
+| `useCanUndo(engine?)`                                | `boolean`                  | undo availability              |
+| `useCanRedo(engine?)`                                | `boolean`                  | redo availability              |
+| `useChange(engine?)`                                 | `StateChange`              | any state diff                 |
+| `usePlaybackEngine(engine?)`                         | `PlaybackEngine \| null`   | —                              |
+| `usePlayhead(engine?)`                               | `UsePlayheadResult`        | playhead state                 |
+| `useVirtualWindow(engine, vpWidth, scrollLeft, ppf)` | `VirtualWindow`            | viewport changes               |
+| `useVisibleClips(engine, window)`                    | `VirtualClipEntry[]`       | visible clips change           |
 
 ### Engine-first variants
 
@@ -102,15 +102,15 @@ return (
 
 ```typescript
 const engine = new TimelineEngine({
-  initialState,                    // TimelineState (required)
-  pipeline,                        // PipelineConfig (optional)
-  clock,                           // Clock (optional, defaults to browserClock)
-  getPixelsPerFrame,               // () => number (optional)
-  onZoomChange,                    // (ppf: number) => void (optional)
-  historyLimit,                    // number (optional, default 100)
-  compression,                     // CompressionPolicy (optional)
-  tools,                           // ITool[] (optional, overrides defaults)
-  defaultToolId,                   // string (optional, default 'selection')
+  initialState, // TimelineState (required)
+  pipeline, // PipelineConfig (optional)
+  clock, // Clock (optional, defaults to browserClock)
+  getPixelsPerFrame, // () => number (optional)
+  onZoomChange, // (ppf: number) => void (optional)
+  historyLimit, // number (optional, default 100)
+  compression, // CompressionPolicy (optional)
+  tools, // ITool[] (optional, overrides defaults)
+  defaultToolId, // string (optional, default 'selection')
 });
 ```
 

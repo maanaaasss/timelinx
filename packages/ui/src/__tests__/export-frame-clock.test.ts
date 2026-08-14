@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  advanceExportFrameClock,
-  getExportDurationFrames,
-} from '../hooks/use-export';
+import { advanceExportFrameClock, getExportDurationFrames } from '../hooks/use-export';
 import {
   createClip,
   createTimeline,

@@ -63,10 +63,7 @@ export class KeyboardHandler {
   private onMarkOut: ((frame: TimelineFrame) => void) | undefined;
   private getTimelineState: (() => TimelineState) | undefined;
 
-  constructor(
-    engine: PlaybackEngine | null,
-    options?: KeyboardHandlerOptions,
-  ) {
+  constructor(engine: PlaybackEngine | null, options?: KeyboardHandlerOptions) {
     this.engine = engine;
     this.bindings = options?.bindings ?? DEFAULT_KEY_BINDINGS;
     this.onMarkIn = options?.onMarkIn;
@@ -145,12 +142,10 @@ export class KeyboardHandler {
         this.engine.seekToPrevMarker();
         break;
       case 'mark-in':
-        if (this.onMarkIn)
-          this.onMarkIn(this.engine.getState().currentFrame);
+        if (this.onMarkIn) this.onMarkIn(this.engine.getState().currentFrame);
         break;
       case 'mark-out':
-        if (this.onMarkOut)
-          this.onMarkOut(this.engine.getState().currentFrame);
+        if (this.onMarkOut) this.onMarkOut(this.engine.getState().currentFrame);
         break;
       case 'toggle-loop': {
         const current = this.engine.getState().loopRegion;

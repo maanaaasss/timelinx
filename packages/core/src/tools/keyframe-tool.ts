@@ -22,10 +22,8 @@ import type { ClipId, Clip } from '../types/clip';
 import type { EffectId } from '../types/effect';
 import { createEffect, toEffectId } from '../types/effect';
 import type { KeyframeId, Keyframe } from '../types/keyframe';
-import type { TimelineState } from '../types/state';
 import type { Transaction, OperationPrimitive } from '../types/operations';
 import type { TimelineFrame } from '../types/frame';
-import { toFrame } from '../types/frame';
 import { toKeyframeId } from '../types/keyframe';
 import { LINEAR_EASING } from '../types/easing';
 import { applyOperation } from '../engine/apply';
@@ -98,10 +96,7 @@ export class KeyframeTool implements ITool {
     let targetEffectId: EffectId;
 
     if (effects.length === 0) {
-      const defaultEffect = createEffect(
-        toEffectId(`default-${Date.now()}`),
-        'brightness',
-      );
+      const defaultEffect = createEffect(toEffectId(`default-${Date.now()}`), 'brightness');
       this.pendingCreateEffect = {
         clipId: clip.id,
         effect: defaultEffect,
@@ -125,13 +120,12 @@ export class KeyframeTool implements ITool {
 
     let targetFrame = ctx.frameAtX(event.x) as TimelineFrame;
     if (ctx.snapIndex.enabled) {
-      const snapPoint = nearest(
-        ctx.snapIndex,
-        targetFrame,
-        SNAP_RADIUS_FRAMES,
-        undefined,
-        ['ClipStart', 'ClipEnd', 'Marker', 'BeatGrid'],
-      );
+      const snapPoint = nearest(ctx.snapIndex, targetFrame, SNAP_RADIUS_FRAMES, undefined, [
+        'ClipStart',
+        'ClipEnd',
+        'Marker',
+        'BeatGrid',
+      ]);
       if (snapPoint) targetFrame = snapPoint.frame as TimelineFrame;
     }
     this.activeClipId = clip.id;
@@ -153,13 +147,12 @@ export class KeyframeTool implements ITool {
     const deltaFrames = Math.round(dragDeltaX / ctx.pixelsPerFrame);
     let newFrame = Math.max(0, this.draggingKeyframe.startFrame + deltaFrames) as TimelineFrame;
     if (ctx.snapIndex.enabled) {
-      const snapPoint = nearest(
-        ctx.snapIndex,
-        newFrame,
-        SNAP_RADIUS_FRAMES,
-        undefined,
-        ['ClipStart', 'ClipEnd', 'Marker', 'BeatGrid'],
-      );
+      const snapPoint = nearest(ctx.snapIndex, newFrame, SNAP_RADIUS_FRAMES, undefined, [
+        'ClipStart',
+        'ClipEnd',
+        'Marker',
+        'BeatGrid',
+      ]);
       if (snapPoint) newFrame = snapPoint.frame as TimelineFrame;
     }
 
@@ -227,13 +220,12 @@ export class KeyframeTool implements ITool {
     const deltaFrames = Math.round(dragDeltaX / ctx.pixelsPerFrame);
     let newFrame = Math.max(0, dragging.startFrame + deltaFrames) as TimelineFrame;
     if (ctx.snapIndex.enabled) {
-      const snapPoint = nearest(
-        ctx.snapIndex,
-        newFrame,
-        SNAP_RADIUS_FRAMES,
-        undefined,
-        ['ClipStart', 'ClipEnd', 'Marker', 'BeatGrid'],
-      );
+      const snapPoint = nearest(ctx.snapIndex, newFrame, SNAP_RADIUS_FRAMES, undefined, [
+        'ClipStart',
+        'ClipEnd',
+        'Marker',
+        'BeatGrid',
+      ]);
       if (snapPoint) newFrame = snapPoint.frame as TimelineFrame;
     }
 
@@ -255,7 +247,7 @@ export class KeyframeTool implements ITool {
     };
   }
 
-  onKeyDown(event: TimelineKeyEvent, ctx: ToolContext): Transaction | null {
+  onKeyDown(event: TimelineKeyEvent, _ctx: ToolContext): Transaction | null {
     if (event.key !== 'Delete' && event.key !== 'Backspace') return null;
 
     const dragging = this.draggingKeyframe;

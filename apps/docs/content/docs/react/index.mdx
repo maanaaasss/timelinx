@@ -7,12 +7,12 @@ description: Engine snapshots, providers, hooks, tools, and rendering patterns w
 
 ## React Architecture
 
-| Layer | Responsibility |
-|-------|----------------|
-| Provider | `TimelineProvider` exposes one engine instance through context. |
+| Layer           | Responsibility                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| Provider        | `TimelineProvider` exposes one engine instance through context.                                    |
 | Engine snapshot | `TimelineEngine` rebuilds a stable snapshot after dispatch, undo, redo, playback, and tool events. |
-| Selectors | Hooks subscribe through `useSyncExternalStore` and return the smallest useful slice. |
-| UI components | Timeline views and panels read hooks and emit transactions or tool events. |
+| Selectors       | Hooks subscribe through `useSyncExternalStore` and return the smallest useful slice.               |
+| UI components   | Timeline views and panels read hooks and emit transactions or tool events.                         |
 
 ## What The React Engine Adds
 
@@ -30,10 +30,10 @@ The core `dispatch()` function is pure. The React engine wraps it with runtime c
 
 ## Choose A Provider
 
-| Provider | Use when |
-|----------|----------|
-| `TimelineProvider` from `@timelinx/react` | You are building your own components and want the headless React hooks such as `useTimeline()`, `useClip()`, and `useCanUndoRedo()`. |
-| `TimelineProvider` from `@timelinx/ui` | You are rendering Timelinx UI components. It includes the engine plus layout state such as pixels-per-frame, scroll position, label width, and toolbar/ruler dimensions. |
+| Provider                                  | Use when                                                                                                                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TimelineProvider` from `@timelinx/react` | You are building your own components and want the headless React hooks such as `useTimeline()`, `useClip()`, and `useCanUndoRedo()`.                                     |
+| `TimelineProvider` from `@timelinx/ui`    | You are rendering Timelinx UI components. It includes the engine plus layout state such as pixels-per-frame, scroll position, label width, and toolbar/ruler dimensions. |
 
 ## Minimal Headless React Setup
 

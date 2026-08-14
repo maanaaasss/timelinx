@@ -42,7 +42,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
 
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler"
   },
   "exclude": ["dist", "src/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

@@ -9,19 +9,20 @@
 ### Changes Made
 
 **`packages/react/package.json`**:
+
 - `version`: `1.0.0-beta.1` → `1.0.0-beta.2`
 - `dependencies["@timelinx/core"]`: `workspace:*` → `^1.0.0-beta.1`
 
 ### Monorepo Workspace Protocol Audit
 
-| Package | Published? | `workspace:` in dependencies | `workspace:` in devDependencies |
-|---------|-----------|------------------------------|--------------------------------|
-| `@timelinx/core` | Yes (public) | None | None |
-| `@timelinx/react` | Yes (public) | **FIXED** (was `workspace:*`) | None |
-| `@timelinx/ui` | No (private) | None | `workspace:*` (core, react) |
-| `@timelinx/collab` | No (private) | `workspace:*` (core) | None |
-| `@timelinx/ai` | No (private) | `workspace:*` (core) | None |
-| `@timelinx/media-web` | No (private) | None | `workspace:*` (core) |
+| Package               | Published?   | `workspace:` in dependencies  | `workspace:` in devDependencies |
+| --------------------- | ------------ | ----------------------------- | ------------------------------- |
+| `@timelinx/core`      | Yes (public) | None                          | None                            |
+| `@timelinx/react`     | Yes (public) | **FIXED** (was `workspace:*`) | None                            |
+| `@timelinx/ui`        | No (private) | None                          | `workspace:*` (core, react)     |
+| `@timelinx/collab`    | No (private) | `workspace:*` (core)          | None                            |
+| `@timelinx/ai`        | No (private) | `workspace:*` (core)          | None                            |
+| `@timelinx/media-web` | No (private) | None                          | `workspace:*` (core)            |
 
 Only `@timelinx/react` had the bug — it's the only published package with `workspace:*` in `dependencies`. Private packages don't matter (they never get published).
 
@@ -79,10 +80,12 @@ This setting in `.changeset/config.json` tells `changeset version` how to update
 Simulation results:
 
 **Test 1**: Changeset for `@timelinx/react` only
+
 - Before: `"@timelinx/core": "workspace:*"`
 - After: `"@timelinx/core": "workspace:*"` (unchanged)
 
 **Test 2**: Changeset for both `@timelinx/core` and `@timelinx/react`
+
 - Before: `"@timelinx/core": "workspace:*"`
 - After: `"@timelinx/core": "workspace:*"` (unchanged)
 

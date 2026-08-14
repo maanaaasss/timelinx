@@ -52,7 +52,12 @@ class TestableMediaElementPool {
 
   private _releaseVideo(id: string) {
     const v = this.videoElements.get(id);
-    if (v) { v.pause(); v.src = ''; v.remove(); this.videoElements.delete(id); }
+    if (v) {
+      v.pause();
+      v.src = '';
+      v.remove();
+      this.videoElements.delete(id);
+    }
     this.videoSrcMap.delete(id);
     const idx = this.videoOrder.indexOf(id);
     if (idx !== -1) this.videoOrder.splice(idx, 1);
@@ -78,7 +83,9 @@ class TestableMediaElementPool {
     return video;
   }
 
-  releaseVideo(clipId: string) { this._releaseVideo(clipId); }
+  releaseVideo(clipId: string) {
+    this._releaseVideo(clipId);
+  }
 
   syncToActiveClips(activeIds: ReadonlySet<string>) {
     for (const id of [...this.videoElements.keys()]) {
@@ -88,20 +95,23 @@ class TestableMediaElementPool {
 
   destroy() {
     for (const id of [...this.videoElements.keys()]) this._releaseVideo(id);
-    for (const img of this.imageElements.values()) { img.src = ''; }
+    for (const img of this.imageElements.values()) {
+      img.src = '';
+    }
     this.imageElements.clear();
     this.imageSrcMap.clear();
   }
 
-  get videoCount() { return this.videoElements.size; }
+  get videoCount() {
+    return this.videoElements.size;
+  }
 }
 
 // ---------------------------------------------------------------------------
 
 describe('MediaElementPool contract (T0-2)', () => {
   let pool: TestableMediaElementPool;
-  const bodyVideoCount = () =>
-    document.body.querySelectorAll('video').length;
+  const bodyVideoCount = () => document.body.querySelectorAll('video').length;
 
   beforeEach(() => {
     pool = new TestableMediaElementPool();

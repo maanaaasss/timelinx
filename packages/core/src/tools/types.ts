@@ -10,12 +10,12 @@
  *   - onKeyDown, onKeyUp, onCancel are REQUIRED — implement as no-ops if unused
  */
 
-import type { TimelineFrame }            from '../types/frame';
-import type { TrackId }                  from '../types/track';
-import type { ClipId, Clip }             from '../types/clip';
-import type { CaptionId, Caption }      from '../types/caption';
-import type { TimelineState }            from '../types/state';
-import type { Transaction }              from '../types/operations';
+import type { TimelineFrame } from '../types/frame';
+import type { TrackId } from '../types/track';
+import type { ClipId, Clip } from '../types/clip';
+import type { CaptionId, Caption } from '../types/caption';
+import type { TimelineState } from '../types/state';
+import type { Transaction } from '../types/operations';
 import type { SnapIndex } from '../snap-index';
 import type { SnapPointType } from '../snap-index';
 export type { SnapPointType } from '../snap-index';
@@ -38,9 +38,9 @@ export function toToolId(s: string): ToolId {
  *  react to held keys even when no pointer event is firing. */
 export type Modifiers = {
   readonly shift: boolean;
-  readonly alt:   boolean;
-  readonly ctrl:  boolean;
-  readonly meta:  boolean;
+  readonly alt: boolean;
+  readonly ctrl: boolean;
+  readonly meta: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -51,29 +51,29 @@ export type Modifiers = {
  *  ToolRouter populates clipId/trackId via hit-test — tools never recompute it.
  *  Optional edge is set when click is within clip left/right hit zone (e.g. for trim). */
 export type TimelinePointerEvent = {
-  readonly frame:    TimelineFrame;
-  readonly trackId:  TrackId | null;
-  readonly clipId:   ClipId  | null;  // clip under cursor at event time, if any
+  readonly frame: TimelineFrame;
+  readonly trackId: TrackId | null;
+  readonly clipId: ClipId | null; // clip under cursor at event time, if any
   readonly captionId: CaptionId | null; // caption under cursor at event time, if any
-  readonly x:        number;          // client pixels (for snap radius math)
-  readonly y:        number;
-  readonly buttons:  number;          // same as PointerEvent.buttons
+  readonly x: number; // client pixels (for snap radius math)
+  readonly y: number;
+  readonly buttons: number; // same as PointerEvent.buttons
   readonly shiftKey: boolean;
-  readonly altKey:   boolean;
-  readonly metaKey:  boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
   /** When over a clip: 'left' | 'right' if within edge hit zone, else 'none'. */
-  readonly edge?:    'left' | 'right' | 'none';
+  readonly edge?: 'left' | 'right' | 'none';
 };
 
 export type TimelineKeyEvent = {
-  readonly key:      string;
-  readonly code:     string;
+  readonly key: string;
+  readonly code: string;
   readonly shiftKey: boolean;
-  readonly altKey:   boolean;
-  readonly metaKey:  boolean;
-  readonly ctrlKey:  boolean;
+  readonly altKey: boolean;
+  readonly metaKey: boolean;
+  readonly ctrlKey: boolean;
   /** True when key is held and OS is firing repeated keydowns. */
-  readonly repeat?:  boolean;
+  readonly repeat?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -84,18 +84,18 @@ export type TimelineKeyEvent = {
  *  Populated by SelectionTool during rubber-band drags. */
 export type RubberBandRegion = {
   readonly startFrame: TimelineFrame;
-  readonly endFrame:   TimelineFrame;
-  readonly startY:     number;   // clientY of drag origin
-  readonly endY:       number;   // clientY of current cursor position
+  readonly endFrame: TimelineFrame;
+  readonly startY: number; // clientY of drag origin
+  readonly endY: number; // clientY of current cursor position
 };
 
 /** Ghost state produced by onPointerMove.
  *  isProvisional: true is a compile-time discriminant so resolveClip()
  *  can distinguish provisional from committed Clip[] arrays. */
 export type ProvisionalState = {
-  readonly clips:        readonly Clip[];
-  readonly captions?:    readonly Caption[];  // ghost captions during drag
-  readonly rubberBand?:  RubberBandRegion;  // populated during rubber-band select drag
+  readonly clips: readonly Clip[];
+  readonly captions?: readonly Caption[]; // ghost captions during drag
+  readonly rubberBand?: RubberBandRegion; // populated during rubber-band select drag
   readonly isProvisional: true;
 };
 
@@ -106,21 +106,21 @@ export type ProvisionalState = {
 /** Injected by TimelineEngine on every event call.
  *  Tools never import TimelineEngine. They never call dispatch() directly. */
 export type ToolContext = {
-  readonly state:          TimelineState;
-  readonly snapIndex:      SnapIndex;
+  readonly state: TimelineState;
+  readonly snapIndex: SnapIndex;
   readonly pixelsPerFrame: number;
   /** Current modifier key state — updates on every pointer/key event. */
-  readonly modifiers:      Modifiers;
+  readonly modifiers: Modifiers;
   /** Convert a client-pixel x-position to a TimelineFrame. */
-  readonly frameAtX:       (x: number) => TimelineFrame;
+  readonly frameAtX: (x: number) => TimelineFrame;
   /** Return the TrackId whose row contains client-pixel y, or null. */
-  readonly trackAtY:       (y: number) => TrackId | null;
+  readonly trackAtY: (y: number) => TrackId | null;
   /** Query snap and return the snapped frame (or original if no hit).
    *  Handles enabled/disabled, radius, exclusion, and type filter internally.
    *  Tools never see radiusFrames or the enabled flag. */
   readonly snap: (
-    frame:         TimelineFrame,
-    exclude?:      readonly string[],
+    frame: TimelineFrame,
+    exclude?: readonly string[],
     allowedTypes?: readonly SnapPointType[],
   ) => TimelineFrame;
 };
@@ -130,7 +130,7 @@ export type ToolContext = {
 // ---------------------------------------------------------------------------
 
 export interface ITool {
-  readonly id:          ToolId;
+  readonly id: ToolId;
   /** Single-character keyboard shortcut, e.g. 'v', 'b', 'r'. Empty string = no shortcut. */
   readonly shortcutKey: string;
 

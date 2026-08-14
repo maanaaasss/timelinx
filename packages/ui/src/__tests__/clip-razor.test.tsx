@@ -89,14 +89,8 @@ describe('Clip Razor Tool End-to-End', () => {
 
     const { container } = render(
       <TimelineProvider engine={engine} initialPpf={ppf}>
-        <Clip
-          clip={clip}
-          clipType="video"
-          ppf={ppf}
-          engine={engine}
-          isSelected={false}
-        />
-      </TimelineProvider>
+        <Clip clip={clip} clipType="video" ppf={ppf} engine={engine} isSelected={false} />
+      </TimelineProvider>,
     );
 
     const clipEl = container.querySelector('.tl-v2-clip') as HTMLElement;
@@ -142,14 +136,8 @@ describe('Clip Razor Tool End-to-End', () => {
 
     const { container } = render(
       <TimelineProvider engine={engine} initialPpf={ppf}>
-        <Clip
-          clip={clip}
-          clipType="video"
-          ppf={ppf}
-          engine={engine}
-          isSelected={false}
-        />
-      </TimelineProvider>
+        <Clip clip={clip} clipType="video" ppf={ppf} engine={engine} isSelected={false} />
+      </TimelineProvider>,
     );
 
     const clipEl = container.querySelector('.tl-v2-clip') as HTMLElement;

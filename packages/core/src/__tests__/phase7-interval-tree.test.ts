@@ -159,7 +159,10 @@ describe('Phase 7 — IntervalTree', () => {
     expect(tree.size()).toBe(0);
     tree.build([{ start: 0, end: 10, data: 'a' }]);
     expect(tree.size()).toBe(1);
-    tree.build([{ start: 0, end: 10, data: 'a' }, { start: 10, end: 20, data: 'b' }]);
+    tree.build([
+      { start: 0, end: 10, data: 'a' },
+      { start: 10, end: 20, data: 'b' },
+    ]);
     expect(tree.size()).toBe(2);
   });
 });

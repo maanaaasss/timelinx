@@ -52,10 +52,7 @@ export class PlaybackEngine {
     this.snapManager.rebuildSync(state);
     const durationFrames = (state.timeline.duration as number) ?? 0;
     const fps = (state.timeline.fps as number) || 30;
-    this.controller = new PlayheadController(
-      { durationFrames, fps },
-      clock ?? nodeClock,
-    );
+    this.controller = new PlayheadController({ durationFrames, fps }, clock ?? nodeClock);
   }
 
   updateState(state: TimelineState): void {
@@ -79,34 +76,22 @@ export class PlaybackEngine {
   }
 
   seekToNextClipBoundary(): void {
-    const next = findNextClipBoundary(
-      this.state,
-      this.controller.getState().currentFrame,
-    );
+    const next = findNextClipBoundary(this.state, this.controller.getState().currentFrame);
     if (next !== null) this.controller.seekTo(next);
   }
 
   seekToPrevClipBoundary(): void {
-    const prev = findPrevClipBoundary(
-      this.state,
-      this.controller.getState().currentFrame,
-    );
+    const prev = findPrevClipBoundary(this.state, this.controller.getState().currentFrame);
     if (prev !== null) this.controller.seekTo(prev);
   }
 
   seekToNextMarker(): void {
-    const marker = findNextMarker(
-      this.state,
-      this.controller.getState().currentFrame,
-    );
+    const marker = findNextMarker(this.state, this.controller.getState().currentFrame);
     if (marker !== null) this.controller.seekTo(getMarkerAnchor(marker));
   }
 
   seekToPrevMarker(): void {
-    const marker = findPrevMarker(
-      this.state,
-      this.controller.getState().currentFrame,
-    );
+    const marker = findPrevMarker(this.state, this.controller.getState().currentFrame);
     if (marker !== null) this.controller.seekTo(getMarkerAnchor(marker));
   }
 

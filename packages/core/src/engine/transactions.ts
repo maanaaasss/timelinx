@@ -1,19 +1,19 @@
 /**
  * TRANSACTION SYSTEM
- * 
+ *
  * Batches multiple operations into a single history entry.
- * 
+ *
  * WHY TRANSACTIONS?
  * - Advanced edits (ripple, roll, etc.) involve multiple state changes
  * - Each change should not create separate undo steps
  * - Transaction commits as single atomic operation
- * 
+ *
  * DESIGN:
  * - Transactions are ephemeral (not stored in timeline state)
  * - All operations validated before commit
  * - Rollback returns to initial state
  * - Single history snapshot on commit
- * 
+ *
  * USAGE:
  * ```typescript
  * const tx = beginTransaction(state);
@@ -37,13 +37,13 @@ export type Operation = (state: TimelineState) => TimelineState;
 export interface TransactionContext {
   /** Initial state before any operations */
   initialState: TimelineState;
-  
+
   /** Current state after applied operations */
   readonly currentState: TimelineState;
-  
+
   /** Operations applied so far */
   operations: Operation[];
-  
+
   /** Whether transaction has been committed or rolled back */
   finalized: boolean;
 }
@@ -59,7 +59,7 @@ export interface TransactionResult {
 
 /**
  * Begin a new transaction
- * 
+ *
  * @param state - Initial timeline state
  * @returns Transaction context
  */
@@ -74,24 +74,21 @@ export function beginTransaction(state: TimelineState): TransactionContext {
 
 /**
  * Apply an operation to the transaction
- * 
+ *
  * Operations are applied immediately but not validated until commit.
  * This allows building complex state transformations.
- * 
+ *
  * @param tx - Transaction context
  * @param operation - Operation to apply
  * @returns Updated transaction context
  */
-export function applyOperation(
-  tx: TransactionContext,
-  operation: Operation
-): TransactionContext {
+export function applyOperation(tx: TransactionContext, operation: Operation): TransactionContext {
   if (tx.finalized) {
     throw new Error('Cannot apply operation to finalized transaction');
   }
-  
+
   const newState = operation(tx.currentState);
-  
+
   return {
     ...tx,
     currentState: newState,
@@ -101,12 +98,12 @@ export function applyOperation(
 
 /**
  * Commit the transaction
- * 
+ *
  * Returns the final state if successful.
  * The caller is responsible for:
  * - Validating the final state
  * - Recording in history
- * 
+ *
  * @param tx - Transaction context
  * @returns Final state
  */
@@ -114,7 +111,7 @@ export function commitTransaction(tx: TransactionContext): TimelineState {
   if (tx.finalized) {
     throw new Error('Transaction already finalized');
   }
-  
+
   // Return final state (without mutating tx)
   // Note: Validation happens at dispatch layer, not here
   return tx.currentState;
@@ -122,9 +119,9 @@ export function commitTransaction(tx: TransactionContext): TimelineState {
 
 /**
  * Rollback the transaction
- * 
+ *
  * Returns to the initial state, discarding all operations.
- * 
+ *
  * @param tx - Transaction context
  * @returns Initial state
  */
@@ -132,14 +129,14 @@ export function rollbackTransaction(tx: TransactionContext): TimelineState {
   if (tx.finalized) {
     throw new Error('Transaction already finalized');
   }
-  
+
   // Return initial state (without mutating tx)
   return tx.initialState;
 }
 
 /**
  * Get the number of operations in the transaction
- * 
+ *
  * @param tx - Transaction context
  * @returns Number of operations
  */

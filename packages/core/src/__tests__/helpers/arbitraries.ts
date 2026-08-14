@@ -74,36 +74,36 @@ export function arbitraryClip(
   assetId: string,
   assetDuration: number = 600,
 ): fc.Arbitrary<{ start: number; end: number; clip: ReturnType<typeof createClip> }> {
-  return fc.tuple(
-    fc.integer({ min: 0, max: 5000 }),
-    fc.integer({ min: 1, max: Math.min(500, assetDuration) }),
-  ).map(([start, duration]) => {
-    const end = start + duration;
-    const mediaIn = 0;
-    const mediaOut = duration;
-    const id = nextClipId();
-    return {
-      start,
-      end,
-      clip: createClip({
-        id,
-        assetId,
-        trackId,
-        timelineStart: toFrame(start),
-        timelineEnd: toFrame(end),
-        mediaIn: toFrame(mediaIn),
-        mediaOut: toFrame(mediaOut),
-      }),
-    };
-  });
+  return fc
+    .tuple(
+      fc.integer({ min: 0, max: 5000 }),
+      fc.integer({ min: 1, max: Math.min(500, assetDuration) }),
+    )
+    .map(([start, duration]) => {
+      const end = start + duration;
+      const mediaIn = 0;
+      const mediaOut = duration;
+      const id = nextClipId();
+      return {
+        start,
+        end,
+        clip: createClip({
+          id,
+          assetId,
+          trackId,
+          timelineStart: toFrame(start),
+          timelineEnd: toFrame(end),
+          mediaIn: toFrame(mediaIn),
+          mediaOut: toFrame(mediaOut),
+        }),
+      };
+    });
 }
 
 /** Generate a random operation primitive against an existing state. */
-export function arbitraryOperation(
-  state: TimelineState,
-): fc.Arbitrary<OperationPrimitive> {
-  const allClips = state.timeline.tracks.flatMap(t => t.clips);
-  const allTrackIds = state.timeline.tracks.map(t => t.id);
+export function arbitraryOperation(state: TimelineState): fc.Arbitrary<OperationPrimitive> {
+  const allClips = state.timeline.tracks.flatMap((t) => t.clips);
+  const allTrackIds = state.timeline.tracks.map((t) => t.id);
   const assetIds = Array.from(state.assetRegistry.keys());
 
   const ops: fc.Arbitrary<OperationPrimitive>[] = [];
@@ -111,23 +111,25 @@ export function arbitraryOperation(
   // MOVE_CLIP — if there are clips
   if (allClips.length > 0 && allTrackIds.length > 0) {
     ops.push(
-      fc.tuple(
-        fc.constantFrom(...allClips),
-        fc.integer({ min: 0, max: state.timeline.duration as number }),
-        fc.constantFrom(...allTrackIds),
-      ).map(([clip, newStart, targetTrackId]) => ({
-        type: 'MOVE_CLIP' as const,
-        clipId: clip.id,
-        newTimelineStart: toFrame(newStart),
-        targetTrackId: targetTrackId as TrackId,
-      })),
+      fc
+        .tuple(
+          fc.constantFrom(...allClips),
+          fc.integer({ min: 0, max: state.timeline.duration as number }),
+          fc.constantFrom(...allTrackIds),
+        )
+        .map(([clip, newStart, targetTrackId]) => ({
+          type: 'MOVE_CLIP' as const,
+          clipId: clip.id,
+          newTimelineStart: toFrame(newStart),
+          targetTrackId: targetTrackId as TrackId,
+        })),
     );
   }
 
   // DELETE_CLIP — if there are clips
   if (allClips.length > 0) {
     ops.push(
-      fc.constantFrom(...allClips).map(clip => ({
+      fc.constantFrom(...allClips).map((clip) => ({
         type: 'DELETE_CLIP' as const,
         clipId: clip.id,
       })),
@@ -137,33 +139,35 @@ export function arbitraryOperation(
   // INSERT_CLIP — generate a new clip
   if (allTrackIds.length > 0 && assetIds.length > 0) {
     ops.push(
-      fc.tuple(
-        fc.constantFrom(...allTrackIds),
-        fc.constantFrom(...assetIds),
-        fc.integer({ min: 0, max: Math.max(0, (state.timeline.duration as number) - 100) }),
-        fc.integer({ min: 1, max: 200 }),
-      ).map(([trackId, assetId, start, dur]) => {
-        const id = nextClipId();
-        return {
-          type: 'INSERT_CLIP' as const,
-          clip: createClip({
-            id,
-            assetId,
-            trackId,
-            timelineStart: toFrame(start),
-            timelineEnd: toFrame(start + dur),
-            mediaIn: toFrame(0),
-            mediaOut: toFrame(dur),
-          }),
-          trackId: trackId as TrackId,
-        };
-      }),
+      fc
+        .tuple(
+          fc.constantFrom(...allTrackIds),
+          fc.constantFrom(...assetIds),
+          fc.integer({ min: 0, max: Math.max(0, (state.timeline.duration as number) - 100) }),
+          fc.integer({ min: 1, max: 200 }),
+        )
+        .map(([trackId, assetId, start, dur]) => {
+          const id = nextClipId();
+          return {
+            type: 'INSERT_CLIP' as const,
+            clip: createClip({
+              id,
+              assetId,
+              trackId,
+              timelineStart: toFrame(start),
+              timelineEnd: toFrame(start + dur),
+              mediaIn: toFrame(0),
+              mediaOut: toFrame(dur),
+            }),
+            trackId: trackId as TrackId,
+          };
+        }),
     );
   }
 
   // RENAME_TIMELINE
   ops.push(
-    fc.string({ minLength: 1, maxLength: 20 }).map(name => ({
+    fc.string({ minLength: 1, maxLength: 20 }).map((name) => ({
       type: 'RENAME_TIMELINE' as const,
       name,
     })),
@@ -171,7 +175,7 @@ export function arbitraryOperation(
 
   // SET_TIMELINE_DURATION
   ops.push(
-    fc.integer({ min: 100, max: 100000 }).map(dur => ({
+    fc.integer({ min: 100, max: 100000 }).map((dur) => ({
       type: 'SET_TIMELINE_DURATION' as const,
       duration: toFrame(dur),
     })),
@@ -179,27 +183,26 @@ export function arbitraryOperation(
 
   // ADD_TRACK
   ops.push(
-    fc.tuple(
-      fc.string({ minLength: 1, maxLength: 10 }),
-      fc.constantFrom('video' as const, 'audio' as const),
-    ).map(([name, type]) => ({
-      type: 'ADD_TRACK' as const,
-      track: createTrack({
-        id: nextTrackId(),
-        name: `Track ${name}`,
-        type,
-        clips: [],
-      }),
-    })),
+    fc
+      .tuple(
+        fc.string({ minLength: 1, maxLength: 10 }),
+        fc.constantFrom('video' as const, 'audio' as const),
+      )
+      .map(([name, type]) => ({
+        type: 'ADD_TRACK' as const,
+        track: createTrack({
+          id: nextTrackId(),
+          name: `Track ${name}`,
+          type,
+          clips: [],
+        }),
+      })),
   );
 
   // SET_CLIP_SPEED — if there are clips
   if (allClips.length > 0) {
     ops.push(
-      fc.tuple(
-        fc.constantFrom(...allClips),
-        arbitrarySpeed(),
-      ).map(([clip, speed]) => ({
+      fc.tuple(fc.constantFrom(...allClips), arbitrarySpeed()).map(([clip, speed]) => ({
         type: 'SET_CLIP_SPEED' as const,
         clipId: clip.id,
         speed,
@@ -210,10 +213,7 @@ export function arbitraryOperation(
   // SET_CLIP_ENABLED — if there are clips
   if (allClips.length > 0) {
     ops.push(
-      fc.tuple(
-        fc.constantFrom(...allClips),
-        fc.boolean(),
-      ).map(([clip, enabled]) => ({
+      fc.tuple(fc.constantFrom(...allClips), fc.boolean()).map(([clip, enabled]) => ({
         type: 'SET_CLIP_ENABLED' as const,
         clipId: clip.id,
         enabled,
@@ -223,9 +223,7 @@ export function arbitraryOperation(
 
   if (ops.length === 0) {
     // Fallback: just rename the timeline
-    ops.push(
-      fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'empty' }),
-    );
+    ops.push(fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'empty' }));
   }
 
   return fc.oneof(...ops);
@@ -240,48 +238,47 @@ export function arbitraryOperationSequence(
 
 /** Generate a valid initial state for fuzzing. */
 export function arbitraryInitialState(): fc.Arbitrary<TimelineState> {
-  return fc.tuple(
-    fc.integer({ min: 1000, max: 50000 }),
-    fc.integer({ min: 1, max: 3 }),
-  ).map(([duration, numTracks]) => {
-    const assetId = nextAssetId();
-    const asset = createAsset({
-      id: assetId,
-      name: 'Fuzz Asset',
-      mediaType: 'video',
-      filePath: '/media/fuzz.mp4',
-      intrinsicDuration: toFrame(10000),
-      nativeFps: 30,
-      sourceTimecodeOffset: toFrame(0),
-      status: 'online',
-    });
+  return fc
+    .tuple(fc.integer({ min: 1000, max: 50000 }), fc.integer({ min: 1, max: 3 }))
+    .map(([duration, numTracks]) => {
+      const assetId = nextAssetId();
+      const asset = createAsset({
+        id: assetId,
+        name: 'Fuzz Asset',
+        mediaType: 'video',
+        filePath: '/media/fuzz.mp4',
+        intrinsicDuration: toFrame(10000),
+        nativeFps: 30,
+        sourceTimecodeOffset: toFrame(0),
+        status: 'online',
+      });
 
-    const tracks = [];
-    for (let i = 0; i < numTracks; i++) {
-      tracks.push(
-        createTrack({
-          id: nextTrackId(),
-          name: `V${i + 1}`,
-          type: 'video',
-          clips: [],
-        }),
-      );
-    }
+      const tracks = [];
+      for (let i = 0; i < numTracks; i++) {
+        tracks.push(
+          createTrack({
+            id: nextTrackId(),
+            name: `V${i + 1}`,
+            type: 'video',
+            clips: [],
+          }),
+        );
+      }
 
-    const timeline = createTimeline({
-      id: 'fuzz-tl',
-      name: 'Fuzz Timeline',
-      fps: 30,
-      duration: toFrame(duration),
-      startTimecode: toTimecode('00:00:00:00'),
-      tracks,
-    });
+      const timeline = createTimeline({
+        id: 'fuzz-tl',
+        name: 'Fuzz Timeline',
+        fps: 30,
+        duration: toFrame(duration),
+        startTimecode: toTimecode('00:00:00:00'),
+        tracks,
+      });
 
-    return createTimelineState({
-      timeline,
-      assetRegistry: new Map([[assetId, asset]]),
+      return createTimelineState({
+        timeline,
+        assetRegistry: new Map([[assetId, asset]]),
+      });
     });
-  });
 }
 
 /**
@@ -337,7 +334,7 @@ export function executeOpsAssertingInvariants(
       const violations = checkInvariants(result.nextState);
       if (violations.length > 0) {
         throw new Error(
-          `Invariant violation after op ${op.type}: ${violations.map(v => v.message).join('; ')}`,
+          `Invariant violation after op ${op.type}: ${violations.map((v) => v.message).join('; ')}`,
         );
       }
       state = result.nextState;

@@ -32,21 +32,19 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
-import type { ClipId, Clip }       from '../types/clip';
-import type { TrackId }             from '../types/track';
-import type { TimelineFrame }       from '../types/frame';
+import { toToolId, type ToolId, type SnapPointType } from './types';
+import type { ClipId, Clip } from '../types/clip';
+import type { TrackId } from '../types/track';
+import type { TimelineFrame } from '../types/frame';
 import type { OperationPrimitive, Transaction } from '../types/operations';
-import type { TimelineState }       from '../types/state';
-import type { CaptionId }           from '../types/caption';
+import type { TimelineState } from '../types/state';
+import type { CaptionId } from '../types/caption';
 import { findClipById } from '../systems/queries';
 
 let _txSeq = 0;
-function txId(): string { return `ripple-delete-tx-${++_txSeq}`; }
+function txId(): string {
+  return `ripple-delete-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // computeRippleDeleteOps — pure function, module scope, not exported
@@ -60,24 +58,21 @@ function txId(): string { return `ripple-delete-tx-${++_txSeq}`; }
  * Reason: delta is negative (clips shift left). Per OPERATIONS.md:
  *   -delta → sort left-to-right so each clip moves into already-vacated space.
  */
-function computeRippleDeleteOps(
-  clip:  Clip,
-  state: TimelineState,
-): OperationPrimitive[] {
+function computeRippleDeleteOps(clip: Clip, state: TimelineState): OperationPrimitive[] {
   const deletedDuration = (clip.timelineEnd - clip.timelineStart) as number;
 
-  const track = state.timeline.tracks.find(t => t.id === clip.trackId);
+  const track = state.timeline.tracks.find((t) => t.id === clip.trackId);
 
   // Clips strictly to the right: those whose start >= clip's end
   const rightClips = (track?.clips ?? [])
-    .filter(c => c.timelineStart >= clip.timelineEnd)
-    .sort((a, b) => a.timelineStart - b.timelineStart);  // LEFT-TO-RIGHT — -delta rule
+    .filter((c) => c.timelineStart >= clip.timelineEnd)
+    .sort((a, b) => a.timelineStart - b.timelineStart); // LEFT-TO-RIGHT — -delta rule
 
   return [
     { type: 'DELETE_CLIP', clipId: clip.id },
-    ...rightClips.map(c => ({
-      type:             'MOVE_CLIP' as const,
-      clipId:            c.id,
+    ...rightClips.map((c) => ({
+      type: 'MOVE_CLIP' as const,
+      clipId: c.id,
       newTimelineStart: (c.timelineStart - deletedDuration) as TimelineFrame,
     })),
   ];
@@ -88,8 +83,8 @@ function computeRippleDeleteOps(
 // ---------------------------------------------------------------------------
 
 export class RippleDeleteTool implements ITool {
-  readonly id:          ToolId = toToolId('ripple-delete');
-  readonly shortcutKey: string = '';   // not a single-char activation key — activated programmatically
+  readonly id: ToolId = toToolId('ripple-delete');
+  readonly shortcutKey: string = ''; // not a single-char activation key — activated programmatically
 
   // ── Click-recording vars ──────────────────────────────────────────────────
   /**
@@ -99,8 +94,8 @@ export class RippleDeleteTool implements ITool {
   private pendingClipId: ClipId | null = null;
 
   /** Caption targeted at onPointerDown. Read and cleared at onPointerUp. */
-  private pendingCaptionId:      CaptionId | null = null;
-  private pendingCaptionTrackId: TrackId   | null = null;
+  private pendingCaptionId: CaptionId | null = null;
+  private pendingCaptionTrackId: TrackId | null = null;
 
   // ── Cursor-staging var ────────────────────────────────────────────────────
   /** Staged by onPointerMove — getCursor() has no event parameter. */
@@ -109,27 +104,29 @@ export class RippleDeleteTool implements ITool {
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.isHoveringClip) return 'pointer';  // "click to delete this"
+    if (this.isHoveringClip) return 'pointer'; // "click to delete this"
     return 'default';
   }
 
   // ── ITool: getSnapCandidateTypes ─────────────────────────────────────────
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
-    return [];  // no drag, no snap
+    return []; // no drag, no snap
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, _ctx: ToolContext): void {
     if (event.captionId !== null && event.trackId !== null) {
-      this.pendingCaptionId      = event.captionId as CaptionId;
+      this.pendingCaptionId = event.captionId as CaptionId;
       this.pendingCaptionTrackId = event.trackId as TrackId;
       return;
     }
-    if (event.clipId === null) return;  // clicked empty space
+    if (event.clipId === null) return; // clicked empty space
     this.pendingClipId = event.clipId;
   }
 
@@ -137,60 +134,60 @@ export class RippleDeleteTool implements ITool {
 
   onPointerMove(event: TimelinePointerEvent, _ctx: ToolContext): ProvisionalState | null {
     this.isHoveringClip = event.clipId !== null || event.captionId !== null;
-    return null;  // no ghost — delete is instantaneous, no preview needed
+    return null; // no ghost — delete is instantaneous, no preview needed
   }
 
   // ── ITool: onPointerUp ────────────────────────────────────────────────────
 
   onPointerUp(_event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // Capture-before-reset pattern
-    const clipId      = this.pendingClipId;
-    const captionId   = this.pendingCaptionId;
+    const clipId = this.pendingClipId;
+    const captionId = this.pendingCaptionId;
     const captionTrackId = this.pendingCaptionTrackId;
     this._resetState();
 
     // ── Caption ripple-delete path ────────────────────────────────────────
     if (captionId !== null && captionTrackId !== null) {
-      const track   = ctx.state.timeline.tracks.find(t => t.id === captionTrackId);
-      const caption = track?.captions.find(c => c.id === captionId);
+      const track = ctx.state.timeline.tracks.find((t) => t.id === captionTrackId);
+      const caption = track?.captions.find((c) => c.id === captionId);
       if (!caption) return null;
 
       const deletedDuration = (caption.endFrame - caption.startFrame) as number;
 
       // Captions strictly to the right: startFrame >= caption.endFrame
       const rightCaptions = (track?.captions ?? [])
-        .filter(c => c.startFrame >= caption.endFrame)
-        .sort((a, b) => a.startFrame - b.startFrame);  // left-to-right — -delta rule
+        .filter((c) => c.startFrame >= caption.endFrame)
+        .sort((a, b) => a.startFrame - b.startFrame); // left-to-right — -delta rule
 
       return {
-        id:        txId(),
-        label:     'Ripple Delete Caption',
+        id: txId(),
+        label: 'Ripple Delete Caption',
         timestamp: Date.now(),
         operations: [
           { type: 'DELETE_CAPTION', captionId: caption.id, trackId: captionTrackId },
-          ...rightCaptions.map(c => ({
-            type:       'EDIT_CAPTION' as const,
-            captionId:  c.id,
-            trackId:    captionTrackId,
+          ...rightCaptions.map((c) => ({
+            type: 'EDIT_CAPTION' as const,
+            captionId: c.id,
+            trackId: captionTrackId,
             startFrame: (c.startFrame - deletedDuration) as TimelineFrame,
-            endFrame:   (c.endFrame   - deletedDuration) as TimelineFrame,
+            endFrame: (c.endFrame - deletedDuration) as TimelineFrame,
           })),
         ],
       };
     }
 
     // ── Clip ripple-delete path (original) ───────────────────────────────
-    if (!clipId) return null;  // empty-space click
+    if (!clipId) return null; // empty-space click
 
     // Read clip from ctx.state (committed, current)
     const liveClip = findClipById(ctx.state, clipId);
-    if (!liveClip) return null;  // defensive: clip may have already been removed
+    if (!liveClip) return null; // defensive: clip may have already been removed
 
     const operations = computeRippleDeleteOps(liveClip, ctx.state);
 
     return {
-      id:        txId(),
-      label:     'Ripple Delete',
+      id: txId(),
+      label: 'Ripple Delete',
       timestamp: Date.now(),
       operations,
     };
@@ -207,18 +204,18 @@ export class RippleDeleteTool implements ITool {
   // ── ITool: onCancel ───────────────────────────────────────────────────────
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
-    this.pendingClipId           = null;
-    this.pendingCaptionId        = null;
-    this.pendingCaptionTrackId   = null;
-    this.isHoveringClip          = false;
+    this.pendingClipId = null;
+    this.pendingCaptionId = null;
+    this.pendingCaptionTrackId = null;
+    this.isHoveringClip = false;
   }
 
   // ── Private ───────────────────────────────────────────────────────────────
 
   private _resetState(): void {
-    this.pendingClipId           = null;
-    this.pendingCaptionId        = null;
-    this.pendingCaptionTrackId   = null;
+    this.pendingClipId = null;
+    this.pendingCaptionId = null;
+    this.pendingCaptionTrackId = null;
     // isHoveringClip intentionally NOT reset — it is a cursor-staging var, not click state
   }
 }

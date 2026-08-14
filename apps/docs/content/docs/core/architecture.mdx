@@ -48,25 +48,25 @@ graph TD
 
 ## Architectural Layers
 
-| Layer | Responsibility & Exports |
-|-------|--------------------------|
-| **Public Surface** | Single entry point (`index.ts`, `public-api.ts`, and subpath exports) exposing canonical functions and types while encapsulating internal state updates. |
-| **Mutation Core** | Pure function pipeline: `dispatch(state, transaction)` validates rolling state, applies operations immutably, and runs full-document invariant checks before committing. |
-| **Runtime Modules** | Editing tools (selection, razor, ripple, slip, etc.), `TimelineEngine` container, `HistoryStack` (undo/redo), and `SnapIndexManager`. |
-| **Specialized Exports** | Non-UI domain contracts including `serialization` (JSON, OTIO, EDL, AAF, FCPXML) and `media` (WebCodecs/audio worker contracts). |
-| **Types & Factories** | Canonical TypeScript types (`TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, `Transaction`) and branded ID constructors (`toFrame`, `toTrackId`, etc.). |
+| Layer                   | Responsibility & Exports                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Public Surface**      | Single entry point (`index.ts`, `public-api.ts`, and subpath exports) exposing canonical functions and types while encapsulating internal state updates.                 |
+| **Mutation Core**       | Pure function pipeline: `dispatch(state, transaction)` validates rolling state, applies operations immutably, and runs full-document invariant checks before committing. |
+| **Runtime Modules**     | Editing tools (selection, razor, ripple, slip, etc.), `TimelineEngine` container, `HistoryStack` (undo/redo), and `SnapIndexManager`.                                    |
+| **Specialized Exports** | Non-UI domain contracts including `serialization` (JSON, OTIO, EDL, AAF, FCPXML) and `media` (WebCodecs/audio worker contracts).                                         |
+| **Types & Factories**   | Canonical TypeScript types (`TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, `Transaction`) and branded ID constructors (`toFrame`, `toTrackId`, etc.).            |
 
 The package boundary is intentionally narrow. `core` handles snapping, ripple transforms, frame resolution, keyframes, captions, markers, and playback contracts. It has zero knowledge of DOM events, React components, CSS, browser layout, or storage drivers.
 
 ## Data Model
 
-| Object | Stores |
-|--------|--------|
-| `TimelineState` | `schemaVersion`, `timeline`, and `assetRegistry`. |
-| `Timeline` | FPS, duration, tracks, markers, beat grid, in/out points, track groups, link groups, sequence settings, and version. |
-| `Track` | ID, name, type, clips, captions, lock/mute/solo state, height, blend mode, opacity, and optional group ID. |
-| `Clip` | Asset ID, track ID, timeline range, media bounds, speed, enabled/reversed state, name, color, metadata, effects, transform, audio, and transition. |
-| `AssetRegistry` | `ReadonlyMap<AssetId, Asset>` for file assets and generator assets. |
+| Object          | Stores                                                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TimelineState` | `schemaVersion`, `timeline`, and `assetRegistry`.                                                                                                  |
+| `Timeline`      | FPS, duration, tracks, markers, beat grid, in/out points, track groups, link groups, sequence settings, and version.                               |
+| `Track`         | ID, name, type, clips, captions, lock/mute/solo state, height, blend mode, opacity, and optional group ID.                                         |
+| `Clip`          | Asset ID, track ID, timeline range, media bounds, speed, enabled/reversed state, name, color, metadata, effects, transform, audio, and transition. |
+| `AssetRegistry` | `ReadonlyMap<AssetId, Asset>` for file assets and generator assets.                                                                                |
 
 `TimelineState` is the document root. `schemaVersion` protects persisted projects from silent downgrade or incompatible load. `timeline` stores editorial structure. `assetRegistry` stores media definitions so clips can reference assets by ID instead of copying media metadata into every clip.
 
@@ -85,13 +85,13 @@ Use `toFrame()` to brand a known frame count. Use conversion helpers such as `se
 
 ## Mutation Path
 
-| Step | What happens |
-|------|--------------|
-| 1. Transaction arrives | A labeled batch of one or more `OperationPrimitive` objects is passed to `dispatch()`. |
-| 2. Validate rolling state | Each primitive is checked against the state produced by previous primitives in the same transaction. |
-| 3. Apply pure update | `applyOperation()` creates a proposed immutable state using structural sharing. |
-| 4. Check invariants | The whole proposed state is scanned for timeline-level violations. |
-| 5. Commit or reject | Accepted transactions bump `timeline.version` once; rejected transactions return the original state untouched. |
+| Step                      | What happens                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1. Transaction arrives    | A labeled batch of one or more `OperationPrimitive` objects is passed to `dispatch()`.                         |
+| 2. Validate rolling state | Each primitive is checked against the state produced by previous primitives in the same transaction.           |
+| 3. Apply pure update      | `applyOperation()` creates a proposed immutable state using structural sharing.                                |
+| 4. Check invariants       | The whole proposed state is scanned for timeline-level violations.                                             |
+| 5. Commit or reject       | Accepted transactions bump `timeline.version` once; rejected transactions return the original state untouched. |
 
 The dispatcher performs rolling validation. This is important for compound edits: later operations are validated against the state produced by earlier operations in the same transaction.
 
@@ -112,14 +112,14 @@ The two inserts are allowed to see the state after the delete. If any step rejec
 
 ## Operation Vocabulary
 
-| Group | Operations |
-|-------|------------|
-| Clip | `MOVE_CLIP`, `RESIZE_CLIP`, `SLICE_CLIP`, `DELETE_CLIP`, `INSERT_CLIP`, `SET_MEDIA_BOUNDS`, `SET_CLIP_*`. |
-| Track | `ADD_TRACK`, `DELETE_TRACK`, `REORDER_TRACK`, `SET_TRACK_HEIGHT`, `SET_TRACK_NAME`, blend and opacity updates. |
-| Asset | `REGISTER_ASSET`, `UNREGISTER_ASSET`, `SET_ASSET_STATUS`. |
-| Timeline | `RENAME_TIMELINE`, `SET_TIMELINE_DURATION`, `SET_TIMELINE_START_TC`, `SET_SEQUENCE_SETTINGS`. |
-| Markers and ranges | Marker operations, in/out points, and beat grid operations. |
-| Creative metadata | Captions, effects, keyframes, transitions, link groups, track groups, transform, and audio properties. |
+| Group              | Operations                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Clip               | `MOVE_CLIP`, `RESIZE_CLIP`, `SLICE_CLIP`, `DELETE_CLIP`, `INSERT_CLIP`, `SET_MEDIA_BOUNDS`, `SET_CLIP_*`.      |
+| Track              | `ADD_TRACK`, `DELETE_TRACK`, `REORDER_TRACK`, `SET_TRACK_HEIGHT`, `SET_TRACK_NAME`, blend and opacity updates. |
+| Asset              | `REGISTER_ASSET`, `UNREGISTER_ASSET`, `SET_ASSET_STATUS`.                                                      |
+| Timeline           | `RENAME_TIMELINE`, `SET_TIMELINE_DURATION`, `SET_TIMELINE_START_TC`, `SET_SEQUENCE_SETTINGS`.                  |
+| Markers and ranges | Marker operations, in/out points, and beat grid operations.                                                    |
+| Creative metadata  | Captions, effects, keyframes, transitions, link groups, track groups, transform, and audio properties.         |
 
 Operation primitives are the contract between UI intent and document mutation. When you add a new kind of edit, add it to the operation union, validate it, apply it immutably, and ensure invariants cover the resulting state.
 
@@ -166,8 +166,8 @@ Treat external files as boundary data. Parse or import them into core types, dis
 
 ## Integration Choices
 
-| Path | Use when |
-|------|----------|
-| Headless engine | You need deterministic data transforms, tests, scripts, background processing, or a non-React UI. |
-| React engine | You want subscriptions, snapshots, default tools, snapping, playback wiring, keyboard handling, and undo/redo in one object. |
-| UI components | You want ready components that speak the React engine context and share the Timelinx design token system. |
+| Path            | Use when                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Headless engine | You need deterministic data transforms, tests, scripts, background processing, or a non-React UI.                            |
+| React engine    | You want subscriptions, snapshots, default tools, snapping, playback wiring, keyboard handling, and undo/redo in one object. |
+| UI components   | You want ready components that speak the React engine context and share the Timelinx design token system.                    |

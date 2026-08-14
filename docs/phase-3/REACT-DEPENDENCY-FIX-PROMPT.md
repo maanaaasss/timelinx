@@ -25,12 +25,15 @@ This is the more important long-term check: confirm that future releases via `pn
 ## Step 4 — Deprecation message ready (for after real republish)
 
 Draft the exact command (don't run it yet — this only makes sense after `1.0.0-beta.2` is actually published):
+
 ```
 npm deprecate @timelinx/react@1.0.0-beta.1 "Broken dependency reference (workspace:* leaked into published package.json) — use 1.0.0-beta.2 or later"
 ```
 
 ## Process rule (unchanged)
+
 Every claim needs real command output. "Should now resolve correctly" is not verification — actually extract and read the packed package.json as described in Step 2.
 
 ## Output
+
 Produce `docs/phase-3/REACT-DEPENDENCY-FIX.md` covering all steps above, ending with a clear go/no-go: is `packages/react` ready for you to manually run `npm publish --tag beta` for `1.0.0-beta.2`, and is the changesets automation confirmed safe for future releases or does it need its own fix first.

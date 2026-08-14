@@ -36,7 +36,8 @@ A fully functional timeline editor with video tracks, clip placement, zoom, drag
 - TypeScript >= 5.0
 
 <Callout type="info">
-  TypeScript is not required, but strongly recommended. All packages are written in TypeScript with full type definitions.
+  TypeScript is not required, but strongly recommended. All packages are written in TypeScript with
+  full type definitions.
 </Callout>
 
 ## Install
@@ -141,7 +142,7 @@ const result = dispatch(emptyState, {
         assetId: toAssetId('asset-1'),
         trackId: toTrackId('v1'),
         timelineStart: toFrame(0),
-        timelineEnd: toFrame(300),  // 10 seconds at 30fps
+        timelineEnd: toFrame(300), // 10 seconds at 30fps
         mediaIn: toFrame(0),
         mediaOut: toFrame(300),
       }),
@@ -157,7 +158,8 @@ export const initialState = result.nextState;
 ```
 
 <Callout type="info">
-  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()`
+  rejects the transaction with `ASSET_MISSING`.
 </Callout>
 
 ## Render the Editor
@@ -236,6 +238,7 @@ Open the page. You should see a dark timeline editor with one video track and a 
     const saved = JSON.parse(localStorage.getItem('project')!);
     const state = deserializeProject(saved); // handles migrations
     ```
+
   </Accordion>
   <Accordion id="editor-height" title="TimelineEditor has no height - how do I fix it?">
     `TimelineEditor` fills its container. Give the container an explicit height:
@@ -245,5 +248,6 @@ Open the page. You should see a dark timeline editor with one video track and a 
       <TimelineEditor engine={engine} />
     </div>
     ```
+
   </Accordion>
 </Accordions>

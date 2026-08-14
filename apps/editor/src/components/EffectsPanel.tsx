@@ -20,46 +20,66 @@ export function EffectsPanel() {
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
   const effects = useClipEffects(engine, selectedClipId ?? '');
 
-  const handleAddEffect = useCallback((effectType: string) => {
-    if (!selectedClipId) return;
-    const effect = createEffect(
-      toEffectId(`effect-${Date.now()}`),
-      effectType,
-      'preComposite',
-    );
-    engine.dispatch({
-      id: `add-effect-${Date.now()}`,
-      label: `Add ${effectType} effect`,
-      timestamp: Date.now(),
-      operations: [{ type: 'ADD_EFFECT', clipId: selectedClipId as ClipId, effect }],
-    });
-    setAddMenuOpen(false);
-  }, [engine, selectedClipId]);
+  const handleAddEffect = useCallback(
+    (effectType: string) => {
+      if (!selectedClipId) return;
+      const effect = createEffect(toEffectId(`effect-${Date.now()}`), effectType, 'preComposite');
+      engine.dispatch({
+        id: `add-effect-${Date.now()}`,
+        label: `Add ${effectType} effect`,
+        timestamp: Date.now(),
+        operations: [{ type: 'ADD_EFFECT', clipId: selectedClipId as ClipId, effect }],
+      });
+      setAddMenuOpen(false);
+    },
+    [engine, selectedClipId],
+  );
 
-  const handleRemoveEffect = useCallback((effectId: string) => {
-    if (!selectedClipId) return;
-    engine.dispatch({
-      id: `remove-effect-${Date.now()}`,
-      label: 'Remove effect',
-      timestamp: Date.now(),
-      operations: [{ type: 'REMOVE_EFFECT', clipId: selectedClipId as ClipId, effectId: effectId as import('@timelinx/core').EffectId }],
-    });
-  }, [engine, selectedClipId]);
+  const handleRemoveEffect = useCallback(
+    (effectId: string) => {
+      if (!selectedClipId) return;
+      engine.dispatch({
+        id: `remove-effect-${Date.now()}`,
+        label: 'Remove effect',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'REMOVE_EFFECT',
+            clipId: selectedClipId as ClipId,
+            effectId: effectId as import('@timelinx/core').EffectId,
+          },
+        ],
+      });
+    },
+    [engine, selectedClipId],
+  );
 
-  const handleToggleEffect = useCallback((effectId: string, enabled: boolean) => {
-    if (!selectedClipId) return;
-    engine.dispatch({
-      id: `toggle-effect-${Date.now()}`,
-      label: `${enabled ? 'Enable' : 'Disable'} effect`,
-      timestamp: Date.now(),
-      operations: [{ type: 'SET_EFFECT_ENABLED', clipId: selectedClipId as ClipId, effectId: effectId as import('@timelinx/core').EffectId, enabled }],
-    });
-  }, [engine, selectedClipId]);
+  const handleToggleEffect = useCallback(
+    (effectId: string, enabled: boolean) => {
+      if (!selectedClipId) return;
+      engine.dispatch({
+        id: `toggle-effect-${Date.now()}`,
+        label: `${enabled ? 'Enable' : 'Disable'} effect`,
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'SET_EFFECT_ENABLED',
+            clipId: selectedClipId as ClipId,
+            effectId: effectId as import('@timelinx/core').EffectId,
+            enabled,
+          },
+        ],
+      });
+    },
+    [engine, selectedClipId],
+  );
 
   if (!selectedClipId) {
     return (
       <div className="inspector-panel">
-        <div className="panel-header"><h3 className="panel-title">Effects</h3></div>
+        <div className="panel-header">
+          <h3 className="panel-title">Effects</h3>
+        </div>
         <div className="panel-content">
           <div className="empty-state">
             <p>Select a clip to view its effects</p>
@@ -73,10 +93,7 @@ export function EffectsPanel() {
     <div className="inspector-panel">
       <div className="panel-header">
         <h3 className="panel-title">Effects</h3>
-        <button
-          className="panel-action-btn"
-          onClick={() => setAddMenuOpen(!addMenuOpen)}
-        >
+        <button className="panel-action-btn" onClick={() => setAddMenuOpen(!addMenuOpen)}>
           + Add
         </button>
       </div>

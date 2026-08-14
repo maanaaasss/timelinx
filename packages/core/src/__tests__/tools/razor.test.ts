@@ -16,20 +16,20 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { RazorTool, _setIdGenerator } from '../../tools/razor';
-import { checkInvariants }            from '../../validation/invariants';
-import { dispatch }                   from '../../engine/dispatcher';
-import { createTimelineState }        from '../../types/state';
-import { createTimeline }             from '../../types/timeline';
-import { createTrack, toTrackId }     from '../../types/track';
-import { createClip, toClipId }       from '../../types/clip';
-import { createAsset, toAssetId }     from '../../types/asset';
+import { checkInvariants } from '../../validation/invariants';
+import { dispatch } from '../../engine/dispatcher';
+import { createTimelineState } from '../../types/state';
+import { createTimeline } from '../../types/timeline';
+import { createTrack, toTrackId } from '../../types/track';
+import { createClip, toClipId } from '../../types/clip';
+import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
-import { buildSnapIndex }             from '../../snap-index';
+import { buildSnapIndex } from '../../snap-index';
 import type { ToolContext, TimelinePointerEvent } from '../../tools/types';
-import type { TimelineState }  from '../../types/state';
-import type { TimelineFrame }  from '../../types/frame';
-import type { TrackId }        from '../../types/track';
-import type { ClipId }         from '../../types/clip';
+import type { TimelineState } from '../../types/state';
+import type { TimelineFrame } from '../../types/frame';
+import type { TrackId } from '../../types/track';
+import type { ClipId } from '../../types/clip';
 
 // ── ID generator hook (deterministic in tests) ─────────────────────────────
 
@@ -47,23 +47,23 @@ afterEach(() => {
 // ── Fixtures ────────────────────────────────────────────────────────────────
 
 const ASSET_ID = toAssetId('asset-1');
-const T1_ID    = toTrackId('track-1');
-const T2_ID    = toTrackId('track-2');
-const T3_ID    = toTrackId('track-3');
-const CLIP_A   = toClipId('clip-a');   // track-1, [0, 200)
-const CLIP_B   = toClipId('clip-b');   // track-2, [100, 300)
-const CLIP_C   = toClipId('clip-c');   // track-3, [0, 200)
+const T1_ID = toTrackId('track-1');
+const T2_ID = toTrackId('track-2');
+const T3_ID = toTrackId('track-3');
+const CLIP_A = toClipId('clip-a'); // track-1, [0, 200)
+const CLIP_B = toClipId('clip-b'); // track-2, [100, 300)
+const CLIP_C = toClipId('clip-c'); // track-3, [0, 200)
 
 function makeAsset() {
   return createAsset({
-    id:                   'asset-1',
-    name:                 'Test Asset',
-    mediaType:            'video',
-    filePath:             '/media/test.mp4',
-    intrinsicDuration:    toFrame(600),
-    nativeFps:            30,
+    id: 'asset-1',
+    name: 'Test Asset',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(600),
+    nativeFps: 30,
     sourceTimecodeOffset: toFrame(0),
-    status:               'online',
+    status: 'online',
   });
 }
 
@@ -77,19 +77,31 @@ function makeState3Tracks(): TimelineState {
   const asset = makeAsset();
 
   const clipA = createClip({
-    id: 'clip-a', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0),   timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-a',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const clipB = createClip({
-    id: 'clip-b', assetId: 'asset-1', trackId: 'track-2',
-    timelineStart: toFrame(100), timelineEnd: toFrame(300),
-    mediaIn: toFrame(50), mediaOut: toFrame(250),   // deliberate offset
+    id: 'clip-b',
+    assetId: 'asset-1',
+    trackId: 'track-2',
+    timelineStart: toFrame(100),
+    timelineEnd: toFrame(300),
+    mediaIn: toFrame(50),
+    mediaOut: toFrame(250), // deliberate offset
   });
   const clipC = createClip({
-    id: 'clip-c', assetId: 'asset-1', trackId: 'track-3',
-    timelineStart: toFrame(0),   timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-c',
+    assetId: 'asset-1',
+    trackId: 'track-3',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
 
   const t1 = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clipA] });
@@ -97,8 +109,10 @@ function makeState3Tracks(): TimelineState {
   const t3 = createTrack({ id: 'track-3', name: 'V3', type: 'video', clips: [clipC] });
 
   const timeline = createTimeline({
-    id: 'tl', name: 'Razor Test',
-    fps: frameRate(30), duration: toFrame(9000),
+    id: 'tl',
+    name: 'Razor Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
     startTimecode: toTimecode('00:00:00:00'),
     tracks: [t1, t2, t3],
   });
@@ -110,55 +124,64 @@ function makeState3Tracks(): TimelineState {
 function makeSingleTrackState(): TimelineState {
   const asset = makeAsset();
   const clipA = createClip({
-    id: 'clip-a', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-a',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const t1 = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clipA] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Razor Test',
-    fps: frameRate(30), duration: toFrame(9000),
+    id: 'tl',
+    name: 'Razor Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
     startTimecode: toTimecode('00:00:00:00'),
     tracks: [t1],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[ASSET_ID, asset]]) });
 }
 
-function makeCtx(
-  state: TimelineState,
-  overrides: Partial<ToolContext> = {},
-): ToolContext {
+function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): ToolContext {
   return {
     state,
-    snapIndex:      buildSnapIndex(state, toFrame(0)),
+    snapIndex: buildSnapIndex(state, toFrame(0)),
     pixelsPerFrame: 10,
-    modifiers:      { shift: false, alt: false, ctrl: false, meta: false },
-    frameAtX:       (x) => toFrame(Math.floor(x / 10)),
-    trackAtY:       (_y) => T1_ID,
-    snap:           (frame, _exclude?) => frame,   // identity
+    modifiers: { shift: false, alt: false, ctrl: false, meta: false },
+    frameAtX: (x) => toFrame(Math.floor(x / 10)),
+    trackAtY: (_y) => T1_ID,
+    snap: (frame, _exclude?) => frame, // identity
     ...overrides,
   };
 }
 
-function makeEv(overrides: {
-  frame?:    TimelineFrame;
-  trackId?:  TrackId | null;
-  clipId?:   ClipId  | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-  x?: number; y?: number; buttons?: number;
-  shiftKey?: boolean; altKey?: boolean; metaKey?: boolean;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: TimelineFrame;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+    x?: number;
+    y?: number;
+    buttons?: number;
+    shiftKey?: boolean;
+    altKey?: boolean;
+    metaKey?: boolean;
+  } = {},
+): TimelinePointerEvent {
   return {
-    frame:    overrides.frame   ?? toFrame(0),
-    trackId:  overrides.trackId ?? T1_ID,
-    clipId:   overrides.clipId  ?? null,
+    frame: overrides.frame ?? toFrame(0),
+    trackId: overrides.trackId ?? T1_ID,
+    clipId: overrides.clipId ?? null,
     captionId: overrides.captionId ?? null,
-    x:        overrides.x       ?? 0,
-    y:        overrides.y       ?? 24,
-    buttons:  overrides.buttons ?? 1,
+    x: overrides.x ?? 0,
+    y: overrides.y ?? 24,
+    buttons: overrides.buttons ?? 1,
     shiftKey: overrides.shiftKey ?? false,
-    altKey:   overrides.altKey   ?? false,
-    metaKey:  overrides.metaKey  ?? false,
+    altKey: overrides.altKey ?? false,
+    metaKey: overrides.metaKey ?? false,
   };
 }
 
@@ -181,7 +204,7 @@ describe('RazorTool — computeSlice boundary guards (via onPointerUp)', () => {
   let state: TimelineState;
 
   beforeEach(() => {
-    tool  = new RazorTool();
+    tool = new RazorTool();
     state = makeSingleTrackState();
   });
 
@@ -207,7 +230,7 @@ describe('RazorTool — computeSlice boundary guards (via onPointerUp)', () => {
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A, frame: toFrame(199) }), ctx);
     expect(tx).not.toBeNull();
     // left: [0,199), right: [199,200)
-    const insertOps = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
+    const insertOps = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
     expect(insertOps).toHaveLength(2);
     if (insertOps[0]!.type === 'INSERT_CLIP') {
       expect(insertOps[0]!.clip.timelineEnd).toBe(toFrame(199));
@@ -223,17 +246,17 @@ describe('RazorTool — computeSlice boundary guards (via onPointerUp)', () => {
 describe('RazorTool — slice math (left.mediaOut === right.mediaIn)', () => {
   it('split point: left.mediaOut equals right.mediaIn', () => {
     const state = makeSingleTrackState();
-    const tool  = new RazorTool();
-    const ctx   = makeCtx(state);
+    const tool = new RazorTool();
+    const ctx = makeCtx(state);
 
     tool.onPointerDown(makeEv({ clipId: CLIP_A, frame: toFrame(80) }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A, frame: toFrame(80) }), ctx);
     expect(tx).not.toBeNull();
 
-    const inserts = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
+    const inserts = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
     expect(inserts).toHaveLength(2);
 
-    const left  = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip;
+    const left = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip;
     const right = (inserts[1] as { type: 'INSERT_CLIP'; clip: any }).clip;
 
     // Core slice invariant
@@ -242,29 +265,29 @@ describe('RazorTool — slice math (left.mediaOut === right.mediaIn)', () => {
     expect(left.timelineEnd).toBe(toFrame(80));
     expect(right.timelineStart).toBe(toFrame(80));
     // Duration preservation
-    const leftDuration  = left.timelineEnd  - left.timelineStart;
+    const leftDuration = left.timelineEnd - left.timelineStart;
     const rightDuration = right.timelineEnd - right.timelineStart;
-    expect(leftDuration + rightDuration).toBe(200);   // original was 200 frames
+    expect(leftDuration + rightDuration).toBe(200); // original was 200 frames
   });
 
   it('clip with non-zero mediaIn: offset correctly applied to mediaIn/mediaOut', () => {
     // clip-b: timelineStart=100, mediaIn=50 → at frame 150, offset=50
     // left.mediaOut = 50 + 50 = 100, right.mediaIn = 100
     const state = makeState3Tracks();
-    const tool  = new RazorTool();
-    const ctx   = makeCtx(state);
+    const tool = new RazorTool();
+    const ctx = makeCtx(state);
 
     tool.onPointerDown(makeEv({ clipId: CLIP_B, frame: toFrame(150) }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_B, frame: toFrame(150) }), ctx);
     expect(tx).not.toBeNull();
 
-    const inserts = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
-    const left    = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip;
-    const right   = (inserts[1] as { type: 'INSERT_CLIP'; clip: any }).clip;
+    const inserts = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
+    const left = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip;
+    const right = (inserts[1] as { type: 'INSERT_CLIP'; clip: any }).clip;
 
-    expect(left.mediaIn).toBe(toFrame(50));    // original mediaIn preserved
-    expect(left.mediaOut).toBe(toFrame(100));  // 50 + (150 - 100) = 100
-    expect(right.mediaIn).toBe(toFrame(100));  // same value — the split point
+    expect(left.mediaIn).toBe(toFrame(50)); // original mediaIn preserved
+    expect(left.mediaOut).toBe(toFrame(100)); // 50 + (150 - 100) = 100
+    expect(right.mediaIn).toBe(toFrame(100)); // same value — the split point
     expect(right.mediaOut).toBe(toFrame(250)); // original mediaOut preserved
     expect(left.mediaOut).toBe(right.mediaIn); // invariant
   });
@@ -273,11 +296,11 @@ describe('RazorTool — slice math (left.mediaOut === right.mediaIn)', () => {
 // ── INTEGRATION: single-clip slice ────────────────────────────────────────
 
 describe('RazorTool — single clip slice (no shift)', () => {
-  let tool:  RazorTool;
+  let tool: RazorTool;
   let state: TimelineState;
 
   beforeEach(() => {
-    tool  = new RazorTool();
+    tool = new RazorTool();
     state = makeSingleTrackState();
   });
 
@@ -297,8 +320,6 @@ describe('RazorTool — single clip slice (no shift)', () => {
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
-
-
 
     const del = tx!.operations[0]!;
     if (del.type === 'DELETE_CLIP') {
@@ -321,7 +342,7 @@ describe('RazorTool — single clip slice (no shift)', () => {
 
     const clips = nextState.timeline.tracks[0]!.clips;
     expect(clips).toHaveLength(2);
-    expect(clips[0]!.timelineEnd).toBe(clips[1]!.timelineStart);  // adjacent, no gap
+    expect(clips[0]!.timelineEnd).toBe(clips[1]!.timelineStart); // adjacent, no gap
   });
 
   it('clicking empty space returns null', () => {
@@ -335,11 +356,11 @@ describe('RazorTool — single clip slice (no shift)', () => {
 // ── INTEGRATION: shift+click all tracks ───────────────────────────────────
 
 describe('RazorTool — shift+click: all tracks', () => {
-  let tool:  RazorTool;
-  let state: TimelineState;   // 3 tracks
+  let tool: RazorTool;
+  let state: TimelineState; // 3 tracks
 
   beforeEach(() => {
-    tool  = new RazorTool();
+    tool = new RazorTool();
     state = makeState3Tracks();
   });
 
@@ -356,12 +377,12 @@ describe('RazorTool — shift+click: all tracks', () => {
     const tx = tool.onPointerUp(makeEv({ frame: toFrame(150) }), ctx);
 
     expect(tx).not.toBeNull();
-    expect(tx!.operations).toHaveLength(9);   // 3 clips × 3 ops each
+    expect(tx!.operations).toHaveLength(9); // 3 clips × 3 ops each
 
-    const deletes = tx!.operations.filter(o => o.type === 'DELETE_CLIP');
-    const inserts = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
+    const deletes = tx!.operations.filter((o) => o.type === 'DELETE_CLIP');
+    const inserts = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
     expect(deletes).toHaveLength(3);
-    expect(inserts).toHaveLength(6);   // 2 per clip
+    expect(inserts).toHaveLength(6); // 2 per clip
   });
 
   it('shift+click 3 tracks passes checkInvariants', () => {
@@ -378,14 +399,12 @@ describe('RazorTool — shift+click: all tracks', () => {
     const tx = tool.onPointerUp(makeEv({ frame: toFrame(50) }), ctx);
 
     expect(tx).not.toBeNull();
-    expect(tx!.operations).toHaveLength(6);   // only 2 clips sliced
+    expect(tx!.operations).toHaveLength(6); // only 2 clips sliced
 
-    const deletes = tx!.operations.filter(o => o.type === 'DELETE_CLIP');
+    const deletes = tx!.operations.filter((o) => o.type === 'DELETE_CLIP');
     expect(deletes).toHaveLength(2);
     // clip-b must NOT appear in any delete op
-    const clipBDeleted = deletes.some(
-      o => o.type === 'DELETE_CLIP' && o.clipId === CLIP_B,
-    );
+    const clipBDeleted = deletes.some((o) => o.type === 'DELETE_CLIP' && o.clipId === CLIP_B);
     expect(clipBDeleted).toBe(false);
   });
 
@@ -418,15 +437,15 @@ describe('RazorTool — _setIdGenerator: new ClipIds are distinct and determinis
   it('left and right halves have distinct ids from _setIdGenerator', () => {
     // idCounter resets in global beforeEach — first two calls = 'test-id-1', 'test-id-2'
     const state = makeSingleTrackState();
-    const tool  = new RazorTool();
-    const ctx   = makeCtx(state);
+    const tool = new RazorTool();
+    const ctx = makeCtx(state);
 
     tool.onPointerDown(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
     expect(tx).not.toBeNull();
 
-    const inserts = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
-    const leftId  = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip.id;
+    const inserts = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
+    const leftId = (inserts[0] as { type: 'INSERT_CLIP'; clip: any }).clip.id;
     const rightId = (inserts[1] as { type: 'INSERT_CLIP'; clip: any }).clip.id;
 
     expect(leftId).toBe('test-id-1');
@@ -436,13 +455,13 @@ describe('RazorTool — _setIdGenerator: new ClipIds are distinct and determinis
 
   it('neither half reuses the original clip id', () => {
     const state = makeSingleTrackState();
-    const tool  = new RazorTool();
-    const ctx   = makeCtx(state);
+    const tool = new RazorTool();
+    const ctx = makeCtx(state);
 
     tool.onPointerDown(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
 
-    const inserts = tx!.operations.filter(o => o.type === 'INSERT_CLIP');
+    const inserts = tx!.operations.filter((o) => o.type === 'INSERT_CLIP');
     for (const op of inserts) {
       if (op.type === 'INSERT_CLIP') {
         expect(op.clip.id).not.toBe(CLIP_A);
@@ -456,23 +475,23 @@ describe('RazorTool — _setIdGenerator: new ClipIds are distinct and determinis
 describe('RazorTool — onCancel and structural', () => {
   it('getCursor always returns "crosshair"', () => {
     const state = makeSingleTrackState();
-    const ctx   = makeCtx(state);
-    const tool  = new RazorTool();
+    const ctx = makeCtx(state);
+    const tool = new RazorTool();
     expect(tool.getCursor(ctx)).toBe('crosshair');
   });
 
   it('onPointerMove always returns null', () => {
     const state = makeSingleTrackState();
-    const ctx   = makeCtx(state);
-    const tool  = new RazorTool();
+    const ctx = makeCtx(state);
+    const tool = new RazorTool();
     const result = tool.onPointerMove(makeEv({ clipId: CLIP_A, frame: toFrame(50) }), ctx);
     expect(result).toBeNull();
   });
 
   it('onCancel resets pending state — subsequent onPointerUp returns null', () => {
     const state = makeSingleTrackState();
-    const ctx   = makeCtx(state);
-    const tool  = new RazorTool();
+    const ctx = makeCtx(state);
+    const tool = new RazorTool();
 
     tool.onPointerDown(makeEv({ clipId: CLIP_A, frame: toFrame(100) }), ctx);
     tool.onCancel();

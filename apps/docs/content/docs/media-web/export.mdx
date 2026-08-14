@@ -19,7 +19,7 @@ import { createSimpleExporter, SimpleExportAdapter } from '@timelinx/media-web';
 ## `createSimpleExporter()`
 
 ```ts
-function createSimpleExporter(): SimpleExportAdapter
+function createSimpleExporter(): SimpleExportAdapter;
 ```
 
 ---
@@ -51,13 +51,13 @@ type ExportConfig = {
 type ExportFormat = 'webm' | 'mp4' | 'gif';
 ```
 
-| Field | Notes |
-|-------|-------|
-| `format` | `'webm'` is universally supported in Chromium. `'mp4'` requires H.264 support in `MediaRecorder` (Chromium only). `'gif'` produces animated GIFs via canvas-to-frame rendering. |
-| `width`, `height` | Output resolution. |
-| `fps` | Render frame rate. |
-| `quality` | JPEG/codec quality 0–1. Default `0.85`. |
-| `inPoint`, `outPoint` | Export range. Defaults to the full timeline. |
+| Field                 | Notes                                                                                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `format`              | `'webm'` is universally supported in Chromium. `'mp4'` requires H.264 support in `MediaRecorder` (Chromium only). `'gif'` produces animated GIFs via canvas-to-frame rendering. |
+| `width`, `height`     | Output resolution.                                                                                                                                                              |
+| `fps`                 | Render frame rate.                                                                                                                                                              |
+| `quality`             | JPEG/codec quality 0–1. Default `0.85`.                                                                                                                                         |
+| `inPoint`, `outPoint` | Export range. Defaults to the full timeline.                                                                                                                                    |
 
 ---
 
@@ -67,7 +67,9 @@ type ExportFormat = 'webm' | 'mp4' | 'gif';
 const exporter = createSimpleExporter();
 
 const result = await exporter.export(state, pipeline, config, (progress) => {
-  console.log(`${Math.round(progress.progress * 100)}%  - ${progress.framesEncoded}/${progress.totalFrames} frames`);
+  console.log(
+    `${Math.round(progress.progress * 100)}%  - ${progress.framesEncoded}/${progress.totalFrames} frames`,
+  );
 });
 ```
 
@@ -75,8 +77,8 @@ const result = await exporter.export(state, pipeline, config, (progress) => {
 
 ```ts
 type ExportProgress = {
-  readonly progress: number;        // 0.0 to 1.0
-  readonly status: string;          // 'encoding' | 'finalizing' | 'done'
+  readonly progress: number; // 0.0 to 1.0
+  readonly status: string; // 'encoding' | 'finalizing' | 'done'
   readonly framesEncoded: number;
   readonly totalFrames: number;
 };
@@ -90,7 +92,7 @@ type ExportProgress = {
 type ExportResult = {
   readonly blob: Blob;
   readonly format: ExportFormat;
-  readonly duration: number;  // seconds
+  readonly duration: number; // seconds
 };
 ```
 
@@ -132,9 +134,12 @@ function App() {
 ## Browser Limitations
 
 <Callout type="warn" title="captureStream() is Chromium-only">
-  `SimpleExportAdapter` uses `canvas.captureStream()` to feed the compositor output into `MediaRecorder`. This API is Chromium-only and is not available in Safari. On Safari, the export button should be hidden or replaced with a server-side export flow.
+  `SimpleExportAdapter` uses `canvas.captureStream()` to feed the compositor output into
+  `MediaRecorder`. This API is Chromium-only and is not available in Safari. On Safari, the export
+  button should be hidden or replaced with a server-side export flow.
 </Callout>
 
 <Callout type="warn" title="MP4 container support varies">
-  `MediaRecorder` with `'video/mp4'` is only guaranteed in Chrome 130+. For cross-browser compatibility, export as WebM and convert server-side with FFmpeg if needed.
+  `MediaRecorder` with `'video/mp4'` is only guaranteed in Chrome 130+. For cross-browser
+  compatibility, export as WebM and convert server-side with FFmpeg if needed.
 </Callout>

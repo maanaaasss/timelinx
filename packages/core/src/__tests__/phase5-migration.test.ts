@@ -56,10 +56,14 @@ function buildStateWithTracksClipsAndMarkers() {
 
   const videoTrackId = toTrackId('v1');
   const audioTrackId = toTrackId('a1');
-  state = applyTx(state, 'Add tracks', [
-    createTrack({ id: videoTrackId, name: 'V1', type: 'video', clips: [] }),
-    createTrack({ id: audioTrackId, name: 'A1', type: 'audio', clips: [] }),
-  ].map(t => ({ type: 'ADD_TRACK' as const, track: t })));
+  state = applyTx(
+    state,
+    'Add tracks',
+    [
+      createTrack({ id: videoTrackId, name: 'V1', type: 'video', clips: [] }),
+      createTrack({ id: audioTrackId, name: 'A1', type: 'audio', clips: [] }),
+    ].map((t) => ({ type: 'ADD_TRACK' as const, track: t })),
+  );
 
   const fileAssetV = createAsset({
     id: 'asset-v',

@@ -12,7 +12,7 @@ export function TextPanel() {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [textValue, setTextValue] = useState('');
 
-  const activeTrackId = selectedTrackId ?? (tracks[0]?.id ?? null);
+  const activeTrackId = selectedTrackId ?? tracks[0]?.id ?? null;
 
   const handleAddTextClip = useCallback(() => {
     if (!activeTrackId) return;
@@ -30,12 +30,14 @@ export function TextPanel() {
       id: `add-text-${Date.now()}`,
       label: 'Add text clip',
       timestamp: Date.now(),
-      operations: [{
-        type: 'INSERT_GENERATOR',
-        generator,
-        trackId: activeTrackId as TrackId,
-        atFrame: toFrame(playheadFrame),
-      }],
+      operations: [
+        {
+          type: 'INSERT_GENERATOR',
+          generator,
+          trackId: activeTrackId as TrackId,
+          atFrame: toFrame(playheadFrame),
+        },
+      ],
     });
 
     setTextValue('');
@@ -56,7 +58,9 @@ export function TextPanel() {
             onChange={(e) => setSelectedTrackId(e.target.value || null)}
           >
             {tracks.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
@@ -71,11 +75,7 @@ export function TextPanel() {
           />
         </div>
 
-        <button
-          className="panel-action-btn"
-          disabled={!activeTrackId}
-          onClick={handleAddTextClip}
-        >
+        <button className="panel-action-btn" disabled={!activeTrackId} onClick={handleAddTextClip}>
           + Add Text Clip
         </button>
 
@@ -88,8 +88,8 @@ export function TextPanel() {
 
         <div className="empty-state" style={{ marginTop: 12 }}>
           <p className="empty-state-hint">
-            Text clips appear as regular clips on the timeline.
-            Select, drag, trim, split, and delete them like any other clip.
+            Text clips appear as regular clips on the timeline. Select, drag, trim, split, and
+            delete them like any other clip.
           </p>
         </div>
       </div>

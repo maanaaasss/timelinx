@@ -59,9 +59,7 @@ export function TimelineToolbar({
         ))}
       </div>
 
-      <div className="tl-toolbar-timecode">
-        {formatTimecode(currentTime, fps)}
-      </div>
+      <div className="tl-toolbar-timecode">{formatTimecode(currentTime, fps)}</div>
 
       <div className="tl-toolbar-zoom">
         <button

@@ -19,139 +19,139 @@
   color-scheme: dark;
 
   /* ── Surfaces — cool-neutral near-blacks with real elevation ── */
-  --bg-canvas:         #0C0C10;
-  --bg-app:            #0C0C10;
-  --bg-panel:          #121216;
-  --bg-surface:        #18181E;
-  --bg-surface-raised: #1E1E26;
-  --bg-surface-soft:   #141418;
-  --bg-subtle:         #101014;
-  --bg-raised:         #1E1E26;
-  --bg-hover:          rgba(255,255,255,0.04);
-  --bg-active:         rgba(255,255,255,0.06);
-  --bg-overlay:        #242430;
-  --bg-input:          #18181E;
-  --bg-input-focus:    #1E1E26;
-  --bg-sunken:         rgba(255,255,255,0.06);
+  --bg-canvas: #0c0c10;
+  --bg-app: #0c0c10;
+  --bg-panel: #121216;
+  --bg-surface: #18181e;
+  --bg-surface-raised: #1e1e26;
+  --bg-surface-soft: #141418;
+  --bg-subtle: #101014;
+  --bg-raised: #1e1e26;
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-active: rgba(255, 255, 255, 0.06);
+  --bg-overlay: #242430;
+  --bg-input: #18181e;
+  --bg-input-focus: #1e1e26;
+  --bg-sunken: rgba(255, 255, 255, 0.06);
 
   /* ── Borders ── */
-  --border-faint:      rgba(255,255,255,0.04);
-  --border-subtle:     rgba(255,255,255,0.06);
-  --border-default:    rgba(255,255,255,0.10);
-  --border-strong:     rgba(255,255,255,0.16);
-  --border-focus:      var(--accent-400);
+  --border-faint: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-focus: var(--accent-400);
 
   /* ── Text ── */
-  --text-primary:      #ECECF0;
-  --text-secondary:    #B4B4C8;
-  --text-tertiary:     #8888A0;
-  --text-disabled:     #4A4A5C;
-  --text-inverse:      #0C0C10;
-  --text-mono:         #B4B4C8;
+  --text-primary: #ececf0;
+  --text-secondary: #b4b4c8;
+  --text-tertiary: #8888a0;
+  --text-disabled: #4a4a5c;
+  --text-inverse: #0c0c10;
+  --text-mono: #b4b4c8;
 
   /* ── Accent overrides — same hue, dark context ── */
-  --accent-subtle:     rgba(224,122,47,0.12);
-  --accent-border:     rgba(224,122,47,0.30);
-  --accent-glow:       rgba(224,122,47,0.08);
-  --accent-on-fill:    #0C0C10;
+  --accent-subtle: rgba(224, 122, 47, 0.12);
+  --accent-border: rgba(224, 122, 47, 0.3);
+  --accent-glow: rgba(224, 122, 47, 0.08);
+  --accent-on-fill: #0c0c10;
 
   /* ── Selection — electric cyan ── */
-  --selection:         #00C2FF;
-  --selection-ring:    rgba(26,191,255,0.30);
-  --selection-glow:    rgba(0,194,255,0.12);
-  --selection-handle:  #00C2FF;
-  --selection-on-fill: #0C0C10;
+  --selection: #00c2ff;
+  --selection-ring: rgba(26, 191, 255, 0.3);
+  --selection-glow: rgba(0, 194, 255, 0.12);
+  --selection-handle: #00c2ff;
+  --selection-on-fill: #0c0c10;
 
   /* ── Semantic ── */
-  --color-danger:         #EF4444;
-  --color-danger-subtle:  rgba(239,68,68,0.10);
-  --color-success:        #22C55E;
-  --color-success-subtle: rgba(34,197,94,0.10);
-  --color-warning:        #F59E0B;
-  --color-warning-subtle: rgba(245,158,11,0.10);
+  --color-danger: #ef4444;
+  --color-danger-subtle: rgba(239, 68, 68, 0.1);
+  --color-success: #22c55e;
+  --color-success-subtle: rgba(34, 197, 94, 0.1);
+  --color-warning: #f59e0b;
+  --color-warning-subtle: rgba(245, 158, 11, 0.1);
 
   /* ── Track types ── */
-  --track-video:         #3B82F6;
-  --track-video-dim:     rgba(59,130,246,0.70);
-  --track-video-bg:      rgba(59,130,246,0.12);
-  --track-video-border:  rgba(59,130,246,0.30);
-  --track-video-solid:        #2563EB;
-  --track-video-border-solid: #1D4ED8;
+  --track-video: #3b82f6;
+  --track-video-dim: rgba(59, 130, 246, 0.7);
+  --track-video-bg: rgba(59, 130, 246, 0.12);
+  --track-video-border: rgba(59, 130, 246, 0.3);
+  --track-video-solid: #2563eb;
+  --track-video-border-solid: #1d4ed8;
 
-  --track-audio:         #60A5FA;
-  --track-audio-dim:     rgba(96,165,250,0.70);
-  --track-audio-bg:      rgba(96,165,250,0.12);
-  --track-audio-border:  rgba(96,165,250,0.30);
-  --track-audio-solid:        #3B82F6;
-  --track-audio-border-solid: #2563EB;
+  --track-audio: #60a5fa;
+  --track-audio-dim: rgba(96, 165, 250, 0.7);
+  --track-audio-bg: rgba(96, 165, 250, 0.12);
+  --track-audio-border: rgba(96, 165, 250, 0.3);
+  --track-audio-solid: #3b82f6;
+  --track-audio-border-solid: #2563eb;
 
-  --track-subtitle:      #F59E0B;
-  --track-subtitle-dim:  rgba(245,158,11,0.70);
-  --track-subtitle-bg:   rgba(245,158,11,0.12);
-  --track-subtitle-border: rgba(245,158,11,0.30);
-  --track-subtitle-solid:        #D97706;
-  --track-subtitle-border-solid: #B45309;
+  --track-subtitle: #f59e0b;
+  --track-subtitle-dim: rgba(245, 158, 11, 0.7);
+  --track-subtitle-bg: rgba(245, 158, 11, 0.12);
+  --track-subtitle-border: rgba(245, 158, 11, 0.3);
+  --track-subtitle-solid: #d97706;
+  --track-subtitle-border-solid: #b45309;
 
-  --track-image:         #EC4899;
-  --track-image-bg:      rgba(236,72,153,0.12);
-  --track-image-border:  rgba(236,72,153,0.30);
-  --track-image-solid:        #DB2777;
-  --track-image-border-solid: #BE185D;
+  --track-image: #ec4899;
+  --track-image-bg: rgba(236, 72, 153, 0.12);
+  --track-image-border: rgba(236, 72, 153, 0.3);
+  --track-image-solid: #db2777;
+  --track-image-border-solid: #be185d;
 
-  --track-effect:        #10B981;
-  --track-effect-dim:    rgba(16,185,129,0.70);
-  --track-effect-bg:     rgba(16,185,129,0.12);
-  --track-effect-border: rgba(16,185,129,0.30);
-  --track-effect-solid:        #059669;
+  --track-effect: #10b981;
+  --track-effect-dim: rgba(16, 185, 129, 0.7);
+  --track-effect-bg: rgba(16, 185, 129, 0.12);
+  --track-effect-border: rgba(16, 185, 129, 0.3);
+  --track-effect-solid: #059669;
   --track-effect-border-solid: #047857;
 
-  --track-music:         #A855F7;
-  --track-music-dim:     rgba(168,85,247,0.70);
-  --track-music-bg:      rgba(168,85,247,0.12);
-  --track-music-border:  rgba(168,85,247,0.30);
-  --track-music-solid:        #9333EA;
-  --track-music-border-solid: #7E22CE;
+  --track-music: #a855f7;
+  --track-music-dim: rgba(168, 85, 247, 0.7);
+  --track-music-bg: rgba(168, 85, 247, 0.12);
+  --track-music-border: rgba(168, 85, 247, 0.3);
+  --track-music-solid: #9333ea;
+  --track-music-border-solid: #7e22ce;
 
   /* ── Glow values ── */
-  --glow-video:     rgba(59,130,246,0.12);
-  --glow-audio:     rgba(96,165,250,0.12);
-  --glow-subtitle:  rgba(245,158,11,0.12);
-  --glow-image:     rgba(236,72,153,0.12);
-  --glow-effect:    rgba(16,185,129,0.12);
-  --glow-music:     rgba(168,85,247,0.12);
+  --glow-video: rgba(59, 130, 246, 0.12);
+  --glow-audio: rgba(96, 165, 250, 0.12);
+  --glow-subtitle: rgba(245, 158, 11, 0.12);
+  --glow-image: rgba(236, 72, 153, 0.12);
+  --glow-effect: rgba(16, 185, 129, 0.12);
+  --glow-music: rgba(168, 85, 247, 0.12);
 
   /* ── Shadows ── */
-  --shadow-xs:      0 1px 2px rgba(0,0,0,0.30);
-  --shadow-sm:      0 2px 8px rgba(0,0,0,0.40);
-  --shadow-md:      0 4px 16px rgba(0,0,0,0.50);
-  --shadow-lg:      0 8px 32px rgba(0,0,0,0.60);
-  --shadow-overlay: 0 16px 48px rgba(0,0,0,0.70);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.7);
 
   /* ── State overlays ── */
-  --state-hover:  rgba(255,255,255,0.04);
-  --state-active: rgba(255,255,255,0.06);
-  --state-focus:  rgba(255,255,255,0.08);
+  --state-hover: rgba(255, 255, 255, 0.04);
+  --state-active: rgba(255, 255, 255, 0.06);
+  --state-focus: rgba(255, 255, 255, 0.08);
 
   /* ── Scrollbar ── */
-  --scrollbar-thumb:       rgba(255,255,255,0.08);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.14);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.14);
 
   /* ── Rings ── */
   --ring-surface: inset 0 0 0 1px var(--border-subtle);
-  --ring-raised:  inset 0 0 0 1px var(--border-default);
-  --ring-accent:  0 0 0 2px var(--accent-subtle);
-  --ring-focus:   0 0 0 2px rgba(224,122,47,0.30);
+  --ring-raised: inset 0 0 0 1px var(--border-default);
+  --ring-accent: 0 0 0 2px var(--accent-subtle);
+  --ring-focus: 0 0 0 2px rgba(224, 122, 47, 0.3);
 
   /* ── Playhead — amber LED with glow ── */
-  --playhead-color:  var(--accent-400);
-  --playhead-shadow: 0 0 8px rgba(224,122,47,0.40);
+  --playhead-color: var(--accent-400);
+  --playhead-shadow: 0 0 8px rgba(224, 122, 47, 0.4);
 
   /* ── Timeline dark overrides ── */
-  --tl-snap-color:      var(--selection);
-  --tl-snap-glow:       rgba(0,194,255,0.20);
-  --tl-grid-line:       rgba(255,255,255,0.04);
-  --tl-trim-handle-bg:        rgba(255,255,255,0.50);
-  --tl-trim-handle-active-bg: rgba(255,255,255,0.15);
+  --tl-snap-color: var(--selection);
+  --tl-snap-glow: rgba(0, 194, 255, 0.2);
+  --tl-grid-line: rgba(255, 255, 255, 0.04);
+  --tl-trim-handle-bg: rgba(255, 255, 255, 0.5);
+  --tl-trim-handle-active-bg: rgba(255, 255, 255, 0.15);
   --tl-playhead-shadow: 0 0 10px var(--selection-glow);
-  --tl-ring-accent:     0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
+  --tl-ring-accent: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
 }

@@ -21,9 +21,7 @@ interface Marker {
   color: string;
 }
 
-export const MarkersPanel = React.memo(function MarkersPanel({
-  className,
-}: MarkersPanelProps) {
+export const MarkersPanel = React.memo(function MarkersPanel({ className }: MarkersPanelProps) {
   const { engine } = useTimelineContext();
   const markers = useMarkers(engine) as unknown as Marker[];
 
@@ -102,7 +100,9 @@ export const MarkersPanel = React.memo(function MarkersPanel({
         {markers.length === 0 ? (
           <div className="empty-state">
             <p>No markers yet</p>
-            <p className="empty-state-hint">Click + to add a marker at the current playhead position</p>
+            <p className="empty-state-hint">
+              Click + to add a marker at the current playhead position
+            </p>
           </div>
         ) : (
           <ul className="marker-list">
@@ -110,12 +110,15 @@ export const MarkersPanel = React.memo(function MarkersPanel({
               <li
                 key={marker.id}
                 className="marker-item"
-                onClick={() => handleJumpTo(marker.type === 'point' ? (marker.frame as number) : (marker.frameStart as number))}
+                onClick={() =>
+                  handleJumpTo(
+                    marker.type === 'point'
+                      ? (marker.frame as number)
+                      : (marker.frameStart as number),
+                  )
+                }
               >
-                <div
-                  className="marker-color"
-                  style={{ background: marker.color }}
-                />
+                <div className="marker-color" style={{ background: marker.color }} />
                 <div className="marker-info">
                   <span className="marker-label">{marker.label}</span>
                   <span className="marker-timecode">{formatMarkerPosition(marker)}</span>

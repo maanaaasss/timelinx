@@ -53,15 +53,11 @@ describe('createRegistry', () => {
   });
 
   it('throws if defaultId is not in the tools array', () => {
-    expect(() =>
-      createRegistry([toolA], toToolId('tool-b'))
-    ).toThrow('tool-b');
+    expect(() => createRegistry([toolA], toToolId('tool-b'))).toThrow('tool-b');
   });
 
   it('throws on empty tools array with any defaultId', () => {
-    expect(() =>
-      createRegistry([], toToolId('x'))
-    ).toThrow();
+    expect(() => createRegistry([], toToolId('x'))).toThrow();
   });
 });
 
@@ -119,9 +115,7 @@ describe('activateTool', () => {
 
   it('throws if id is not in the registry', () => {
     const reg = createRegistry([toolA], toToolId('tool-a'));
-    expect(() =>
-      activateTool(reg, toToolId('nonexistent'))
-    ).toThrow('nonexistent');
+    expect(() => activateTool(reg, toToolId('nonexistent'))).toThrow('nonexistent');
   });
 
   it('throws AFTER calling onCancel on the outgoing tool', () => {
@@ -196,26 +190,17 @@ describe('NoOpTool', () => {
   });
 
   it('onPointerMove returns null', () => {
-    const result = NoOpTool.onPointerMove(
-      {} as TimelinePointerEvent,
-      {} as ToolContext,
-    );
+    const result = NoOpTool.onPointerMove({} as TimelinePointerEvent, {} as ToolContext);
     expect(result).toBeNull();
   });
 
   it('onPointerUp returns null', () => {
-    const result = NoOpTool.onPointerUp(
-      {} as TimelinePointerEvent,
-      {} as ToolContext,
-    );
+    const result = NoOpTool.onPointerUp({} as TimelinePointerEvent, {} as ToolContext);
     expect(result).toBeNull();
   });
 
   it('onKeyDown returns null', () => {
-    const result = NoOpTool.onKeyDown(
-      {} as TimelineKeyEvent,
-      {} as ToolContext,
-    );
+    const result = NoOpTool.onKeyDown({} as TimelineKeyEvent, {} as ToolContext);
     expect(result).toBeNull();
   });
 

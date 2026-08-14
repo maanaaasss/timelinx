@@ -21,7 +21,6 @@ import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
 import type { TimelineState } from '../types/state';
 import type { Transaction } from '../types/operations';
-import type { TimelineFrame } from '../types/frame';
 import { createTransition, toTransitionId } from '../types/transition';
 import { LINEAR_EASING } from '../types/easing';
 import { applyOperation } from '../engine/apply';

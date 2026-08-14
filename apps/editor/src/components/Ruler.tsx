@@ -15,11 +15,14 @@ export const Ruler = forwardRef<HTMLDivElement, RulerProps>(function Ruler(
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollLeftRef = useRef(0);
 
-  const setRef = useCallback((el: HTMLDivElement | null) => {
-    (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-    if (typeof ref === 'function') ref(el);
-    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
-  }, [ref]);
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      if (typeof ref === 'function') ref(el);
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    },
+    [ref],
+  );
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -68,7 +71,7 @@ export const Ruler = forwardRef<HTMLDivElement, RulerProps>(function Ruler(
     ctx.textAlign = 'center';
 
     for (let i = startFrame; i <= endFrame; i++) {
-      const x = (i * ppf) - sl;
+      const x = i * ppf - sl;
       if (x < -ppf || x > width + ppf) continue;
 
       const isMajor = i % tickInterval === 0;
@@ -92,7 +95,7 @@ export const Ruler = forwardRef<HTMLDivElement, RulerProps>(function Ruler(
       }
     }
 
-    const playheadX = (playheadFrame * ppf) - sl;
+    const playheadX = playheadFrame * ppf - sl;
     if (playheadX >= 0 && playheadX <= width) {
       ctx.strokeStyle = '#ff4a6a';
       ctx.lineWidth = 2;

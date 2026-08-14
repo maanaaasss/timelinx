@@ -91,7 +91,18 @@ export function TimelineProvider({
       rulerHeight,
       toolbarHeight,
     }),
-    [engine, ppf, scrollLeft, vpWidth, setPpf, setScrollLeft, setVpWidth, labelWidth, rulerHeight, toolbarHeight],
+    [
+      engine,
+      ppf,
+      scrollLeft,
+      vpWidth,
+      setPpf,
+      setScrollLeft,
+      setVpWidth,
+      labelWidth,
+      rulerHeight,
+      toolbarHeight,
+    ],
   );
 
   return <TimelineCtx.Provider value={value}>{children}</TimelineCtx.Provider>;

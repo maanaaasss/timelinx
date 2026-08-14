@@ -191,7 +191,11 @@ describe('Phase 3 — MOVE_MARKER', () => {
       linkedClipId: null,
     };
     let next = applyOperation(state, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_MARKER', markerId: toMarkerId('m1'), newFrame: toFrame(100) });
+    next = applyOperation(next, {
+      type: 'MOVE_MARKER',
+      markerId: toMarkerId('m1'),
+      newFrame: toFrame(100),
+    });
     const m = next.timeline.markers[0] as { type: 'point'; frame: number };
     expect(m.frame).toBe(100);
     expect(checkInvariants(next)).toEqual([]);
@@ -210,7 +214,11 @@ describe('Phase 3 — MOVE_MARKER', () => {
       linkedClipId: null,
     };
     let next = applyOperation(state, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_MARKER', markerId: toMarkerId('r1'), newFrame: toFrame(100) });
+    next = applyOperation(next, {
+      type: 'MOVE_MARKER',
+      markerId: toMarkerId('r1'),
+      newFrame: toFrame(100),
+    });
     const r = next.timeline.markers[0] as { frameStart: number; frameEnd: number };
     expect(r.frameStart).toBe(100);
     expect(r.frameEnd).toBe(140); // 100 + 40
@@ -219,7 +227,12 @@ describe('Phase 3 — MOVE_MARKER', () => {
 
   it('dispatch MOVE_MARKER with invalid id returns NOT_FOUND', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Move', [{ type: 'MOVE_MARKER', markerId: toMarkerId('none'), newFrame: toFrame(10) }]));
+    const result = dispatch(
+      state,
+      makeTx('Move', [
+        { type: 'MOVE_MARKER', markerId: toMarkerId('none'), newFrame: toFrame(10) },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('NOT_FOUND');
   });
@@ -247,7 +260,10 @@ describe('Phase 3 — DELETE_MARKER', () => {
 
   it('dispatch DELETE_MARKER with invalid id returns NOT_FOUND', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Del', [{ type: 'DELETE_MARKER', markerId: toMarkerId('none') }]));
+    const result = dispatch(
+      state,
+      makeTx('Del', [{ type: 'DELETE_MARKER', markerId: toMarkerId('none') }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('NOT_FOUND');
   });
@@ -356,18 +372,23 @@ describe('Phase 3 — INSERT_GENERATOR', () => {
 
   it('dispatch INSERT_GENERATOR with invalid trackId rejects', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Gen', [{
-      type: 'INSERT_GENERATOR',
-      generator: {
-        id: toGeneratorId('g1'),
-        type: 'solid',
-        params: {},
-        duration: toFrame(50),
-        name: 'S',
-      },
-      trackId: toTrackId('none'),
-      atFrame: toFrame(0),
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Gen', [
+        {
+          type: 'INSERT_GENERATOR',
+          generator: {
+            id: toGeneratorId('g1'),
+            type: 'solid',
+            params: {},
+            duration: toFrame(50),
+            name: 'S',
+          },
+          trackId: toTrackId('none'),
+          atFrame: toFrame(0),
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
   });
 });
@@ -386,7 +407,11 @@ describe('Phase 3 — ADD_CAPTION', () => {
       style: defaultCaptionStyle,
       burnIn: false,
     };
-    const next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
+    const next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
     const track = next.timeline.tracks[0]!;
     expect(track.captions).toHaveLength(1);
     expect(track.captions[0]!.text).toBe('Hello');
@@ -403,17 +428,45 @@ describe('Phase 3 — ADD_CAPTION', () => {
       language: 'en-US',
       burnIn: false,
     };
-    const next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
+    const next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
     expect(next.timeline.tracks[0]!.captions[0]!.style).toEqual(defaultCaptionStyleFromCore);
     expect(checkInvariants(next)).toEqual([]);
   });
 
   it('ADD_CAPTION sorts captions by startFrame', () => {
     const state = makeBaseState();
-    const c1 = { id: toCaptionId('cap-1'), text: 'First', startFrame: toFrame(100), endFrame: toFrame(200), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    const c2 = { id: toCaptionId('cap-2'), text: 'Second', startFrame: toFrame(0), endFrame: toFrame(50), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption: c1, trackId: toTrackId('track-1') });
-    next = applyOperation(next, { type: 'ADD_CAPTION', caption: c2, trackId: toTrackId('track-1') });
+    const c1 = {
+      id: toCaptionId('cap-1'),
+      text: 'First',
+      startFrame: toFrame(100),
+      endFrame: toFrame(200),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    const c2 = {
+      id: toCaptionId('cap-2'),
+      text: 'Second',
+      startFrame: toFrame(0),
+      endFrame: toFrame(50),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption: c1,
+      trackId: toTrackId('track-1'),
+    });
+    next = applyOperation(next, {
+      type: 'ADD_CAPTION',
+      caption: c2,
+      trackId: toTrackId('track-1'),
+    });
     const captions = next.timeline.tracks[0]!.captions;
     expect(captions[0]!.startFrame).toBe(0);
     expect(captions[1]!.startFrame).toBe(100);
@@ -422,10 +475,35 @@ describe('Phase 3 — ADD_CAPTION', () => {
 
   it('ADD_CAPTION with overlapping caption is rejected by validator', () => {
     const state = makeBaseState();
-    const c1 = { id: toCaptionId('cap-1'), text: 'A', startFrame: toFrame(0), endFrame: toFrame(100), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption: c1, trackId: toTrackId('track-1') });
-    const c2 = { id: toCaptionId('cap-2'), text: 'B', startFrame: toFrame(50), endFrame: toFrame(150), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    const result = dispatch(next, makeTx('Add overlapping', [{ type: 'ADD_CAPTION', caption: c2, trackId: toTrackId('track-1') }]));
+    const c1 = {
+      id: toCaptionId('cap-1'),
+      text: 'A',
+      startFrame: toFrame(0),
+      endFrame: toFrame(100),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption: c1,
+      trackId: toTrackId('track-1'),
+    });
+    const c2 = {
+      id: toCaptionId('cap-2'),
+      text: 'B',
+      startFrame: toFrame(50),
+      endFrame: toFrame(150),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    const result = dispatch(
+      next,
+      makeTx('Add overlapping', [
+        { type: 'ADD_CAPTION', caption: c2, trackId: toTrackId('track-1') },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('OVERLAP');
   });
@@ -445,7 +523,11 @@ describe('Phase 3 — EDIT_CAPTION', () => {
       style: defaultCaptionStyle,
       burnIn: false,
     };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
     next = applyOperation(next, {
       type: 'EDIT_CAPTION',
       captionId: toCaptionId('cap-1'),
@@ -458,12 +540,17 @@ describe('Phase 3 — EDIT_CAPTION', () => {
 
   it('dispatch EDIT_CAPTION with captionId not on track returns NOT_FOUND', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Edit', [{
-      type: 'EDIT_CAPTION',
-      captionId: toCaptionId('nope'),
-      trackId: toTrackId('track-1'),
-      text: 'x',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Edit', [
+        {
+          type: 'EDIT_CAPTION',
+          captionId: toCaptionId('nope'),
+          trackId: toTrackId('track-1'),
+          text: 'x',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('NOT_FOUND');
   });
@@ -479,7 +566,11 @@ describe('Phase 3 — EDIT_CAPTION', () => {
       style: defaultCaptionStyle,
       burnIn: false,
     };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
     next = applyOperation(next, {
       type: 'EDIT_CAPTION',
       captionId: toCaptionId('cap-1'),
@@ -509,8 +600,16 @@ describe('Phase 3 — DELETE_CAPTION', () => {
       style: defaultCaptionStyle,
       burnIn: false,
     };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
-    next = applyOperation(next, { type: 'DELETE_CAPTION', captionId: toCaptionId('cap-1'), trackId: toTrackId('track-1') });
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
+    next = applyOperation(next, {
+      type: 'DELETE_CAPTION',
+      captionId: toCaptionId('cap-1'),
+      trackId: toTrackId('track-1'),
+    });
     expect(next.timeline.tracks[0]!.captions).toHaveLength(0);
     expect(checkInvariants(next)).toEqual([]);
   });
@@ -610,7 +709,11 @@ describe('Phase 3 — CAPTION_OUT_OF_BOUNDS', () => {
       style: defaultCaptionStyle,
       burnIn: false,
     };
-    const next = applyOperation(state, { type: 'ADD_CAPTION', caption, trackId: toTrackId('track-1') });
+    const next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption,
+      trackId: toTrackId('track-1'),
+    });
     const violations = checkInvariants(next);
     expect(violations.some((v) => v.type === 'CAPTION_OUT_OF_BOUNDS')).toBe(true);
   });
@@ -619,10 +722,34 @@ describe('Phase 3 — CAPTION_OUT_OF_BOUNDS', () => {
 describe('Phase 3 — CAPTION_OVERLAP', () => {
   it('overlapping captions on same track violate invariant', () => {
     const state = makeBaseState();
-    const c1 = { id: toCaptionId('cap-1'), text: 'A', startFrame: toFrame(0), endFrame: toFrame(100), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    const c2 = { id: toCaptionId('cap-2'), text: 'B', startFrame: toFrame(50), endFrame: toFrame(150), language: 'en', style: defaultCaptionStyle, burnIn: false };
-    let next = applyOperation(state, { type: 'ADD_CAPTION', caption: c1, trackId: toTrackId('track-1') });
-    next = applyOperation(next, { type: 'ADD_CAPTION', caption: c2, trackId: toTrackId('track-1') });
+    const c1 = {
+      id: toCaptionId('cap-1'),
+      text: 'A',
+      startFrame: toFrame(0),
+      endFrame: toFrame(100),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    const c2 = {
+      id: toCaptionId('cap-2'),
+      text: 'B',
+      startFrame: toFrame(50),
+      endFrame: toFrame(150),
+      language: 'en',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    };
+    let next = applyOperation(state, {
+      type: 'ADD_CAPTION',
+      caption: c1,
+      trackId: toTrackId('track-1'),
+    });
+    next = applyOperation(next, {
+      type: 'ADD_CAPTION',
+      caption: c2,
+      trackId: toTrackId('track-1'),
+    });
     const violations = checkInvariants(next);
     expect(violations.some((v) => v.type === 'CAPTION_OVERLAP')).toBe(true);
   });
@@ -633,10 +760,24 @@ describe('Phase 3 — CAPTION_OVERLAP', () => {
 describe('Phase 3 — dispatch mixed Phase 3 ops', () => {
   it('transaction with ADD_MARKER + SET_IN_POINT applies both', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Mixed', [
-      { type: 'ADD_MARKER', marker: { type: 'point', id: toMarkerId('m1'), frame: toFrame(10), label: 'A', color: '#f00', scope: 'global', linkedClipId: null } },
-      { type: 'SET_IN_POINT', frame: toFrame(5) },
-    ]));
+    const result = dispatch(
+      state,
+      makeTx('Mixed', [
+        {
+          type: 'ADD_MARKER',
+          marker: {
+            type: 'point',
+            id: toMarkerId('m1'),
+            frame: toFrame(10),
+            label: 'A',
+            color: '#f00',
+            scope: 'global',
+            linkedClipId: null,
+          },
+        },
+        { type: 'SET_IN_POINT', frame: toFrame(5) },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (result.accepted) {
       expect(result.nextState.timeline.markers).toHaveLength(1);
@@ -647,10 +788,24 @@ describe('Phase 3 — dispatch mixed Phase 3 ops', () => {
 
   it('ADD_MARKER then MOVE_MARKER in same tx works', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Add+Move', [
-      { type: 'ADD_MARKER', marker: { type: 'point', id: toMarkerId('m1'), frame: toFrame(20), label: 'A', color: '#f00', scope: 'global', linkedClipId: null } },
-      { type: 'MOVE_MARKER', markerId: toMarkerId('m1'), newFrame: toFrame(80) },
-    ]));
+    const result = dispatch(
+      state,
+      makeTx('Add+Move', [
+        {
+          type: 'ADD_MARKER',
+          marker: {
+            type: 'point',
+            id: toMarkerId('m1'),
+            frame: toFrame(20),
+            label: 'A',
+            color: '#f00',
+            scope: 'global',
+            linkedClipId: null,
+          },
+        },
+        { type: 'MOVE_MARKER', markerId: toMarkerId('m1'), newFrame: toFrame(80) },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (result.accepted) {
       const m = result.nextState.timeline.markers[0] as { frame: number };
@@ -670,7 +825,13 @@ describe('Phase 3 — backward compat', () => {
 
   it('existing createTimeline/createTrack call sites still produce valid state', () => {
     const track = createTrack({ id: 't1', name: 'V1', type: 'video', clips: [] });
-    const timeline = createTimeline({ id: 'tl', name: 'T', fps: 24, duration: toFrame(100), tracks: [track] });
+    const timeline = createTimeline({
+      id: 'tl',
+      name: 'T',
+      fps: 24,
+      duration: toFrame(100),
+      tracks: [track],
+    });
     const state = createTimelineState({ timeline, assetRegistry: new Map() });
     expect(checkInvariants(state)).toEqual([]);
   });
@@ -729,7 +890,11 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
       clipId: toClipId('clip-1'),
     };
     let next = applyOperation(state, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(200) });
+    next = applyOperation(next, {
+      type: 'MOVE_CLIP',
+      clipId: toClipId('clip-1'),
+      newTimelineStart: toFrame(200),
+    });
     expect(next.timeline.markers).toHaveLength(1);
     const m = next.timeline.markers[0] as { type: 'point'; frame: number };
     expect(m.frame).toBe(250); // 50 + 200
@@ -750,10 +915,14 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
       clipId: toClipId('clip-1'),
     };
     let next = applyOperation(state, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(100) });
+    next = applyOperation(next, {
+      type: 'MOVE_CLIP',
+      clipId: toClipId('clip-1'),
+      newTimelineStart: toFrame(100),
+    });
     const r = next.timeline.markers[0] as { frameStart: number; frameEnd: number };
     expect(r.frameStart).toBe(110); // 10 + 100 (delta: clip was at 0, moved to 100)
-    expect(r.frameEnd).toBe(140);   // 40 + 100
+    expect(r.frameEnd).toBe(140); // 40 + 100
     expect(checkInvariants(next)).toEqual([]);
   });
 
@@ -768,7 +937,12 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
       mediaIn: toFrame(0),
       mediaOut: toFrame(100),
     });
-    const trackWithTwo = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [state.timeline.tracks[0]!.clips[0]!, clip2] });
+    const trackWithTwo = createTrack({
+      id: 'track-1',
+      name: 'V1',
+      type: 'video',
+      clips: [state.timeline.tracks[0]!.clips[0]!, clip2],
+    });
     const tl = createTimeline({ ...state.timeline, tracks: [trackWithTwo] });
     const state2 = createTimelineState({ timeline: tl, assetRegistry: state.assetRegistry });
     const marker = {
@@ -782,7 +956,11 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
       clipId: toClipId('clip-2'),
     };
     let next = applyOperation(state2, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(50) });
+    next = applyOperation(next, {
+      type: 'MOVE_CLIP',
+      clipId: toClipId('clip-1'),
+      newTimelineStart: toFrame(50),
+    });
     const m = next.timeline.markers[0] as { frame: number };
     expect(m.frame).toBe(250); // unchanged — linked to clip-2, not clip-1
     expect(checkInvariants(next)).toEqual([]);
@@ -800,7 +978,11 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
       linkedClipId: null,
     };
     let next = applyOperation(state, { type: 'ADD_MARKER', marker });
-    next = applyOperation(next, { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(200) });
+    next = applyOperation(next, {
+      type: 'MOVE_CLIP',
+      clipId: toClipId('clip-1'),
+      newTimelineStart: toFrame(200),
+    });
     const m = next.timeline.markers[0] as { frame: number };
     expect(m.frame).toBe(50); // unchanged — no clipId
     expect(checkInvariants(next)).toEqual([]);
@@ -843,15 +1025,39 @@ describe('Phase 3 Step 2 — marker search', () => {
     const state = makeBaseState();
     let next = applyOperation(state, {
       type: 'ADD_MARKER',
-      marker: { type: 'point', id: toMarkerId('m1'), frame: toFrame(10), label: 'A', color: '#ff0000', scope: 'global', linkedClipId: null },
+      marker: {
+        type: 'point',
+        id: toMarkerId('m1'),
+        frame: toFrame(10),
+        label: 'A',
+        color: '#ff0000',
+        scope: 'global',
+        linkedClipId: null,
+      },
     });
     next = applyOperation(next, {
       type: 'ADD_MARKER',
-      marker: { type: 'point', id: toMarkerId('m2'), frame: toFrame(20), label: 'B', color: '#00ff00', scope: 'global', linkedClipId: null },
+      marker: {
+        type: 'point',
+        id: toMarkerId('m2'),
+        frame: toFrame(20),
+        label: 'B',
+        color: '#00ff00',
+        scope: 'global',
+        linkedClipId: null,
+      },
     });
     next = applyOperation(next, {
       type: 'ADD_MARKER',
-      marker: { type: 'point', id: toMarkerId('m3'), frame: toFrame(30), label: 'C', color: '#ff0000', scope: 'global', linkedClipId: null },
+      marker: {
+        type: 'point',
+        id: toMarkerId('m3'),
+        frame: toFrame(30),
+        label: 'C',
+        color: '#ff0000',
+        scope: 'global',
+        linkedClipId: null,
+      },
     });
     const red = findMarkersByColor(next, '#ff0000');
     expect(red).toHaveLength(2);
@@ -864,7 +1070,15 @@ describe('Phase 3 Step 2 — marker search', () => {
     const state = makeBaseState();
     let next = applyOperation(state, {
       type: 'ADD_MARKER',
-      marker: { type: 'point', id: toMarkerId('m1'), frame: toFrame(10), label: 'Foo Bar', color: '#f00', scope: 'global', linkedClipId: null },
+      marker: {
+        type: 'point',
+        id: toMarkerId('m1'),
+        frame: toFrame(10),
+        label: 'Foo Bar',
+        color: '#f00',
+        scope: 'global',
+        linkedClipId: null,
+      },
     });
     expect(findMarkersByLabel(next, 'foo')).toHaveLength(1);
     expect(findMarkersByLabel(next, 'FOO')).toHaveLength(1);

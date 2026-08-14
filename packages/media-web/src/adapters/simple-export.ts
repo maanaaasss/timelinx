@@ -235,16 +235,15 @@ export class SimpleExportAdapter {
   ): Promise<Blob | null> {
     return new Promise((resolve, reject) => {
       if (typeof HTMLCanvasElement !== 'undefined' && canvas instanceof HTMLCanvasElement) {
-        canvas.toBlob(
-          (blob) => resolve(blob),
-          `image/${format}`,
-          quality,
-        );
+        canvas.toBlob((blob) => resolve(blob), `image/${format}`, quality);
       } else if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({
-          type: `image/${format}`,
-          quality,
-        }).then(resolve).catch(reject);
+        canvas
+          .convertToBlob({
+            type: `image/${format}`,
+            quality,
+          })
+          .then(resolve)
+          .catch(reject);
       } else {
         resolve(null);
       }
@@ -288,8 +287,6 @@ export class SimpleExportAdapter {
 /**
  * Create a simple export adapter with default configuration.
  */
-export function createSimpleExporter(
-  config?: ExportConfig,
-): SimpleExportAdapter {
+export function createSimpleExporter(config?: ExportConfig): SimpleExportAdapter {
   return new SimpleExportAdapter(config);
 }

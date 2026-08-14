@@ -30,31 +30,28 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
-import type { TimelineFrame }  from '../types/frame';
-import type { Transaction }    from '../types/operations';
-import type { TimelineState }  from '../types/state';
+import type { TimelineFrame } from '../types/frame';
+import type { Transaction } from '../types/operations';
 import { findClipById } from '../systems/queries';
 
 let _txSeq = 0;
-function txId(): string { return `slip-tx-${++_txSeq}`; }
+function txId(): string {
+  return `slip-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // SlipTool
 // ---------------------------------------------------------------------------
 
 export class SlipTool implements ITool {
-  readonly id:          ToolId = toToolId('slip');
-  readonly shortcutKey: string = 'y';   // Premiere convention for slip
+  readonly id: ToolId = toToolId('slip');
+  readonly shortcutKey: string = 'y'; // Premiere convention for slip
 
   // ── 2 drag-tracking vars ──────────────────────────────────────────────────
   /** Clip being slipped. Null when idle. */
-  private dragClipId:     ClipId        | null = null;
+  private dragClipId: ClipId | null = null;
   /** Frame at which pointer went down. Delta = currentFrame - dragStartFrame. */
   private dragStartFrame: TimelineFrame | null = null;
 
@@ -66,21 +63,21 @@ export class SlipTool implements ITool {
 
   getCursor(_ctx: ToolContext): string {
     if (this.dragClipId !== null) return 'ew-resize'; // mid-drag: resize cursor
-    if (this.isHoveringClip)      return 'grab';      // hovering: grab cursor
+    if (this.isHoveringClip) return 'grab'; // hovering: grab cursor
     return 'default';
   }
 
   // ── ITool: getSnapCandidateTypes ─────────────────────────────────────────
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
-    return [];  // slip is in media space — no timeline snapping
+    return []; // slip is in media space — no timeline snapping
   }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, _ctx: ToolContext): void {
-    if (event.clipId === null) return;  // clicked empty space
-    this.dragClipId     = event.clipId;
+    if (event.clipId === null) return; // clicked empty space
+    this.dragClipId = event.clipId;
     this.dragStartFrame = event.frame;
   }
 
@@ -99,16 +96,16 @@ export class SlipTool implements ITool {
     const asset = ctx.state.assetRegistry.get(liveClip.assetId);
     if (!asset) return null;
 
-    const rawDelta     = (event.frame - this.dragStartFrame) as number;
-    const minDelta     = -liveClip.mediaIn as number;
-    const maxDelta     = (asset.intrinsicDuration - liveClip.mediaOut) as number;
+    const rawDelta = (event.frame - this.dragStartFrame) as number;
+    const minDelta = -liveClip.mediaIn as number;
+    const maxDelta = (asset.intrinsicDuration - liveClip.mediaOut) as number;
     const clampedDelta = Math.max(minDelta, Math.min(maxDelta, rawDelta));
 
     // Ghost: same timeline bounds, shifted media window
     const ghostClip: Clip = {
       ...liveClip,
       // timelineStart and timelineEnd intentionally NOT overridden — clip stays put
-      mediaIn:  (liveClip.mediaIn  + clampedDelta) as TimelineFrame,
+      mediaIn: (liveClip.mediaIn + clampedDelta) as TimelineFrame,
       mediaOut: (liveClip.mediaOut + clampedDelta) as TimelineFrame,
     };
 
@@ -137,22 +134,22 @@ export class SlipTool implements ITool {
     const asset = ctx.state.assetRegistry.get(liveClip.assetId);
     if (!asset) return null;
 
-    const minDelta     = -liveClip.mediaIn as number;
-    const maxDelta     = (asset.intrinsicDuration - liveClip.mediaOut) as number;
+    const minDelta = -liveClip.mediaIn as number;
+    const maxDelta = (asset.intrinsicDuration - liveClip.mediaOut) as number;
     const clampedDelta = Math.max(minDelta, Math.min(maxDelta, rawDelta));
 
     // No-op: media window didn't shift
     if (clampedDelta === 0) return null;
 
     return {
-      id:        txId(),
-      label:     'Slip',
+      id: txId(),
+      label: 'Slip',
       timestamp: Date.now(),
       operations: [
         {
-          type:     'SET_MEDIA_BOUNDS',
+          type: 'SET_MEDIA_BOUNDS',
           clipId,
-          mediaIn:  (liveClip.mediaIn  + clampedDelta) as TimelineFrame,
+          mediaIn: (liveClip.mediaIn + clampedDelta) as TimelineFrame,
           mediaOut: (liveClip.mediaOut + clampedDelta) as TimelineFrame,
         },
       ],
@@ -170,7 +167,7 @@ export class SlipTool implements ITool {
   // ── ITool: onCancel ───────────────────────────────────────────────────────
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
-    this.dragClipId     = null;
+    this.dragClipId = null;
     this.dragStartFrame = null;
     this.isHoveringClip = false;
   }
@@ -178,7 +175,7 @@ export class SlipTool implements ITool {
   // ── Private ───────────────────────────────────────────────────────────────
 
   private _resetDragState(): void {
-    this.dragClipId     = null;
+    this.dragClipId = null;
     this.dragStartFrame = null;
     // isHoveringClip intentionally NOT reset here — it is a cursor-staging var
   }

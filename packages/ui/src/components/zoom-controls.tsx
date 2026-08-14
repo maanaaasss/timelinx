@@ -25,9 +25,12 @@ export const ZoomControls = React.memo(function ZoomControls({
     onPpfChange(Math.min(max, ppf * 1.25));
   }, [onPpfChange, ppf]);
 
-  const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onPpfChange(parseFloat(e.target.value));
-  }, [onPpfChange]);
+  const handleSliderChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onPpfChange(parseFloat(e.target.value));
+    },
+    [onPpfChange],
+  );
 
   return (
     <div className={`zoom-controls${className ? ` ${className}` : ''}`}>

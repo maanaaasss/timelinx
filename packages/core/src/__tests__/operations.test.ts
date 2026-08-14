@@ -40,29 +40,35 @@ import type { Clip } from '../types/clip';
 function makeAsset(id = 'asset-1') {
   return createAsset({
     id,
-    name:                 'Test Video',
-    mediaType:            'video',
-    filePath:             '/media/test.mp4',
-    intrinsicDuration:    toFrame(600),
-    nativeFps:            30,
+    name: 'Test Video',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(600),
+    nativeFps: 30,
     sourceTimecodeOffset: toFrame(0),
-    status:               'online',
+    status: 'online',
   });
 }
 
-function makeClip(overrides: Partial<{
-  id: string; assetId: string; trackId: string;
-  timelineStart: number; timelineEnd: number;
-  mediaIn: number; mediaOut: number;
-}> = {}): Clip {
+function makeClip(
+  overrides: Partial<{
+    id: string;
+    assetId: string;
+    trackId: string;
+    timelineStart: number;
+    timelineEnd: number;
+    mediaIn: number;
+    mediaOut: number;
+  }> = {},
+): Clip {
   return createClip({
-    id:            overrides.id ?? 'clip-1',
-    assetId:       overrides.assetId ?? 'asset-1',
-    trackId:       overrides.trackId ?? 'track-1',
+    id: overrides.id ?? 'clip-1',
+    assetId: overrides.assetId ?? 'asset-1',
+    trackId: overrides.trackId ?? 'track-1',
     timelineStart: toFrame(overrides.timelineStart ?? 0),
-    timelineEnd:   toFrame(overrides.timelineEnd ?? 100),
-    mediaIn:       toFrame(overrides.mediaIn ?? 0),
-    mediaOut:      toFrame(overrides.mediaOut ?? 100),
+    timelineEnd: toFrame(overrides.timelineEnd ?? 100),
+    mediaIn: toFrame(overrides.mediaIn ?? 0),
+    mediaOut: toFrame(overrides.mediaOut ?? 100),
   });
 }
 
@@ -70,18 +76,18 @@ function makeState(): TimelineState {
   const asset = makeAsset();
   const clip = makeClip();
   const track = createTrack({
-    id:    'track-1',
-    name:  'Video 1',
-    type:  'video',
+    id: 'track-1',
+    name: 'Video 1',
+    type: 'video',
     clips: [clip],
   });
   const timeline = createTimeline({
-    id:            'tl-1',
-    name:          'Test',
-    fps:           frameRate(30),
-    duration:      toFrame(9000),
+    id: 'tl-1',
+    name: 'Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
     startTimecode: toTimecode('00:00:00:00'),
-    tracks:        [track],
+    tracks: [track],
   });
   return createTimelineState({
     timeline,
@@ -97,11 +103,17 @@ describe('clip-operations', () => {
   describe('addClip', () => {
     it('adds a clip to a track', () => {
       const state = makeState();
-      const newClip = makeClip({ id: 'clip-2', timelineStart: 200, timelineEnd: 300, mediaIn: 200, mediaOut: 300 });
+      const newClip = makeClip({
+        id: 'clip-2',
+        timelineStart: 200,
+        timelineEnd: 300,
+        mediaIn: 200,
+        mediaOut: 300,
+      });
       const next = addClip(state, 'track-1', newClip);
       const track = next.timeline.tracks[0]!;
       expect(track.clips).toHaveLength(2);
-      expect(track.clips.some(c => c.id === 'clip-2')).toBe(true);
+      expect(track.clips.some((c) => c.id === 'clip-2')).toBe(true);
     });
 
     it('returns state unchanged for unknown track', () => {
@@ -113,11 +125,17 @@ describe('clip-operations', () => {
 
     it('sorts clips by timelineStart', () => {
       const state = makeState();
-      const late = makeClip({ id: 'late', timelineStart: 200, timelineEnd: 300, mediaIn: 200, mediaOut: 300 });
+      const late = makeClip({
+        id: 'late',
+        timelineStart: 200,
+        timelineEnd: 300,
+        mediaIn: 200,
+        mediaOut: 300,
+      });
       const next = addClip(state, 'track-1', late);
       const track = next.timeline.tracks[0]!;
       expect(track.clips[0]!.id).toBe('clip-1'); // 0-100 comes first
-      expect(track.clips[1]!.id).toBe('late');   // 200-300 comes second
+      expect(track.clips[1]!.id).toBe('late'); // 200-300 comes second
     });
   });
 
@@ -137,7 +155,13 @@ describe('clip-operations', () => {
 
     it('only removes the target clip', () => {
       const state = makeState();
-      const clip2 = makeClip({ id: 'clip-2', timelineStart: 200, timelineEnd: 300, mediaIn: 200, mediaOut: 300 });
+      const clip2 = makeClip({
+        id: 'clip-2',
+        timelineStart: 200,
+        timelineEnd: 300,
+        mediaIn: 200,
+        mediaOut: 300,
+      });
       let s = addClip(state, 'track-1', clip2);
       s = removeClip(s, 'clip-1');
       const track = s.timeline.tracks[0]!;
@@ -229,15 +253,15 @@ describe('clip-operations', () => {
     it('moves a clip to a different track', () => {
       const state = makeState();
       const track2 = createTrack({
-        id:    'track-2',
-        name:  'Video 2',
-        type:  'video',
+        id: 'track-2',
+        name: 'Video 2',
+        type: 'video',
         clips: [],
       });
       let s = addTrack(state, track2);
       s = moveClipToTrack(s, 'clip-1', 'track-2');
-      const t1 = s.timeline.tracks.find(t => t.id === 'track-1')!;
-      const t2 = s.timeline.tracks.find(t => t.id === 'track-2')!;
+      const t1 = s.timeline.tracks.find((t) => t.id === 'track-1')!;
+      const t2 = s.timeline.tracks.find((t) => t.id === 'track-2')!;
       expect(t1.clips).toHaveLength(0);
       expect(t2.clips).toHaveLength(1);
       expect(t2.clips[0]!.trackId).toBe('track-2');
@@ -265,24 +289,24 @@ describe('clip-operations', () => {
       const audioAsset = makeAsset('audio-1');
       const audioClip = makeClip({ id: 'audio-clip', assetId: 'audio-1' });
       const audioTrack = createTrack({
-        id:    'audio-track',
-        name:  'Audio 1',
-        type:  'audio',
+        id: 'audio-track',
+        name: 'Audio 1',
+        type: 'audio',
         clips: [audioClip],
       });
       const videoTrack = createTrack({
-        id:    'track-1',
-        name:  'Video 1',
-        type:  'video',
+        id: 'track-1',
+        name: 'Video 1',
+        type: 'video',
         clips: [makeClip()],
       });
       const timeline = createTimeline({
-        id:            'tl-1',
-        name:          'Test',
-        fps:           frameRate(30),
-        duration:      toFrame(9000),
+        id: 'tl-1',
+        name: 'Test',
+        fps: frameRate(30),
+        duration: toFrame(9000),
         startTimecode: toTimecode('00:00:00:00'),
-        tracks:        [videoTrack, audioTrack],
+        tracks: [videoTrack, audioTrack],
       });
       const state = createTimelineState({
         timeline,
@@ -307,9 +331,9 @@ describe('track-operations', () => {
     it('adds a track to the end', () => {
       const state = makeState();
       const track2 = createTrack({
-        id:    'track-2',
-        name:  'Audio 1',
-        type:  'audio',
+        id: 'track-2',
+        name: 'Audio 1',
+        type: 'audio',
         clips: [],
       });
       const next = addTrack(state, track2);
@@ -320,9 +344,9 @@ describe('track-operations', () => {
     it('preserves existing tracks', () => {
       const state = makeState();
       const track2 = createTrack({
-        id:    'track-2',
-        name:  'Audio 1',
-        type:  'audio',
+        id: 'track-2',
+        name: 'Audio 1',
+        type: 'audio',
         clips: [],
       });
       const next = addTrack(state, track2);
@@ -340,9 +364,9 @@ describe('track-operations', () => {
     it('preserves other tracks', () => {
       const state = makeState();
       const track2 = createTrack({
-        id:    'track-2',
-        name:  'Audio 1',
-        type:  'audio',
+        id: 'track-2',
+        name: 'Audio 1',
+        type: 'audio',
         clips: [],
       });
       let s = addTrack(state, track2);
@@ -356,9 +380,9 @@ describe('track-operations', () => {
     it('moves a track to a new position', () => {
       const state = makeState();
       const track2 = createTrack({
-        id:    'track-2',
-        name:  'Audio 1',
-        type:  'audio',
+        id: 'track-2',
+        name: 'Audio 1',
+        type: 'audio',
         clips: [],
       });
       let s = addTrack(state, track2);

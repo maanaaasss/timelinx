@@ -85,7 +85,14 @@ export function TimelineEditorExample() {
   const engine = useMemo(() => createDemoEngine(), []);
 
   return (
-    <div style={{ height: 500, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
+    <div
+      style={{
+        height: 500,
+        border: '1px solid var(--color-border, #333)',
+        borderRadius: 8,
+        overflow: 'hidden',
+      }}
+    >
       <TimelineProvider engine={engine}>
         <TimelineLayout />
       </TimelineProvider>

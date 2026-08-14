@@ -48,9 +48,7 @@ const state = createTimelineState({
     name: 'My Timeline',
     fps: frameRate(30),
     duration: toFrame(9000),
-    tracks: [
-      createTrack({ id: toTrackId('v1'), name: 'Video 1', type: 'video' }),
-    ],
+    tracks: [createTrack({ id: toTrackId('v1'), name: 'Video 1', type: 'video' })],
   }),
 });
 
@@ -59,20 +57,22 @@ const result = dispatch(state, {
   id: 'tx-1',
   label: 'Insert clip',
   timestamp: Date.now(),
-  operations: [{
-    type: 'INSERT_CLIP',
-    trackId: toTrackId('v1'),
-    clip: createClip({
-      id: toClipId('clip-1'),
-      assetId: toAssetId('asset-1'),
+  operations: [
+    {
+      type: 'INSERT_CLIP',
       trackId: toTrackId('v1'),
-      timelineStart: toFrame(0),
-      timelineEnd: toFrame(90),
-      mediaIn: toFrame(0),
-      mediaOut: toFrame(90),
-      name: 'Intro',
-    }),
-  }],
+      clip: createClip({
+        id: toClipId('clip-1'),
+        assetId: toAssetId('asset-1'),
+        trackId: toTrackId('v1'),
+        timelineStart: toFrame(0),
+        timelineEnd: toFrame(90),
+        mediaIn: toFrame(0),
+        mediaOut: toFrame(90),
+        name: 'Intro',
+      }),
+    },
+  ],
 });
 
 // 3. Validate
@@ -155,24 +155,31 @@ const fcpxml = exportToFCPXML(state);
 ## API Reference
 
 ### Factories
+
 `createTimeline`, `createTrack`, `createClip`, `createAsset`, `createTimelineState`
 
 ### Frame Utilities
+
 `toFrame`, `frameRate`, `framesToTimecode`, `framesToSeconds`, `secondsToFrames`, `FrameRates`
 
 ### State Management
+
 `dispatch`, `checkInvariants`, `HistoryStack`, `TransactionCompressor`
 
 ### Tools
+
 `SelectionTool`, `RazorTool`, `RippleTrimTool`, `RollTrimTool`, `SlipTool`, `SlideTool`, `RippleDeleteTool`, `RippleInsertTool`, `HandTool`, `TransitionTool`, `KeyframeTool`, `ZoomTool`
 
 ### Playback
+
 `PlaybackEngine`, `PlayheadController`, `KeyboardHandler`, `browserClock`, `nodeClock`
 
 ### Serialization & Export
+
 `serializeTimeline`, `deserializeTimeline`, `exportToOTIO`, `importFromOTIO`, `exportToEDL`, `exportToAAF`, `exportToFCPXML`
 
 ### Performance
+
 `IntervalTree`, `TrackIndex`, `SnapIndexManager`, `ThumbnailCache`, `ThumbnailQueue`, `getVisibleClips`
 
 ## Tests

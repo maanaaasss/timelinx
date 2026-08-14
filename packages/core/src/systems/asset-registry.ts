@@ -6,7 +6,7 @@
  */
 
 import { TimelineState } from '../types/state';
-import { Asset, AssetId, toAssetId } from '../types/asset';
+import { Asset, toAssetId } from '../types/asset';
 
 export function registerAsset(state: TimelineState, asset: Asset): TimelineState {
   const next = new Map(state.assetRegistry);

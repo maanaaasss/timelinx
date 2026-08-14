@@ -102,9 +102,7 @@ export class SlideTool implements ITool {
     const durationFrames = (clip.timelineEnd as number) - (clip.timelineStart as number);
     const deltaFrames = Math.round((event.x - this.dragStartX) / ctx.pixelsPerFrame);
     let newStartN = (this.originalStart as number) + deltaFrames;
-    const minStart = left
-      ? (left.timelineEnd as number)
-      : 0;
+    const minStart = left ? (left.timelineEnd as number) : 0;
     const maxStart = right
       ? (right.timelineStart as number) - durationFrames
       : (ctx.state.timeline.duration as number) - durationFrames;
@@ -169,7 +167,7 @@ export class SlideTool implements ITool {
         type: 'RESIZE_CLIP',
         clipId: right.id,
         edge: 'end',
-        newFrame: toFrame((right.timelineEnd as number)),
+        newFrame: toFrame(right.timelineEnd as number),
       });
     }
 

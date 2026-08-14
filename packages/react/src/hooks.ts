@@ -149,11 +149,15 @@ export function useClipEffectsContext(clipId: ClipId | string): ReturnType<typeo
   return useClipEffects(useTimelineContext(), clipId);
 }
 
-export function useClipTransitionContext(clipId: ClipId | string): ReturnType<typeof useClipTransition> {
+export function useClipTransitionContext(
+  clipId: ClipId | string,
+): ReturnType<typeof useClipTransition> {
   return useClipTransition(useTimelineContext(), clipId);
 }
 
-export function useTrackCaptionsContext(trackId: TrackId | string): ReturnType<typeof useTrackCaptions> {
+export function useTrackCaptionsContext(
+  trackId: TrackId | string,
+): ReturnType<typeof useTrackCaptions> {
   return useTrackCaptions(useTimelineContext(), trackId);
 }
 

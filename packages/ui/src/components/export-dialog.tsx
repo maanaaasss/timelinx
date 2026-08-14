@@ -26,7 +26,14 @@ export function ExportDialog({
 }: ExportDialogProps) {
   // Auto-start export when dialog opens and browser is supported
   useEffect(() => {
-    console.log('[EXPORT-DEBUG] ExportDialog useEffect — isOpen:', isOpen, 'isSupported:', isSupported, 'status:', exportState.status);
+    console.log(
+      '[EXPORT-DEBUG] ExportDialog useEffect — isOpen:',
+      isOpen,
+      'isSupported:',
+      isSupported,
+      'status:',
+      exportState.status,
+    );
     if (isOpen && isSupported && exportState.status === 'idle') {
       console.log('[EXPORT-DEBUG] ExportDialog calling onStartExport()');
       onStartExport();
@@ -46,18 +53,22 @@ export function ExportDialog({
   if (!isOpen) return null;
 
   const pct = Math.round(exportState.progress * 100);
-  const elapsed = exportState.status === 'encoding'
-    ? 'Exporting...'
-    : exportState.status === 'preparing'
-      ? 'Preparing...'
-      : exportState.status === 'complete'
-        ? 'Complete!'
-        : exportState.status === 'error'
-          ? 'Export failed'
-          : '';
+  const elapsed =
+    exportState.status === 'encoding'
+      ? 'Exporting...'
+      : exportState.status === 'preparing'
+        ? 'Preparing...'
+        : exportState.status === 'complete'
+          ? 'Complete!'
+          : exportState.status === 'error'
+            ? 'Export failed'
+            : '';
 
   return (
-    <div className="export-dialog-backdrop" onClick={exportState.status !== 'encoding' ? onClose : undefined}>
+    <div
+      className="export-dialog-backdrop"
+      onClick={exportState.status !== 'encoding' ? onClose : undefined}
+    >
       <div className="export-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="export-dialog-header">
           <h3 className="export-dialog-title">Export Timeline</h3>
@@ -73,8 +84,8 @@ export function ExportDialog({
             <div className="export-dialog-error">
               <p className="export-error-title">Browser Not Supported</p>
               <p className="export-error-message">
-                This browser does not support <code>captureStream</code> or <code>MediaRecorder</code>.
-                Please use Chrome, Edge, or Firefox for timeline export.
+                This browser does not support <code>captureStream</code> or{' '}
+                <code>MediaRecorder</code>. Please use Chrome, Edge, or Firefox for timeline export.
               </p>
             </div>
           ) : exportState.status === 'error' ? (
@@ -94,16 +105,15 @@ export function ExportDialog({
                   Download {exportState.fileName}
                 </a>
               )}
-              <p className="export-complete-hint">Auto-downloading... This dialog will close shortly.</p>
+              <p className="export-complete-hint">
+                Auto-downloading... This dialog will close shortly.
+              </p>
             </div>
           ) : (
             <div className="export-dialog-progress">
               <p className="export-progress-status">{elapsed}</p>
               <div className="export-progress-bar-track">
-                <div
-                  className="export-progress-bar-fill"
-                  style={{ width: `${pct}%` }}
-                />
+                <div className="export-progress-bar-fill" style={{ width: `${pct}%` }} />
               </div>
               <p className="export-progress-pct">{pct}%</p>
             </div>

@@ -71,7 +71,14 @@ export function TimelinePlayheadExample() {
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
         <UITimelineProvider engine={engine} onPpfChange={() => {}}>
-          <div style={{ position: 'relative', height: 200, border: '1px solid var(--color-border, #333)', borderRadius: 4 }}>
+          <div
+            style={{
+              position: 'relative',
+              height: 200,
+              border: '1px solid var(--color-border, #333)',
+              borderRadius: 4,
+            }}
+          >
             <TimelinePlayhead totalHeight={200} />
           </div>
         </UITimelineProvider>

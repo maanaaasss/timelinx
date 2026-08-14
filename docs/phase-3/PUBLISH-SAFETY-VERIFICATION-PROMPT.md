@@ -10,6 +10,7 @@ You're verifying a specific safety finding before PR #1 merges: a root-level `np
 ## Step 2 — Check `private` field on all 4 packages that should be private
 
 For each of `packages/ai`, `packages/collab`, `packages/media-web`, `packages/ui`:
+
 1. Show the current `"private"` field value in each `package.json` (or confirm it's absent).
 2. If absent or `false`, set it to `true`.
 3. Run `npm publish --dry-run` inside each of these 4 package directories and confirm each one refuses due to being private. Paste actual output for all 4.
@@ -17,10 +18,12 @@ For each of `packages/ai`, `packages/collab`, `packages/media-web`, `packages/ui
 ## Step 3 — Get real per-package tarball evidence for core and react
 
 For `packages/core`:
+
 1. `cd packages/core && npm pack --dry-run`
 2. Paste the complete, actual, unedited output — full file list, package size, unpacked size, total file count. Do not summarize or truncate.
 
 For `packages/react`:
+
 1. `cd packages/react && npm pack --dry-run`
 2. Same — complete actual output.
 
@@ -28,13 +31,14 @@ For both, explicitly check: does the file list include ONLY `dist/`, `package.js
 
 ## Step 4 — Confirm `files` field is actually what's causing the clean result
 
-For `core` and `react`, show the actual `files` field from `package.json` (or `.npmignore` if used instead) so it's clear *why* the tarball is clean — not just that it is.
+For `core` and `react`, show the actual `files` field from `package.json` (or `.npmignore` if used instead) so it's clear _why_ the tarball is clean — not just that it is.
 
 ## Step 5 — One more real check: does root `private: true` break anything?
 
 Run the full CI-equivalent locally after the `private: true` change (`pnpm install`, `pnpm build`, `pnpm test`) to confirm marking the root private didn't break the pnpm workspace tooling (it shouldn't — this is standard for pnpm monorepos — but confirm rather than assume). Paste a summary of pass/fail, not full logs, for this step only.
 
 ## Process rule (unchanged from every prior round)
+
 Paste real, actual command output for every claim. No "confirmed clean" or "verified" without the literal output backing it. If something fails or looks wrong, report it exactly as it is — don't smooth it into a pass.
 
 ## Output

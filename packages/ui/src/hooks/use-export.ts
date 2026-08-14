@@ -40,10 +40,7 @@ export interface UseExportReturn {
 function checkExportSupport(): boolean {
   if (typeof document === 'undefined') return false;
   const canvas = document.createElement('canvas');
-  return (
-    typeof canvas.captureStream === 'function' &&
-    typeof MediaRecorder !== 'undefined'
-  );
+  return typeof canvas.captureStream === 'function' && typeof MediaRecorder !== 'undefined';
 }
 
 function getSupportedMimeType(hasAudio: boolean): string | null {
@@ -103,10 +100,7 @@ function collectAudioClips(
   return result;
 }
 
-async function loadAudioBuffer(
-  audioCtx: AudioContext,
-  src: string,
-): Promise<AudioBuffer | null> {
+async function loadAudioBuffer(audioCtx: AudioContext, src: string): Promise<AudioBuffer | null> {
   try {
     const response = await fetch(src);
     const arrayBuffer = await response.arrayBuffer();
@@ -146,8 +140,7 @@ export function computeAudioSchedule(
   return clips.map(({ clip }) => {
     const timelineStartSec = (clip.timelineStart as number) / fps;
     const mediaInSec = ((clip.mediaIn ?? 0) as number) / fps;
-    const clipDurationSec =
-      ((clip.timelineEnd as number) - (clip.timelineStart as number)) / fps;
+    const clipDurationSec = ((clip.timelineEnd as number) - (clip.timelineStart as number)) / fps;
     const gainDb = clip.audio?.gain?.value ?? 0;
     const gainLinear = Math.pow(10, gainDb / 20);
 
@@ -269,7 +262,16 @@ class ExportRunner {
       console.log('[EXPORT-DEBUG] computed duration (seconds):', durationFrames / fps);
       console.log('[EXPORT-DEBUG] track count:', state.timeline.tracks.length);
       for (const track of state.timeline.tracks) {
-        console.log('[EXPORT-DEBUG]   track:', track.id, 'type:', track.type, 'clips:', track.clips.length, 'muted:', track.muted);
+        console.log(
+          '[EXPORT-DEBUG]   track:',
+          track.id,
+          'type:',
+          track.type,
+          'clips:',
+          track.clips.length,
+          'muted:',
+          track.muted,
+        );
       }
     }
 
@@ -281,19 +283,23 @@ class ExportRunner {
     // 2. Set up canvas capture
     let videoStream = this.canvas.captureStream(0);
     let canvasVideoTrack = videoStream.getVideoTracks()[0] as
-      | (MediaStreamTrack & { requestFrame?: () => void })
-      | undefined;
+      (MediaStreamTrack & { requestFrame?: () => void }) | undefined;
     if (!canvasVideoTrack?.requestFrame) {
       videoStream.getTracks().forEach((track) => track.stop());
       videoStream = this.canvas.captureStream(fps);
       canvasVideoTrack = videoStream.getVideoTracks()[0] as
-        | (MediaStreamTrack & { requestFrame?: () => void })
-        | undefined;
+        (MediaStreamTrack & { requestFrame?: () => void }) | undefined;
     }
     if (import.meta.env.DEV) {
       console.log('[EXPORT-DEBUG] Export canvas:', this.canvas.width, 'x', this.canvas.height);
-      console.log('[EXPORT-DEBUG] captureStream video tracks:', videoStream.getVideoTracks().length);
-      console.log('[EXPORT-DEBUG] requestFrame supported:', Boolean(canvasVideoTrack?.requestFrame));
+      console.log(
+        '[EXPORT-DEBUG] captureStream video tracks:',
+        videoStream.getVideoTracks().length,
+      );
+      console.log(
+        '[EXPORT-DEBUG] requestFrame supported:',
+        Boolean(canvasVideoTrack?.requestFrame),
+      );
     }
 
     // 3. Set up audio
@@ -317,7 +323,12 @@ class ExportRunner {
           if (buffer) {
             this.loadedAudioBuffers.push({ info, buffer });
             if (import.meta.env.DEV) {
-              console.log('[EXPORT-DEBUG] Loaded audio clip:', info.clip.id, 'duration:', buffer.duration);
+              console.log(
+                '[EXPORT-DEBUG] Loaded audio clip:',
+                info.clip.id,
+                'duration:',
+                buffer.duration,
+              );
             }
           } else if (import.meta.env.DEV) {
             console.warn('[EXPORT-DEBUG] FAILED to load audio clip:', info.clip.id);
@@ -327,10 +338,7 @@ class ExportRunner {
         if (this.loadedAudioBuffers.length > 0) {
           hasAudio = true;
           const audioTracks = this.audioDest.stream.getAudioTracks();
-          combinedStream = new MediaStream([
-            ...videoStream.getVideoTracks(),
-            ...audioTracks,
-          ]);
+          combinedStream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
         }
       }
     } catch (err) {
@@ -519,7 +527,11 @@ class ExportRunner {
     this.cleaned = true;
 
     for (const source of this.audioSources) {
-      try { source.stop(); } catch { /* already stopped */ }
+      try {
+        source.stop();
+      } catch {
+        /* already stopped */
+      }
     }
     this.audioSources = [];
     this.loadedAudioBuffers = [];
@@ -570,11 +582,7 @@ class ExportRunner {
       source.connect(gainNode);
       gainNode.connect(this.audioDest);
 
-      source.start(
-        Math.max(this.audioCtx.currentTime, entry.when),
-        offset,
-        duration,
-      );
+      source.start(Math.max(this.audioCtx.currentTime, entry.when), offset, duration);
       this.audioSources.push(source);
     }
   }
@@ -607,7 +615,10 @@ export function useExport(
 
   const startExport = useCallback(() => {
     if (import.meta.env.DEV) {
-      console.log('[EXPORT-DEBUG] startExport called. runnerRef.current:', runnerRef.current ? 'SET (already running)' : 'null (ready to start)');
+      console.log(
+        '[EXPORT-DEBUG] startExport called. runnerRef.current:',
+        runnerRef.current ? 'SET (already running)' : 'null (ready to start)',
+      );
     }
     if (runnerRef.current) return; // already running
 

@@ -31,8 +31,12 @@ import { toFrame, toTimecode } from '../types/frame';
 
 function makeEmptyState() {
   const timeline = createTimeline({
-    id: 'tl', name: 'T', fps: 30, duration: toFrame(9000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [],
+    id: 'tl',
+    name: 'T',
+    fps: 30,
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [],
   });
   return createTimelineState({ timeline });
 }
@@ -43,25 +47,35 @@ function makeClip(id: string, start: number, end: number) {
     assetId: 'asset-1',
     trackId: 'track-1',
     timelineStart: toFrame(start),
-    timelineEnd:   toFrame(end),
-    mediaIn:       toFrame(0),
-    mediaOut:      toFrame(end - start),
+    timelineEnd: toFrame(end),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(end - start),
   });
 }
 
 function makeStateWithClip(clip: ReturnType<typeof makeClip>) {
   const asset = createAsset({
-    id: 'asset-1', name: 'A', mediaType: 'video',
-    filePath: '/a.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0),
+    id: 'asset-1',
+    name: 'A',
+    mediaType: 'video',
+    filePath: '/a.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
   });
   const track = createTrack({
-    id: 'track-1', name: 'V1', type: 'video',
+    id: 'track-1',
+    name: 'V1',
+    type: 'video',
     clips: [clip],
   });
   const timeline = createTimeline({
-    id: 'tl', name: 'T', fps: 30, duration: toFrame(9000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'T',
+    fps: 30,
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({
     timeline,
@@ -96,12 +110,12 @@ describe('setProvisional', () => {
     const original = createProvisionalManager();
     const clip = makeClip('c1', 0, 100);
     const next = setProvisional(original, makeProvisional([clip]));
-    expect(original).toBeNull();    // original unchanged
-    expect(next).not.toBe(original);        // different reference
+    expect(original).toBeNull(); // original unchanged
+    expect(next).not.toBe(original); // different reference
   });
 
   it('can overwrite an existing provisional with a new one', () => {
-    const clip1 = makeClip('c1', 0,  100);
+    const clip1 = makeClip('c1', 0, 100);
     const clip2 = makeClip('c2', 0, 200);
     const m1 = setProvisional(createProvisionalManager(), makeProvisional([clip1]));
     const m2 = setProvisional(m1, makeProvisional([clip2]));
@@ -157,9 +171,9 @@ describe('resolveClip — no provisional', () => {
 
 describe('resolveClip — provisional overrides committed', () => {
   it('returns provisional version when committed and provisional differ (ghost rendering)', () => {
-    const committed = makeClip('c1', 0,  100);  // at frame 0
-    const ghost     = { ...committed, timelineStart: toFrame(50) }; // dragged to 50
-    const state   = makeStateWithClip(committed);
+    const committed = makeClip('c1', 0, 100); // at frame 0
+    const ghost = { ...committed, timelineStart: toFrame(50) }; // dragged to 50
+    const state = makeStateWithClip(committed);
     const manager = setProvisional(createProvisionalManager(), makeProvisional([ghost]));
 
     const result = resolveClip(toClipId('c1'), state, manager);
@@ -169,7 +183,7 @@ describe('resolveClip — provisional overrides committed', () => {
   it('returns committed clip when provisional has different clip id', () => {
     const committed = makeClip('c1', 0, 100);
     const otherGhost = makeClip('c2', 50, 150); // different id
-    const state   = makeStateWithClip(committed);
+    const state = makeStateWithClip(committed);
     const manager = setProvisional(createProvisionalManager(), makeProvisional([otherGhost]));
 
     const result = resolveClip(toClipId('c1'), state, manager);
@@ -177,7 +191,7 @@ describe('resolveClip — provisional overrides committed', () => {
   });
 
   it('returns correct clip when multiple clips are in provisional', () => {
-    const committed1 = makeClip('c1', 0,   100);
+    const committed1 = makeClip('c1', 0, 100);
     const committed2 = makeClip('c2', 200, 300);
     const ghost1 = { ...committed1, timelineStart: toFrame(50) };
     const ghost2 = { ...committed2, timelineStart: toFrame(250) };
@@ -194,16 +208,16 @@ describe('resolveClip — deleted-during-drag case', () => {
   it('returns undefined when clip absent from both provisional and committed state', () => {
     // This is the deleted-during-drag case:
     // provisional was cleared, and the clip was also removed from committed state
-    const state   = makeEmptyState();
+    const state = makeEmptyState();
     const manager = clearProvisional(createProvisionalManager());
-    const result  = resolveClip(toClipId('ghost'), state, manager);
+    const result = resolveClip(toClipId('ghost'), state, manager);
     expect(result).toBeUndefined();
   });
 
   it('returns provisional clip even when absent from committed state (added ghost)', () => {
     // A ghost of a newly "previewed" clip that doesn't exist in committed state yet
-    const ghost   = makeClip('preview-clip', 0, 100);
-    const state   = makeEmptyState(); // clip not in committed
+    const ghost = makeClip('preview-clip', 0, 100);
+    const state = makeEmptyState(); // clip not in committed
     const manager = setProvisional(createProvisionalManager(), makeProvisional([ghost]));
 
     const result = resolveClip(toClipId('preview-clip'), state, manager);

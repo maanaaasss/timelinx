@@ -121,9 +121,9 @@ describe('WebCodecsDecoderAdapter — adversarial', () => {
   it('handles configureDecoder when WebCodecs is unavailable', async () => {
     // In Node.js, VideoDecoder is undefined, so isSupported() returns false
     if (!adapter.isSupported()) {
-      await expect(
-        adapter.configureDecoder('clip-1', 'vp8', 640, 480),
-      ).rejects.toThrow('WebCodecs VideoDecoder is not available');
+      await expect(adapter.configureDecoder('clip-1', 'vp8', 640, 480)).rejects.toThrow(
+        'WebCodecs VideoDecoder is not available',
+      );
     }
   });
 
@@ -141,17 +141,13 @@ describe('WebCodecsDecoderAdapter — adversarial', () => {
   it('handles configureDecoder with zero dimensions', async () => {
     if (adapter.isSupported()) {
       // This should not crash even with degenerate dimensions
-      await expect(
-        adapter.configureDecoder('clip-1', 'vp8', 0, 0),
-      ).resolves.not.toThrow();
+      await expect(adapter.configureDecoder('clip-1', 'vp8', 0, 0)).resolves.not.toThrow();
     }
   });
 
   it('handles configureDecoder with negative dimensions', async () => {
     if (adapter.isSupported()) {
-      await expect(
-        adapter.configureDecoder('clip-1', 'vp8', -1, -1),
-      ).resolves.not.toThrow();
+      await expect(adapter.configureDecoder('clip-1', 'vp8', -1, -1)).resolves.not.toThrow();
     }
   });
 });
@@ -272,7 +268,10 @@ describe('WebAudioWaveformAdapter — adversarial', () => {
 
   it('extractFromUrl with 404 URL', async () => {
     // This will fail with a network error in Node.js
-    const result = await adapter.extractFromUrl('asset-1' as any, 'http://localhost:1/nonexistent.wav');
+    const result = await adapter.extractFromUrl(
+      'asset-1' as any,
+      'http://localhost:1/nonexistent.wav',
+    );
     expect(result.success).toBe(false);
   });
 
@@ -353,30 +352,36 @@ describe('ThumbnailExtractorAdapter — adversarial', () => {
   });
 
   it('extractThumbnail with zero dimensions throws', async () => {
-    await expect(adapter.extractThumbnail({
-      clipId: 'clip-1' as any,
-      mediaFrame: 0 as any,
-      width: 0,
-      height: 0,
-    })).rejects.toThrow('Thumbnail dimensions must be positive');
+    await expect(
+      adapter.extractThumbnail({
+        clipId: 'clip-1' as any,
+        mediaFrame: 0 as any,
+        width: 0,
+        height: 0,
+      }),
+    ).rejects.toThrow('Thumbnail dimensions must be positive');
   });
 
   it('extractThumbnail with negative dimensions throws', async () => {
-    await expect(adapter.extractThumbnail({
-      clipId: 'clip-1' as any,
-      mediaFrame: 0 as any,
-      width: -100,
-      height: -100,
-    })).rejects.toThrow('Thumbnail dimensions must be positive');
+    await expect(
+      adapter.extractThumbnail({
+        clipId: 'clip-1' as any,
+        mediaFrame: 0 as any,
+        width: -100,
+        height: -100,
+      }),
+    ).rejects.toThrow('Thumbnail dimensions must be positive');
   });
 
   it('extractThumbnail with extremely large dimensions throws', async () => {
-    await expect(adapter.extractThumbnail({
-      clipId: 'clip-1' as any,
-      mediaFrame: 0 as any,
-      width: 100000,
-      height: 100000,
-    })).rejects.toThrow('exceed maximum');
+    await expect(
+      adapter.extractThumbnail({
+        clipId: 'clip-1' as any,
+        mediaFrame: 0 as any,
+        width: 100000,
+        height: 100000,
+      }),
+    ).rejects.toThrow('exceed maximum');
   });
 
   it('cache eviction under rapid insertion', async () => {
@@ -409,25 +414,27 @@ describe('ThumbnailExtractorAdapter — adversarial', () => {
   });
 
   it('extractBatch with single item', async () => {
-    const results = await adapter.extractBatch([{
-      clipId: 'clip-1' as any,
-      mediaFrame: 0 as any,
-      width: 160,
-      height: 90,
-    }]);
+    const results = await adapter.extractBatch([
+      {
+        clipId: 'clip-1' as any,
+        mediaFrame: 0 as any,
+        width: 160,
+        height: 90,
+      },
+    ]);
     expect(results).toHaveLength(1);
   });
 
   it('extractRange with interval 0 throws', async () => {
-    await expect(
-      adapter.extractRange('clip-1' as any, 0 as any, 100 as any, 0),
-    ).rejects.toThrow('Interval must be greater than 0');
+    await expect(adapter.extractRange('clip-1' as any, 0 as any, 100 as any, 0)).rejects.toThrow(
+      'Interval must be greater than 0',
+    );
   });
 
   it('extractRange with negative interval throws', async () => {
-    await expect(
-      adapter.extractRange('clip-1' as any, 0 as any, 100 as any, -1),
-    ).rejects.toThrow('Interval must be greater than 0');
+    await expect(adapter.extractRange('clip-1' as any, 0 as any, 100 as any, -1)).rejects.toThrow(
+      'Interval must be greater than 0',
+    );
   });
 
   it('extractRange with start > end produces empty', async () => {
@@ -474,12 +481,12 @@ describe('SimpleExportAdapter — adversarial', () => {
   it('concurrent export attempts rejected', async () => {
     // First export will fail (no captureStream in Node), but isExporting flag is set
     const p1 = adapter.exportFromCanvasStream(
-      async () => ({ captureStream: () => null } as any),
+      async () => ({ captureStream: () => null }) as any,
       10,
     );
     // Second export should be rejected immediately
     const p2 = adapter.exportFromCanvasStream(
-      async () => ({ captureStream: () => null } as any),
+      async () => ({ captureStream: () => null }) as any,
       10,
     );
 

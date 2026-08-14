@@ -30,10 +30,7 @@ export const EMPTY_STATE_CHANGE: StateChange = {
  * Diffs prev and next state by reference.
  * clipIds: set of clip ids whose clip reference changed or were added/removed.
  */
-export function diffStates(
-  prev: TimelineState,
-  next: TimelineState,
-): StateChange {
+export function diffStates(prev: TimelineState, next: TimelineState): StateChange {
   const clipIds = new Set<ClipId>();
 
   // trackIds: track array reference changed

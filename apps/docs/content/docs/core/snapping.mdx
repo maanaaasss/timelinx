@@ -15,31 +15,25 @@ type SnapPoint = {
   readonly frame: TimelineFrame;
   readonly type: SnapPointType;
   readonly priority: number;
-  readonly trackId: TrackId | null;  // null = timeline-wide (playhead, markers)
-  readonly sourceId: string;         // clipId, markerId  - for exclusion
+  readonly trackId: TrackId | null; // null = timeline-wide (playhead, markers)
+  readonly sourceId: string; // clipId, markerId  - for exclusion
 };
 
 type SnapPointType =
-  | 'ClipStart'
-  | 'ClipEnd'
-  | 'Playhead'
-  | 'Marker'
-  | 'InPoint'
-  | 'OutPoint'
-  | 'BeatGrid';
+  'ClipStart' | 'ClipEnd' | 'Playhead' | 'Marker' | 'InPoint' | 'OutPoint' | 'BeatGrid';
 ```
 
 **Priority table** (higher wins when two points are equidistant):
 
-| Type | Priority | When present |
-|------|----------|-------------|
-| `Marker` | 100 | A marker exists on the timeline |
-| `InPoint` | 90 | `timeline.inPoint` is set |
-| `OutPoint` | 90 | `timeline.outPoint` is set |
-| `ClipStart` | 80 | Start of any clip on any track |
-| `ClipEnd` | 80 | End of any clip on any track |
-| `Playhead` | 70 | Always present |
-| `BeatGrid` | 50 | `timeline.beatGrid` is set |
+| Type        | Priority | When present                    |
+| ----------- | -------- | ------------------------------- |
+| `Marker`    | 100      | A marker exists on the timeline |
+| `InPoint`   | 90       | `timeline.inPoint` is set       |
+| `OutPoint`  | 90       | `timeline.outPoint` is set      |
+| `ClipStart` | 80       | Start of any clip on any track  |
+| `ClipEnd`   | 80       | End of any clip on any track    |
+| `Playhead`  | 70       | Always present                  |
+| `BeatGrid`  | 50       | `timeline.beatGrid` is set      |
 
 ---
 
@@ -47,8 +41,8 @@ type SnapPointType =
 
 ```ts
 type SnapIndex = {
-  readonly points: readonly SnapPoint[];  // sorted ascending by frame
-  readonly builtAt: number;               // Date.now()
+  readonly points: readonly SnapPoint[]; // sorted ascending by frame
+  readonly builtAt: number; // Date.now()
   readonly enabled: boolean;
 };
 ```
@@ -84,10 +78,10 @@ import { nearest } from '@timelinx/core';
 
 const snapPoint = nearest(
   index,
-  candidateFrame,   // the frame the user is dragging toward
-  8,                // snap radius in pixels
-  ppf,              // pixels per frame (current zoom level)
-  [movingClipId],   // exclude the clip being moved (so it doesn't snap to itself)
+  candidateFrame, // the frame the user is dragging toward
+  8, // snap radius in pixels
+  ppf, // pixels per frame (current zoom level)
+  [movingClipId], // exclude the clip being moved (so it doesn't snap to itself)
 );
 
 if (snapPoint !== null) {
@@ -95,7 +89,7 @@ if (snapPoint !== null) {
 }
 ```
 
-The radius is specified in pixels  - `nearest()` converts it to frames using `radiusPx / ppf`. At higher zoom levels, the snap radius covers fewer frames; at lower zoom, it covers more. This means snapping always feels the same distance to the user regardless of zoom.
+The radius is specified in pixels - `nearest()` converts it to frames using `radiusPx / ppf`. At higher zoom levels, the snap radius covers fewer frames; at lower zoom, it covers more. This means snapping always feels the same distance to the user regardless of zoom.
 
 Returns `null` if no snap point is within the radius.
 
@@ -106,8 +100,8 @@ Returns `null` if no snap point is within the radius.
 ```ts
 import { toggleSnap } from '@timelinx/core';
 
-const disabled = toggleSnap(index);  // { ...index, enabled: false }
-const enabled  = toggleSnap(disabled); // { ...index, enabled: true }
+const disabled = toggleSnap(index); // { ...index, enabled: false }
+const enabled = toggleSnap(disabled); // { ...index, enabled: true }
 ```
 
 When `enabled` is `false`, `nearest()` always returns `null`. Toggle with a button in the toolbar (common shortcut: S key).
@@ -122,10 +116,10 @@ When `enabled` is `false`, `nearest()` always returns `null`. Toggle with a butt
 import { SnapIndexManager } from '@timelinx/core';
 
 const manager = new SnapIndexManager();
-manager.rebuildSync(state);      // synchronous, for initial build
+manager.rebuildSync(state); // synchronous, for initial build
 
-manager.scheduleRebuild(state);  // async, after each dispatch
-manager.current();               // returns the latest SnapIndex
+manager.scheduleRebuild(state); // async, after each dispatch
+manager.current(); // returns the latest SnapIndex
 ```
 
 `TimelineEngine` owns a `SnapIndexManager` internally. The snap index in `EngineSnapshot.snapIndex` is always current.
@@ -185,5 +179,6 @@ class MyMoveTool implements ITool {
 ```
 
 <Callout title="Always exclude the moving clip">
-  Pass `[clipId]` to the `excludeIds` parameter so the clip doesn't snap to its own start and end frames while being dragged.
+  Pass `[clipId]` to the `excludeIds` parameter so the clip doesn't snap to its own start and end
+  frames while being dragged.
 </Callout>

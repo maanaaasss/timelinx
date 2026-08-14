@@ -16,5 +16,5 @@
      provide an explicit color-scheme declaration and any future
      light-only overrides.  All light values live in tokens.css. */
 
-  --bg-sunken: rgba(0,0,0,0.06);
+  --bg-sunken: rgba(0, 0, 0, 0.06);
 }

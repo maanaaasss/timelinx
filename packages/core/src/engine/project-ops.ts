@@ -23,7 +23,10 @@ function itemsEqual(a: BinItem, b: BinItem): boolean {
   }
 }
 
-export function addTimeline(project: Project, state: import('../types/state').TimelineState): Project {
+export function addTimeline(
+  project: Project,
+  state: import('../types/state').TimelineState,
+): Project {
   return withUpdatedAt({
     ...project,
     timelines: [...project.timelines, state],
@@ -38,8 +41,7 @@ export function removeTimeline(project: Project, timelineId: string): Project {
 
 export function addBin(project: Project, bin: Bin): Project {
   const nextBins = [...project.bins, bin];
-  const nextRoot =
-    bin.parentId === null ? [...project.rootBinIds, bin.id] : project.rootBinIds;
+  const nextRoot = bin.parentId === null ? [...project.rootBinIds, bin.id] : project.rootBinIds;
   return withUpdatedAt({ ...project, bins: nextBins, rootBinIds: nextRoot });
 }
 
@@ -120,4 +122,3 @@ export function moveItemBetweenBins(
 
   return withUpdatedAt({ ...project, bins: nextBins });
 }
-

@@ -18,9 +18,7 @@ export function TimelineLayout({ state, ppf: initialPpf }: TimelineLayoutProps) 
   const [rulerScrollLeft, setRulerScrollLeft] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedClipIds, setSelectedClipIds] = useState<Set<string>>(new Set());
-  const [clips, setClips] = useState<Clip[]>(() =>
-    state.timeline.tracks.flatMap((t) => t.clips),
-  );
+  const [clips, setClips] = useState<Clip[]>(() => state.timeline.tracks.flatMap((t) => t.clips));
   const [activeTool, setActiveTool] = useState<ToolId>('select');
   const [zoom, setZoom] = useState(initialPpf);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,27 +57,22 @@ export function TimelineLayout({ state, ppf: initialPpf }: TimelineLayoutProps) 
   const handleUpdateClip = useCallback(
     (clipId: string, start: TimelineFrame, end: TimelineFrame) => {
       setClips((prev) =>
-        prev.map((c) =>
-          c.id === clipId ? { ...c, timelineStart: start, timelineEnd: end } : c,
-        ),
+        prev.map((c) => (c.id === clipId ? { ...c, timelineStart: start, timelineEnd: end } : c)),
       );
     },
     [],
   );
 
-  const handleNudgeClip = useCallback(
-    (clipId: string, deltaFrames: number) => {
-      setClips((prev) =>
-        prev.map((c) => {
-          if (c.id !== clipId) return c;
-          const dur = c.timelineEnd - c.timelineStart;
-          const newStart = Math.max(0, c.timelineStart + deltaFrames) as TimelineFrame;
-          return { ...c, timelineStart: newStart, timelineEnd: (newStart + dur) as TimelineFrame };
-        }),
-      );
-    },
-    [],
-  );
+  const handleNudgeClip = useCallback((clipId: string, deltaFrames: number) => {
+    setClips((prev) =>
+      prev.map((c) => {
+        if (c.id !== clipId) return c;
+        const dur = c.timelineEnd - c.timelineStart;
+        const newStart = Math.max(0, c.timelineStart + deltaFrames) as TimelineFrame;
+        return { ...c, timelineStart: newStart, timelineEnd: (newStart + dur) as TimelineFrame };
+      }),
+    );
+  }, []);
 
   const handleDeleteClip = useCallback((clipId: string) => {
     setClips((prev) => prev.filter((c) => c.id !== clipId));

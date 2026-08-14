@@ -26,9 +26,7 @@ export const GhostCaption = React.memo(function GhostCaption({ caption, ppf }: G
         width,
       }}
     >
-      {width > 40 && (
-        <div className="caption-info">{caption.text || 'Preview'}</div>
-      )}
+      {width > 40 && <div className="caption-info">{caption.text || 'Preview'}</div>}
       {width > 80 && (
         <div className="caption-duration">
           {duration}fr @ {String(caption.startFrame)}

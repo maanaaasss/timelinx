@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: "24"
-  PNPM_VERSION: "10.28.2"
+  NODE_VERSION: '24'
+  PNPM_VERSION: '10.28.2'
 
 permissions:
   contents: write
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -46,7 +46,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: "Verify no workspace: protocol in publishable packages"
+      - name: 'Verify no workspace: protocol in publishable packages'
         run: |
           echo "Checking publishable packages for workspace: references in dependency fields..."
           echo "pnpm rewrites workspace:* during publish, but npm does not."
@@ -95,8 +95,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          title: "chore: version packages"
-          commit: "chore: version packages"
+          title: 'chore: version packages'
+          commit: 'chore: version packages'
           publish: pnpm changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -93,8 +93,10 @@ export class WebGLCompositorAdapter {
     };
 
     // Try WebGL2 first, fall back to WebGL1
-    let gl: WebGLRenderingContext | WebGL2RenderingContext | null = 
-      canvas.getContext('webgl2', contextAttributes) as WebGL2RenderingContext | null;
+    let gl: WebGLRenderingContext | WebGL2RenderingContext | null = canvas.getContext(
+      'webgl2',
+      contextAttributes,
+    ) as WebGL2RenderingContext | null;
     if (!gl) {
       gl = canvas.getContext('webgl', contextAttributes) as WebGLRenderingContext | null;
     }
@@ -147,17 +149,25 @@ export class WebGLCompositorAdapter {
 
     // Set up geometry (full-screen quad)
     const positions = new Float32Array([
-      -1, -1,  // bottom-left
-       1, -1,  // bottom-right
-      -1,  1,  // top-left
-       1,  1,  // top-right
+      -1,
+      -1, // bottom-left
+      1,
+      -1, // bottom-right
+      -1,
+      1, // top-left
+      1,
+      1, // top-right
     ]);
 
     const texCoords = new Float32Array([
-      0, 1,  // bottom-left
-      1, 1,  // bottom-right
-      0, 0,  // top-left
-      1, 0,  // top-right
+      0,
+      1, // bottom-left
+      1,
+      1, // bottom-right
+      0,
+      0, // top-left
+      1,
+      0, // top-right
     ]);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
@@ -229,11 +239,7 @@ export class WebGLCompositorAdapter {
   /**
    * Draw a single layer.
    */
-  private drawLayer(
-    frame: VideoFrameResult,
-    transform: ClipTransform,
-    opacity: number,
-  ): void {
+  private drawLayer(frame: VideoFrameResult, transform: ClipTransform, opacity: number): void {
     const gl = this.gl;
     if (!gl || !this.program) return;
 
@@ -269,7 +275,10 @@ export class WebGLCompositorAdapter {
       gl.uniform1i(this.uniformLocations.get('u_texture') ?? null, 0);
 
       // Set uniforms
-      gl.uniform1f(this.uniformLocations.get('u_opacity') ?? null, opacity * transform.opacity.value);
+      gl.uniform1f(
+        this.uniformLocations.get('u_opacity') ?? null,
+        opacity * transform.opacity.value,
+      );
 
       // Set position buffer
       const positionLocation = this.attribLocations.get('a_position') ?? -1;
@@ -321,11 +330,19 @@ export class WebGLCompositorAdapter {
     this.config.width = width;
     this.config.height = height;
 
-    if (typeof HTMLCanvasElement !== 'undefined' && this.config.canvas instanceof HTMLCanvasElement) {
+    if (
+      typeof HTMLCanvasElement !== 'undefined' &&
+      this.config.canvas instanceof HTMLCanvasElement
+    ) {
       this.config.canvas.width = width;
       this.config.canvas.height = height;
-    } else if (typeof OffscreenCanvas !== 'undefined' && this.config.canvas instanceof OffscreenCanvas) {
-      console.warn('WebGLCompositor.resize: OffscreenCanvas cannot be resized after creation. Create a new compositor instead.');
+    } else if (
+      typeof OffscreenCanvas !== 'undefined' &&
+      this.config.canvas instanceof OffscreenCanvas
+    ) {
+      console.warn(
+        'WebGLCompositor.resize: OffscreenCanvas cannot be resized after creation. Create a new compositor instead.',
+      );
     }
   }
 
@@ -358,8 +375,6 @@ export class WebGLCompositorAdapter {
 /**
  * Create a WebGL compositor adapter.
  */
-export function createWebGLCompositor(
-  config: WebGLCompositorConfig,
-): WebGLCompositorAdapter {
+export function createWebGLCompositor(config: WebGLCompositorConfig): WebGLCompositorAdapter {
   return new WebGLCompositorAdapter(config);
 }

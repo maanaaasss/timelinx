@@ -5,7 +5,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { exportToEDL, frameToTimecode, reelName, type EDLExportOptions } from '../engine/edl-export';
+import {
+  exportToEDL,
+  frameToTimecode,
+  reelName,
+  type EDLExportOptions,
+} from '../engine/edl-export';
 import { createTimelineState } from '../types/state';
 import { createTimeline } from '../types/timeline';
 import { createTrack, toTrackId } from '../types/track';
@@ -86,7 +91,11 @@ function makeEDLFixtureState() {
     ]),
   });
   const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 10);
-  state = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-2'), transition: trans });
+  state = applyOperation(state, {
+    type: 'ADD_TRANSITION',
+    clipId: toClipId('clip-2'),
+    transition: trans,
+  });
   return state;
 }
 

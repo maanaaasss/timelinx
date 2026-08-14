@@ -38,12 +38,7 @@ const clip = createClip({
   mediaOut: toFrame(600),
 });
 
-<TimelineClip
-  clip={clip}
-  ppf={6}
-  scrollLeft={0}
-  isSelected={false}
-/>
+<TimelineClip clip={clip} ppf={6} scrollLeft={0} isSelected={false} />;
 ```
 
 ## Props
@@ -56,15 +51,15 @@ const clip = createClip({
 
 ## Key Props
 
-| Prop | Type | Notes |
-|------|------|-------|
-| `clip` | `Clip` | The clip data object. |
-| `ppf` | `number` | Pixels per frame. Determines the clip's pixel width and position. |
-| `scrollLeft` | `number` | Current horizontal scroll offset of the track container. |
-| `isSelected` | `boolean` | Adds the selection ring when `true`. |
-| `isGhost` | `boolean` | Renders as a translucent ghost during drag preview. Default `false`. |
-| `onPointerDown` | `(e: PointerEvent) => void` | Forward to the tool router. |
-| `thumbnails` | `WaveformData \| ThumbnailData \| null` | Pre-extracted media preview data. |
+| Prop            | Type                                    | Notes                                                                |
+| --------------- | --------------------------------------- | -------------------------------------------------------------------- |
+| `clip`          | `Clip`                                  | The clip data object.                                                |
+| `ppf`           | `number`                                | Pixels per frame. Determines the clip's pixel width and position.    |
+| `scrollLeft`    | `number`                                | Current horizontal scroll offset of the track container.             |
+| `isSelected`    | `boolean`                               | Adds the selection ring when `true`.                                 |
+| `isGhost`       | `boolean`                               | Renders as a translucent ghost during drag preview. Default `false`. |
+| `onPointerDown` | `(e: PointerEvent) => void`             | Forward to the tool router.                                          |
+| `thumbnails`    | `WaveformData \| ThumbnailData \| null` | Pre-extracted media preview data.                                    |
 
 ## Clip Positioning
 
@@ -75,23 +70,25 @@ left:  clip.timelineStart × ppf - scrollLeft
 width: (clip.timelineEnd - clip.timelineStart) × ppf
 ```
 
-It never controls its own top/height  - those come from the `TimelineTrack` container.
+It never controls its own top/height - those come from the `TimelineTrack` container.
 
 ## Ghost Clips
 
 During a drag gesture, the `SelectionTool` returns provisional state from `onPointerMove`. `TimelineTrack` passes `isGhost={true}` to the provisionally-positioned clip:
 
 ```tsx
-{provisionalClips.map((p) => (
-  <TimelineClip
-    key={`ghost-${p.clipId}`}
-    clip={mergedClip}
-    isGhost={true}
-    ppf={ppf}
-    scrollLeft={scrollLeft}
-    isSelected={false}
-  />
-))}
+{
+  provisionalClips.map((p) => (
+    <TimelineClip
+      key={`ghost-${p.clipId}`}
+      clip={mergedClip}
+      isGhost={true}
+      ppf={ppf}
+      scrollLeft={scrollLeft}
+      isSelected={false}
+    />
+  ));
+}
 ```
 
 Ghost clips render with reduced opacity and the amber accent outline.
@@ -117,9 +114,7 @@ Replace `TimelineClip` entirely with a custom component by rendering inside `Tim
 ```tsx
 <TimelineTrack
   trackId="v1"
-  renderClip={(clip, props) => (
-    <MyCustomClip key={clip.id} clip={clip} {...props} />
-  )}
+  renderClip={(clip, props) => <MyCustomClip key={clip.id} clip={clip} {...props} />}
 />
 ```
 
@@ -127,19 +122,19 @@ Replace `TimelineClip` entirely with a custom component by rendering inside `Tim
 
 ## CSS Classes and Data Attributes
 
-| Class | Element |
-|-------|---------|
-| `.tl-clip` | Root element |
-| `.tl-clip-label` | Name label |
+| Class                | Element                  |
+| -------------------- | ------------------------ |
+| `.tl-clip`           | Root element             |
+| `.tl-clip-label`     | Name label               |
 | `.tl-clip-thumbnail` | Thumbnail/waveform strip |
-| `.tl-trim-handle` | Start/end trim handles |
+| `.tl-trim-handle`    | Start/end trim handles   |
 
-| Attribute | Values |
-|-----------|--------|
-| `data-clip-id` | Clip ID string |
-| `data-selected` | `"true"` / `"false"` |
-| `data-enabled` | `"true"` / `"false"` |
-| `data-ghost` | `"true"` when provisional |
+| Attribute         | Values                       |
+| ----------------- | ---------------------------- |
+| `data-clip-id`    | Clip ID string               |
+| `data-selected`   | `"true"` / `"false"`         |
+| `data-enabled`    | `"true"` / `"false"`         |
+| `data-ghost`      | `"true"` when provisional    |
 | `data-track-type` | `"video"` / `"audio"` / etc. |
 
 ```css
@@ -149,12 +144,14 @@ Replace `TimelineClip` entirely with a custom component by rendering inside `Tim
 }
 
 /* Custom color for a specific clip */
-.tl-clip[data-clip-id="clip-featured"] {
+.tl-clip[data-clip-id='clip-featured'] {
   background: var(--accent-subtle);
   border-color: var(--accent-border);
 }
 ```
 
 <Callout title="Standalone component">
-  `TimelineClip` is a pure presentational component  - it does not use React context or hooks. All data is passed via props. You can render it outside a `TimelineProvider` for static previews or storybook stories.
+  `TimelineClip` is a pure presentational component - it does not use React context or hooks. All
+  data is passed via props. You can render it outside a `TimelineProvider` for static previews or
+  storybook stories.
 </Callout>

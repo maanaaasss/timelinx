@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';
 import { Box, Pencil, Layout, Video } from 'lucide-react';
 
-Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it  - you can use any layer independently.
+Timelinx is a modular monorepo with four published packages. Each layer depends only on the layers below it - you can use any layer independently.
 
 ## Package Dependency Graph
 
@@ -55,16 +55,19 @@ graph TD
 
 <Cards>
   <Card title="Core" href="/docs/core" icon={<Box style={{ color: '#c084fc' }} />}>
-    The headless engine. Pure-function dispatch model for timeline state management. Zero runtime dependencies, no side effects.
+    The headless engine. Pure-function dispatch model for timeline state management. Zero runtime
+    dependencies, no side effects.
   </Card>
   <Card title="React" href="/docs/react" icon={<Pencil style={{ color: '#aa99ff' }} />}>
     React bindings. Bridges the core engine to React's rendering model via `useSyncExternalStore`.
   </Card>
   <Card title="UI" href="/docs/ui" icon={<Layout style={{ color: '#60a5fa' }} />}>
-    UI components. Drop-in React components for building timeline editors. Tracks, clips, panels, and more.
+    UI components. Drop-in React components for building timeline editors. Tracks, clips, panels,
+    and more.
   </Card>
   <Card title="Media Web" href="/docs/media-web" icon={<Video style={{ color: '#34d399' }} />}>
-    Web-native media adapters. WebCodecs decoding, WebAudio waveforms, thumbnail extraction, WebGL compositing, and export.
+    Web-native media adapters. WebCodecs decoding, WebAudio waveforms, thumbnail extraction, WebGL
+    compositing, and export.
   </Card>
 </Cards>
 
@@ -72,7 +75,7 @@ graph TD
 
 ## Core Internal Architecture
 
-`@timelinx/core` is the foundation  - a deterministic, frame-based editing kernel with zero runtime dependencies.
+`@timelinx/core` is the foundation - a deterministic, frame-based editing kernel with zero runtime dependencies.
 
 ```mermaid
 graph TD
@@ -163,16 +166,20 @@ graph TD
 
 <Accordions>
   <Accordion title="Pure functions">
-    `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects. This makes the engine predictable, testable, and safe for concurrent access.
+    `dispatch(state, command)` returns a new state or a rejection. No mutations, no side effects.
+    This makes the engine predictable, testable, and safe for concurrent access.
   </Accordion>
   <Accordion title="Branded IDs">
-    `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse. You cannot pass a `TrackId` where a `ClipId` is expected - TypeScript will catch it at compile time.
+    `ClipId`, `TrackId`, `AssetId` are branded string types that prevent accidental misuse. You
+    cannot pass a `TrackId` where a `ClipId` is expected - TypeScript will catch it at compile time.
   </Accordion>
   <Accordion title="Frame-based time">
-    All positions are integer frames, eliminating floating-point drift. A 30fps timeline stores time as frame numbers (0, 1, 2, ...) not seconds (0.0, 0.033, 0.067, ...).
+    All positions are integer frames, eliminating floating-point drift. A 30fps timeline stores time
+    as frame numbers (0, 1, 2, ...) not seconds (0.0, 0.033, 0.067, ...).
   </Accordion>
   <Accordion title="24 invariant types">
-    Every mutation is validated before it's applied. Invariants check for overlapping clips, negative durations, missing assets, locked tracks, and 20 other conditions.
+    Every mutation is validated before it's applied. Invariants check for overlapping clips,
+    negative durations, missing assets, locked tracks, and 20 other conditions.
   </Accordion>
 </Accordions>
 
@@ -223,7 +230,8 @@ graph LR
 ```
 
 <Callout title="Key insight">
-  Uses `useSyncExternalStore` so only components that read changed state re-render. No prop drilling, no unnecessary renders.
+  Uses `useSyncExternalStore` so only components that read changed state re-render. No prop
+  drilling, no unnecessary renders.
 </Callout>
 
 ---
@@ -394,7 +402,7 @@ graph LR
     style OTIO fill:#34d399,stroke:#10b981,color:#000
 ```
 
-All state is plain objects  - no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
+All state is plain objects - no class instances, no circular references. Serialize to JSON, persist anywhere, sync across tabs, or send to a server.
 
 ---
 

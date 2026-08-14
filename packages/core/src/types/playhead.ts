@@ -30,14 +30,7 @@ export type PlayheadState = {
 };
 
 export type PlayheadEventType =
-  | 'play'
-  | 'pause'
-  | 'seek'
-  | 'loop'
-  | 'frame-dropped'
-  | 'ended'
-  | 'loop-point'
-  | 'state';
+  'play' | 'pause' | 'seek' | 'loop' | 'frame-dropped' | 'ended' | 'loop-point' | 'state';
 
 export type PlayheadEvent = {
   readonly type: PlayheadEventType;

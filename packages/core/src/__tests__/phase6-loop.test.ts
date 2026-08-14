@@ -83,12 +83,8 @@ describe('Phase 6 — Loop (setLoopRegion)', () => {
   it('3. setLoopRegion with startFrame >= endFrame throws', () => {
     const { clock } = createTestClock();
     const c = new PlayheadController({ durationFrames: DURATION, fps: FPS }, clock);
-    expect(() =>
-      c.setLoopRegion({ startFrame: toFrame(200), endFrame: toFrame(100) }),
-    ).toThrow();
-    expect(() =>
-      c.setLoopRegion({ startFrame: toFrame(100), endFrame: toFrame(100) }),
-    ).toThrow();
+    expect(() => c.setLoopRegion({ startFrame: toFrame(200), endFrame: toFrame(100) })).toThrow();
+    expect(() => c.setLoopRegion({ startFrame: toFrame(100), endFrame: toFrame(100) })).toThrow();
   });
 });
 

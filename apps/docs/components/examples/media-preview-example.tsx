@@ -1,6 +1,10 @@
 'use client';
 
-import { MediaPreview, TimelineProvider as UITimelineProvider, MediaAssetsProvider } from '@timelinx/ui';
+import {
+  MediaPreview,
+  TimelineProvider as UITimelineProvider,
+  MediaAssetsProvider,
+} from '@timelinx/ui';
 import { TimelineEngine, TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 import {
   createTimeline,
@@ -68,7 +72,14 @@ export function MediaPreviewExample() {
   const engine = useMemo(() => createDemoEngine(), []);
 
   return (
-    <div style={{ height: 300, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
+    <div
+      style={{
+        height: 300,
+        border: '1px solid var(--color-border, #333)',
+        borderRadius: 8,
+        overflow: 'hidden',
+      }}
+    >
       <ReactTimelineProvider engine={engine}>
         <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <MediaAssetsProvider>

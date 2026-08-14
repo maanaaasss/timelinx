@@ -53,10 +53,7 @@ export class PlayheadController {
   play(): void {
     if (this.state.isPlaying) return;
     this.lastTimestamp = null;
-    if (
-      this.state.loopRegion !== null &&
-      this.state.prerollFrames > 0
-    ) {
+    if (this.state.loopRegion !== null && this.state.prerollFrames > 0) {
       const start = this.state.loopRegion.startFrame as number;
       const seekFrame = Math.max(0, start - this.state.prerollFrames);
       this.state = { ...this.state, currentFrame: toFrame(seekFrame) };
@@ -163,7 +160,7 @@ export class PlayheadController {
 
     const direction = this.state.playbackRate >= 0 ? 1 : -1;
     const currentN = this.state.currentFrame as number;
-    let newFrame = currentN + direction * advanceBy;
+    const newFrame = currentN + direction * advanceBy;
     this.frameAccum -= direction * advanceBy;
 
     if (this.state.loopRegion !== null && direction > 0) {

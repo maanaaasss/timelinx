@@ -391,7 +391,9 @@ describe('Phase 6 — Keyboard (mark-in / mark-out callbacks)', () => {
     const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
     let captured: number | null = null;
     const handler = new KeyboardHandler(engine, {
-      onMarkIn: (frame) => { captured = frame as number; },
+      onMarkIn: (frame) => {
+        captured = frame as number;
+      },
     });
     engine.seekTo(toFrame(42));
     handler.handleKeyDown(makeKeyEvent('KeyI'));
@@ -404,7 +406,9 @@ describe('Phase 6 — Keyboard (mark-in / mark-out callbacks)', () => {
     const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
     let captured: number | null = null;
     const handler = new KeyboardHandler(engine, {
-      onMarkOut: (frame) => { captured = frame as number; },
+      onMarkOut: (frame) => {
+        captured = frame as number;
+      },
     });
     engine.seekTo(toFrame(99));
     handler.handleKeyDown(makeKeyEvent('KeyO'));

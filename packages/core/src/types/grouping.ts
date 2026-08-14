@@ -1,6 +1,6 @@
 /**
  * GROUPING TYPES
- * 
+ *
  * Groups organize clips visually without affecting edit behavior.
  * Unlike link groups, groups are for organization only.
  */

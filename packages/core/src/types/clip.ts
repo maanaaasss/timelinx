@@ -53,7 +53,7 @@ export type Clip = {
   readonly mediaIn: TimelineFrame;
   readonly mediaOut: TimelineFrame;
 
-  readonly speed: number;       // 1.0 = normal, > 0 always
+  readonly speed: number; // 1.0 = normal, > 0 always
   readonly enabled: boolean;
   readonly reversed: boolean;
   readonly name: string | null;

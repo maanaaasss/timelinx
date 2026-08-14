@@ -5,14 +5,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { ReactNode } from 'react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
 import {
-  createTimeline,
-  createTimelineState,
-  toFrame,
-  frameRate,
-} from '@timelinx/core';
-import {
-  TimelineEngine,         // Phase 1 engine from @timelinx/react
+  TimelineEngine, // Phase 1 engine from @timelinx/react
   TimelineProvider,
   useTimeline,
 } from '../index';
@@ -23,11 +18,11 @@ describe('TimelineProvider', () => {
 
   beforeEach(() => {
     const timeline = createTimeline({
-      id:       'tl-provider-test',
-      name:     'Test Timeline',
-      fps:      frameRate(30),
+      id: 'tl-provider-test',
+      name: 'Test Timeline',
+      fps: frameRate(30),
       duration: toFrame(9000),
-      tracks:   [],
+      tracks: [],
     });
     const state = createTimelineState({ timeline });
     engine = new TimelineEngine({ initialState: state });

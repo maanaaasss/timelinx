@@ -53,14 +53,14 @@ function TrackList() {
 
 ## Key Props
 
-| Prop | Type | Notes |
-|------|------|-------|
-| `trackId` | `string` | Required. Identifies which track to render. |
-| `ppf` | `number` | Pixels per frame. If omitted, read from context. |
-| `scrollLeft` | `number` | Horizontal scroll offset. If omitted, read from context. |
-| `renderClip` | `(clip, props) => ReactNode` | Custom clip renderer. Replaces `TimelineClip`. |
-| `onDelete` | `(trackId: string) => void` | Called when the track delete button is pressed. |
-| `onAddClip` | `(trackId: string) => void` | Called when the add-clip button is pressed. |
+| Prop         | Type                         | Notes                                                    |
+| ------------ | ---------------------------- | -------------------------------------------------------- |
+| `trackId`    | `string`                     | Required. Identifies which track to render.              |
+| `ppf`        | `number`                     | Pixels per frame. If omitted, read from context.         |
+| `scrollLeft` | `number`                     | Horizontal scroll offset. If omitted, read from context. |
+| `renderClip` | `(clip, props) => ReactNode` | Custom clip renderer. Replaces `TimelineClip`.           |
+| `onDelete`   | `(trackId: string) => void`  | Called when the track delete button is pressed.          |
+| `onAddClip`  | `(trackId: string) => void`  | Called when the add-clip button is pressed.              |
 
 ## What `TimelineTrack` Reads from Context
 
@@ -89,13 +89,13 @@ visibleClips = clips.filter(clip =>
 
 The track header controls dispatch operations directly:
 
-| Button | Operation dispatched |
-|--------|---------------------|
-| Mute 🔇 | `SET_TRACK_MUTED` |
-| Lock 🔒 | `SET_TRACK_LOCKED` |
-| Solo ✦ | `SET_TRACK_SOLO` |
+| Button  | Operation dispatched |
+| ------- | -------------------- |
+| Mute 🔇 | `SET_TRACK_MUTED`    |
+| Lock 🔒 | `SET_TRACK_LOCKED`   |
+| Solo ✦  | `SET_TRACK_SOLO`     |
 
-These calls go through `engine.dispatch()`  - they are undoable.
+These calls go through `engine.dispatch()` - they are undoable.
 
 ## Custom Clip Renderer
 
@@ -123,11 +123,13 @@ function MyClip({ clip, ppf, scrollLeft, isSelected }) {
 <TimelineTrack
   trackId="v1"
   renderClip={(clip, props) => <MyClip key={clip.id} clip={clip} {...props} />}
-/>
+/>;
 ```
 
 <Callout type="warn" title="Keep data-clip-id on the custom clip root">
-  The tool router reads `data-clip-id` from DOM elements to resolve which clip was clicked. Your custom clip component must set `data-clip-id={clip.id}` on its root element, or click/drag gestures will not be recognized.
+  The tool router reads `data-clip-id` from DOM elements to resolve which clip was clicked. Your
+  custom clip component must set `data-clip-id={clip.id}` on its root element, or click/drag
+  gestures will not be recognized.
 </Callout>
 
 ## Context Requirement

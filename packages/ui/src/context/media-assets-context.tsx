@@ -48,20 +48,11 @@ export function MediaAssetsProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  const getFile = useCallback(
-    (assetId: string) => filesRef.current.get(assetId),
-    [],
-  );
+  const getFile = useCallback((assetId: string) => filesRef.current.get(assetId), []);
 
-  const getBlobUrl = useCallback(
-    (assetId: string) => blobUrlsRef.current.get(assetId),
-    [],
-  );
+  const getBlobUrl = useCallback((assetId: string) => blobUrlsRef.current.get(assetId), []);
 
-  const getThumbnail = useCallback(
-    (assetId: string) => thumbnailsRef.current.get(assetId),
-    [],
-  );
+  const getThumbnail = useCallback((assetId: string) => thumbnailsRef.current.get(assetId), []);
 
   const addImportedAsset = useCallback(
     (assetId: string, file: File, blobUrl: string, thumbnail?: string) => {
@@ -78,28 +69,25 @@ export function MediaAssetsProvider({ children }: { children: React.ReactNode })
     [],
   );
 
-  const removeImportedAsset = useCallback(
-    (assetId: string, options?: { immediate?: boolean }) => {
-      filesRef.current.delete(assetId);
-      thumbnailsRef.current.delete(assetId);
-      const url = blobUrlsRef.current.get(assetId);
-      blobUrlsRef.current.delete(assetId);
-      if (!url) return;
+  const removeImportedAsset = useCallback((assetId: string, options?: { immediate?: boolean }) => {
+    filesRef.current.delete(assetId);
+    thumbnailsRef.current.delete(assetId);
+    const url = blobUrlsRef.current.get(assetId);
+    blobUrlsRef.current.delete(assetId);
+    if (!url) return;
 
-      if (options?.immediate) {
-        // Immediate revocation — only safe when no render frame is in progress
-        // for this asset (e.g. during tests, or after confirming the compositor
-        // is not using this clip).
-        URL.revokeObjectURL(url);
-      } else {
-        // T0-3: Defer revocation by one microtask so the current render frame
-        // (compositor or export) finishes drawing before the URL becomes invalid.
-        // This prevents the "black frame in export" failure mode (H1 fix).
-        Promise.resolve().then(() => URL.revokeObjectURL(url));
-      }
-    },
-    [],
-  );
+    if (options?.immediate) {
+      // Immediate revocation — only safe when no render frame is in progress
+      // for this asset (e.g. during tests, or after confirming the compositor
+      // is not using this clip).
+      URL.revokeObjectURL(url);
+    } else {
+      // T0-3: Defer revocation by one microtask so the current render frame
+      // (compositor or export) finishes drawing before the URL becomes invalid.
+      // This prevents the "black frame in export" failure mode (H1 fix).
+      Promise.resolve().then(() => URL.revokeObjectURL(url));
+    }
+  }, []);
 
   // T1-1: Return ReadonlyMap to prevent callers from mutating context state (H2 fix).
   const getAllThumbnails = useCallback(

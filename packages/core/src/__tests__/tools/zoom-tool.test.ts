@@ -24,7 +24,7 @@ function makeCtx(pixelsPerFrame: number): ToolContext {
     snapIndex: {} as ToolContext['snapIndex'],
     pixelsPerFrame,
     modifiers: { shift: false, alt: false, ctrl: false, meta: false },
-    frameAtX: () => ({} as ToolContext['frameAtX'] extends (x: number) => infer R ? R : never),
+    frameAtX: () => ({}) as ToolContext['frameAtX'] extends (x: number) => infer R ? R : never,
     trackAtY: () => null,
     snap: (f) => f,
   };

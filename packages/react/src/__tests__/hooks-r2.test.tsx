@@ -5,7 +5,7 @@
  * All hooks take engine as first arg. Selector isolation proven with toBe.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import {
   createTimeline,
@@ -18,13 +18,10 @@ import {
   frameRate,
   toTrackId,
   toClipId,
-  toAssetId,
   toToolId,
   createTestClock,
   NoOpTool,
 } from '@timelinx/core';
-import type { Transaction } from '@timelinx/core';
-
 import { TimelineEngine } from '../engine';
 import {
   useTimeline,
@@ -48,7 +45,6 @@ const TRACK_1 = toTrackId('track-1');
 const TRACK_2 = toTrackId('track-2');
 const CLIP_A = toClipId('clip-a');
 const CLIP_B = toClipId('clip-b');
-const CLIP_C = toClipId('clip-c');
 
 function makeFixtureState() {
   const asset = createAsset({
@@ -207,9 +203,7 @@ describe('useTrackIds', () => {
         id: 'm',
         label: 'Move',
         timestamp: 0,
-        operations: [
-          { type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(20) },
-        ],
+        operations: [{ type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(20) }],
       });
     });
     rerender();
@@ -301,15 +295,12 @@ describe('useClip', () => {
     const { result: resultB } = renderHook(() => {
       return useClip(engine, CLIP_B);
     });
-    const clipBRefBefore = resultB.current;
     act(() => {
       engine.dispatch({
         id: 'm',
         label: 'Move A',
         timestamp: 0,
-        operations: [
-          { type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(5) },
-        ],
+        operations: [{ type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(5) }],
       });
     });
     expect(resultB.current).not.toBeNull();
@@ -551,9 +542,7 @@ describe('useChange', () => {
         id: 'm',
         label: 'Move',
         timestamp: 0,
-        operations: [
-          { type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(10) },
-        ],
+        operations: [{ type: 'MOVE_CLIP', clipId: CLIP_A, newTimelineStart: toFrame(10) }],
       });
     });
     rerender();

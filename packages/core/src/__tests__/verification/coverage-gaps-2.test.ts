@@ -16,11 +16,7 @@ import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
 import { buildSnapIndex } from '../../snap-index';
 import { toTrackGroupId } from '../../types/track-group';
-import type {
-  ToolContext,
-  TimelinePointerEvent,
-  TimelineKeyEvent,
-} from '../../tools/types';
+import type { ToolContext, TimelinePointerEvent, TimelineKeyEvent } from '../../tools/types';
 import type { TimelineState } from '../../types/state';
 import type { TimelineFrame } from '../../types/frame';
 import type { TrackId } from '../../types/track';
@@ -77,10 +73,7 @@ function makeState(): TimelineState {
   });
 }
 
-function makeCtx(
-  state: TimelineState,
-  overrides: Partial<ToolContext> = {},
-): ToolContext {
+function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): ToolContext {
   return {
     state,
     snapIndex: buildSnapIndex(state, toFrame(0)),
@@ -93,18 +86,20 @@ function makeCtx(
   };
 }
 
-function makeEv(overrides: {
-  frame?: TimelineFrame;
-  trackId?: TrackId | null;
-  clipId?: ClipId | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-  x?: number;
-  y?: number;
-  buttons?: number;
-  shiftKey?: boolean;
-  altKey?: boolean;
-  metaKey?: boolean;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: TimelineFrame;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+    x?: number;
+    y?: number;
+    buttons?: number;
+    shiftKey?: boolean;
+    altKey?: boolean;
+    metaKey?: boolean;
+  } = {},
+): TimelinePointerEvent {
   return {
     frame: overrides.frame ?? toFrame(0),
     trackId: overrides.trackId ?? TRACK_ID,
@@ -133,14 +128,19 @@ function makeTx(label: string, ops: Transaction['operations']): Transaction {
 describe('Coverage: validators.ts — ADD_TRACK_GROUP', () => {
   it('ADD_TRACK_GROUP with valid track IDs succeeds via dispatcher', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Add Group', [{
-      type: 'ADD_TRACK_GROUP',
-      trackGroup: {
-        id: toTrackGroupId('grp-1'),
-        name: 'Test Group',
-        trackIds: [toTrackId('track-1')],
-      },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Add Group', [
+        {
+          type: 'ADD_TRACK_GROUP',
+          trackGroup: {
+            id: toTrackGroupId('grp-1'),
+            name: 'Test Group',
+            trackIds: [toTrackId('track-1')],
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (result.accepted) {
       expect(result.nextState.timeline.trackGroups).toHaveLength(1);
@@ -150,26 +150,36 @@ describe('Coverage: validators.ts — ADD_TRACK_GROUP', () => {
   it('ADD_TRACK_GROUP with duplicate ID is rejected', () => {
     const state = makeState();
     // First add a group
-    const stateWithGroup = dispatch(state, makeTx('Add Group', [{
-      type: 'ADD_TRACK_GROUP',
-      trackGroup: {
-        id: toTrackGroupId('grp-1'),
-        name: 'Test Group',
-        trackIds: [toTrackId('track-1')],
-      },
-    }]));
+    const stateWithGroup = dispatch(
+      state,
+      makeTx('Add Group', [
+        {
+          type: 'ADD_TRACK_GROUP',
+          trackGroup: {
+            id: toTrackGroupId('grp-1'),
+            name: 'Test Group',
+            trackIds: [toTrackId('track-1')],
+          },
+        },
+      ]),
+    );
     expect(stateWithGroup.accepted).toBe(true);
     if (!stateWithGroup.accepted) return;
 
     // Try to add another group with same ID
-    const result = dispatch(stateWithGroup.nextState, makeTx('Add Group Again', [{
-      type: 'ADD_TRACK_GROUP',
-      trackGroup: {
-        id: toTrackGroupId('grp-1'),
-        name: 'Test Group Again',
-        trackIds: [toTrackId('track-1')],
-      },
-    }]));
+    const result = dispatch(
+      stateWithGroup.nextState,
+      makeTx('Add Group Again', [
+        {
+          type: 'ADD_TRACK_GROUP',
+          trackGroup: {
+            id: toTrackGroupId('grp-1'),
+            name: 'Test Group Again',
+            trackIds: [toTrackId('track-1')],
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) {
       expect(result.reason).toBe('DUPLICATE_TRACK_GROUP_ID');
@@ -178,14 +188,19 @@ describe('Coverage: validators.ts — ADD_TRACK_GROUP', () => {
 
   it('ADD_TRACK_GROUP with non-existent track ID is rejected', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Add Group', [{
-      type: 'ADD_TRACK_GROUP',
-      trackGroup: {
-        id: toTrackGroupId('grp-1'),
-        name: 'Test Group',
-        trackIds: [toTrackId('nonexistent')],
-      },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Add Group', [
+        {
+          type: 'ADD_TRACK_GROUP',
+          trackGroup: {
+            id: toTrackGroupId('grp-1'),
+            name: 'Test Group',
+            trackIds: [toTrackId('nonexistent')],
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) {
       expect(result.reason).toBe('TRACK_NOT_FOUND');
@@ -197,22 +212,32 @@ describe('Coverage: validators.ts — DELETE_TRACK_GROUP', () => {
   it('DELETE_TRACK_GROUP with valid ID succeeds via dispatcher', () => {
     const state = makeState();
     // First add a group
-    const stateWithGroup = dispatch(state, makeTx('Add Group', [{
-      type: 'ADD_TRACK_GROUP',
-      trackGroup: {
-        id: toTrackGroupId('grp-1'),
-        name: 'Test Group',
-        trackIds: [toTrackId('track-1')],
-      },
-    }]));
+    const stateWithGroup = dispatch(
+      state,
+      makeTx('Add Group', [
+        {
+          type: 'ADD_TRACK_GROUP',
+          trackGroup: {
+            id: toTrackGroupId('grp-1'),
+            name: 'Test Group',
+            trackIds: [toTrackId('track-1')],
+          },
+        },
+      ]),
+    );
     expect(stateWithGroup.accepted).toBe(true);
     if (!stateWithGroup.accepted) return;
 
     // Delete the group
-    const result = dispatch(stateWithGroup.nextState, makeTx('Delete Group', [{
-      type: 'DELETE_TRACK_GROUP',
-      trackGroupId: toTrackGroupId('grp-1'),
-    }]));
+    const result = dispatch(
+      stateWithGroup.nextState,
+      makeTx('Delete Group', [
+        {
+          type: 'DELETE_TRACK_GROUP',
+          trackGroupId: toTrackGroupId('grp-1'),
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (result.accepted) {
       expect(result.nextState.timeline.trackGroups).toHaveLength(0);
@@ -221,10 +246,15 @@ describe('Coverage: validators.ts — DELETE_TRACK_GROUP', () => {
 
   it('DELETE_TRACK_GROUP with non-existent ID is rejected', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Delete Group', [{
-      type: 'DELETE_TRACK_GROUP',
-      trackGroupId: toTrackGroupId('nonexistent'),
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Delete Group', [
+        {
+          type: 'DELETE_TRACK_GROUP',
+          trackGroupId: toTrackGroupId('nonexistent'),
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) {
       expect(result.reason).toBe('TRACK_GROUP_NOT_FOUND');
@@ -247,10 +277,10 @@ describe('Coverage: selection.ts — trim-edge mode', () => {
     // Click near the end edge of clip-a (at frame 100, x=1000)
     // EDGE_HIT_ZONE_PX is 8, so x=1000 is exactly at the end edge
     tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, frame: toFrame(100), x: 1000 }), ctx);
-    
+
     // Move slightly (within drag threshold of 4px)
     tool.onPointerMove(makeEv({ clipId: CLIP_A_ID, frame: toFrame(99), x: 1002 }), ctx);
-    
+
     // Release within drag threshold
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP_A_ID, frame: toFrame(99), x: 1002 }), ctx);
 

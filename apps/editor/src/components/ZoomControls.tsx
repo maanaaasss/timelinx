@@ -19,19 +19,11 @@ export function ZoomControls({ zoom = 4 }: ZoomControlsProps) {
 
   return (
     <div className="tool-group">
-      <button
-        className="tool-btn"
-        title="Zoom Out"
-        onClick={handleZoomOut}
-      >
+      <button className="tool-btn" title="Zoom Out" onClick={handleZoomOut}>
         −
       </button>
       <span className="zoom-display">{zoom}x</span>
-      <button
-        className="tool-btn"
-        title="Zoom In"
-        onClick={handleZoomIn}
-      >
+      <button className="tool-btn" title="Zoom In" onClick={handleZoomIn}>
         +
       </button>
     </div>

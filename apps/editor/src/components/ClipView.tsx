@@ -35,9 +35,7 @@ export const ClipView = React.memo(function ClipView({
         width,
       }}
     >
-      {width > 40 && (
-        <div className="clip-info">{clip.name ?? clipId}</div>
-      )}
+      {width > 40 && <div className="clip-info">{clip.name ?? clipId}</div>}
       {width > 80 && (
         <div className="clip-duration">
           {duration}fr @ {String(clip.timelineStart)}

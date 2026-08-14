@@ -81,7 +81,10 @@ export function createThumbnailWorker(): void {
     } catch (error) {
       self.postMessage({
         type: 'error',
-        requestId: type === 'request' ? `${event.data.payload.request.clipId}-${event.data.payload.request.mediaFrame}` : 'unknown',
+        requestId:
+          type === 'request'
+            ? `${event.data.payload.request.clipId}-${event.data.payload.request.mediaFrame}`
+            : 'unknown',
         message: error instanceof Error ? error.message : 'Worker error',
       });
     }
@@ -125,9 +128,7 @@ async function handleThumbnailRequest(entry: ThumbnailQueueEntry): Promise<void>
  * Extract a thumbnail from video.
  * This is a placeholder implementation.
  */
-async function extractThumbnail(
-  request: ThumbnailRequest,
-): Promise<ImageBitmap | ImageData> {
+async function extractThumbnail(request: ThumbnailRequest): Promise<ImageBitmap | ImageData> {
   const { width, height, mediaFrame } = request;
 
   // Create a placeholder thumbnail
@@ -163,10 +164,10 @@ async function extractThumbnail(
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = (y * width + x) * 4;
-      data[idx] = Math.floor((hue / 360) * 255);     // R
-      data[idx + 1] = 128;                             // G
-      data[idx + 2] = 128;                             // B
-      data[idx + 3] = 255;                             // A
+      data[idx] = Math.floor((hue / 360) * 255); // R
+      data[idx + 1] = 128; // G
+      data[idx + 2] = 128; // B
+      data[idx + 3] = 255; // A
     }
   }
 
@@ -225,10 +226,7 @@ export class ThumbnailWorkerClient {
   /**
    * Request a thumbnail extraction.
    */
-  requestThumbnail(
-    request: ThumbnailRequest,
-    priority: ThumbnailPriority = 'normal',
-  ): void {
+  requestThumbnail(request: ThumbnailRequest, priority: ThumbnailPriority = 'normal'): void {
     const entry: ThumbnailQueueEntry = {
       request,
       priority,
@@ -300,10 +298,7 @@ export class ThumbnailWorkerClient {
   /**
    * Handle worker messages.
    */
-  private handleWorkerMessage(
-    worker: Worker,
-    event: MessageEvent<ThumbnailWorkerResponse>,
-  ): void {
+  private handleWorkerMessage(worker: Worker, event: MessageEvent<ThumbnailWorkerResponse>): void {
     const { type } = event.data;
 
     if (type === 'result') {
@@ -345,9 +340,7 @@ export class ThumbnailWorkerClient {
    */
   private sortQueue(): void {
     const priorityOrder = { high: 2, normal: 1, low: 0 };
-    this.queue.sort(
-      (a, b) => (priorityOrder[b.priority] ?? 0) - (priorityOrder[a.priority] ?? 0),
-    );
+    this.queue.sort((a, b) => (priorityOrder[b.priority] ?? 0) - (priorityOrder[a.priority] ?? 0));
   }
 
   /**

@@ -41,7 +41,13 @@ const SW = 1.75;
 
 function makeIcon(Icon: any, opts?: { fill?: string }) {
   return function IconComponent({ size = 14, className, style }: IconProps) {
-    return React.createElement(Icon, { size, strokeWidth: SW, className, style, fill: opts?.fill ?? 'none' });
+    return React.createElement(Icon, {
+      size,
+      strokeWidth: SW,
+      className,
+      style,
+      fill: opts?.fill ?? 'none',
+    });
   };
 }
 

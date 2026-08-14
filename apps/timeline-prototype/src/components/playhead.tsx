@@ -29,11 +29,7 @@ export function Playhead({ currentTime, ppf, onDragStart }: PlayheadProps) {
 
   return (
     <div className={cn('tl-playhead', isDragging && 'is-dragging')} style={{ left }}>
-      <div
-        className="tl-playhead-hit"
-        tabIndex={-1}
-        onPointerDown={handlePointerDown}
-      />
+      <div className="tl-playhead-hit" tabIndex={-1} onPointerDown={handlePointerDown} />
     </div>
   );
 }

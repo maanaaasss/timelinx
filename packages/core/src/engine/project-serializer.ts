@@ -37,10 +37,12 @@ function validateBin(bin: unknown): asserts bin is Bin {
   if (!isObject(bin)) throw new SerializationError('Invalid bin');
   if (typeof bin.id !== 'string') throw new SerializationError('Invalid bin');
   if (typeof bin.label !== 'string') throw new SerializationError('Invalid bin');
-  if (!(typeof bin.parentId === 'string' || bin.parentId === null)) throw new SerializationError('Invalid bin');
+  if (!(typeof bin.parentId === 'string' || bin.parentId === null))
+    throw new SerializationError('Invalid bin');
   if (!Array.isArray(bin.items)) throw new SerializationError('Invalid bin');
   for (const item of bin.items) validateBinItem(item);
-  if (bin.color !== undefined && typeof bin.color !== 'string') throw new SerializationError('Invalid bin');
+  if (bin.color !== undefined && typeof bin.color !== 'string')
+    throw new SerializationError('Invalid bin');
 }
 
 function toPlainTimeline(state: TimelineState): unknown {
@@ -97,7 +99,8 @@ export function deserializeProject(raw: string): Project {
   }
 
   const binsRaw = obj.bins;
-  if (binsRaw !== undefined && !Array.isArray(binsRaw)) throw new SerializationError('Invalid bins');
+  if (binsRaw !== undefined && !Array.isArray(binsRaw))
+    throw new SerializationError('Invalid bins');
   const bins: Bin[] = (binsRaw ?? []) as Bin[];
   for (const b of bins) validateBin(b);
 
@@ -127,4 +130,3 @@ export function deserializeProject(raw: string): Project {
     rootBinIds,
   };
 }
-

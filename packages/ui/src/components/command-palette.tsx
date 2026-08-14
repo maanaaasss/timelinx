@@ -26,62 +26,160 @@ export const CommandPalette = React.memo(function CommandPalette({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const commands: Command[] = useMemo(() => [
-    // Tools
-    { id: 'tool-selection', label: 'Selection tool', category: 'Tools', shortcut: 'V', action: () => engine.activateTool('selection') },
-    { id: 'tool-razor', label: 'Razor tool', category: 'Tools', shortcut: 'C', action: () => engine.activateTool('razor') },
-    { id: 'tool-ripple-trim', label: 'Ripple Trim tool', category: 'Tools', shortcut: 'T', action: () => engine.activateTool('ripple-trim') },
-    { id: 'tool-roll-trim', label: 'Roll Trim tool', category: 'Tools', shortcut: 'R', action: () => engine.activateTool('roll-trim') },
-    { id: 'tool-slip', label: 'Slip tool', category: 'Tools', shortcut: 'S', action: () => engine.activateTool('slip') },
-    { id: 'tool-slide', label: 'Slide tool', category: 'Tools', shortcut: 'Y', action: () => engine.activateTool('slide') },
-    { id: 'tool-hand', label: 'Hand tool', category: 'Tools', shortcut: 'H', action: () => engine.activateTool('hand') },
+  const commands: Command[] = useMemo(
+    () => [
+      // Tools
+      {
+        id: 'tool-selection',
+        label: 'Selection tool',
+        category: 'Tools',
+        shortcut: 'V',
+        action: () => engine.activateTool('selection'),
+      },
+      {
+        id: 'tool-razor',
+        label: 'Razor tool',
+        category: 'Tools',
+        shortcut: 'C',
+        action: () => engine.activateTool('razor'),
+      },
+      {
+        id: 'tool-ripple-trim',
+        label: 'Ripple Trim tool',
+        category: 'Tools',
+        shortcut: 'T',
+        action: () => engine.activateTool('ripple-trim'),
+      },
+      {
+        id: 'tool-roll-trim',
+        label: 'Roll Trim tool',
+        category: 'Tools',
+        shortcut: 'R',
+        action: () => engine.activateTool('roll-trim'),
+      },
+      {
+        id: 'tool-slip',
+        label: 'Slip tool',
+        category: 'Tools',
+        shortcut: 'S',
+        action: () => engine.activateTool('slip'),
+      },
+      {
+        id: 'tool-slide',
+        label: 'Slide tool',
+        category: 'Tools',
+        shortcut: 'Y',
+        action: () => engine.activateTool('slide'),
+      },
+      {
+        id: 'tool-hand',
+        label: 'Hand tool',
+        category: 'Tools',
+        shortcut: 'H',
+        action: () => engine.activateTool('hand'),
+      },
 
-    // Playback
-    { id: 'play', label: 'Play / Pause', category: 'Playback', shortcut: 'Space', action: () => {
-      const snapshot = engine.getSnapshot();
-      const isPlaying = snapshot.playhead.isPlaying;
-      if (engine.playbackEngine) {
-        if (isPlaying) {
-          engine.playbackEngine.pause();
-        } else {
-          engine.playbackEngine.play();
-        }
-      }
-    }},
-    { id: 'seek-start', label: 'Go to start', category: 'Playback', shortcut: 'Home', action: () => engine.seekTo(toFrame(0)) },
-    { id: 'seek-end', label: 'Go to end', category: 'Playback', shortcut: 'End', action: () => {
-      const state = engine.getState();
-      engine.seekTo(toFrame(Math.max(0, (state.timeline.duration as number) - 1)));
-    }},
+      // Playback
+      {
+        id: 'play',
+        label: 'Play / Pause',
+        category: 'Playback',
+        shortcut: 'Space',
+        action: () => {
+          const snapshot = engine.getSnapshot();
+          const isPlaying = snapshot.playhead.isPlaying;
+          if (engine.playbackEngine) {
+            if (isPlaying) {
+              engine.playbackEngine.pause();
+            } else {
+              engine.playbackEngine.play();
+            }
+          }
+        },
+      },
+      {
+        id: 'seek-start',
+        label: 'Go to start',
+        category: 'Playback',
+        shortcut: 'Home',
+        action: () => engine.seekTo(toFrame(0)),
+      },
+      {
+        id: 'seek-end',
+        label: 'Go to end',
+        category: 'Playback',
+        shortcut: 'End',
+        action: () => {
+          const state = engine.getState();
+          engine.seekTo(toFrame(Math.max(0, (state.timeline.duration as number) - 1)));
+        },
+      },
 
-    // Edit
-    { id: 'undo', label: 'Undo', category: 'Edit', shortcut: 'Cmd+Z', action: () => engine.undo() },
-    { id: 'redo', label: 'Redo', category: 'Edit', shortcut: 'Cmd+Shift+Z', action: () => engine.redo() },
-    { id: 'select-all', label: 'Select all clips', category: 'Edit', shortcut: 'Cmd+A', action: () => {
-      const state = engine.getState();
-      const allIds = new Set<string>();
-      for (const track of state.timeline.tracks) {
-        for (const clip of track.clips) {
-          allIds.add(clip.id as string);
-        }
-      }
-      engine.setSelectedClipIds(allIds);
-    }},
-    { id: 'clear-selection', label: 'Clear selection', category: 'Edit', shortcut: 'Escape', action: () => engine.clearSelection() },
+      // Edit
+      {
+        id: 'undo',
+        label: 'Undo',
+        category: 'Edit',
+        shortcut: 'Cmd+Z',
+        action: () => engine.undo(),
+      },
+      {
+        id: 'redo',
+        label: 'Redo',
+        category: 'Edit',
+        shortcut: 'Cmd+Shift+Z',
+        action: () => engine.redo(),
+      },
+      {
+        id: 'select-all',
+        label: 'Select all clips',
+        category: 'Edit',
+        shortcut: 'Cmd+A',
+        action: () => {
+          const state = engine.getState();
+          const allIds = new Set<string>();
+          for (const track of state.timeline.tracks) {
+            for (const clip of track.clips) {
+              allIds.add(clip.id as string);
+            }
+          }
+          engine.setSelectedClipIds(allIds);
+        },
+      },
+      {
+        id: 'clear-selection',
+        label: 'Clear selection',
+        category: 'Edit',
+        shortcut: 'Escape',
+        action: () => engine.clearSelection(),
+      },
 
-    // View
-    { id: 'zoom-in', label: 'Zoom in', category: 'View', action: () => {
-      console.log('Zoom in');
-    }},
-    { id: 'zoom-out', label: 'Zoom out', category: 'View', action: () => {
-      console.log('Zoom out');
-    }},
-  ], [engine]);
+      // View
+      {
+        id: 'zoom-in',
+        label: 'Zoom in',
+        category: 'View',
+        action: () => {
+          console.log('Zoom in');
+        },
+      },
+      {
+        id: 'zoom-out',
+        label: 'Zoom out',
+        category: 'View',
+        action: () => {
+          console.log('Zoom out');
+        },
+      },
+    ],
+    [engine],
+  );
 
   const filteredCommands = query
-    ? commands.filter((cmd) =>
-        cmd.label.toLowerCase().includes(query.toLowerCase()) ||
-        cmd.category.toLowerCase().includes(query.toLowerCase())
+    ? commands.filter(
+        (cmd) =>
+          cmd.label.toLowerCase().includes(query.toLowerCase()) ||
+          cmd.category.toLowerCase().includes(query.toLowerCase()),
       )
     : commands;
 

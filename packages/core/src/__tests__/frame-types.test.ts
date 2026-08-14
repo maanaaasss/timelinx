@@ -6,14 +6,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  frame,
-  frameRate,
-  toFrame,
-  FrameRates,
-  isDropFrame,
-  isValidFrame,
-} from '../types/frame';
+import { frame, frameRate, toFrame, FrameRates, isDropFrame, isValidFrame } from '../types/frame';
 
 describe('TimelineFrame', () => {
   it('frame() rounds floating-point inputs to nearest integer', () => {

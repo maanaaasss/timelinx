@@ -1,15 +1,6 @@
 import type { Track } from '@timelinx/core';
 import { cn } from '../lib/cn';
-import {
-  GripVertical,
-  Video,
-  Volume2,
-  VolumeX,
-  Headphones,
-  Lock,
-  Unlock,
-  Eye,
-} from 'lucide-react';
+import { GripVertical, Video, Volume2, VolumeX, Headphones, Lock, Unlock, Eye } from 'lucide-react';
 
 export interface TrackHeaderProps {
   track: Track;
@@ -43,26 +34,23 @@ export function TrackHeader({ track, isSelected }: TrackHeaderProps) {
       <GripVertical size={14} className="tl-track-header-drag" />
       <TypeIcon
         size={13}
-        style={{ color: trackTypeColorVar[track.type] ?? 'var(--text-tertiary)', flexShrink: 0, opacity: 0.7 }}
+        style={{
+          color: trackTypeColorVar[track.type] ?? 'var(--text-tertiary)',
+          flexShrink: 0,
+          opacity: 0.7,
+        }}
       />
-      <span className="tl-track-header-name" title={track.name}>{track.name}</span>
+      <span className="tl-track-header-name" title={track.name}>
+        {track.name}
+      </span>
       <div className="tl-track-header-actions">
-        <button
-          className={cn('tl-track-header-btn', track.muted && 'is-active')}
-          title="Mute (M)"
-        >
+        <button className={cn('tl-track-header-btn', track.muted && 'is-active')} title="Mute (M)">
           {track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
         </button>
-        <button
-          className={cn('tl-track-header-btn', track.solo && 'is-active')}
-          title="Solo (S)"
-        >
+        <button className={cn('tl-track-header-btn', track.solo && 'is-active')} title="Solo (S)">
           <Headphones size={12} />
         </button>
-        <button
-          className={cn('tl-track-header-btn', track.locked && 'is-active')}
-          title="Lock"
-        >
+        <button className={cn('tl-track-header-btn', track.locked && 'is-active')} title="Lock">
           {track.locked ? <Lock size={12} /> : <Unlock size={12} />}
         </button>
         <button className="tl-track-header-btn" title="Hide">

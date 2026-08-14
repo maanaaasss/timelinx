@@ -48,12 +48,14 @@ export function TrackBody({
     <div
       ref={bodyRef}
       className="tl-track-body"
-      style={{
-        width: totalWidth,
-        cursor: 'text',
-        '--ppf': `${ppf}px`,
-        '--fps': fps,
-      } as React.CSSProperties}
+      style={
+        {
+          width: totalWidth,
+          cursor: 'text',
+          '--ppf': `${ppf}px`,
+          '--fps': fps,
+        } as React.CSSProperties
+      }
       onClick={handleClick}
     >
       <div

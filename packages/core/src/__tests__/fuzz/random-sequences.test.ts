@@ -34,19 +34,32 @@ import type { TrackId } from '../../types/track';
 
 function makeInitialState(): TimelineState {
   const asset = createAsset({
-    id: 'asset-1', name: 'Fuzz Asset', mediaType: 'video',
-    filePath: '/media/fuzz.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    id: 'asset-1',
+    name: 'Fuzz Asset',
+    mediaType: 'video',
+    filePath: '/media/fuzz.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
   const clip = createClip({
-    id: 'clip-1', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-1',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Fuzz', fps: 30, duration: toFrame(5000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Fuzz',
+    fps: 30,
+    duration: toFrame(5000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[toAssetId('asset-1'), asset]]) });
 }
@@ -57,27 +70,24 @@ describe('Fuzz: random operation sequences never violate invariants', () => {
   it('sequences of up to 10 operations against a single-track state', () => {
     resetCounters();
     fc.assert(
-      fc.property(
-        fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }),
-        (ops) => {
-          let state = makeInitialState();
-          for (const op of ops) {
-            const tx: Transaction = {
-              id: `fuzz-${Date.now()}-${Math.random()}`,
-              label: 'fuzz',
-              timestamp: Date.now(),
-              operations: [op],
-            };
-            const result = dispatch(state, tx);
-            if (result.accepted) {
-              const violations = checkInvariants(result.nextState);
-              expect(violations).toEqual([]);
-              state = result.nextState;
-            }
-            // rejected ops should leave state untouched
+      fc.property(fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }), (ops) => {
+        let state = makeInitialState();
+        for (const op of ops) {
+          const tx: Transaction = {
+            id: `fuzz-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [op],
+          };
+          const result = dispatch(state, tx);
+          if (result.accepted) {
+            const violations = checkInvariants(result.nextState);
+            expect(violations).toEqual([]);
+            state = result.nextState;
           }
-        },
-      ),
+          // rejected ops should leave state untouched
+        }
+      }),
       { numRuns: 500, timeout: 30000 },
     );
   });
@@ -85,32 +95,29 @@ describe('Fuzz: random operation sequences never violate invariants', () => {
   it('operations never produce overlapping clips on the same track', () => {
     resetCounters();
     fc.assert(
-      fc.property(
-        fc.array(arbitraryOperation(makeInitialState()), { maxLength: 15 }),
-        (ops) => {
-          let state = makeInitialState();
-          for (const op of ops) {
-            const tx: Transaction = {
-              id: `fuzz-${Date.now()}-${Math.random()}`,
-              label: 'fuzz',
-              timestamp: Date.now(),
-              operations: [op],
-            };
-            const result = dispatch(state, tx);
-            if (result.accepted) {
-              // Check no overlaps on any track
-              for (const track of result.nextState.timeline.tracks) {
-                for (let i = 0; i < track.clips.length - 1; i++) {
-                  expect(track.clips[i]!.timelineEnd).toBeLessThanOrEqual(
-                    track.clips[i + 1]!.timelineStart,
-                  );
-                }
+      fc.property(fc.array(arbitraryOperation(makeInitialState()), { maxLength: 15 }), (ops) => {
+        let state = makeInitialState();
+        for (const op of ops) {
+          const tx: Transaction = {
+            id: `fuzz-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [op],
+          };
+          const result = dispatch(state, tx);
+          if (result.accepted) {
+            // Check no overlaps on any track
+            for (const track of result.nextState.timeline.tracks) {
+              for (let i = 0; i < track.clips.length - 1; i++) {
+                expect(track.clips[i]!.timelineEnd).toBeLessThanOrEqual(
+                  track.clips[i + 1]!.timelineStart,
+                );
               }
-              state = result.nextState;
             }
+            state = result.nextState;
           }
-        },
-      ),
+        }
+      }),
       { numRuns: 500, timeout: 30000 },
     );
   });
@@ -118,27 +125,24 @@ describe('Fuzz: random operation sequences never violate invariants', () => {
   it('version counter increases monotonically by 1 per accepted transaction', () => {
     resetCounters();
     fc.assert(
-      fc.property(
-        fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }),
-        (ops) => {
-          let state = makeInitialState();
-          let expectedVersion = 0;
-          for (const op of ops) {
-            const tx: Transaction = {
-              id: `fuzz-${Date.now()}-${Math.random()}`,
-              label: 'fuzz',
-              timestamp: Date.now(),
-              operations: [op],
-            };
-            const result = dispatch(state, tx);
-            if (result.accepted) {
-              expectedVersion++;
-              expect(result.nextState.timeline.version).toBe(expectedVersion);
-              state = result.nextState;
-            }
+      fc.property(fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }), (ops) => {
+        let state = makeInitialState();
+        let expectedVersion = 0;
+        for (const op of ops) {
+          const tx: Transaction = {
+            id: `fuzz-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [op],
+          };
+          const result = dispatch(state, tx);
+          if (result.accepted) {
+            expectedVersion++;
+            expect(result.nextState.timeline.version).toBe(expectedVersion);
+            state = result.nextState;
           }
-        },
-      ),
+        }
+      }),
       { numRuns: 500, timeout: 30000 },
     );
   });
@@ -146,28 +150,25 @@ describe('Fuzz: random operation sequences never violate invariants', () => {
   it('rejected operations never change state', () => {
     resetCounters();
     fc.assert(
-      fc.property(
-        fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }),
-        (ops) => {
-          let state = makeInitialState();
-          for (const op of ops) {
-            const stateBefore = JSON.stringify(state);
-            const tx: Transaction = {
-              id: `fuzz-${Date.now()}-${Math.random()}`,
-              label: 'fuzz',
-              timestamp: Date.now(),
-              operations: [op],
-            };
-            const result = dispatch(state, tx);
-            if (!result.accepted) {
-              // State must be completely unchanged after rejection
-              expect(JSON.stringify(state)).toBe(stateBefore);
-            } else {
-              state = result.nextState;
-            }
+      fc.property(fc.array(arbitraryOperation(makeInitialState()), { maxLength: 10 }), (ops) => {
+        let state = makeInitialState();
+        for (const op of ops) {
+          const stateBefore = JSON.stringify(state);
+          const tx: Transaction = {
+            id: `fuzz-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [op],
+          };
+          const result = dispatch(state, tx);
+          if (!result.accepted) {
+            // State must be completely unchanged after rejection
+            expect(JSON.stringify(state)).toBe(stateBefore);
+          } else {
+            state = result.nextState;
           }
-        },
-      ),
+        }
+      }),
       { numRuns: 500, timeout: 30000 },
     );
   });
@@ -221,16 +222,24 @@ describe('Fuzz: DELETE_CLIP sequences', () => {
     const clipIds: string[] = ['clip-1'];
     for (let i = 2; i <= 5; i++) {
       const tx: Transaction = {
-        id: `setup-${i}`, label: 'setup', timestamp: Date.now(),
-        operations: [{
-          type: 'INSERT_CLIP',
-          clip: createClip({
-            id: `clip-${i}`, assetId: 'asset-1', trackId: 'track-1',
-            timelineStart: toFrame((i - 1) * 200), timelineEnd: toFrame(i * 200),
-            mediaIn: toFrame((i - 1) * 200), mediaOut: toFrame(i * 200),
-          }),
-          trackId: toTrackId('track-1'),
-        }],
+        id: `setup-${i}`,
+        label: 'setup',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'INSERT_CLIP',
+            clip: createClip({
+              id: `clip-${i}`,
+              assetId: 'asset-1',
+              trackId: 'track-1',
+              timelineStart: toFrame((i - 1) * 200),
+              timelineEnd: toFrame(i * 200),
+              mediaIn: toFrame((i - 1) * 200),
+              mediaOut: toFrame(i * 200),
+            }),
+            trackId: toTrackId('track-1'),
+          },
+        ],
       };
       const result = dispatch(setupState, tx);
       if (result.accepted) {
@@ -241,24 +250,22 @@ describe('Fuzz: DELETE_CLIP sequences', () => {
 
     // Now fuzz delete operations
     fc.assert(
-      fc.property(
-        fc.array(fc.constantFrom(...clipIds), { maxLength: 10 }),
-        (ids) => {
-          let s = setupState;
-          for (const id of ids) {
-            const tx: Transaction = {
-              id: `fuzz-del-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
-              operations: [{ type: 'DELETE_CLIP', clipId: toClipId(id) }],
-            };
-            const result = dispatch(s, tx);
-            if (result.accepted) {
-              expect(checkInvariants(result.nextState)).toEqual([]);
-              s = result.nextState;
-            }
+      fc.property(fc.array(fc.constantFrom(...clipIds), { maxLength: 10 }), (ids) => {
+        let s = setupState;
+        for (const id of ids) {
+          const tx: Transaction = {
+            id: `fuzz-del-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [{ type: 'DELETE_CLIP', clipId: toClipId(id) }],
+          };
+          const result = dispatch(s, tx);
+          if (result.accepted) {
+            expect(checkInvariants(result.nextState)).toEqual([]);
+            s = result.nextState;
           }
-        },
-      ),
+        }
+      }),
       { numRuns: 300, timeout: 30000 },
     );
   });
@@ -272,31 +279,28 @@ describe('Fuzz: MOVE_CLIP sequences', () => {
     const state = makeInitialState();
 
     fc.assert(
-      fc.property(
-        fc.array(
-          fc.integer({ min: 0, max: 4800 }),
-          { maxLength: 20 },
-        ),
-        (positions) => {
-          let s = state;
-          for (const pos of positions) {
-            const tx: Transaction = {
-              id: `fuzz-move-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
-              operations: [{
+      fc.property(fc.array(fc.integer({ min: 0, max: 4800 }), { maxLength: 20 }), (positions) => {
+        let s = state;
+        for (const pos of positions) {
+          const tx: Transaction = {
+            id: `fuzz-move-${Date.now()}-${Math.random()}`,
+            label: 'fuzz',
+            timestamp: Date.now(),
+            operations: [
+              {
                 type: 'MOVE_CLIP',
                 clipId: toClipId('clip-1'),
                 newTimelineStart: toFrame(pos),
-              }],
-            };
-            const result = dispatch(s, tx);
-            if (result.accepted) {
-              expect(checkInvariants(result.nextState)).toEqual([]);
-              s = result.nextState;
-            }
+              },
+            ],
+          };
+          const result = dispatch(s, tx);
+          if (result.accepted) {
+            expect(checkInvariants(result.nextState)).toEqual([]);
+            s = result.nextState;
           }
-        },
-      ),
+        }
+      }),
       { numRuns: 300, timeout: 30000 },
     );
   });
@@ -312,7 +316,12 @@ describe('Fuzz: SET_CLIP_SPEED sequences', () => {
     fc.assert(
       fc.property(
         fc.array(
-          fc.oneof(fc.constant(0.5), fc.constant(1.0), fc.constant(2.0), fc.float({ min: Math.fround(0.01), max: Math.fround(4.0) })),
+          fc.oneof(
+            fc.constant(0.5),
+            fc.constant(1.0),
+            fc.constant(2.0),
+            fc.float({ min: Math.fround(0.01), max: Math.fround(4.0) }),
+          ),
           { maxLength: 20 },
         ),
         (speeds) => {
@@ -320,12 +329,15 @@ describe('Fuzz: SET_CLIP_SPEED sequences', () => {
           for (const speed of speeds) {
             const tx: Transaction = {
               id: `fuzz-speed-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
-              operations: [{
-                type: 'SET_CLIP_SPEED',
-                clipId: toClipId('clip-1'),
-                speed,
-              }],
+              label: 'fuzz',
+              timestamp: Date.now(),
+              operations: [
+                {
+                  type: 'SET_CLIP_SPEED',
+                  clipId: toClipId('clip-1'),
+                  speed,
+                },
+              ],
             };
             const result = dispatch(s, tx);
             if (result.accepted) {
@@ -361,13 +373,16 @@ describe('Fuzz: RESIZE_CLIP sequences', () => {
           for (const [edge, frame] of resizes) {
             const tx: Transaction = {
               id: `fuzz-resize-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
-              operations: [{
-                type: 'RESIZE_CLIP',
-                clipId: toClipId('clip-1'),
-                edge,
-                newFrame: toFrame(frame),
-              }],
+              label: 'fuzz',
+              timestamp: Date.now(),
+              operations: [
+                {
+                  type: 'RESIZE_CLIP',
+                  clipId: toClipId('clip-1'),
+                  edge,
+                  newFrame: toFrame(frame),
+                },
+              ],
             };
             const result = dispatch(s, tx);
             if (result.accepted) {
@@ -394,18 +409,22 @@ describe('Fuzz: mixed operation types', () => {
         fc.array(
           fc.oneof(
             fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'fuzzed' }),
-            fc.integer({ min: 0, max: 4800 }).map(pos => ({
+            fc.integer({ min: 0, max: 4800 }).map((pos) => ({
               type: 'MOVE_CLIP' as const,
               clipId: toClipId('clip-1'),
               newTimelineStart: toFrame(pos),
             })),
-            fc.integer({ min: 1, max: 200 }).map(f => ({
+            fc.integer({ min: 1, max: 200 }).map((f) => ({
               type: 'RESIZE_CLIP' as const,
               clipId: toClipId('clip-1'),
               edge: 'end' as const,
               newFrame: toFrame(f),
             })),
-            fc.constant({ type: 'SET_CLIP_SPEED' as const, clipId: toClipId('clip-1'), speed: 1.0 }),
+            fc.constant({
+              type: 'SET_CLIP_SPEED' as const,
+              clipId: toClipId('clip-1'),
+              speed: 1.0,
+            }),
           ),
           { maxLength: 15 },
         ),
@@ -414,7 +433,8 @@ describe('Fuzz: mixed operation types', () => {
           for (const op of ops) {
             const tx: Transaction = {
               id: `fuzz-mixed-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
+              label: 'fuzz',
+              timestamp: Date.now(),
               operations: [op],
             };
             const result = dispatch(s, tx);
@@ -449,12 +469,14 @@ describe('Fuzz: SET_IN_POINT / SET_OUT_POINT sequences', () => {
         (pairs) => {
           let s = state;
           for (const [which, frame] of pairs) {
-            const op: OperationPrimitive = which === 'in'
-              ? { type: 'SET_IN_POINT', frame: toFrame(frame) }
-              : { type: 'SET_OUT_POINT', frame: toFrame(frame) };
+            const op: OperationPrimitive =
+              which === 'in'
+                ? { type: 'SET_IN_POINT', frame: toFrame(frame) }
+                : { type: 'SET_OUT_POINT', frame: toFrame(frame) };
             const tx: Transaction = {
               id: `fuzz-io-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
+              label: 'fuzz',
+              timestamp: Date.now(),
               operations: [op],
             };
             const result = dispatch(s, tx);
@@ -481,13 +503,16 @@ describe('Fuzz: ADD_MARKER / DELETE_MARKER sequences', () => {
       fc.property(
         fc.array(
           fc.oneof(
-            fc.integer({ min: 0, max: 2999 }).map(frame => ({
+            fc.integer({ min: 0, max: 2999 }).map((frame) => ({
               type: 'ADD_MARKER' as const,
               marker: {
                 type: 'point' as const,
                 id: toMarkerId(`m-fuzz-${Math.random().toString(36).slice(2)}`),
                 frame: toFrame(frame),
-                label: 'Fuzz', color: 'red', scope: 'global' as const, linkedClipId: null,
+                label: 'Fuzz',
+                color: 'red',
+                scope: 'global' as const,
+                linkedClipId: null,
               },
             })),
           ),
@@ -498,7 +523,8 @@ describe('Fuzz: ADD_MARKER / DELETE_MARKER sequences', () => {
           for (const op of ops) {
             const tx: Transaction = {
               id: `fuzz-marker-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
+              label: 'fuzz',
+              timestamp: Date.now(),
               operations: [op],
             };
             const result = dispatch(s, tx);
@@ -519,30 +545,52 @@ describe('Fuzz: ADD_MARKER / DELETE_MARKER sequences', () => {
 describe('Fuzz: multi-track mixed video+audio', () => {
   function makeMultiTrackState(): TimelineState {
     const videoAsset = createAsset({
-      id: 'vid-asset', name: 'Video', mediaType: 'video',
-      filePath: '/v.mp4', intrinsicDuration: toFrame(10000),
-      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+      id: 'vid-asset',
+      name: 'Video',
+      mediaType: 'video',
+      filePath: '/v.mp4',
+      intrinsicDuration: toFrame(10000),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
+      status: 'online',
     });
     const audioAsset = createAsset({
-      id: 'aud-asset', name: 'Audio', mediaType: 'audio',
-      filePath: '/a.wav', intrinsicDuration: toFrame(10000),
-      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+      id: 'aud-asset',
+      name: 'Audio',
+      mediaType: 'audio',
+      filePath: '/a.wav',
+      intrinsicDuration: toFrame(10000),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
+      status: 'online',
     });
     const videoClip = createClip({
-      id: 'v-clip', assetId: 'vid-asset', trackId: 'v-track',
-      timelineStart: toFrame(0), timelineEnd: toFrame(200),
-      mediaIn: toFrame(0), mediaOut: toFrame(200),
+      id: 'v-clip',
+      assetId: 'vid-asset',
+      trackId: 'v-track',
+      timelineStart: toFrame(0),
+      timelineEnd: toFrame(200),
+      mediaIn: toFrame(0),
+      mediaOut: toFrame(200),
     });
     const audioClip = createClip({
-      id: 'a-clip', assetId: 'aud-asset', trackId: 'a-track',
-      timelineStart: toFrame(50), timelineEnd: toFrame(300),
-      mediaIn: toFrame(50), mediaOut: toFrame(300),
+      id: 'a-clip',
+      assetId: 'aud-asset',
+      trackId: 'a-track',
+      timelineStart: toFrame(50),
+      timelineEnd: toFrame(300),
+      mediaIn: toFrame(50),
+      mediaOut: toFrame(300),
     });
     const vTrack = createTrack({ id: 'v-track', name: 'V1', type: 'video', clips: [videoClip] });
     const aTrack = createTrack({ id: 'a-track', name: 'A1', type: 'audio', clips: [audioClip] });
     const timeline = createTimeline({
-      id: 'multi-tl', name: 'Multi', fps: 30, duration: toFrame(5000),
-      startTimecode: toTimecode('00:00:00:00'), tracks: [vTrack, aTrack],
+      id: 'multi-tl',
+      name: 'Multi',
+      fps: 30,
+      duration: toFrame(5000),
+      startTimecode: toTimecode('00:00:00:00'),
+      tracks: [vTrack, aTrack],
     });
     return createTimelineState({
       timeline,
@@ -562,12 +610,12 @@ describe('Fuzz: multi-track mixed video+audio', () => {
         fc.array(
           fc.oneof(
             fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'multi-fuzz' }),
-            fc.integer({ min: 0, max: 4800 }).map(pos => ({
+            fc.integer({ min: 0, max: 4800 }).map((pos) => ({
               type: 'MOVE_CLIP' as const,
               clipId: toClipId('v-clip'),
               newTimelineStart: toFrame(pos),
             })),
-            fc.integer({ min: 0, max: 4700 }).map(pos => ({
+            fc.integer({ min: 0, max: 4700 }).map((pos) => ({
               type: 'MOVE_CLIP' as const,
               clipId: toClipId('a-clip'),
               newTimelineStart: toFrame(pos),
@@ -589,7 +637,8 @@ describe('Fuzz: multi-track mixed video+audio', () => {
           for (const op of ops) {
             const tx: Transaction = {
               id: `fuzz-mixed-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
+              label: 'fuzz',
+              timestamp: Date.now(),
               operations: [op],
             };
             const result = dispatch(s, tx);
@@ -611,21 +660,39 @@ describe('Fuzz: multi-asset operations', () => {
     const clips: ReturnType<typeof createClip>[] = [];
     for (let i = 0; i < 3; i++) {
       const aid = toAssetId(`asset-${i}`);
-      assets.push([aid, createAsset({
-        id: `asset-${i}`, name: `Asset ${i}`, mediaType: 'video',
-        filePath: `/v${i}.mp4`, intrinsicDuration: toFrame(10000),
-        nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
-      })]);
-      clips.push(createClip({
-        id: `clip-${i}`, assetId: `asset-${i}`, trackId: 'track-1',
-        timelineStart: toFrame(i * 200), timelineEnd: toFrame(i * 200 + 100),
-        mediaIn: toFrame(0), mediaOut: toFrame(100),
-      }));
+      assets.push([
+        aid,
+        createAsset({
+          id: `asset-${i}`,
+          name: `Asset ${i}`,
+          mediaType: 'video',
+          filePath: `/v${i}.mp4`,
+          intrinsicDuration: toFrame(10000),
+          nativeFps: 30,
+          sourceTimecodeOffset: toFrame(0),
+          status: 'online',
+        }),
+      ]);
+      clips.push(
+        createClip({
+          id: `clip-${i}`,
+          assetId: `asset-${i}`,
+          trackId: 'track-1',
+          timelineStart: toFrame(i * 200),
+          timelineEnd: toFrame(i * 200 + 100),
+          mediaIn: toFrame(0),
+          mediaOut: toFrame(100),
+        }),
+      );
     }
     const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips });
     const timeline = createTimeline({
-      id: 'multi-asset-tl', name: 'MultiAsset', fps: 30, duration: toFrame(5000),
-      startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+      id: 'multi-asset-tl',
+      name: 'MultiAsset',
+      fps: 30,
+      duration: toFrame(5000),
+      startTimecode: toTimecode('00:00:00:00'),
+      tracks: [track],
     });
     return createTimelineState({ timeline, assetRegistry: new Map(assets) });
   }
@@ -639,11 +706,11 @@ describe('Fuzz: multi-asset operations', () => {
         fc.array(
           fc.oneof(
             fc.constant({ type: 'RENAME_TIMELINE' as const, name: 'ma-fuzz' }),
-            fc.constantFrom('clip-0', 'clip-1', 'clip-2').map(id => ({
+            fc.constantFrom('clip-0', 'clip-1', 'clip-2').map((id) => ({
               type: 'DELETE_CLIP' as const,
               clipId: toClipId(id),
             })),
-            fc.integer({ min: 0, max: 4800 }).map(pos => ({
+            fc.integer({ min: 0, max: 4800 }).map((pos) => ({
               type: 'MOVE_CLIP' as const,
               clipId: toClipId('clip-0'),
               newTimelineStart: toFrame(pos),
@@ -656,7 +723,8 @@ describe('Fuzz: multi-asset operations', () => {
           for (const op of ops) {
             const tx: Transaction = {
               id: `fuzz-ma-${Date.now()}-${Math.random()}`,
-              label: 'fuzz', timestamp: Date.now(),
+              label: 'fuzz',
+              timestamp: Date.now(),
               operations: [op],
             };
             const result = dispatch(s, tx);
@@ -688,13 +756,23 @@ describe('Fuzz: multi-op transactions', () => {
         ),
         (tuples) => {
           const ops: OperationPrimitive[] = tuples.map(([type, val]) => {
-            if (type === 'RENAME_TIMELINE') return { type: 'RENAME_TIMELINE' as const, name: 'multi' };
-            if (type === 'MOVE_CLIP') return { type: 'MOVE_CLIP' as const, clipId: toClipId('clip-1'), newTimelineStart: toFrame(val) };
-            return { type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(Math.max(300, val)) };
+            if (type === 'RENAME_TIMELINE')
+              return { type: 'RENAME_TIMELINE' as const, name: 'multi' };
+            if (type === 'MOVE_CLIP')
+              return {
+                type: 'MOVE_CLIP' as const,
+                clipId: toClipId('clip-1'),
+                newTimelineStart: toFrame(val),
+              };
+            return {
+              type: 'SET_TIMELINE_DURATION' as const,
+              duration: toFrame(Math.max(300, val)),
+            };
           });
           const tx: Transaction = {
             id: `fuzz-multiop-${Date.now()}`,
-            label: 'fuzz', timestamp: Date.now(),
+            label: 'fuzz',
+            timestamp: Date.now(),
             operations: ops,
           };
           const result = dispatch(state, tx);

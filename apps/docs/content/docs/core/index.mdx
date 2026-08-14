@@ -7,13 +7,13 @@ The `@timelinx/core` package is the framework-agnostic editing kernel. It owns t
 
 ## Architecture Summary
 
-| Layer | Responsibility |
-|-------|----------------|
-| Types | `TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, IDs, `TimelineFrame`, `OperationPrimitive`, and other canonical data types. |
-| Engine | `dispatch()`, pure apply logic, `HistoryStack`, optional core `TimelineEngine`, playback helpers, timeline indexes, and serializers. |
-| Validation | Per-operation validation before apply and whole-state invariant checks after apply. |
-| Tools | Selection, razor, ripple, roll, slip, slide, zoom, transition, keyframe, and hand tools. |
-| Systems | Read-only queries, asset registry helpers, validation helpers, frame resolution, and virtual-window helpers. |
+| Layer      | Responsibility                                                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Types      | `TimelineState`, `Timeline`, `Track`, `Clip`, `Asset`, IDs, `TimelineFrame`, `OperationPrimitive`, and other canonical data types.   |
+| Engine     | `dispatch()`, pure apply logic, `HistoryStack`, optional core `TimelineEngine`, playback helpers, timeline indexes, and serializers. |
+| Validation | Per-operation validation before apply and whole-state invariant checks after apply.                                                  |
+| Tools      | Selection, razor, ripple, roll, slip, slide, zoom, transition, keyframe, and hand tools.                                             |
+| Systems    | Read-only queries, asset registry helpers, validation helpers, frame resolution, and virtual-window helpers.                         |
 
 ## Mental Model
 
@@ -24,11 +24,11 @@ The `@timelinx/core` package is the framework-agnostic editing kernel. It owns t
 
 ## Sections
 
-- [Architecture](/docs/core/architecture)  - package boundaries, data model, tools, indexes, playback, and serialization responsibilities.
-- [Dispatch Model](/docs/core/dispatch-model)  - how `dispatch()` processes rolling validation, pure apply, invariant checks, and commit/reject results.
-- [Transactions](/docs/core/transactions)  - multi-operation atomic edits, operation groups, and compound edit patterns.
-- [Invariants](/docs/core/invariants)  - the violation categories that keep the timeline valid after every accepted edit.
-- [Undo/Redo](/docs/core/undo-redo)  - `HistoryStack`, pure history helpers, compression, and integration expectations.
+- [Architecture](/docs/core/architecture) - package boundaries, data model, tools, indexes, playback, and serialization responsibilities.
+- [Dispatch Model](/docs/core/dispatch-model) - how `dispatch()` processes rolling validation, pure apply, invariant checks, and commit/reject results.
+- [Transactions](/docs/core/transactions) - multi-operation atomic edits, operation groups, and compound edit patterns.
+- [Invariants](/docs/core/invariants) - the violation categories that keep the timeline valid after every accepted edit.
+- [Undo/Redo](/docs/core/undo-redo) - `HistoryStack`, pure history helpers, compression, and integration expectations.
 
 ## Public Surface
 

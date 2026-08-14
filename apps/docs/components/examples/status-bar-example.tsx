@@ -38,8 +38,26 @@ export function StatusBarExample() {
   const engine = useMemo(() => createDemoEngine(), []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 300, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-muted, #888)', fontSize: 14 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 300,
+        border: '1px solid var(--color-border, #333)',
+        borderRadius: 8,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--color-muted, #888)',
+          fontSize: 14,
+        }}
+      >
         Timeline content area
       </div>
       <ReactTimelineProvider engine={engine}>

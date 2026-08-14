@@ -18,12 +18,12 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
-import { HandTool }     from '../../tools/hand';
-import { toTrackId }    from '../../types/track';
-import { toFrame }      from '../../types/frame';
+import { HandTool } from '../../tools/hand';
+import { toTrackId } from '../../types/track';
+import { toFrame } from '../../types/frame';
 import type { ToolContext, TimelinePointerEvent, TimelineKeyEvent } from '../../tools/types';
 import type { TimelineFrame } from '../../types/frame';
-import type { TrackId }       from '../../types/track';
+import type { TrackId } from '../../types/track';
 
 // ── Minimal stubs ─────────────────────────────────────────────────────────────
 // HandTool never reads from ToolContext — a cast stub is sufficient.
@@ -31,12 +31,16 @@ const STUB_CTX = {} as ToolContext;
 
 function makeEv(x: number = 0, frame: TimelineFrame = toFrame(0)): TimelinePointerEvent {
   return {
-    frame, x, y: 24,
-    trackId:  toTrackId('track-1'),
-    clipId:   null,
+    frame,
+    x,
+    y: 24,
+    trackId: toTrackId('track-1'),
+    clipId: null,
     captionId: null,
-    buttons:  1,
-    shiftKey: false, altKey: false, metaKey: false,
+    buttons: 1,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false,
   };
 }
 
@@ -48,29 +52,29 @@ function makeKeyEv(): TimelineKeyEvent {
 
 describe('HandTool — drag sequence: callback called with correct deltas', () => {
   it('down(x=100) → move(x=130) → move(x=160) → callback called twice with Δ=30, 30', () => {
-    const tool     = new HandTool();
+    const tool = new HandTool();
     const deltas: number[] = [];
-    tool.setScrollCallback(dx => deltas.push(dx));
+    tool.setScrollCallback((dx) => deltas.push(dx));
 
     tool.onPointerDown(makeEv(100), STUB_CTX);
     tool.onPointerMove(makeEv(130), STUB_CTX);
     tool.onPointerMove(makeEv(160), STUB_CTX);
-    tool.onPointerUp(makeEv(160),   STUB_CTX);
+    tool.onPointerUp(makeEv(160), STUB_CTX);
 
     expect(deltas).toHaveLength(2);
-    expect(deltas[0]).toBe(30);   // 130 - 100
-    expect(deltas[1]).toBe(30);   // 160 - 130  ← incremental, not 60
+    expect(deltas[0]).toBe(30); // 130 - 100
+    expect(deltas[1]).toBe(30); // 160 - 130  ← incremental, not 60
   });
 
   it('incremental: second delta is event-to-event, not from startX', () => {
-    const tool     = new HandTool();
+    const tool = new HandTool();
     const deltas: number[] = [];
-    tool.setScrollCallback(dx => deltas.push(dx));
+    tool.setScrollCallback((dx) => deltas.push(dx));
 
-    tool.onPointerDown(makeEv(0),   STUB_CTX);
-    tool.onPointerMove(makeEv(50),  STUB_CTX);   // Δ = 50 - 0 = 50
-    tool.onPointerMove(makeEv(70),  STUB_CTX);   // Δ = 70 - 50 = 20  (not 70 - 0 = 70)
-    tool.onPointerMove(makeEv(100), STUB_CTX);   // Δ = 100 - 70 = 30
+    tool.onPointerDown(makeEv(0), STUB_CTX);
+    tool.onPointerMove(makeEv(50), STUB_CTX); // Δ = 50 - 0 = 50
+    tool.onPointerMove(makeEv(70), STUB_CTX); // Δ = 70 - 50 = 20  (not 70 - 0 = 70)
+    tool.onPointerMove(makeEv(100), STUB_CTX); // Δ = 100 - 70 = 30
 
     expect(deltas).toEqual([50, 20, 30]);
   });
@@ -80,11 +84,11 @@ describe('HandTool — drag sequence: callback called with correct deltas', () =
 
 describe('HandTool — no callback registered: silent, no error', () => {
   it('full drag completes without throwing', () => {
-    const tool = new HandTool();  // no setScrollCallback()
+    const tool = new HandTool(); // no setScrollCallback()
     expect(() => {
       tool.onPointerDown(makeEv(100), STUB_CTX);
       tool.onPointerMove(makeEv(150), STUB_CTX);
-      tool.onPointerUp(makeEv(150),   STUB_CTX);
+      tool.onPointerUp(makeEv(150), STUB_CTX);
     }).not.toThrow();
   });
 });
@@ -126,8 +130,8 @@ describe('HandTool — getCursor: grab/grabbing only', () => {
 
   it('returns grab again after pointerUp', () => {
     const tool = new HandTool();
-    tool.onPointerDown(makeEv(0),   STUB_CTX);
-    tool.onPointerUp(makeEv(100),   STUB_CTX);
+    tool.onPointerDown(makeEv(0), STUB_CTX);
+    tool.onPointerUp(makeEv(100), STUB_CTX);
     expect(tool.getCursor(STUB_CTX)).toBe('grab');
   });
 });
@@ -136,16 +140,16 @@ describe('HandTool — getCursor: grab/grabbing only', () => {
 
 describe('HandTool — onCancel: resets isDragging', () => {
   it('move after cancel fires no callback', () => {
-    const tool     = new HandTool();
+    const tool = new HandTool();
     const deltas: number[] = [];
-    tool.setScrollCallback(dx => deltas.push(dx));
+    tool.setScrollCallback((dx) => deltas.push(dx));
 
-    tool.onPointerDown(makeEv(0),   STUB_CTX);
-    tool.onPointerMove(makeEv(50),  STUB_CTX);   // fires callback once
+    tool.onPointerDown(makeEv(0), STUB_CTX);
+    tool.onPointerMove(makeEv(50), STUB_CTX); // fires callback once
     tool.onCancel();
-    tool.onPointerMove(makeEv(100), STUB_CTX);   // should NOT fire — not dragging
+    tool.onPointerMove(makeEv(100), STUB_CTX); // should NOT fire — not dragging
 
-    expect(deltas).toHaveLength(1);   // only the pre-cancel move
+    expect(deltas).toHaveLength(1); // only the pre-cancel move
     expect(deltas[0]).toBe(50);
   });
 
@@ -161,24 +165,24 @@ describe('HandTool — onCancel: resets isDragging', () => {
 
 describe('HandTool — setScrollCallback(null): unregisters callback', () => {
   it('subsequent drag fires no callback after setScrollCallback(null)', () => {
-    const tool     = new HandTool();
+    const tool = new HandTool();
     const deltas: number[] = [];
-    tool.setScrollCallback(dx => deltas.push(dx));
+    tool.setScrollCallback((dx) => deltas.push(dx));
 
     // First drag — callback active
-    tool.onPointerDown(makeEv(0),   STUB_CTX);
-    tool.onPointerMove(makeEv(50),  STUB_CTX);
-    tool.onPointerUp(makeEv(50),    STUB_CTX);
+    tool.onPointerDown(makeEv(0), STUB_CTX);
+    tool.onPointerMove(makeEv(50), STUB_CTX);
+    tool.onPointerUp(makeEv(50), STUB_CTX);
 
     // Unregister
     tool.setScrollCallback(null);
 
     // Second drag — no callback
-    tool.onPointerDown(makeEv(50),  STUB_CTX);
+    tool.onPointerDown(makeEv(50), STUB_CTX);
     tool.onPointerMove(makeEv(100), STUB_CTX);
-    tool.onPointerUp(makeEv(100),   STUB_CTX);
+    tool.onPointerUp(makeEv(100), STUB_CTX);
 
-    expect(deltas).toHaveLength(1);   // only the first drag's move
+    expect(deltas).toHaveLength(1); // only the first drag's move
     expect(deltas[0]).toBe(50);
   });
 });

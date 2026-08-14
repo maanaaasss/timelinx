@@ -7,7 +7,16 @@ import type { ClipId } from '@timelinx/core';
 
 function TransformIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="15 3 21 3 21 9" />
       <polyline points="9 21 3 21 3 15" />
       <line x1="21" y1="3" x2="14" y2="10" />
@@ -66,7 +75,9 @@ export const InspectorPanel = React.memo(function InspectorPanel({
         <div className="panel-content">
           <div className="empty-state">
             <p>Select a clip to inspect</p>
-            <p className="empty-state-hint">Select a single clip to view its transform properties</p>
+            <p className="empty-state-hint">
+              Select a single clip to view its transform properties
+            </p>
           </div>
         </div>
       </div>

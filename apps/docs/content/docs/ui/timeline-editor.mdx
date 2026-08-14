@@ -23,12 +23,7 @@ import { TimelineEditorExample } from '@/components/examples/timeline-editor-exa
 
 import { TimelineEngine } from '@timelinx/react';
 import { TimelineEditor } from '@timelinx/ui';
-import {
-  createTimelineState,
-  createTimeline,
-  frameRate,
-  toFrame,
-} from '@timelinx/core';
+import { createTimelineState, createTimeline, frameRate, toFrame } from '@timelinx/core';
 
 // Create the engine once, outside the component
 const engine = new TimelineEngine({
@@ -63,18 +58,18 @@ export default function EditorPage() {
 
 ## Key Props
 
-| Prop | Type | Default | Notes |
-|------|------|---------|-------|
-| `engine` | `TimelineEngine` | required | The engine instance. Create outside the component. |
-| `defaultTool` | `string` | `'selection'` | Active tool on mount. |
-| `ppf` | `number` | `6` | Initial pixels per frame (zoom level). |
-| `showTopNav` | `boolean` | `true` | Show the top navigation bar with project name. |
-| `showSidebar` | `boolean` | `true` | Show the right-side panel. |
-| `showAssetBin` | `boolean` | `true` | Show the asset browser in the sidebar. |
-| `showCompositorPreview` | `boolean` | `true` | Show the video preview in the sidebar. |
-| `onSave` | `(state: TimelineState) => void` | none | Called when the user presses ⌘S. |
-| `onExport` | `() => void` | none | Called when the user clicks Export. |
-| `className` | `string` | none | Additional CSS class on the root element. |
+| Prop                    | Type                             | Default       | Notes                                              |
+| ----------------------- | -------------------------------- | ------------- | -------------------------------------------------- |
+| `engine`                | `TimelineEngine`                 | required      | The engine instance. Create outside the component. |
+| `defaultTool`           | `string`                         | `'selection'` | Active tool on mount.                              |
+| `ppf`                   | `number`                         | `6`           | Initial pixels per frame (zoom level).             |
+| `showTopNav`            | `boolean`                        | `true`        | Show the top navigation bar with project name.     |
+| `showSidebar`           | `boolean`                        | `true`        | Show the right-side panel.                         |
+| `showAssetBin`          | `boolean`                        | `true`        | Show the asset browser in the sidebar.             |
+| `showCompositorPreview` | `boolean`                        | `true`        | Show the video preview in the sidebar.             |
+| `onSave`                | `(state: TimelineState) => void` | none          | Called when the user presses ⌘S.                   |
+| `onExport`              | `() => void`                     | none          | Called when the user clicks Export.                |
+| `className`             | `string`                         | none          | Additional CSS class on the root element.          |
 
 ## Layout Structure
 
@@ -102,29 +97,29 @@ When using decomposed components, add `TimelineProvider` explicitly. See [Custom
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|---------|--------|
-| `Space` | Play / Pause |
-| `J` | Play backward (hold to increase speed) |
-| `K` | Pause |
-| `L` | Play forward |
-| `←` / `→` | Step 1 frame |
-| `Shift+←` / `Shift+→` | Step 10 frames |
-| `Home` | Go to first frame |
-| `End` | Go to last frame |
-| `I` | Set in-point |
-| `O` | Set out-point |
-| `V` | Select tool |
-| `C` | Razor / Slice tool |
-| `T` | Ripple Trim tool |
-| `R` | Roll Trim tool |
-| `S` | Slip tool |
-| `⌘Z` / `Ctrl+Z` | Undo |
-| `⌘⇧Z` / `Ctrl+Y` | Redo |
-| `Delete` / `Backspace` | Delete selected clips |
-| `⌘A` / `Ctrl+A` | Select all clips |
-| `⌘S` / `Ctrl+S` | Save (calls `onSave` prop) |
-| `?` | Toggle keyboard shortcut overlay |
+| Shortcut               | Action                                 |
+| ---------------------- | -------------------------------------- |
+| `Space`                | Play / Pause                           |
+| `J`                    | Play backward (hold to increase speed) |
+| `K`                    | Pause                                  |
+| `L`                    | Play forward                           |
+| `←` / `→`              | Step 1 frame                           |
+| `Shift+←` / `Shift+→`  | Step 10 frames                         |
+| `Home`                 | Go to first frame                      |
+| `End`                  | Go to last frame                       |
+| `I`                    | Set in-point                           |
+| `O`                    | Set out-point                          |
+| `V`                    | Select tool                            |
+| `C`                    | Razor / Slice tool                     |
+| `T`                    | Ripple Trim tool                       |
+| `R`                    | Roll Trim tool                         |
+| `S`                    | Slip tool                              |
+| `⌘Z` / `Ctrl+Z`        | Undo                                   |
+| `⌘⇧Z` / `Ctrl+Y`       | Redo                                   |
+| `Delete` / `Backspace` | Delete selected clips                  |
+| `⌘A` / `Ctrl+A`        | Select all clips                       |
+| `⌘S` / `Ctrl+S`        | Save (calls `onSave` prop)             |
+| `?`                    | Toggle keyboard shortcut overlay       |
 
 ## Controlling the Engine Externally
 
@@ -151,9 +146,11 @@ import { serializeProject } from '@timelinx/core';
     const json = JSON.stringify(serializeProject(state));
     fetch('/api/project', { method: 'POST', body: json });
   }}
-/>
+/>;
 ```
 
 <Callout title="State comes from the engine">
-  The `onSave` callback receives the current state from `engine.getSnapshot().state`. If you dispatch further changes after this call, the save will be stale. Always call `serializeProject` inside the `onSave` callback, not outside it.
+  The `onSave` callback receives the current state from `engine.getSnapshot().state`. If you
+  dispatch further changes after this call, the save will be stale. Always call `serializeProject`
+  inside the `onSave` callback, not outside it.
 </Callout>

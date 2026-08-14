@@ -27,8 +27,7 @@ function TrackLabel({ trackId }: TrackLabelProps) {
 
   if (!track) return null;
 
-  const icon =
-    track.type === 'video' ? '🎬' : track.type === 'audio' ? '🎵' : '📝';
+  const icon = track.type === 'video' ? '🎬' : track.type === 'audio' ? '🎵' : '📝';
 
   return (
     <div className="track-label">

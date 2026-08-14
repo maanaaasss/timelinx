@@ -16,10 +16,7 @@ import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
 import { buildSnapIndex } from '../../snap-index';
 import { toTrackGroupId } from '../../types/track-group';
-import type {
-  ToolContext,
-  TimelinePointerEvent,
-} from '../../tools/types';
+import type { ToolContext, TimelinePointerEvent } from '../../tools/types';
 import type { TimelineState } from '../../types/state';
 import type { TimelineFrame } from '../../types/frame';
 import type { TrackId } from '../../types/track';
@@ -87,10 +84,7 @@ function makeState(): TimelineState {
   });
 }
 
-function makeCtx(
-  state: TimelineState,
-  overrides: Partial<ToolContext> = {},
-): ToolContext {
+function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): ToolContext {
   return {
     state,
     snapIndex: buildSnapIndex(state, toFrame(0)),
@@ -103,18 +97,20 @@ function makeCtx(
   };
 }
 
-function makeEv(overrides: {
-  frame?: TimelineFrame;
-  trackId?: TrackId | null;
-  clipId?: ClipId | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-  x?: number;
-  y?: number;
-  buttons?: number;
-  shiftKey?: boolean;
-  altKey?: boolean;
-  metaKey?: boolean;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: TimelineFrame;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+    x?: number;
+    y?: number;
+    buttons?: number;
+    shiftKey?: boolean;
+    altKey?: boolean;
+    metaKey?: boolean;
+  } = {},
+): TimelinePointerEvent {
   return {
     frame: overrides.frame ?? toFrame(0),
     trackId: overrides.trackId ?? TRACK_ID,
@@ -204,7 +200,7 @@ describe('Coverage: selection.ts — multi-clip drag', () => {
     expect(tx).not.toBeNull();
     if (tx) {
       expect(tx.operations).toHaveLength(2);
-      expect(tx.operations.every(op => op.type === 'MOVE_CLIP')).toBe(true);
+      expect(tx.operations.every((op) => op.type === 'MOVE_CLIP')).toBe(true);
     }
   });
 });
@@ -212,21 +208,31 @@ describe('Coverage: selection.ts — multi-clip drag', () => {
 describe('Coverage: validators.ts — additional validator paths', () => {
   it('SET_TRACK_BLEND_MODE with valid track succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Blend', [{
-      type: 'SET_TRACK_BLEND_MODE',
-      trackId: toTrackId('track-1'),
-      blendMode: 'multiply',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Blend', [
+        {
+          type: 'SET_TRACK_BLEND_MODE',
+          trackId: toTrackId('track-1'),
+          blendMode: 'multiply',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_TRACK_BLEND_MODE with non-existent track is rejected', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Blend', [{
-      type: 'SET_TRACK_BLEND_MODE',
-      trackId: toTrackId('nonexistent'),
-      blendMode: 'multiply',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Blend', [
+        {
+          type: 'SET_TRACK_BLEND_MODE',
+          trackId: toTrackId('nonexistent'),
+          blendMode: 'multiply',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) {
       expect(result.reason).toBe('TRACK_NOT_FOUND');
@@ -236,133 +242,203 @@ describe('Coverage: validators.ts — additional validator paths', () => {
   it('REORDER_TRACK with valid track succeeds', () => {
     const state = makeState();
     // Add a second track first
-    const stateWith2Tracks = dispatch(state, makeTx('Add Track', [{
-      type: 'ADD_TRACK',
-      track: createTrack({ id: 'track-2', name: 'V2', type: 'video', clips: [] }),
-    }]));
+    const stateWith2Tracks = dispatch(
+      state,
+      makeTx('Add Track', [
+        {
+          type: 'ADD_TRACK',
+          track: createTrack({ id: 'track-2', name: 'V2', type: 'video', clips: [] }),
+        },
+      ]),
+    );
     expect(stateWith2Tracks.accepted).toBe(true);
     if (!stateWith2Tracks.accepted) return;
 
     // Reorder tracks
-    const result = dispatch(stateWith2Tracks.nextState, makeTx('Reorder', [{
-      type: 'REORDER_TRACK',
-      trackId: toTrackId('track-1'),
-      newIndex: 1,
-    }]));
+    const result = dispatch(
+      stateWith2Tracks.nextState,
+      makeTx('Reorder', [
+        {
+          type: 'REORDER_TRACK',
+          trackId: toTrackId('track-1'),
+          newIndex: 1,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('REORDER_TRACK with non-existent track is no-op', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Reorder', [{
-      type: 'REORDER_TRACK',
-      trackId: toTrackId('nonexistent'),
-      newIndex: 0,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Reorder', [
+        {
+          type: 'REORDER_TRACK',
+          trackId: toTrackId('nonexistent'),
+          newIndex: 0,
+        },
+      ]),
+    );
     // This should succeed but be a no-op
     expect(result.accepted).toBe(true);
   });
 
   it('SET_SEQUENCE_SETTINGS succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Seq', [{
-      type: 'SET_SEQUENCE_SETTINGS',
-      settings: { width: 1920, height: 1080 },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Seq', [
+        {
+          type: 'SET_SEQUENCE_SETTINGS',
+          settings: { width: 1920, height: 1080 },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_TIMELINE_START_TC succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set TC', [{
-      type: 'SET_TIMELINE_START_TC',
-      startTimecode: toTimecode('01:00:00:00'),
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set TC', [
+        {
+          type: 'SET_TIMELINE_START_TC',
+          startTimecode: toTimecode('01:00:00:00'),
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_TRACK_HEIGHT succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Height', [{
-      type: 'SET_TRACK_HEIGHT',
-      trackId: toTrackId('track-1'),
-      height: 80,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Height', [
+        {
+          type: 'SET_TRACK_HEIGHT',
+          trackId: toTrackId('track-1'),
+          height: 80,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_TRACK_NAME succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Name', [{
-      type: 'SET_TRACK_NAME',
-      trackId: toTrackId('track-1'),
-      name: 'My Track',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Name', [
+        {
+          type: 'SET_TRACK_NAME',
+          trackId: toTrackId('track-1'),
+          name: 'My Track',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_ASSET_STATUS succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Status', [{
-      type: 'SET_ASSET_STATUS',
-      assetId: toAssetId('asset-1'),
-      status: 'offline',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Status', [
+        {
+          type: 'SET_ASSET_STATUS',
+          assetId: toAssetId('asset-1'),
+          status: 'offline',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_CLIP_COLOR succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Color', [{
-      type: 'SET_CLIP_COLOR',
-      clipId: toClipId('clip-a'),
-      color: '#FF0000',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Color', [
+        {
+          type: 'SET_CLIP_COLOR',
+          clipId: toClipId('clip-a'),
+          color: '#FF0000',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_CLIP_NAME succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Name', [{
-      type: 'SET_CLIP_NAME',
-      clipId: toClipId('clip-a'),
-      name: 'My Clip',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Name', [
+        {
+          type: 'SET_CLIP_NAME',
+          clipId: toClipId('clip-a'),
+          name: 'My Clip',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_CLIP_REVERSED succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Reversed', [{
-      type: 'SET_CLIP_REVERSED',
-      clipId: toClipId('clip-a'),
-      reversed: true,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Reversed', [
+        {
+          type: 'SET_CLIP_REVERSED',
+          clipId: toClipId('clip-a'),
+          reversed: true,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('REMOVE_BEAT_GRID succeeds', () => {
     const state = makeState();
     // First add a beat grid
-    const stateWithBeatGrid = dispatch(state, makeTx('Add Beat', [{
-      type: 'ADD_BEAT_GRID',
-      beatGrid: { bpm: 120, timeSignature: [4, 4], offset: toFrame(0) },
-    }]));
+    const stateWithBeatGrid = dispatch(
+      state,
+      makeTx('Add Beat', [
+        {
+          type: 'ADD_BEAT_GRID',
+          beatGrid: { bpm: 120, timeSignature: [4, 4], offset: toFrame(0) },
+        },
+      ]),
+    );
     expect(stateWithBeatGrid.accepted).toBe(true);
     if (!stateWithBeatGrid.accepted) return;
 
     // Remove it
-    const result = dispatch(stateWithBeatGrid.nextState, makeTx('Remove Beat', [{
-      type: 'REMOVE_BEAT_GRID',
-    }]));
+    const result = dispatch(
+      stateWithBeatGrid.nextState,
+      makeTx('Remove Beat', [
+        {
+          type: 'REMOVE_BEAT_GRID',
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('REMOVE_BEAT_GRID when none exists succeeds', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Remove Beat', [{
-      type: 'REMOVE_BEAT_GRID',
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Remove Beat', [
+        {
+          type: 'REMOVE_BEAT_GRID',
+        },
+      ]),
+    );
     // Should succeed even if no beat grid exists
     expect(result.accepted).toBe(true);
   });

@@ -15,6 +15,7 @@ The README should give someone landing on the repo for the first time everything
 ## 2. CONTRIBUTING.md — replace the "(coming soon)" placeholder
 
 Doesn't need to be exhaustive. Cover:
+
 - How to clone and install (`pnpm install`)
 - How to run tests (`pnpm test`), lint (`pnpm lint`), typecheck (`pnpm typecheck`)
 - Branch/PR expectations (branch off `main`, CI must pass, no direct pushes to `main` — branch protection now enforces this)
@@ -24,6 +25,7 @@ Doesn't need to be exhaustive. Cover:
 ## 3. package.json metadata audit — `core` and `react`
 
 For both packages, verify (and fix if missing/wrong):
+
 - `description` — accurate, not a leftover placeholder
 - `keywords` — reasonable set for npm search discoverability
 - `repository`, `homepage`, `bugs` fields pointing at the real GitHub repo
@@ -52,7 +54,7 @@ The old `@timelinx/core` publish shipped 5.9MB unpacked for a package whose real
   - Evidence (react): Same fields verified. `bugs.url` ✓ (added), `author` ✓ (added), `main` ✓, `module` ✓, `types` ✓, `exports` ✓
 
 - [x] **`npm pack --dry-run` output reviewed for both packages, sizes reasonable**
-  - **@timelinx/core**: 206.1 kB packed, 1.0 MB unpacked, 29 files. Contents: dist/ (index.js, index.cjs, index.mjs, index.d.ts, serialization.*, media.*, internal.*), package.json, README.md, LICENSE. No source, tests, or config files.
+  - **@timelinx/core**: 206.1 kB packed, 1.0 MB unpacked, 29 files. Contents: dist/ (index.js, index.cjs, index.mjs, index.d.ts, serialization._, media._, internal.*), package.json, README.md, LICENSE. No source, tests, or config files.
   - **@timelinx/react**: 21.0 kB packed, 95.2 kB unpacked, 7 files. Contents: dist/ (index.js, index.cjs, index.mjs, index.d.ts), package.json, README.md, LICENSE. No source, tests, or config files.
   - Both sizes are reasonable — no bloat.
 
@@ -64,4 +66,5 @@ The old `@timelinx/core` publish shipped 5.9MB unpacked for a package whose real
 All root `README.md` and `CONTRIBUTING.md` updates applied. `npm pack --dry-run` output for both packages reported above for review before actual publish.
 
 ## Process rule (unchanged)
+
 Every checklist item has real evidence from this session — quickstart was actually executed, tarball contents were actually verified via `npm pack --dry-run`.

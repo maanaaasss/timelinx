@@ -104,7 +104,8 @@ function stripTags(text: string): string {
 // ---------------------------------------------------------------------------
 
 // SRT / VTT full: HH:MM:SS,mmm --> HH:MM:SS.mmm
-const FULL_TIMECODE_RE = /^(\d{1,2}:\d{1,2}:\d{1,2}[,.]\d{3})\s*-->\s*(\d{1,2}:\d{1,2}:\d{1,2}[,.]\d{3})/;
+const FULL_TIMECODE_RE =
+  /^(\d{1,2}:\d{1,2}:\d{1,2}[,.]\d{3})\s*-->\s*(\d{1,2}:\d{1,2}:\d{1,2}[,.]\d{3})/;
 // VTT short: MM:SS.mmm --> MM:SS.mmm (hours optional)
 const SHORT_TIMECODE_RE = /^(\d{1,2}:\d{1,2}[,.]\d{3})\s*-->\s*(\d{1,2}:\d{1,2}[,.]\d{3})/;
 
@@ -120,11 +121,7 @@ function matchTimecodeLine(line: string): { start: string; end: string } | null 
 // parseSRT
 // ---------------------------------------------------------------------------
 
-export function parseSRT(
-  raw: string,
-  fps: number,
-  options?: SRTParseOptions,
-): Caption[] {
+export function parseSRT(raw: string, fps: number, options?: SRTParseOptions): Caption[] {
   const language = options?.language ?? 'en-US';
   const burnIn = options?.burnIn ?? false;
   const style: CaptionStyle = { ...defaultCaptionStyle, ...options?.defaultStyle };
@@ -133,7 +130,10 @@ export function parseSRT(
   const captions: Caption[] = [];
 
   for (const block of blocks) {
-    const lines = block.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const lines = block
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
     if (lines.length < 2) continue;
 
     const indexStr = lines[0]!;
@@ -165,11 +165,7 @@ export function parseSRT(
 // parseVTT
 // ---------------------------------------------------------------------------
 
-export function parseVTT(
-  raw: string,
-  fps: number,
-  options?: VTTParseOptions,
-): Caption[] {
+export function parseVTT(raw: string, fps: number, options?: VTTParseOptions): Caption[] {
   const lines = raw.split(/\r?\n/);
   if (lines.length === 0 || !lines[0]!.trim().startsWith('WEBVTT')) {
     return [];
@@ -184,11 +180,15 @@ export function parseVTT(
   const blocks = raw.split(/\r?\n\r?\n/);
 
   for (const block of blocks) {
-    const blockLines = block.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const blockLines = block
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
     if (blockLines.length === 0) continue;
 
     const first = blockLines[0]!;
-    if (first.startsWith('NOTE') || first.startsWith('STYLE') || first.startsWith('REGION')) continue;
+    if (first.startsWith('NOTE') || first.startsWith('STYLE') || first.startsWith('REGION'))
+      continue;
 
     let timecodeLine: string;
     let textLines: string[];
@@ -229,10 +229,7 @@ export function parseVTT(
 // subtitleImportToOps
 // ---------------------------------------------------------------------------
 
-export function subtitleImportToOps(
-  captions: Caption[],
-  trackId: TrackId,
-): OperationPrimitive[] {
+export function subtitleImportToOps(captions: Caption[], trackId: TrackId): OperationPrimitive[] {
   return captions.map((caption) => ({
     type: 'ADD_CAPTION',
     caption,

@@ -17,9 +17,6 @@ export type LinkGroup = {
   readonly clipIds: readonly ClipId[];
 };
 
-export function createLinkGroup(
-  id: LinkGroupId,
-  clipIds: readonly ClipId[],
-): LinkGroup {
+export function createLinkGroup(id: LinkGroupId, clipIds: readonly ClipId[]): LinkGroup {
   return { id, clipIds };
 }

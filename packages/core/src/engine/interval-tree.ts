@@ -7,7 +7,7 @@
 
 export type Interval<T> = {
   readonly start: number; // inclusive
-  readonly end: number;   // exclusive
+  readonly end: number; // exclusive
   readonly data: T;
 };
 

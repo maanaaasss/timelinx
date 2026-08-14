@@ -102,12 +102,12 @@ npm notice total files: 331
 
 All four packages that should be private already have `"private": true`:
 
-| Package | `private` field | `npm publish --dry-run` result |
-|---------|----------------|-------------------------------|
-| `packages/ai` | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
-| `packages/collab` | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
+| Package              | `private` field            | `npm publish --dry-run` result                   |
+| -------------------- | -------------------------- | ------------------------------------------------ |
+| `packages/ai`        | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
+| `packages/collab`    | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
 | `packages/media-web` | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
-| `packages/ui` | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
+| `packages/ui`        | `"private": true` (line 4) | Dry-run shows publish (does NOT enforce private) |
 
 ### `@timelinx/ai` dry-run with `--tag next` (actual output):
 
@@ -250,11 +250,11 @@ No `.npmignore` files are used; the `files` field is the sole mechanism.
 
 ## 6. Post-Change Sanity Check
 
-| Step | Result |
-|------|--------|
-| `pnpm install` | **PASS** — "Already up to date" |
-| `pnpm build` | **FAIL** — Pre-existing DTS error in `packages/core` tsconfig (`Cannot write file 'dist/internal.d.ts' because it would overwrite input file`). This is unrelated to `private: true`. |
-| `pnpm test` | **PASS** — All 1695 tests pass across 78 test files (core: 1451, react: 156, media-web: 43, ai: 18, collab: 27) |
+| Step           | Result                                                                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install` | **PASS** — "Already up to date"                                                                                                                                                       |
+| `pnpm build`   | **FAIL** — Pre-existing DTS error in `packages/core` tsconfig (`Cannot write file 'dist/internal.d.ts' because it would overwrite input file`). This is unrelated to `private: true`. |
+| `pnpm test`    | **PASS** — All 1695 tests pass across 78 test files (core: 1451, react: 156, media-web: 43, ai: 18, collab: 27)                                                                       |
 
 **Note**: The build failure is a pre-existing issue with `packages/core/tsconfig.json` where `declaration` and `declarationMap` are enabled alongside tsup's DTS generation, causing conflicts. This is unrelated to the `private: true` change and existed before this verification.
 
@@ -409,14 +409,14 @@ Both tarballs are consistent with the pre-fix results. File lists contain only `
 
 ### Step 5 — Test Suite Against Fresh Build
 
-| Package | Test Files | Tests | Result |
-|---------|-----------|-------|--------|
-| `@timelinx/core` | 64 | 1451 | PASS |
-| `@timelinx/react` | 7 | 156 | PASS |
-| `@timelinx/media-web` | 5 | 43 | PASS |
-| `@timelinx/ai` | 1 | 18 | PASS |
-| `@timelinx/collab` | 1 | 27 | PASS |
-| **Total** | **78** | **1695** | **PASS** |
+| Package               | Test Files | Tests    | Result   |
+| --------------------- | ---------- | -------- | -------- |
+| `@timelinx/core`      | 64         | 1451     | PASS     |
+| `@timelinx/react`     | 7          | 156      | PASS     |
+| `@timelinx/media-web` | 5          | 43       | PASS     |
+| `@timelinx/ai`        | 1          | 18       | PASS     |
+| `@timelinx/collab`    | 1          | 27       | PASS     |
+| **Total**             | **78**     | **1695** | **PASS** |
 
 Identical pass counts to the previous run. Tests pass against the freshly built code, not leftover artifacts.
 

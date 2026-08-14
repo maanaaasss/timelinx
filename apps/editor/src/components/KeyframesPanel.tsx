@@ -28,34 +28,43 @@ export function KeyframesPanel() {
       id: `add-keyframe-${Date.now()}`,
       label: 'Add keyframe',
       timestamp: Date.now(),
-      operations: [{
-        type: 'ADD_KEYFRAME',
-        clipId: selectedClipId as ClipId,
-        effectId: selectedEffect.id,
-        keyframe,
-      }],
+      operations: [
+        {
+          type: 'ADD_KEYFRAME',
+          clipId: selectedClipId as ClipId,
+          effectId: selectedEffect.id,
+          keyframe,
+        },
+      ],
     });
   }, [engine, selectedClipId, selectedEffect, playheadFrame]);
 
-  const handleDeleteKeyframe = useCallback((keyframeId: string) => {
-    if (!selectedClipId || !selectedEffect) return;
-    engine.dispatch({
-      id: `delete-keyframe-${Date.now()}`,
-      label: 'Delete keyframe',
-      timestamp: Date.now(),
-      operations: [{
-        type: 'DELETE_KEYFRAME',
-        clipId: selectedClipId as ClipId,
-        effectId: selectedEffect.id,
-        keyframeId: keyframeId as import('@timelinx/core').KeyframeId,
-      }],
-    });
-  }, [engine, selectedClipId, selectedEffect]);
+  const handleDeleteKeyframe = useCallback(
+    (keyframeId: string) => {
+      if (!selectedClipId || !selectedEffect) return;
+      engine.dispatch({
+        id: `delete-keyframe-${Date.now()}`,
+        label: 'Delete keyframe',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'DELETE_KEYFRAME',
+            clipId: selectedClipId as ClipId,
+            effectId: selectedEffect.id,
+            keyframeId: keyframeId as import('@timelinx/core').KeyframeId,
+          },
+        ],
+      });
+    },
+    [engine, selectedClipId, selectedEffect],
+  );
 
   if (!selectedClipId) {
     return (
       <div className="inspector-panel">
-        <div className="panel-header"><h3 className="panel-title">Keyframes</h3></div>
+        <div className="panel-header">
+          <h3 className="panel-title">Keyframes</h3>
+        </div>
         <div className="panel-content">
           <div className="empty-state">
             <p>Select a clip to view its keyframes</p>
@@ -68,7 +77,9 @@ export function KeyframesPanel() {
   if (effects.length === 0) {
     return (
       <div className="inspector-panel">
-        <div className="panel-header"><h3 className="panel-title">Keyframes</h3></div>
+        <div className="panel-header">
+          <h3 className="panel-title">Keyframes</h3>
+        </div>
         <div className="panel-content">
           <div className="empty-state">
             <p>No effects on this clip</p>
@@ -83,11 +94,7 @@ export function KeyframesPanel() {
     <div className="inspector-panel">
       <div className="panel-header">
         <h3 className="panel-title">Keyframes</h3>
-        <button
-          className="panel-action-btn"
-          disabled={!selectedEffect}
-          onClick={handleAddKeyframe}
-        >
+        <button className="panel-action-btn" disabled={!selectedEffect} onClick={handleAddKeyframe}>
           + Add
         </button>
       </div>
@@ -99,7 +106,9 @@ export function KeyframesPanel() {
             onChange={(e) => setSelectedEffectIdx(Number(e.target.value))}
           >
             {effects.map((ef, i) => (
-              <option key={ef.id} value={i}>{ef.effectType} ({ef.id.slice(0, 8)})</option>
+              <option key={ef.id} value={i}>
+                {ef.effectType} ({ef.id.slice(0, 8)})
+              </option>
             ))}
           </select>
         </div>
@@ -111,22 +120,24 @@ export function KeyframesPanel() {
           </div>
         ) : (
           <ul className="keyframe-list">
-            {[...keyframes].sort((a, b) => (a.frame as number) - (b.frame as number)).map((kf) => (
-              <li key={kf.id} className="keyframe-item">
-                <div className="keyframe-info">
-                  <span className="keyframe-frame">f{String(kf.frame)}</span>
-                  <span className="keyframe-value">{kf.value.toFixed(2)}</span>
-                  <span className="keyframe-easing">{kf.easing.kind}</span>
-                </div>
-                <button
-                  className="keyframe-delete-btn"
-                  title="Delete keyframe"
-                  onClick={() => handleDeleteKeyframe(kf.id)}
-                >
-                  x
-                </button>
-              </li>
-            ))}
+            {[...keyframes]
+              .sort((a, b) => (a.frame as number) - (b.frame as number))
+              .map((kf) => (
+                <li key={kf.id} className="keyframe-item">
+                  <div className="keyframe-info">
+                    <span className="keyframe-frame">f{String(kf.frame)}</span>
+                    <span className="keyframe-value">{kf.value.toFixed(2)}</span>
+                    <span className="keyframe-easing">{kf.easing.kind}</span>
+                  </div>
+                  <button
+                    className="keyframe-delete-btn"
+                    title="Delete keyframe"
+                    onClick={() => handleDeleteKeyframe(kf.id)}
+                  >
+                    x
+                  </button>
+                </li>
+              ))}
           </ul>
         )}
       </div>

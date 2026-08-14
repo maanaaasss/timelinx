@@ -30,10 +30,7 @@ function sameRequest(a: ThumbnailRequest, b: ThumbnailRequest): boolean {
 export class ThumbnailQueue {
   private entries: ThumbnailQueueEntry[] = [];
 
-  enqueue(
-    request: ThumbnailRequest,
-    priority: ThumbnailPriority = 'normal',
-  ): void {
+  enqueue(request: ThumbnailRequest, priority: ThumbnailPriority = 'normal'): void {
     const existing = this.entries.find((e) => sameRequest(e.request, request));
     if (existing) {
       if (priorityValue(priority) > priorityValue(existing.priority)) {
@@ -64,11 +61,7 @@ export class ThumbnailQueue {
     this.entries = this.entries.filter((e) => e.request.clipId !== clipId);
   }
 
-  setPriority(
-    clipId: ClipId,
-    mediaFrame: TimelineFrame,
-    priority: ThumbnailPriority,
-  ): void {
+  setPriority(clipId: ClipId, mediaFrame: TimelineFrame, priority: ThumbnailPriority): void {
     const m = mediaFrame as number;
     this.entries = this.entries.map((e) => {
       if (e.request.clipId === clipId && (e.request.mediaFrame as number) === m) {
