@@ -17,7 +17,7 @@ Do not stop at "code works and build passes." Always commit, push, open a PR, an
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/) format: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `ci:`
 - Subject line ≤ 72 characters
-- Body explains *why*, not *what* (the diff shows the what)
+- Body explains _why_, not _what_ (the diff shows the what)
 
 ## Branch Naming
 
@@ -27,13 +27,15 @@ Do not stop at "code works and build passes." Always commit, push, open a PR, an
 
 ## Package Discipline
 
-- `apps/demo`, `apps/editor`, `apps/docs` are **excluded** from the pnpm workspace
+- `apps/demo`, `apps/editor` are **excluded** from the pnpm workspace
 - They install `@timelinx/*` from the **npm registry**, not workspace links
+- `apps/docs` is **included** in the workspace and uses `workspace:*` links
 - Any new standalone app must follow this same pattern: add `!apps/<name>` to `pnpm-workspace.yaml`
 
 ## CI
 
 The CI workflow (`.github/workflows/ci.yml`) runs on PRs to `main`:
+
 - `pnpm install --frozen-lockfile`
 - `pnpm lint`
 - `pnpm build`

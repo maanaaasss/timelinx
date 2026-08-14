@@ -31,9 +31,6 @@
     "@timelinx/core": ">=1.0.0-beta.3",
     "react": "^18.0.0 || ^19.0.0"
   },
-  "dependencies": {
-    "@timelinx/core": "^1.0.0-beta.3"
-  },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "@testing-library/jest-dom": "^6.9.1",
