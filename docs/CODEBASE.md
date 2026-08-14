@@ -69,11 +69,12 @@ timeline/
 ├── README.md
 ├── LICENSE (MIT)
 ├── docs/
-│   ├── architecture.md       # Full architecture doc with ASCII diagrams
-│   ├── comparison.md         # Competitive analysis
-│   ├── CODEBASE.md           # This file
-│   └── timelinx-core-test-plan.md
-├── apps/                     # Empty (placeholder for demo app)
+│   ├── ARCHITECTURE.md   # Full architecture doc with ASCII diagrams
+│   └── CODEBASE.md       # This file
+├── apps/
+│   ├── docs/             # Documentation site (fumadocs)
+│   ├── editor/           # Main editor app (excluded from workspace)
+│   └── timeline-prototype/ # Prototype app
 └── packages/
     ├── core/                 # 89 source files, ~14K lines — the engine
     ├── react/                # 11 source files, ~1.5K lines — React bindings
@@ -85,9 +86,10 @@ timeline/
 
 ```json
 {
-  "build": "pnpm --filter @timelinx/core build && pnpm --filter @timelinx/react build && ...",
-  "dev": "cd apps/demo && pnpm dev",
-  "test": "pnpm --filter @timelinx/core test && pnpm --filter @timelinx/react test && ..."
+  "build": "pnpm -r --if-present build",
+  "dev": "pnpm --filter @timelinx/docs dev",
+  "test": "pnpm -r --if-present test"
+}
 }
 ```
 

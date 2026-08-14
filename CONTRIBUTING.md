@@ -22,11 +22,11 @@ Thank you for your interest in contributing to Timelinx. This document covers th
 
 ## Prerequisites
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| [Node.js](https://nodejs.org/) | `>=22` | Runtime |
-| [pnpm](https://pnpm.io/) | `10.28.2` | Package manager (pinned via `packageManager` field) |
-| [Git](https://git-scm.com/) | `>=2.40` | Version control |
+| Tool                           | Version   | Purpose                                             |
+| ------------------------------ | --------- | --------------------------------------------------- |
+| [Node.js](https://nodejs.org/) | `>=22`    | Runtime                                             |
+| [pnpm](https://pnpm.io/)       | `10.28.2` | Package manager (pinned via `packageManager` field) |
+| [Git](https://git-scm.com/)    | `>=2.40`  | Version control                                     |
 
 Do **not** use npm or yarn to install dependencies. The lockfile is managed by pnpm and CI enforces `--frozen-lockfile`.
 
@@ -62,9 +62,8 @@ timelinx/
 │   ├── ui/            @timelinx/ui        — Browser-native React components
 │   └── media-web/     @timelinx/media-web — WebCodecs, WebAudio, thumbnails
 ├── apps/
-│   ├── demo/          Public demo (excluded from workspace)
 │   ├── editor/        Main editor app (excluded from workspace)
-│   └── docs/          Documentation site (excluded from workspace)
+│   └── docs/          Documentation site (included in workspace)
 ├── docs/              Internal docs, phase reports, guides
 ├── .github/
 │   ├── workflows/     CI and Release pipelines
@@ -77,12 +76,14 @@ timelinx/
 
 ### Workspace vs Excluded Apps
 
-The pnpm workspace includes `packages/*` and `apps/*`, but **excludes** `demo`, `editor`, and `docs`. These excluded apps:
+The pnpm workspace includes `packages/*` and `apps/*`, but **excludes** `editor`. The excluded app:
 
-- Install `@timelinx/*` from the **npm registry**, not workspace links
-- Have their own lockfiles (`package-lock.json` or equivalent)
-- Are **not** included in root `pnpm build`, `pnpm test`, or `pnpm lint`
-- Do **not** affect CI — only workspace packages are validated
+- Installs `@timelinx/*` from the **npm registry**, not workspace links
+- Has its own lockfile (`pnpm-lock.yaml`)
+- Is **not** included in root `pnpm build`, `pnpm test`, or `pnpm lint`
+- Does **not** affect CI — only workspace packages are validated
+
+The `apps/docs` app is **included** in the workspace and uses `workspace:*` links.
 
 Any new standalone app must follow this pattern: add `!apps/<name>` to `pnpm-workspace.yaml`.
 
@@ -174,15 +175,15 @@ pnpm --filter @timelinx/core exec tsc --noEmit
 
 All branches must follow this naming convention:
 
-| Pattern | Purpose | Example |
-|---------|---------|---------|
-| `feat/*` | New features | `feat/add-transition-effects` |
-| `fix/*` | Bug fixes | `fix/nan-guard-validators` |
-| `refactor/*` | Code restructuring | `refactor/simplify-provisional-manager` |
-| `docs/*` | Documentation only | `docs/api-reference-core` |
-| `test/*` | Test additions/fixes | `test/hostile-consumer-suite` |
-| `chore/*` | Tooling, CI, config | `chore/add-changeset-config` |
-| `perf/*` | Performance improvements | `perf/interval-tree-optimization` |
+| Pattern      | Purpose                  | Example                                 |
+| ------------ | ------------------------ | --------------------------------------- |
+| `feat/*`     | New features             | `feat/add-transition-effects`           |
+| `fix/*`      | Bug fixes                | `fix/nan-guard-validators`              |
+| `refactor/*` | Code restructuring       | `refactor/simplify-provisional-manager` |
+| `docs/*`     | Documentation only       | `docs/api-reference-core`               |
+| `test/*`     | Test additions/fixes     | `test/hostile-consumer-suite`           |
+| `chore/*`    | Tooling, CI, config      | `chore/add-changeset-config`            |
+| `perf/*`     | Performance improvements | `perf/interval-tree-optimization`       |
 
 **Do not** use bare branch names (e.g., `my-feature`). Always use the `type/description` format.
 
@@ -204,17 +205,17 @@ This project follows the [Conventional Commits](https://www.conventionalcommits.
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `docs` | Documentation only changes |
-| `style` | Code style changes (formatting, semicolons, etc.) |
+| Type       | Description                                             |
+| ---------- | ------------------------------------------------------- |
+| `feat`     | A new feature                                           |
+| `fix`      | A bug fix                                               |
+| `docs`     | Documentation only changes                              |
+| `style`    | Code style changes (formatting, semicolons, etc.)       |
 | `refactor` | Code change that neither fixes a bug nor adds a feature |
-| `perf` | Performance improvement |
-| `test` | Adding or updating tests |
-| `chore` | Build process, CI configuration, tooling |
-| `revert` | Reverts a previous commit |
+| `perf`     | Performance improvement                                 |
+| `test`     | Adding or updating tests                                |
+| `chore`    | Build process, CI configuration, tooling                |
+| `revert`   | Reverts a previous commit                               |
 
 ### Scope
 
@@ -254,12 +255,14 @@ Fixes #87
 ### Before Opening a PR
 
 1. **Rebase onto main** — Ensure your branch is up to date:
+
    ```bash
    git fetch origin
    git rebase origin/main
    ```
 
 2. **Run the full validation pipeline locally:**
+
    ```bash
    pnpm ci   # Runs: lint → typecheck → build → test
    ```
@@ -276,13 +279,13 @@ Work is **not considered done** until it is committed, pushed, and passing CI on
 
 ### PR Requirements
 
-| Requirement | Enforced By |
-|-------------|-------------|
-| All CI status checks pass | GitHub branch protection |
-| At least 1 approval from a maintainer | GitHub branch protection |
-| No merge conflicts | CI + reviewer verification |
-| Changeset added (if applicable) | Reviewer check |
-| Breaking changes documented | PR template checklist |
+| Requirement                           | Enforced By                |
+| ------------------------------------- | -------------------------- |
+| All CI status checks pass             | GitHub branch protection   |
+| At least 1 approval from a maintainer | GitHub branch protection   |
+| No merge conflicts                    | CI + reviewer verification |
+| Changeset added (if applicable)       | Reviewer check             |
+| Breaking changes documented           | PR template checklist      |
 
 ### PR Title Format
 
@@ -320,6 +323,7 @@ Internal packages use `workspace:*` for inter-package dependencies. This is safe
 **Why `workspace:*` is used:** When `@timelinx/react` depends on `@timelinx/core` via `workspace:*`, pnpm resolves to the local workspace copy during development. If a version range like `^1.0.0-beta.1` is used instead, pnpm may install a stale registry copy in the pnpm store, causing TypeScript to resolve against outdated declaration files.
 
 **If you encounter stale type errors** after adding exports to `@timelinx/core`:
+
 1. First try `rm -rf node_modules/.pnpm/@timelinx+core@*` and `pnpm install`
 2. If that doesn't work, rebuild core: `pnpm --filter @timelinx/core build`
 3. Only change `workspace:*` as a last resort, and document why
@@ -328,35 +332,22 @@ Internal packages use `workspace:*` for inter-package dependencies. This is safe
 
 ## Excluded Apps
 
-### Demo App (`apps/demo`)
-
-The demo app is excluded from the pnpm workspace. It installs `@timelinx/core` and `@timelinx/react` from the npm registry to verify they work for external consumers.
-
-```bash
-cd apps/demo
-npm install    # Uses npm, not pnpm — independent lockfile
-npm run dev    # Start Vite dev server
-npm run build  # Production build
-```
-
 ### Editor App (`apps/editor`)
 
-The main editor application. Also excluded from the workspace and installs packages from npm.
+The main editor application. Excluded from the workspace and installs packages from npm.
 
 ```bash
 cd apps/editor
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ### Docs Site (`apps/docs`)
 
-The documentation site built with fumadocs. Excluded from the workspace.
+The documentation site built with fumadocs. **Included** in the workspace.
 
 ```bash
-cd apps/docs
-npm install
-npm run dev
+pnpm --filter @timelinx/docs dev
 ```
 
 ---
