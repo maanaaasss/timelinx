@@ -23,7 +23,7 @@
 **Timelinx** is an open-source, professional NLE (Non-Linear Editor) timeline engine for the web. It is a headless, deterministic, immutable-state TypeScript engine that provides the core editing kernel that could power browser-based video editors.
 
 - **License:** MIT
-- **Version:** 1.0.0-beta.1
+- **Version:** 1.0.0-beta.3
 - **Package Manager:** pnpm 10.28.2
 - **Language:** TypeScript (strict mode, ES2020/ES2022 targets)
 - **Build Tools:** tsup (core, react), Vite (ui library mode)

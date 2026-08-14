@@ -103,7 +103,7 @@
 
   Boundary tests added to `src/__tests__/systems-validation.test.ts` (6 new cases).
 
-All notable changes to `@webpacked-timeline/core` are documented here.
+All notable changes to `@timelinx/core` are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [1.0.0-beta.1] - 2026-03-07
