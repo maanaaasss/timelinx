@@ -20,22 +20,23 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 /* 3. Your overrides  - come last to win specificity */
 :root {
-  --accent: #7c3aed;  /* override amber accent with violet */
+  --accent: #7c3aed; /* override amber accent with violet */
 }
 ```
 
 <Callout type="warn" title="Always import structure after your preset">
-  `structure.css` references the token variables. If you swap the import order, the component CSS can't resolve the variables.
+  `structure.css` references the token variables. If you swap the import order, the component CSS
+  can't resolve the variables.
 </Callout>
 
 ---
 
 ## Bundled Presets
 
-| File | Description |
-|------|-------------|
-| `@timelinx/ui/styles/presets/dark-pro` | Default. Instrument-black canvas with amber accent and cyan selection. |
-| `@timelinx/ui/styles/presets/light` | Light mode. Off-white surfaces, cool-gray borders, same accent scale. |
+| File                                        | Description                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------ |
+| `@timelinx/ui/styles/presets/dark-pro`      | Default. Instrument-black canvas with amber accent and cyan selection.   |
+| `@timelinx/ui/styles/presets/light`         | Light mode. Off-white surfaces, cool-gray borders, same accent scale.    |
 | `@timelinx/ui/styles/presets/high-contrast` | Maximum contrast for accessibility. `prefers-contrast: more` compatible. |
 
 ---
@@ -47,13 +48,13 @@ The accent is used for the playhead, active tool highlight, focus rings, and pri
 ```css
 :root {
   /* Primary accent  - used on interactive elements */
-  --accent:        #7c3aed;  /* violet instead of amber */
-  --accent-hover:  #6d28d9;
+  --accent: #7c3aed; /* violet instead of amber */
+  --accent-hover: #6d28d9;
   --accent-active: #5b21b6;
-  --accent-subtle: rgba(124,58,237,0.12);
-  --accent-border: rgba(124,58,237,0.30);
-  --accent-glow:   rgba(124,58,237,0.08);
-  --accent-on-fill: #ffffff;  /* text on accent-filled buttons */
+  --accent-subtle: rgba(124, 58, 237, 0.12);
+  --accent-border: rgba(124, 58, 237, 0.3);
+  --accent-glow: rgba(124, 58, 237, 0.08);
+  --accent-on-fill: #ffffff; /* text on accent-filled buttons */
 
   /* Full scale */
   --accent-100: #ede9fe;
@@ -64,8 +65,8 @@ The accent is used for the playhead, active tool highlight, focus rings, and pri
   --accent-600: #5b21b6;
 
   /* Playhead uses the accent */
-  --playhead-color:  var(--accent-400);
-  --playhead-shadow: 0 0 8px rgba(124,58,237,0.4);
+  --playhead-color: var(--accent-400);
+  --playhead-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
 }
 ```
 
@@ -77,10 +78,10 @@ The selection ring around selected clips and the rubber-band rectangle use the s
 
 ```css
 :root {
-  --selection:         #7c3aed;   /* match accent if you prefer */
-  --selection-ring:    #6d28d9;
-  --selection-glow:    rgba(124,58,237,0.12);
-  --selection-handle:  #7c3aed;
+  --selection: #7c3aed; /* match accent if you prefer */
+  --selection-ring: #6d28d9;
+  --selection-glow: rgba(124, 58, 237, 0.12);
+  --selection-handle: #7c3aed;
   --selection-on-fill: #ffffff;
 }
 ```
@@ -93,14 +94,14 @@ The background surfaces use a layered elevation model. Each level is slightly li
 
 ```css
 :root {
-  --bg-canvas:         #0C0C10;  /* outermost, page background */
-  --bg-app:            #0C0C10;  /* app shell */
-  --bg-panel:          #121216;  /* sidebars, tool panels */
-  --bg-surface:        #18181E;  /* track rows, content areas */
-  --bg-surface-raised: #1E1E26;  /* cards, dropdowns, modals */
-  --bg-surface-soft:   #141418;  /* soft fills */
-  --bg-hover:          rgba(255,255,255,0.04);
-  --bg-active:         rgba(255,255,255,0.06);
+  --bg-canvas: #0c0c10; /* outermost, page background */
+  --bg-app: #0c0c10; /* app shell */
+  --bg-panel: #121216; /* sidebars, tool panels */
+  --bg-surface: #18181e; /* track rows, content areas */
+  --bg-surface-raised: #1e1e26; /* cards, dropdowns, modals */
+  --bg-surface-soft: #141418; /* soft fills */
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --bg-active: rgba(255, 255, 255, 0.06);
 }
 ```
 
@@ -110,10 +111,10 @@ The background surfaces use a layered elevation model. Each level is slightly li
 
 ```css
 :root {
-  --text-primary:   #ECECF0;  /* main text */
-  --text-secondary: #B4B4C8;  /* labels, descriptions */
-  --text-tertiary:  #8888A0;  /* placeholders, metadata */
-  --text-disabled:  #4A4A5C;  /* disabled state */
+  --text-primary: #ececf0; /* main text */
+  --text-secondary: #b4b4c8; /* labels, descriptions */
+  --text-tertiary: #8888a0; /* placeholders, metadata */
+  --text-disabled: #4a4a5c; /* disabled state */
 }
 ```
 
@@ -126,31 +127,31 @@ Each track type has a full color family: the fill, a 70% dimmed version, a 12% b
 ```css
 :root {
   /* Video track  - blue */
-  --track-video:        #3B82F6;
-  --track-video-dim:    rgba(59,130,246,0.70);
-  --track-video-bg:     rgba(59,130,246,0.12);
-  --track-video-border: rgba(59,130,246,0.30);
+  --track-video: #3b82f6;
+  --track-video-dim: rgba(59, 130, 246, 0.7);
+  --track-video-bg: rgba(59, 130, 246, 0.12);
+  --track-video-border: rgba(59, 130, 246, 0.3);
 
   /* Audio track  - lighter blue */
-  --track-audio:        #60A5FA;
-  --track-audio-bg:     rgba(96,165,250,0.12);
-  --track-audio-border: rgba(96,165,250,0.30);
+  --track-audio: #60a5fa;
+  --track-audio-bg: rgba(96, 165, 250, 0.12);
+  --track-audio-border: rgba(96, 165, 250, 0.3);
 
   /* Subtitle track  - amber */
-  --track-subtitle:     #F59E0B;
-  --track-subtitle-bg:  rgba(245,158,11,0.12);
+  --track-subtitle: #f59e0b;
+  --track-subtitle-bg: rgba(245, 158, 11, 0.12);
 
   /* Image/title track  - pink */
-  --track-image:        #EC4899;
-  --track-image-bg:     rgba(236,72,153,0.12);
+  --track-image: #ec4899;
+  --track-image-bg: rgba(236, 72, 153, 0.12);
 
   /* Effect track  - green */
-  --track-effect:       #10B981;
-  --track-effect-bg:    rgba(16,185,129,0.12);
+  --track-effect: #10b981;
+  --track-effect-bg: rgba(16, 185, 129, 0.12);
 
   /* Music track  - purple */
-  --track-music:        #A855F7;
-  --track-music-bg:     rgba(168,85,247,0.12);
+  --track-music: #a855f7;
+  --track-music-bg: rgba(168, 85, 247, 0.12);
 }
 ```
 
@@ -162,15 +163,15 @@ These control the structural dimensions of the editor panels:
 
 ```css
 :root {
-  --track-height:        80px;   /* default track row height */
-  --track-height-video:  80px;   /* video-specific default */
-  --track-height-audio:  80px;   /* audio-specific default */
-  --track-header-width:  180px;  /* left header column */
-  --ruler-height:        36px;   /* timecode ruler */
-  --toolbar-height:      44px;   /* top toolbar */
-  --topbar-height:       48px;   /* menu/project bar */
-  --sidebar-width:       180px;  /* right-side panel */
-  --clip-radius:         2px;    /* clip corner radius */
+  --track-height: 80px; /* default track row height */
+  --track-height-video: 80px; /* video-specific default */
+  --track-height-audio: 80px; /* audio-specific default */
+  --track-header-width: 180px; /* left header column */
+  --ruler-height: 36px; /* timecode ruler */
+  --toolbar-height: 44px; /* top toolbar */
+  --topbar-height: 48px; /* menu/project bar */
+  --sidebar-width: 180px; /* right-side panel */
+  --clip-radius: 2px; /* clip corner radius */
 }
 ```
 
@@ -181,8 +182,8 @@ These control the structural dimensions of the editor panels:
 ```css
 :root {
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 }
 ```
 
@@ -192,7 +193,7 @@ To use a different font, override `--font-sans` and `--font-display` after impor
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
 
 :root {
-  --font-sans:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 }
 ```
@@ -203,13 +204,13 @@ To use a different font, override `--font-sans` and `--font-display` after impor
 
 ```css
 :root {
-  --duration-fast:   120ms;  /* hover transitions, icon swaps */
-  --duration-base:   180ms;  /* panel reveals, clip grabs */
-  --duration-slow:   280ms;  /* modal enters, complex transitions */
+  --duration-fast: 120ms; /* hover transitions, icon swaps */
+  --duration-base: 180ms; /* panel reveals, clip grabs */
+  --duration-slow: 280ms; /* modal enters, complex transitions */
 
-  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out:     cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 ```
 
@@ -233,9 +234,9 @@ Override tokens on a parent element to scope them to a subtree without affecting
 
 ```css
 .my-compact-editor {
-  --track-height:       56px;
-  --ruler-height:       28px;
-  --toolbar-height:     36px;
+  --track-height: 56px;
+  --ruler-height: 28px;
+  --toolbar-height: 36px;
   --track-header-width: 140px;
 }
 ```
@@ -258,12 +259,12 @@ Copy `dark-pro.css` as a starting point and modify the variables:
 
 :root {
   color-scheme: dark;
-  --bg-canvas:         #0a0a0f;
-  --bg-app:            #0a0a0f;
-  --bg-panel:          #100f1a;
-  --bg-surface:        #16152a;
+  --bg-canvas: #0a0a0f;
+  --bg-app: #0a0a0f;
+  --bg-panel: #100f1a;
+  --bg-surface: #16152a;
   /* ... rest of your overrides */
-  --accent:            #818cf8;  /* indigo */
+  --accent: #818cf8; /* indigo */
 }
 ```
 

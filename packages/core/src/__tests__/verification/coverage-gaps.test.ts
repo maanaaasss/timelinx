@@ -17,11 +17,7 @@ import { createClip, toClipId } from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
 import { buildSnapIndex } from '../../snap-index';
-import type {
-  ToolContext,
-  TimelinePointerEvent,
-  TimelineKeyEvent,
-} from '../../tools/types';
+import type { ToolContext, TimelinePointerEvent, TimelineKeyEvent } from '../../tools/types';
 import type { TimelineState } from '../../types/state';
 import type { TimelineFrame } from '../../types/frame';
 import type { TrackId } from '../../types/track';
@@ -89,10 +85,7 @@ function makeState(): TimelineState {
   });
 }
 
-function makeCtx(
-  state: TimelineState,
-  overrides: Partial<ToolContext> = {},
-): ToolContext {
+function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): ToolContext {
   return {
     state,
     snapIndex: buildSnapIndex(state, toFrame(0)),
@@ -105,18 +98,20 @@ function makeCtx(
   };
 }
 
-function makeEv(overrides: {
-  frame?: TimelineFrame;
-  trackId?: TrackId | null;
-  clipId?: ClipId | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-  x?: number;
-  y?: number;
-  buttons?: number;
-  shiftKey?: boolean;
-  altKey?: boolean;
-  metaKey?: boolean;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: TimelineFrame;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+    x?: number;
+    y?: number;
+    buttons?: number;
+    shiftKey?: boolean;
+    altKey?: boolean;
+    metaKey?: boolean;
+  } = {},
+): TimelinePointerEvent {
   return {
     frame: overrides.frame ?? toFrame(0),
     trackId: overrides.trackId ?? TRACK_ID,
@@ -145,11 +140,16 @@ function makeTx(label: string, ops: Transaction['operations']): Transaction {
 describe('Coverage: validators.ts — validateSetTrackOpacity success path', () => {
   it('SET_TRACK_OPACITY with valid opacity succeeds via dispatcher', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Opacity', [{
-      type: 'SET_TRACK_OPACITY',
-      trackId: toTrackId('track-1'),
-      opacity: 0.7,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Opacity', [
+        {
+          type: 'SET_TRACK_OPACITY',
+          trackId: toTrackId('track-1'),
+          opacity: 0.7,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (result.accepted) {
       expect(result.nextState.timeline.tracks[0]!.opacity).toBe(0.7);
@@ -159,21 +159,31 @@ describe('Coverage: validators.ts — validateSetTrackOpacity success path', () 
 
   it('SET_TRACK_OPACITY with 0 succeeds via dispatcher', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Opacity', [{
-      type: 'SET_TRACK_OPACITY',
-      trackId: toTrackId('track-1'),
-      opacity: 0,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Opacity', [
+        {
+          type: 'SET_TRACK_OPACITY',
+          trackId: toTrackId('track-1'),
+          opacity: 0,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 
   it('SET_TRACK_OPACITY with 1 succeeds via dispatcher', () => {
     const state = makeState();
-    const result = dispatch(state, makeTx('Set Opacity', [{
-      type: 'SET_TRACK_OPACITY',
-      trackId: toTrackId('track-1'),
-      opacity: 1,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Set Opacity', [
+        {
+          type: 'SET_TRACK_OPACITY',
+          trackId: toTrackId('track-1'),
+          opacity: 1,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
   });
 });

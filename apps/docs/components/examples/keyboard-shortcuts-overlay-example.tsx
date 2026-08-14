@@ -23,10 +23,7 @@ export function KeyboardShortcutsOverlayExample() {
         Show Keyboard Shortcuts
       </button>
 
-      <KeyboardShortcutsOverlay
-        isVisible={isVisible}
-        onClose={() => setIsVisible(false)}
-      />
+      <KeyboardShortcutsOverlay isVisible={isVisible} onClose={() => setIsVisible(false)} />
     </div>
   );
 }

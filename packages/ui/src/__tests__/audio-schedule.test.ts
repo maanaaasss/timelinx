@@ -33,15 +33,16 @@ function makeClip(overrides: {
       name: null,
       color: null,
       metadata: {},
-      audio: overrides.gainDb !== undefined
-        ? {
-            gain: { value: overrides.gainDb, keyframes: [] },
-            pan: { value: 0, keyframes: [] },
-            mute: false,
-            channelRouting: 'stereo' as const,
-            normalizationGain: 0,
-          }
-        : undefined,
+      audio:
+        overrides.gainDb !== undefined
+          ? {
+              gain: { value: overrides.gainDb, keyframes: [] },
+              pan: { value: 0, keyframes: [] },
+              mute: false,
+              channelRouting: 'stereo' as const,
+              normalizationGain: 0,
+            }
+          : undefined,
     } as unknown as Clip,
   };
 }
@@ -65,12 +66,14 @@ describe('computeAudioSchedule', () => {
   // ── Case 2: clip with non-zero mediaIn (trimmed) ────────────────────
 
   it('clip with mediaIn=50 seeks into source at 50/fps, not 0', () => {
-    const clips = [makeClip({
-      timelineStart: 0,
-      timelineEnd: 300,
-      mediaIn: 50,
-      mediaOut: 350,
-    })];
+    const clips = [
+      makeClip({
+        timelineStart: 0,
+        timelineEnd: 300,
+        mediaIn: 50,
+        mediaOut: 350,
+      }),
+    ];
     const result = computeAudioSchedule(clips, CT_BASE, FPS);
 
     expect(result).toHaveLength(1);
@@ -83,8 +86,8 @@ describe('computeAudioSchedule', () => {
 
   it('overlapping clips get independent schedules — neither clobbers the other', () => {
     const clips = [
-      makeClip({ timelineStart: 0, timelineEnd: 600 }),     // music: frames 0–600
-      makeClip({ timelineStart: 200, timelineEnd: 500 }),   // voiceover: frames 200–500
+      makeClip({ timelineStart: 0, timelineEnd: 600 }), // music: frames 0–600
+      makeClip({ timelineStart: 200, timelineEnd: 500 }), // voiceover: frames 200–500
     ];
     const result = computeAudioSchedule(clips, CT_BASE, FPS);
 
@@ -145,7 +148,7 @@ describe('computeAudioSchedule', () => {
 
   it('complex scenario: trimmed clip starting mid-timeline alongside a full-length clip', () => {
     const clips = [
-      makeClip({ timelineStart: 0, timelineEnd: 900, gainDb: -3 }),    // background music
+      makeClip({ timelineStart: 0, timelineEnd: 900, gainDb: -3 }), // background music
       makeClip({ timelineStart: 300, timelineEnd: 600, mediaIn: 120, mediaOut: 420, gainDb: 0 }), // trimmed VO
     ];
     const result = computeAudioSchedule(clips, CT_BASE, FPS);

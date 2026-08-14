@@ -25,10 +25,10 @@ function getClipType(clip: ClipType, tracks: readonly Track[]): 'video' | 'audio
 }
 
 const toolCursors: Record<string, string> = {
-  razor:     'crosshair',
-  hand:      'grab',
+  razor: 'crosshair',
+  hand: 'grab',
   selection: 'default',
-  select:    'default',
+  select: 'default',
 };
 
 export function TrackBody({
@@ -49,7 +49,9 @@ export function TrackBody({
 
   // Sort clips by timelineStart so we can find the next clip for each clip
   // (needed for the transition drag handle in Clip.tsx).
-  const sortedClips = [...clips].sort((a, b) => (a.timelineStart as number) - (b.timelineStart as number));
+  const sortedClips = [...clips].sort(
+    (a, b) => (a.timelineStart as number) - (b.timelineStart as number),
+  );
 
   const handleClick = useCallback(
     (e: MouseEvent) => {
@@ -69,10 +71,12 @@ export function TrackBody({
     <div
       ref={bodyRef}
       className="tl-track-body"
-      style={{
-        width: totalWidth,
-        cursor,
-      } as React.CSSProperties}
+      style={
+        {
+          width: totalWidth,
+          cursor,
+        } as React.CSSProperties
+      }
       onClick={handleClick}
     >
       <div

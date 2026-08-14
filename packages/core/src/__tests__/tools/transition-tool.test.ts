@@ -80,7 +80,9 @@ function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): To
   };
 }
 
-function makeEv(overrides: Partial<TimelinePointerEvent> & { x?: number } = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: Partial<TimelinePointerEvent> & { x?: number } = {},
+): TimelinePointerEvent {
   const x = overrides.x ?? 0;
   return {
     frame: toFrame(Math.floor(x / PIXELS_PER_FRAME)),

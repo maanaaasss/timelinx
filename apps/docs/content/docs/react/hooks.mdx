@@ -6,7 +6,7 @@ icon: Blocks
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-All hooks in `@timelinx/react` read from the `EngineSnapshot` via `useSyncExternalStore`. They subscribe selectively  - each hook re-renders only when the slice of state it reads changes.
+All hooks in `@timelinx/react` read from the `EngineSnapshot` via `useSyncExternalStore`. They subscribe selectively - each hook re-renders only when the slice of state it reads changes.
 
 **The rule: use the narrowest hook for what you need.** `useClip(id)` re-renders only when that clip changes. `useTimeline()` re-renders any time any part of the timeline changes.
 
@@ -64,7 +64,11 @@ Returns a single `Track | null` by ID. Re-renders when that track's data changes
 const track = useTrack('v1');
 if (!track) return null;
 
-return <span>{track.name}  - {track.clips.length} clips</span>;
+return (
+  <span>
+    {track.name} - {track.clips.length} clips
+  </span>
+);
 ```
 
 ---
@@ -88,7 +92,13 @@ Returns `readonly Marker[]` from `timeline.markers`. Re-renders when the marker 
 
 ```tsx
 const markers = useMarkers();
-return <ul>{markers.map(m => <li key={m.id}>{m.label}</li>)}</ul>;
+return (
+  <ul>
+    {markers.map((m) => (
+      <li key={m.id}>{m.label}</li>
+    ))}
+  </ul>
+);
 ```
 
 ---
@@ -150,7 +160,7 @@ const { canUndo, canRedo } = useCanUndoRedo();
 <button disabled={!canRedo} onClick={() => engine.redo()}>Redo</button>
 ```
 
-Re-renders only when undo/redo availability changes  - not on every dispatch.
+Re-renders only when undo/redo availability changes - not on every dispatch.
 
 ---
 
@@ -196,7 +206,9 @@ function Transport({ engine }) {
 ```
 
 <Callout type="warn" title="Mount sparingly">
-  `usePlayheadFrame` re-renders on every animation frame during playback (30–60× per second). Keep it only in components that display the playhead position  - ruler, transport, and compositor. Do not use it in clip components.
+  `usePlayheadFrame` re-renders on every animation frame during playback (30–60× per second). Keep
+  it only in components that display the playhead position - ruler, transport, and compositor. Do
+  not use it in clip components.
 </Callout>
 
 ---
@@ -207,7 +219,7 @@ Returns `boolean`. Re-renders when playback starts or stops.
 
 ```tsx
 const isPlaying = useIsPlaying(engine);
-<button>{isPlaying ? '⏸ Pause' : '▶ Play'}</button>
+<button>{isPlaying ? '⏸ Pause' : '▶ Play'}</button>;
 ```
 
 ---
@@ -245,7 +257,7 @@ Returns `readonly Caption[]`. Re-renders when the caption list on that track cha
 
 ### `useVirtualWindow(engine, options)`
 
-Returns a `VirtualWindow`  - the visible frame range from current scroll and zoom. See [Virtual Rendering](/docs/react/virtual-window).
+Returns a `VirtualWindow` - the visible frame range from current scroll and zoom. See [Virtual Rendering](/docs/react/virtual-window).
 
 ### `useVisibleClips(engine, window)`
 
@@ -257,7 +269,7 @@ Returns clips that intersect the visible frame window. See [Virtual Rendering](/
 
 ### `useChange(engine)`
 
-Returns a `StateChange` diff from the previous snapshot. Use for coarse re-renders  - react to the type of change without inspecting the full state:
+Returns a `StateChange` diff from the previous snapshot. Use for coarse re-renders - react to the type of change without inspecting the full state:
 
 ```tsx
 import { useChange } from '@timelinx/react';
@@ -272,15 +284,15 @@ const change = useChange(engine);
 
 Every context-based hook has a `WithEngine` variant that accepts the engine explicitly. Use them when building components outside the default `TimelineProvider`:
 
-| Context | Engine-first |
-|---------|-------------|
-| `useTimeline()` | `useTimelineWithEngine(engine)` |
-| `useTrackIds()` | `useTrackIdsWithEngine(engine)` |
-| `useTrack(id)` | `useTrackWithEngine(engine, id)` |
-| `useClip(id)` | `useClipWithEngine(engine, id)` |
-| `useSelectedClipIds()` | `useSelectedClipIds(engine)` |
-| `usePlayheadFrame()` | `usePlayheadFrame(engine)` |
-| `useIsPlaying()` | `useIsPlaying(engine)` |
+| Context                | Engine-first                     |
+| ---------------------- | -------------------------------- |
+| `useTimeline()`        | `useTimelineWithEngine(engine)`  |
+| `useTrackIds()`        | `useTrackIdsWithEngine(engine)`  |
+| `useTrack(id)`         | `useTrackWithEngine(engine, id)` |
+| `useClip(id)`          | `useClipWithEngine(engine, id)`  |
+| `useSelectedClipIds()` | `useSelectedClipIds(engine)`     |
+| `usePlayheadFrame()`   | `usePlayheadFrame(engine)`       |
+| `useIsPlaying()`       | `useIsPlaying(engine)`           |
 
 ---
 

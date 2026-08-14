@@ -20,8 +20,8 @@ Virtual rendering solves this by mounting only the clips visible in the current 
 type VirtualWindow = {
   readonly startFrame: TimelineFrame;
   readonly endFrame: TimelineFrame;
-  readonly vpWidth: number;   // viewport width in pixels
-  readonly ppf: number;       // pixels per frame (current zoom)
+  readonly vpWidth: number; // viewport width in pixels
+  readonly ppf: number; // pixels per frame (current zoom)
 };
 ```
 
@@ -66,7 +66,7 @@ type VirtualWindowOptions = {
   containerRef: RefObject<HTMLElement>;
   ppf: number;
   scrollLeft: number;
-  bufferFrames?: number;  // extra frames to render outside viewport (default: 60)
+  bufferFrames?: number; // extra frames to render outside viewport (default: 60)
 };
 ```
 
@@ -109,7 +109,7 @@ function TrackRow({ engine, trackId, ppf, scrollLeft }) {
 }
 ```
 
-`useVisibleClips` re-renders when the clip set in the viewport changes  - not on every playhead tick or every unrelated state change.
+`useVisibleClips` re-renders when the clip set in the viewport changes - not on every playhead tick or every unrelated state change.
 
 ---
 
@@ -125,7 +125,7 @@ function TrackScrollable({ engine, ppf }) {
     <div
       style={{
         position: 'relative',
-        width: timeline.duration * ppf,  // full timeline width
+        width: timeline.duration * ppf, // full timeline width
         minWidth: '100%',
       }}
     >
@@ -141,11 +141,13 @@ The scroll container is the parent with `overflow: auto`. It scrolls over the ab
 
 ## Performance Notes
 
-- Subscribe to `useTrackIds()` to mount/unmount track rows  - not to `useAllTracks()` (which re-renders whenever any track changes).
-- Subscribe to `useTrack(id)` per row  - not to `useTimeline()` (which re-renders on any timeline change including unrelated metadata).
+- Subscribe to `useTrackIds()` to mount/unmount track rows - not to `useAllTracks()` (which re-renders whenever any track changes).
+- Subscribe to `useTrack(id)` per row - not to `useTimeline()` (which re-renders on any timeline change including unrelated metadata).
 - Use `useVisibleClips` per track row rather than fetching all clips and filtering in render.
-- Keep playhead subscriptions (`usePlayheadFrame`) only in components that actually render the playhead, ruler, or transport  - not in every clip.
+- Keep playhead subscriptions (`usePlayheadFrame`) only in components that actually render the playhead, ruler, or transport - not in every clip.
 
 <Callout title="useClip(id) for individual clip properties">
-  For rendering individual clip properties (color, name, effects), use `useClip(id)` so the clip component only re-renders when that specific clip changes  - not when any clip on any track changes.
+  For rendering individual clip properties (color, name, effects), use `useClip(id)` so the clip
+  component only re-renders when that specific clip changes - not when any clip on any track
+  changes.
 </Callout>

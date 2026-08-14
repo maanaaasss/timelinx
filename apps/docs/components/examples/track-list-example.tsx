@@ -92,17 +92,30 @@ export function TrackListExample() {
     v1: 80,
     a1: 68,
   });
-  const clipCounts = useMemo(() => new Map<string, number>([['v1', 1], ['a1', 0]]), []);
+  const clipCounts = useMemo(
+    () =>
+      new Map<string, number>([
+        ['v1', 1],
+        ['a1', 0],
+      ]),
+    [],
+  );
 
   const handleTrackHeightChange = (trackId: string, height: number) => {
-    setTrackHeights(prev => ({ ...prev, [trackId]: height }));
+    setTrackHeights((prev) => ({ ...prev, [trackId]: height }));
   };
 
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
       <ReactTimelineProvider engine={engine}>
         <UITimelineProvider engine={engine} onPpfChange={() => {}}>
-          <div style={{ border: '1px solid var(--color-border, #333)', borderRadius: 4, overflow: 'hidden' }}>
+          <div
+            style={{
+              border: '1px solid var(--color-border, #333)',
+              borderRadius: 4,
+              overflow: 'hidden',
+            }}
+          >
             <TrackList
               trackHeights={trackHeights}
               onTrackHeightChange={handleTrackHeightChange}

@@ -39,15 +39,11 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
-import type { TrackId }      from '../types/track';
+import type { TrackId } from '../types/track';
 import type { TimelineFrame } from '../types/frame';
-import type { Transaction }   from '../types/operations';
+import type { Transaction } from '../types/operations';
 import type { TimelineState } from '../types/state';
 import type { CaptionId, Caption } from '../types/caption';
 import { findClipById } from '../systems/queries';
@@ -70,8 +66,8 @@ type TrimEdge = 'start' | 'end';
 
 type DownstreamPosition = {
   readonly timelineStart: TimelineFrame;
-  readonly timelineEnd:   TimelineFrame;
-  readonly trackId:       TrackId;
+  readonly timelineEnd: TimelineFrame;
+  readonly trackId: TrackId;
 };
 
 // ---------------------------------------------------------------------------
@@ -86,22 +82,14 @@ type DownstreamPosition = {
  *
  * The dragged clip itself is always excluded.
  */
-function computeDownstreamClips(
-  clip:  Clip,
-  edge:  TrimEdge,
-  state: TimelineState,
-): Clip[] {
-  const track = state.timeline.tracks.find(t => t.id === clip.trackId);
+function computeDownstreamClips(clip: Clip, edge: TrimEdge, state: TimelineState): Clip[] {
+  const track = state.timeline.tracks.find((t) => t.id === clip.trackId);
   if (!track) return [];
 
   if (edge === 'end') {
-    return track.clips.filter(
-      c => c.id !== clip.id && c.timelineStart >= clip.timelineEnd,
-    );
+    return track.clips.filter((c) => c.id !== clip.id && c.timelineStart >= clip.timelineEnd);
   } else {
-    return track.clips.filter(
-      c => c.id !== clip.id && c.timelineEnd <= clip.timelineStart,
-    );
+    return track.clips.filter((c) => c.id !== clip.id && c.timelineEnd <= clip.timelineStart);
   }
 }
 
@@ -114,22 +102,18 @@ function computeDownstreamClips(
  * The dragged caption itself is always excluded.
  */
 function computeDownstreamCaptions(
-  caption:  Caption,
-  edge:     TrimEdge,
-  trackId:  TrackId,
-  state:    TimelineState,
+  caption: Caption,
+  edge: TrimEdge,
+  trackId: TrackId,
+  state: TimelineState,
 ): Caption[] {
-  const track = state.timeline.tracks.find(t => t.id === trackId);
+  const track = state.timeline.tracks.find((t) => t.id === trackId);
   if (!track) return [];
 
   if (edge === 'end') {
-    return track.captions.filter(
-      c => c.id !== caption.id && c.startFrame >= caption.endFrame,
-    );
+    return track.captions.filter((c) => c.id !== caption.id && c.startFrame >= caption.endFrame);
   } else {
-    return track.captions.filter(
-      c => c.id !== caption.id && c.endFrame <= caption.startFrame,
-    );
+    return track.captions.filter((c) => c.id !== caption.id && c.endFrame <= caption.startFrame);
   }
 }
 
@@ -137,50 +121,38 @@ function computeDownstreamCaptions(
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Find a clip by id across all tracks. */
-function findClip(state: TimelineState, clipId: ClipId): Clip | undefined {
-  for (const track of state.timeline.tracks) {
-    const c = track.clips.find(c => c.id === clipId);
-    if (c) return c;
-  }
-  return undefined;
-}
-
 /** Find a caption by id on a specific track. */
 function findCaption(
-  state:     TimelineState,
+  state: TimelineState,
   captionId: CaptionId,
-  trackId:   TrackId,
+  trackId: TrackId,
 ): Caption | undefined {
-  const track = state.timeline.tracks.find(t => t.id === trackId);
-  return track?.captions.find(c => c.id === captionId);
-}
-
-/** Clamp a value between min and max (inclusive). */
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
+  const track = state.timeline.tracks.find((t) => t.id === trackId);
+  return track?.captions.find((c) => c.id === captionId);
 }
 
 let _txSeq = 0;
-function txId(): string { return `ripple-trim-tx-${++_txSeq}`; }
+function txId(): string {
+  return `ripple-trim-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // RippleTrimTool
 // ---------------------------------------------------------------------------
 
 export class RippleTrimTool implements ITool {
-  readonly id:          ToolId = toToolId('ripple-trim');
+  readonly id: ToolId = toToolId('ripple-trim');
   readonly shortcutKey: string = 'r';
 
   // ── Per-drag tracking (clips) ─────────────────────────────────────────────
-  private dragClipId:       ClipId        | null = null;
-  private dragEdge:         TrimEdge      | null = null;
+  private dragClipId: ClipId | null = null;
+  private dragEdge: TrimEdge | null = null;
 
   /** Original clip bounds — frame values only, never a stale Clip object. */
-  private dragOrigStart:    TimelineFrame | null = null;
-  private dragOrigEnd:      TimelineFrame | null = null;
-  private dragOrigMediaIn:  TimelineFrame | null = null;  // for START media clamp
-  private dragOrigMediaOut: TimelineFrame | null = null;  // for END media clamp
+  private dragOrigStart: TimelineFrame | null = null;
+  private dragOrigEnd: TimelineFrame | null = null;
+  private dragOrigMediaIn: TimelineFrame | null = null; // for START media clamp
+  private dragOrigMediaOut: TimelineFrame | null = null; // for END media clamp
 
   /**
    * Original positions of downstream clips.
@@ -191,28 +163,31 @@ export class RippleTrimTool implements ITool {
 
   // ── Per-drag tracking (captions) ──────────────────────────────────────────
   /** CaptionId being trimmed (null when trimming a clip). */
-  private dragCaptionId:      CaptionId   | null = null;
+  private dragCaptionId: CaptionId | null = null;
   /** TrackId of the caption being trimmed. */
-  private dragCaptionTrackId: TrackId     | null = null;
+  private dragCaptionTrackId: TrackId | null = null;
   /** Original startFrame of the caption being trimmed. */
   private dragCaptionOrigStart: TimelineFrame | null = null;
   /** Original endFrame of the caption being trimmed. */
-  private dragCaptionOrigEnd:   TimelineFrame | null = null;
+  private dragCaptionOrigEnd: TimelineFrame | null = null;
   /**
    * Original positions of downstream captions (keyed by CaptionId).
    * Stores { startFrame, endFrame } for ghost rendering and EDIT_CAPTION ops.
    */
-  private originalDownstreamCaptions: Map<CaptionId, { startFrame: TimelineFrame; endFrame: TimelineFrame }> = new Map();
+  private originalDownstreamCaptions: Map<
+    CaptionId,
+    { startFrame: TimelineFrame; endFrame: TimelineFrame }
+  > = new Map();
 
   // ── getCursor() state ─────────────────────────────────────────────────────
-  private lastHitEdge:       TrimEdge | null = null;
-  private lastHoveredClipId: ClipId   | null = null;
+  private lastHitEdge: TrimEdge | null = null;
+  private lastHoveredClipId: ClipId | null = null;
 
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.dragEdge !== null)    return 'ew-resize';  // mid-drag
-    if (this.lastHitEdge !== null) return 'ew-resize';  // hovering near edge
+    if (this.dragEdge !== null) return 'ew-resize'; // mid-drag
+    if (this.lastHitEdge !== null) return 'ew-resize'; // hovering near edge
     return 'default';
   }
 
@@ -222,42 +197,51 @@ export class RippleTrimTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
     // ── Caption trim path ───────────────────────────────────────────────────
     if (event.captionId !== null && event.trackId !== null) {
-      const caption = findCaption(ctx.state, event.captionId as CaptionId, event.trackId as TrackId);
+      const caption = findCaption(
+        ctx.state,
+        event.captionId as CaptionId,
+        event.trackId as TrackId,
+      );
       if (!caption) return;
 
       // Determine which edge was grabbed (same 8px hit zone logic)
       const hitZoneFrames = (EDGE_HIT_ZONE_PX / ctx.pixelsPerFrame) as TimelineFrame;
-      const distToStart   = Math.abs(event.frame - caption.startFrame) as TimelineFrame;
-      const distToEnd     = Math.abs(event.frame - caption.endFrame)   as TimelineFrame;
+      const distToStart = Math.abs(event.frame - caption.startFrame) as TimelineFrame;
+      const distToEnd = Math.abs(event.frame - caption.endFrame) as TimelineFrame;
 
       let edge: TrimEdge | null = null;
-      if (distToEnd   <= hitZoneFrames) edge = 'end';
-      if (distToStart <= hitZoneFrames) edge = 'start';  // start wins if equidistant
+      if (distToEnd <= hitZoneFrames) edge = 'end';
+      if (distToStart <= hitZoneFrames) edge = 'start'; // start wins if equidistant
 
-      if (edge === null) return;  // not close enough to an edge
+      if (edge === null) return; // not close enough to an edge
 
       const downstream = computeDownstreamCaptions(
-        caption, edge, event.trackId as TrackId, ctx.state,
+        caption,
+        edge,
+        event.trackId as TrackId,
+        ctx.state,
       );
 
-      this.dragEdge               = edge;
-      this.dragCaptionId          = event.captionId as CaptionId;
-      this.dragCaptionTrackId     = event.trackId as TrackId;
-      this.dragCaptionOrigStart   = caption.startFrame;
-      this.dragCaptionOrigEnd     = caption.endFrame;
+      this.dragEdge = edge;
+      this.dragCaptionId = event.captionId as CaptionId;
+      this.dragCaptionTrackId = event.trackId as TrackId;
+      this.dragCaptionOrigStart = caption.startFrame;
+      this.dragCaptionOrigEnd = caption.endFrame;
 
       this.originalDownstreamCaptions.clear();
       for (const dc of downstream) {
         this.originalDownstreamCaptions.set(dc.id, {
           startFrame: dc.startFrame,
-          endFrame:   dc.endFrame,
+          endFrame: dc.endFrame,
         });
       }
       return;
@@ -271,31 +255,31 @@ export class RippleTrimTool implements ITool {
 
     // Determine which edge was grabbed (8px hit zone, converted to frames)
     const hitZoneFrames = (EDGE_HIT_ZONE_PX / ctx.pixelsPerFrame) as TimelineFrame;
-    const distToStart   = Math.abs(event.frame - clip.timelineStart) as TimelineFrame;
-    const distToEnd     = Math.abs(event.frame - clip.timelineEnd)   as TimelineFrame;
+    const distToStart = Math.abs(event.frame - clip.timelineStart) as TimelineFrame;
+    const distToEnd = Math.abs(event.frame - clip.timelineEnd) as TimelineFrame;
 
     let edge: TrimEdge | null = null;
-    if (distToEnd   <= hitZoneFrames) edge = 'end';
-    if (distToStart <= hitZoneFrames) edge = 'start';  // start wins if equidistant
+    if (distToEnd <= hitZoneFrames) edge = 'end';
+    if (distToStart <= hitZoneFrames) edge = 'start'; // start wins if equidistant
 
-    if (edge === null) return;  // not close enough to an edge
+    if (edge === null) return; // not close enough to an edge
 
     // Populate downstream clip positions ONCE at drag-start
     const downstream = computeDownstreamClips(clip, edge, ctx.state);
 
-    this.dragClipId       = event.clipId;
-    this.dragEdge         = edge;
-    this.dragOrigStart    = clip.timelineStart;
-    this.dragOrigEnd      = clip.timelineEnd;
-    this.dragOrigMediaIn  = clip.mediaIn;
+    this.dragClipId = event.clipId;
+    this.dragEdge = edge;
+    this.dragOrigStart = clip.timelineStart;
+    this.dragOrigEnd = clip.timelineEnd;
+    this.dragOrigMediaIn = clip.mediaIn;
     this.dragOrigMediaOut = clip.mediaOut;
 
     this.originalDownstream.clear();
     for (const dc of downstream) {
       this.originalDownstream.set(dc.id, {
         timelineStart: dc.timelineStart,
-        timelineEnd:   dc.timelineEnd,
-        trackId:       dc.trackId,
+        timelineEnd: dc.timelineEnd,
+        trackId: dc.trackId,
       });
     }
   }
@@ -309,25 +293,29 @@ export class RippleTrimTool implements ITool {
       const c = findClipById(ctx.state, event.clipId);
       if (c) {
         const hitZoneFrames = (EDGE_HIT_ZONE_PX / ctx.pixelsPerFrame) as TimelineFrame;
-        const distToStart   = Math.abs(event.frame - c.timelineStart) as TimelineFrame;
-        const distToEnd     = Math.abs(event.frame - c.timelineEnd)   as TimelineFrame;
-        if (distToEnd   <= hitZoneFrames) this.lastHitEdge = 'end';
+        const distToStart = Math.abs(event.frame - c.timelineStart) as TimelineFrame;
+        const distToEnd = Math.abs(event.frame - c.timelineEnd) as TimelineFrame;
+        if (distToEnd <= hitZoneFrames) this.lastHitEdge = 'end';
         else if (distToStart <= hitZoneFrames) this.lastHitEdge = 'start';
         else this.lastHitEdge = null;
       } else {
         this.lastHitEdge = null;
       }
     } else {
-      this.lastHitEdge       = null;
+      this.lastHitEdge = null;
       this.lastHoveredClipId = null;
     }
 
     // ── Caption trim ghost ───────────────────────────────────────────────────
-    if (this.dragCaptionId !== null && this.dragEdge !== null &&
-        this.dragCaptionOrigStart !== null && this.dragCaptionOrigEnd !== null) {
-      const rawFrame  = event.frame;
-      const snapped   = ctx.snap(rawFrame, [this.dragCaptionId]) as TimelineFrame;
-      const newFrame  = this._clampCaptionFrame(snapped);
+    if (
+      this.dragCaptionId !== null &&
+      this.dragEdge !== null &&
+      this.dragCaptionOrigStart !== null &&
+      this.dragCaptionOrigEnd !== null
+    ) {
+      const rawFrame = event.frame;
+      const snapped = ctx.snap(rawFrame, [this.dragCaptionId]) as TimelineFrame;
+      const newFrame = this._clampCaptionFrame(snapped);
       if (newFrame === null) return null;
 
       return this._buildCaptionGhost(newFrame, ctx.state);
@@ -339,9 +327,9 @@ export class RippleTrimTool implements ITool {
     if (this.dragOrigMediaIn === null || this.dragOrigMediaOut === null) return null;
 
     // Snap, excluding the dragged clip's own edges
-    const rawFrame    = event.frame;
-    const snapped     = ctx.snap(rawFrame, [this.dragClipId]) as TimelineFrame;
-    const newFrame    = this._clampFrame(snapped);
+    const rawFrame = event.frame;
+    const snapped = ctx.snap(rawFrame, [this.dragClipId]) as TimelineFrame;
+    const newFrame = this._clampFrame(snapped);
     if (newFrame === null) return null;
 
     return this._buildGhost(newFrame, ctx.state);
@@ -352,15 +340,15 @@ export class RippleTrimTool implements ITool {
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // ── Caption trim path ───────────────────────────────────────────────────
     if (this.dragCaptionId !== null) {
-      const rawFrame   = event.frame;
-      const snapped    = ctx.snap(rawFrame, [this.dragCaptionId]) as TimelineFrame;
-      const newFrame   = this._clampCaptionFrame(snapped);
+      const rawFrame = event.frame;
+      const snapped = ctx.snap(rawFrame, [this.dragCaptionId]) as TimelineFrame;
+      const newFrame = this._clampCaptionFrame(snapped);
 
-      const captionId          = this.dragCaptionId;
-      const trackId            = this.dragCaptionTrackId;
-      const origStart          = this.dragCaptionOrigStart;
-      const origEnd            = this.dragCaptionOrigEnd;
-      const edge               = this.dragEdge;
+      const captionId = this.dragCaptionId;
+      const trackId = this.dragCaptionTrackId;
+      const origStart = this.dragCaptionOrigStart;
+      const origEnd = this.dragCaptionOrigEnd;
+      const edge = this.dragEdge;
       const downstreamCaptions = new Map(this.originalDownstreamCaptions);
 
       this._resetCaptionDragState();
@@ -369,34 +357,35 @@ export class RippleTrimTool implements ITool {
       if (newFrame === null) return null;
 
       const originalEdge = edge === 'end' ? origEnd : origStart;
-      if (newFrame === originalEdge) return null;  // no-op
+      if (newFrame === originalEdge) return null; // no-op
 
       const delta = (newFrame - originalEdge) as TimelineFrame;
 
       // Sort downstream the same way as clip ripple:
       // +delta → rightmost first; -delta → leftmost first
-      const sortedDownstream = [...downstreamCaptions.entries()].sort(([, a], [, b]) =>
-        delta >= 0
-          ? b.startFrame - a.startFrame   // right-to-left (descending)
-          : a.startFrame - b.startFrame,  // left-to-right (ascending)
+      const sortedDownstream = [...downstreamCaptions.entries()].sort(
+        ([, a], [, b]) =>
+          delta >= 0
+            ? b.startFrame - a.startFrame // right-to-left (descending)
+            : a.startFrame - b.startFrame, // left-to-right (ascending)
       );
 
       return {
-        id:        txId(),
-        label:     `Ripple Trim Caption (${edge})`,
+        id: txId(),
+        label: `Ripple Trim Caption (${edge})`,
         timestamp: Date.now(),
         operations: [
           // EDIT_CAPTION for trimmed caption
           edge === 'end'
-            ? { type: 'EDIT_CAPTION' as const, captionId, trackId, endFrame:   newFrame }
+            ? { type: 'EDIT_CAPTION' as const, captionId, trackId, endFrame: newFrame }
             : { type: 'EDIT_CAPTION' as const, captionId, trackId, startFrame: newFrame },
           // EDIT_CAPTION for each downstream caption
           ...sortedDownstream.map(([dcId, orig]) => ({
-            type:       'EDIT_CAPTION' as const,
-            captionId:  dcId,
+            type: 'EDIT_CAPTION' as const,
+            captionId: dcId,
             trackId,
             startFrame: (orig.startFrame + delta) as TimelineFrame,
-            endFrame:   (orig.endFrame   + delta) as TimelineFrame,
+            endFrame: (orig.endFrame + delta) as TimelineFrame,
           })),
         ],
       };
@@ -406,15 +395,15 @@ export class RippleTrimTool implements ITool {
     // Compute snapped + clamped frame BEFORE resetting instance state.
     // _clampFrame() reads dragEdge, dragOrigStart/End, dragOrigMediaIn/Out,
     // and originalDownstream — all of which _resetDragState() clears.
-    const rawFrame    = event.frame;
-    const snapped     = ctx.snap(rawFrame, this.dragClipId ? [this.dragClipId] : []) as TimelineFrame;
-    const newFrame    = this._clampFrame(snapped);
+    const rawFrame = event.frame;
+    const snapped = ctx.snap(rawFrame, this.dragClipId ? [this.dragClipId] : []) as TimelineFrame;
+    const newFrame = this._clampFrame(snapped);
 
     // Capture what we need, then reset
-    const clipId     = this.dragClipId;
-    const edge       = this.dragEdge;
-    const origStart  = this.dragOrigStart;
-    const origEnd    = this.dragOrigEnd;
+    const clipId = this.dragClipId;
+    const edge = this.dragEdge;
+    const origStart = this.dragOrigStart;
+    const origEnd = this.dragOrigEnd;
     const downstream = new Map(this.originalDownstream);
 
     this._resetDragState();
@@ -432,10 +421,11 @@ export class RippleTrimTool implements ITool {
     // When delta > 0 (clips shift right): move the RIGHTMOST clip first so each
     // clip's destination is already clear in the rolling state when validated.
     // When delta < 0 (clips shift left): move the LEFTMOST clip first.
-    const sortedDownstream = [...downstream.entries()].sort(([, a], [, b]) =>
-      delta >= 0
-        ? b.timelineStart - a.timelineStart   // right-to-left (descending)
-        : a.timelineStart - b.timelineStart,  // left-to-right (ascending)
+    const sortedDownstream = [...downstream.entries()].sort(
+      ([, a], [, b]) =>
+        delta >= 0
+          ? b.timelineStart - a.timelineStart // right-to-left (descending)
+          : a.timelineStart - b.timelineStart, // left-to-right (ascending)
     );
 
     const operations: Transaction['operations'][number][] = [
@@ -443,16 +433,16 @@ export class RippleTrimTool implements ITool {
       { type: 'RESIZE_CLIP', clipId, edge, newFrame },
       // MOVE_CLIPs in safe order (no inter-clip transient overlap)
       ...sortedDownstream.map(([dcId, orig]) => ({
-        type:             'MOVE_CLIP' as const,
-        clipId:           dcId,
+        type: 'MOVE_CLIP' as const,
+        clipId: dcId,
         newTimelineStart: (orig.timelineStart + delta) as TimelineFrame,
       })),
     ];
 
     return {
-      id:         txId(),
-      label:      `Ripple Trim (${edge})`,
-      timestamp:  Date.now(),
+      id: txId(),
+      label: `Ripple Trim (${edge})`,
+      timestamp: Date.now(),
       operations,
     };
   }
@@ -468,20 +458,20 @@ export class RippleTrimTool implements ITool {
   // ── ITool: onCancel ───────────────────────────────────────────────────────
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
-    this.dragClipId         = null;
-    this.dragEdge           = null;
-    this.dragOrigStart      = null;
-    this.dragOrigEnd        = null;
-    this.dragOrigMediaIn    = null;
-    this.dragOrigMediaOut   = null;
+    this.dragClipId = null;
+    this.dragEdge = null;
+    this.dragOrigStart = null;
+    this.dragOrigEnd = null;
+    this.dragOrigMediaIn = null;
+    this.dragOrigMediaOut = null;
     this.originalDownstream.clear();
-    this.lastHitEdge        = null;
-    this.lastHoveredClipId  = null;
+    this.lastHitEdge = null;
+    this.lastHoveredClipId = null;
     // Caption drag state
-    this.dragCaptionId                  = null;
-    this.dragCaptionTrackId             = null;
-    this.dragCaptionOrigStart           = null;
-    this.dragCaptionOrigEnd             = null;
+    this.dragCaptionId = null;
+    this.dragCaptionTrackId = null;
+    this.dragCaptionOrigStart = null;
+    this.dragCaptionOrigEnd = null;
     this.originalDownstreamCaptions.clear();
   }
 
@@ -492,8 +482,14 @@ export class RippleTrimTool implements ITool {
    * Returns null if the resulting trim would produce a zero-or-negative-duration clip.
    */
   private _clampFrame(candidate: TimelineFrame): TimelineFrame | null {
-    if (this.dragEdge === null || this.dragOrigStart === null || this.dragOrigEnd === null ||
-        this.dragOrigMediaIn === null || this.dragOrigMediaOut === null) return null;
+    if (
+      this.dragEdge === null ||
+      this.dragOrigStart === null ||
+      this.dragOrigEnd === null ||
+      this.dragOrigMediaIn === null ||
+      this.dragOrigMediaOut === null
+    )
+      return null;
 
     let frame = candidate as number;
 
@@ -506,7 +502,6 @@ export class RippleTrimTool implements ITool {
       //   → frame >= dragOrigEnd - (dragOrigMediaOut - dragOrigMediaIn - 1)
       const minEndForMedia = this.dragOrigEnd - (this.dragOrigMediaOut - this.dragOrigMediaIn - 1);
       frame = Math.max(frame, minEnd, minEndForMedia);
-
     } else {
       // ── START edge clamping ──────────────────────────────────────────────
       // Min duration: newFrame must be < timelineEnd - MIN_DURATION_FRAMES + 1
@@ -515,7 +510,8 @@ export class RippleTrimTool implements ITool {
       //   mediaIn = dragOrigMediaIn + (frame - dragOrigStart)
       //   → must stay <= dragOrigMediaOut - 1
       //   → frame <= dragOrigStart + (dragOrigMediaOut - dragOrigMediaIn - 1)
-      const maxStartForMedia = this.dragOrigStart + (this.dragOrigMediaOut - this.dragOrigMediaIn - 1);
+      const maxStartForMedia =
+        this.dragOrigStart + (this.dragOrigMediaOut - this.dragOrigMediaIn - 1);
       frame = Math.min(frame, maxStart, maxStartForMedia);
 
       // Media bounds (leftward / making clip longer at front):
@@ -545,8 +541,8 @@ export class RippleTrimTool implements ITool {
     }
 
     // After all clamping: verify clip would still have positive duration
-    if (this.dragEdge === 'end'   && frame <= this.dragOrigStart) return null;
-    if (this.dragEdge === 'start' && frame >= this.dragOrigEnd)   return null;
+    if (this.dragEdge === 'end' && frame <= this.dragOrigStart) return null;
+    if (this.dragEdge === 'start' && frame >= this.dragOrigEnd) return null;
 
     return frame as TimelineFrame;
   }
@@ -556,9 +552,12 @@ export class RippleTrimTool implements ITool {
    * Returns null if the resulting trim would produce a zero-or-negative-duration caption.
    */
   private _clampCaptionFrame(candidate: TimelineFrame): TimelineFrame | null {
-    if (this.dragEdge === null ||
-        this.dragCaptionOrigStart === null ||
-        this.dragCaptionOrigEnd   === null) return null;
+    if (
+      this.dragEdge === null ||
+      this.dragCaptionOrigStart === null ||
+      this.dragCaptionOrigEnd === null
+    )
+      return null;
 
     let frame = candidate as number;
 
@@ -588,8 +587,8 @@ export class RippleTrimTool implements ITool {
     }
 
     // Verify positive duration
-    if (this.dragEdge === 'end'   && frame <= this.dragCaptionOrigStart) return null;
-    if (this.dragEdge === 'start' && frame >= this.dragCaptionOrigEnd)   return null;
+    if (this.dragEdge === 'end' && frame <= this.dragCaptionOrigStart) return null;
+    if (this.dragEdge === 'start' && frame >= this.dragCaptionOrigEnd) return null;
 
     return frame as TimelineFrame;
   }
@@ -599,8 +598,13 @@ export class RippleTrimTool implements ITool {
    * Always reads live clip data from ctx.state — never spreads stored clip objects.
    */
   private _buildGhost(newFrame: TimelineFrame, state: TimelineState): ProvisionalState | null {
-    if (this.dragClipId === null || this.dragEdge === null || this.dragOrigEnd === null ||
-        this.dragOrigStart === null) return null;
+    if (
+      this.dragClipId === null ||
+      this.dragEdge === null ||
+      this.dragOrigEnd === null ||
+      this.dragOrigStart === null
+    )
+      return null;
 
     const liveClip = findClipById(state, this.dragClipId);
     if (!liveClip) return null;
@@ -612,7 +616,7 @@ export class RippleTrimTool implements ITool {
     // Trimmed clip ghost
     const trimmedGhost: Clip =
       this.dragEdge === 'end'
-        ? { ...liveClip, timelineEnd:   newFrame }
+        ? { ...liveClip, timelineEnd: newFrame }
         : { ...liveClip, timelineStart: newFrame };
 
     // Downstream ghosts — all shifted by uniform delta
@@ -623,12 +627,12 @@ export class RippleTrimTool implements ITool {
       downstreamGhosts.push({
         ...liveDc,
         timelineStart: (orig.timelineStart + delta) as TimelineFrame,
-        timelineEnd:   (orig.timelineEnd   + delta) as TimelineFrame,
+        timelineEnd: (orig.timelineEnd + delta) as TimelineFrame,
       });
     }
 
     return {
-      clips:         [trimmedGhost, ...downstreamGhosts],
+      clips: [trimmedGhost, ...downstreamGhosts],
       isProvisional: true,
     };
   }
@@ -637,20 +641,29 @@ export class RippleTrimTool implements ITool {
    * Build ProvisionalState for a caption trim gesture.
    * Returns ghost captions: trimmed caption + all shifted downstream captions.
    */
-  private _buildCaptionGhost(newFrame: TimelineFrame, state: TimelineState): ProvisionalState | null {
-    if (this.dragCaptionId === null || this.dragEdge === null ||
-        this.dragCaptionOrigStart === null || this.dragCaptionOrigEnd === null ||
-        this.dragCaptionTrackId === null) return null;
+  private _buildCaptionGhost(
+    newFrame: TimelineFrame,
+    state: TimelineState,
+  ): ProvisionalState | null {
+    if (
+      this.dragCaptionId === null ||
+      this.dragEdge === null ||
+      this.dragCaptionOrigStart === null ||
+      this.dragCaptionOrigEnd === null ||
+      this.dragCaptionTrackId === null
+    )
+      return null;
 
     const liveCaption = findCaption(state, this.dragCaptionId, this.dragCaptionTrackId);
     if (!liveCaption) return null;
 
-    const originalEdge = this.dragEdge === 'end' ? this.dragCaptionOrigEnd : this.dragCaptionOrigStart;
+    const originalEdge =
+      this.dragEdge === 'end' ? this.dragCaptionOrigEnd : this.dragCaptionOrigStart;
     const delta = (newFrame - originalEdge) as TimelineFrame;
 
     const trimmedGhost: Caption =
       this.dragEdge === 'end'
-        ? { ...liveCaption, endFrame:   newFrame }
+        ? { ...liveCaption, endFrame: newFrame }
         : { ...liveCaption, startFrame: newFrame };
 
     const downstreamGhosts: Caption[] = [];
@@ -660,35 +673,35 @@ export class RippleTrimTool implements ITool {
       downstreamGhosts.push({
         ...liveDc,
         startFrame: (orig.startFrame + delta) as TimelineFrame,
-        endFrame:   (orig.endFrame   + delta) as TimelineFrame,
+        endFrame: (orig.endFrame + delta) as TimelineFrame,
       });
     }
 
     return {
-      clips:         [],          // no clip ghosts during caption trim
-      captions:      [trimmedGhost, ...downstreamGhosts],
+      clips: [], // no clip ghosts during caption trim
+      captions: [trimmedGhost, ...downstreamGhosts],
       isProvisional: true,
     };
   }
 
   /** Reset per-drag clip instance state. Does NOT touch getCursor vars. */
   private _resetDragState(): void {
-    this.dragClipId         = null;
-    this.dragEdge           = null;
-    this.dragOrigStart      = null;
-    this.dragOrigEnd        = null;
-    this.dragOrigMediaIn    = null;
-    this.dragOrigMediaOut   = null;
+    this.dragClipId = null;
+    this.dragEdge = null;
+    this.dragOrigStart = null;
+    this.dragOrigEnd = null;
+    this.dragOrigMediaIn = null;
+    this.dragOrigMediaOut = null;
     this.originalDownstream.clear();
   }
 
   /** Reset per-drag caption instance state. Also clears dragEdge since captions own it. */
   private _resetCaptionDragState(): void {
-    this.dragEdge                      = null;
-    this.dragCaptionId                 = null;
-    this.dragCaptionTrackId            = null;
-    this.dragCaptionOrigStart          = null;
-    this.dragCaptionOrigEnd            = null;
+    this.dragEdge = null;
+    this.dragCaptionId = null;
+    this.dragCaptionTrackId = null;
+    this.dragCaptionOrigStart = null;
+    this.dragCaptionOrigEnd = null;
     this.originalDownstreamCaptions.clear();
   }
 }

@@ -27,7 +27,7 @@ import type { ExportState } from '@timelinx/ui';
   onCancel={cancelExport}
   onStartExport={startExport}
   isSupported={true}
-/>
+/>;
 ```
 
 ## Props
@@ -43,7 +43,7 @@ import type { ExportState } from '@timelinx/ui';
 ```ts
 interface ExportState {
   status: 'idle' | 'preparing' | 'encoding' | 'complete' | 'error';
-  progress: number;       // 0–1
+  progress: number; // 0–1
   error: string | null;
   downloadUrl: string | null;
   fileName: string;
@@ -52,4 +52,4 @@ interface ExportState {
 
 ## Standalone
 
-`ExportDialog` is a standalone component  - no context providers needed.
+`ExportDialog` is a standalone component - no context providers needed.

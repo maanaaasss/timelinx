@@ -7,13 +7,13 @@ description: How dispatch() processes operations with rolling validation and inv
 
 ## Pipeline
 
-| Step | What happens |
-|------|--------------|
-| 1. Transaction arrives | A labeled batch of one or more `OperationPrimitive` objects is passed to `dispatch()`. |
-| 2. Validate rolling state | Each primitive is checked against the state produced by previous primitives in the same transaction. |
-| 3. Apply pure update | `applyOperation()` creates a proposed immutable state using structural sharing. |
-| 4. Check invariants | The whole proposed state is scanned for timeline-level violations. |
-| 5. Commit or reject | Accepted transactions bump `timeline.version` once; rejected transactions return the original state untouched. |
+| Step                      | What happens                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1. Transaction arrives    | A labeled batch of one or more `OperationPrimitive` objects is passed to `dispatch()`.                         |
+| 2. Validate rolling state | Each primitive is checked against the state produced by previous primitives in the same transaction.           |
+| 3. Apply pure update      | `applyOperation()` creates a proposed immutable state using structural sharing.                                |
+| 4. Check invariants       | The whole proposed state is scanned for timeline-level violations.                                             |
+| 5. Commit or reject       | Accepted transactions bump `timeline.version` once; rejected transactions return the original state untouched. |
 
 ## The Actual Algorithm
 
@@ -65,13 +65,13 @@ Per-operation validators reject edits that are locally impossible:
 
 Whole-document invariants catch structural problems in the proposed result:
 
-| Area | Examples |
-|------|----------|
-| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references. |
-| Track structure | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references. |
-| Clip time | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`. |
-| Editorial metadata | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`. |
-| Effects | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
+| Area                | Examples                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Identity and schema | `SCHEMA_VERSION_MISMATCH` and `DUPLICATE_ID` protect migrations and stable references.                                         |
+| Track structure     | `TRACK_NOT_SORTED`, `OVERLAP`, `TRACK_TYPE_MISMATCH`, `INVALID_OPACITY`, link group references, and track group references.    |
+| Clip time           | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`, `CLIP_BEYOND_TIMELINE`, `SPEED_INVALID`, and `INVALID_RANGE`.                     |
+| Editorial metadata  | `MARKER_OUT_OF_BOUNDS`, `IN_OUT_INVALID`, `BEAT_GRID_INVALID`, `CAPTION_OUT_OF_BOUNDS`, and `CAPTION_OVERLAP`.                 |
+| Effects             | `EFFECT_NOT_FOUND`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION`, `EFFECT_INDEX_OUT_OF_RANGE`, and `INVALID_RENDER_STAGE`. |
 
 The dispatcher reports invariant failures through `INVARIANT_VIOLATED` and includes the collected violation messages in `message`.
 

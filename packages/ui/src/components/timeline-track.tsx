@@ -36,9 +36,12 @@ export interface TimelineTrackProps {
 
 function getTrackIcon(type: string) {
   switch (type) {
-    case 'audio': return IconMusic;
-    case 'subtitle': return IconSubtitle;
-    default: return IconVideo;
+    case 'audio':
+      return IconMusic;
+    case 'subtitle':
+      return IconSubtitle;
+    default:
+      return IconVideo;
   }
 }
 

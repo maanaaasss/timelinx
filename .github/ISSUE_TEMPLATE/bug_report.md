@@ -1,21 +1,21 @@
 ---
 name: Bug Report
 about: Report a bug in Timelinx
-title: "fix: "
-labels: ["bug", "triage"]
+title: 'fix: '
+labels: ['bug', 'triage']
 assignees: []
 ---
 
 ## Environment
 
-| Field | Value |
-|-------|-------|
-| OS | <!-- e.g., macOS 15.4, Windows 11, Ubuntu 24.04 --> |
-| Node.js | <!-- e.g., 22.16.0 --> |
-| Package Manager | <!-- e.g., pnpm 10.28.2 --> |
-| Browser | <!-- e.g., Chrome 137, Firefox 128, Safari 18.5 --> |
-| Package(s) Affected | <!-- e.g., @timelinx/core, @timelinx/react --> |
-| Package Version(s) | <!-- e.g., 1.0.0-beta.1 --> |
+| Field               | Value                                               |
+| ------------------- | --------------------------------------------------- |
+| OS                  | <!-- e.g., macOS 15.4, Windows 11, Ubuntu 24.04 --> |
+| Node.js             | <!-- e.g., 22.16.0 -->                              |
+| Package Manager     | <!-- e.g., pnpm 10.28.2 -->                         |
+| Browser             | <!-- e.g., Chrome 137, Firefox 128, Safari 18.5 --> |
+| Package(s) Affected | <!-- e.g., @timelinx/core, @timelinx/react -->      |
+| Package Version(s)  | <!-- e.g., 1.0.0-beta.1 -->                         |
 
 ## Description
 

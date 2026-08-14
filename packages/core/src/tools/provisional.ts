@@ -44,7 +44,7 @@ export function createProvisionalManager(): ProvisionalManager {
  */
 export function setProvisional(
   _manager: ProvisionalManager,
-  state:    ProvisionalState,
+  state: ProvisionalState,
 ): ProvisionalManager {
   return state;
 }
@@ -73,19 +73,19 @@ export function clearProvisional(_manager: ProvisionalManager): ProvisionalManag
  *   () => resolveClip(id, engine.getSnapshot(), engine.getProvisionalManager())
  */
 export function resolveClip(
-  clipId:  ClipId,
-  state:   TimelineState,
+  clipId: ClipId,
+  state: TimelineState,
   manager: ProvisionalManager,
 ): Clip | undefined {
   // Priority 1 — provisional ghost
   if (manager !== null) {
-    const ghost = manager.clips.find(c => c.id === clipId);
+    const ghost = manager.clips.find((c) => c.id === clipId);
     if (ghost) return ghost;
   }
 
   // Priority 2 — committed state
   for (const track of state.timeline.tracks) {
-    const clip = track.clips.find(c => c.id === clipId);
+    const clip = track.clips.find((c) => c.id === clipId);
     if (clip) return clip;
   }
 

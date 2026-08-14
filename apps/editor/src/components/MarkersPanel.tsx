@@ -84,20 +84,17 @@ export function MarkersPanel() {
       </div>
       <div className="markers-list">
         {markers.length === 0 ? (
-          <div className="markers-empty">
-            No markers yet. Click + to add one at the playhead.
-          </div>
+          <div className="markers-empty">No markers yet. Click + to add one at the playhead.</div>
         ) : (
           markers.map((marker) => (
             <div
               key={marker.id}
               className="marker-item"
-              onClick={() => handleJumpTo(marker.type === 'point' ? marker.frame : marker.frameStart)}
+              onClick={() =>
+                handleJumpTo(marker.type === 'point' ? marker.frame : marker.frameStart)
+              }
             >
-              <div
-                className="marker-color"
-                style={{ background: marker.color }}
-              />
+              <div className="marker-color" style={{ background: marker.color }} />
               <span className="marker-label">{marker.label}</span>
               <span className="marker-time">
                 {formatTimecode(marker.type === 'point' ? marker.frame : marker.frameStart, fps)}

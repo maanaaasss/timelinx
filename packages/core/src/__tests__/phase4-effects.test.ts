@@ -59,9 +59,7 @@ function makeBaseState() {
 function makeStateWithEffectAndKeyframes() {
   const clipId = toClipId('clip-1');
   const effectId = toEffectId('eff-1');
-  const effect = createEffect(effectId, 'blur', 'preComposite', [
-    { key: 'radius', value: 5 },
-  ]);
+  const effect = createEffect(effectId, 'blur', 'preComposite', [{ key: 'radius', value: 5 }]);
   let state = makeBaseState();
   state = applyOperation(state, { type: 'ADD_EFFECT', clipId, effect });
   state = applyOperation(state, {
@@ -94,7 +92,10 @@ describe('Phase 4 — ADD_EFFECT', () => {
     const state = makeBaseState();
     const effect = createEffect(toEffectId('eff-1'), 'blur');
     let next = applyOperation(state, { type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect });
-    const result = dispatch(next, makeTx('Dup', [{ type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect }]));
+    const result = dispatch(
+      next,
+      makeTx('Dup', [{ type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('DUPLICATE_EFFECT_ID');
   });
@@ -102,7 +103,10 @@ describe('Phase 4 — ADD_EFFECT', () => {
   it('ADD_EFFECT on missing clip is rejected', () => {
     const state = makeBaseState();
     const effect = createEffect(toEffectId('eff-1'), 'blur');
-    const result = dispatch(state, makeTx('Add', [{ type: 'ADD_EFFECT', clipId: toClipId('none'), effect }]));
+    const result = dispatch(
+      state,
+      makeTx('Add', [{ type: 'ADD_EFFECT', clipId: toClipId('none'), effect }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('CLIP_NOT_FOUND');
   });
@@ -122,7 +126,12 @@ describe('Phase 4 — REMOVE_EFFECT', () => {
 
   it('REMOVE_EFFECT on missing effectId is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('Rm', [{ type: 'REMOVE_EFFECT', clipId: toClipId('clip-1'), effectId: toEffectId('nope') }]));
+    const result = dispatch(
+      state,
+      makeTx('Rm', [
+        { type: 'REMOVE_EFFECT', clipId: toClipId('clip-1'), effectId: toEffectId('nope') },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('EFFECT_NOT_FOUND');
   });
@@ -136,7 +145,12 @@ describe('Phase 4 — REORDER_EFFECT', () => {
     const cid = toClipId('clip-1');
     let next = applyOperation(state, { type: 'ADD_EFFECT', clipId: cid, effect: e1 });
     next = applyOperation(next, { type: 'ADD_EFFECT', clipId: cid, effect: e2 });
-    next = applyOperation(next, { type: 'REORDER_EFFECT', clipId: cid, effectId: toEffectId('e2'), newIndex: 0 });
+    next = applyOperation(next, {
+      type: 'REORDER_EFFECT',
+      clipId: cid,
+      effectId: toEffectId('e2'),
+      newIndex: 0,
+    });
     expect(next.timeline.tracks[0]!.clips[0]!.effects![0]!.id).toBe('e2');
     expect(next.timeline.tracks[0]!.clips[0]!.effects![1]!.id).toBe('e1');
     expect(checkInvariants(next)).toEqual([]);
@@ -144,9 +158,17 @@ describe('Phase 4 — REORDER_EFFECT', () => {
 
   it('REORDER_EFFECT with out-of-range index is rejected', () => {
     const state = makeStateWithEffectAndKeyframes();
-    const result = dispatch(state, makeTx('Reorder', [
-      { type: 'REORDER_EFFECT', clipId: toClipId('clip-1'), effectId: toEffectId('eff-1'), newIndex: 5 },
-    ]));
+    const result = dispatch(
+      state,
+      makeTx('Reorder', [
+        {
+          type: 'REORDER_EFFECT',
+          clipId: toClipId('clip-1'),
+          effectId: toEffectId('eff-1'),
+          newIndex: 5,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('EFFECT_INDEX_OUT_OF_RANGE');
   });
@@ -194,7 +216,9 @@ describe('Phase 4 — SET_EFFECT_PARAM', () => {
       key: 'radius',
       value: 10,
     });
-    const param = next.timeline.tracks[0]!.clips[0]!.effects![0]!.params.find((p) => p.key === 'radius');
+    const param = next.timeline.tracks[0]!.clips[0]!.effects![0]!.params.find(
+      (p) => p.key === 'radius',
+    );
     expect(param!.value).toBe(10);
     expect(checkInvariants(next)).toEqual([]);
   });
@@ -219,7 +243,11 @@ describe('Phase 4 — ADD_KEYFRAME', () => {
     const state = makeBaseState();
     const cid = toClipId('clip-1');
     const eid = toEffectId('eff-1');
-    let next = applyOperation(state, { type: 'ADD_EFFECT', clipId: cid, effect: createEffect(eid, 'blur') });
+    let next = applyOperation(state, {
+      type: 'ADD_EFFECT',
+      clipId: cid,
+      effect: createEffect(eid, 'blur'),
+    });
     next = applyOperation(next, {
       type: 'ADD_KEYFRAME',
       clipId: cid,
@@ -240,24 +268,44 @@ describe('Phase 4 — ADD_KEYFRAME', () => {
 
   it('ADD_KEYFRAME with duplicate keyframeId is rejected', () => {
     const state = makeStateWithEffectAndKeyframes();
-    const result = dispatch(state, makeTx('DupKf', [{
-      type: 'ADD_KEYFRAME',
-      clipId: toClipId('clip-1'),
-      effectId: toEffectId('eff-1'),
-      keyframe: { id: toKeyframeId('kf-1'), frame: toFrame(99), value: 1, easing: LINEAR_EASING },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('DupKf', [
+        {
+          type: 'ADD_KEYFRAME',
+          clipId: toClipId('clip-1'),
+          effectId: toEffectId('eff-1'),
+          keyframe: {
+            id: toKeyframeId('kf-1'),
+            frame: toFrame(99),
+            value: 1,
+            easing: LINEAR_EASING,
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('DUPLICATE_KEYFRAME_ID');
   });
 
   it('ADD_KEYFRAME with frame < 0 is rejected', () => {
     const state = makeStateWithEffectAndKeyframes();
-    const result = dispatch(state, makeTx('Neg', [{
-      type: 'ADD_KEYFRAME',
-      clipId: toClipId('clip-1'),
-      effectId: toEffectId('eff-1'),
-      keyframe: { id: toKeyframeId('kf-3'), frame: toFrame(-1), value: 0, easing: LINEAR_EASING },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Neg', [
+        {
+          type: 'ADD_KEYFRAME',
+          clipId: toClipId('clip-1'),
+          effectId: toEffectId('eff-1'),
+          keyframe: {
+            id: toKeyframeId('kf-3'),
+            frame: toFrame(-1),
+            value: 0,
+            easing: LINEAR_EASING,
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_RANGE');
   });
@@ -283,13 +331,18 @@ describe('Phase 4 — MOVE_KEYFRAME', () => {
 
   it('MOVE_KEYFRAME with newFrame < 0 is rejected', () => {
     const state = makeStateWithEffectAndKeyframes();
-    const result = dispatch(state, makeTx('Neg', [{
-      type: 'MOVE_KEYFRAME',
-      clipId: toClipId('clip-1'),
-      effectId: toEffectId('eff-1'),
-      keyframeId: toKeyframeId('kf-1'),
-      newFrame: toFrame(-1),
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Neg', [
+        {
+          type: 'MOVE_KEYFRAME',
+          clipId: toClipId('clip-1'),
+          effectId: toEffectId('eff-1'),
+          keyframeId: toKeyframeId('kf-1'),
+          newFrame: toFrame(-1),
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_RANGE');
   });
@@ -321,20 +374,27 @@ describe('Phase 4 — SET_KEYFRAME_EASING', () => {
       keyframeId: toKeyframeId('kf-1'),
       easing: hold,
     });
-    const kf = next.timeline.tracks[0]!.clips[0]!.effects![0]!.keyframes.find((k) => k.id === 'kf-1');
+    const kf = next.timeline.tracks[0]!.clips[0]!.effects![0]!.keyframes.find(
+      (k) => k.id === 'kf-1',
+    );
     expect(kf!.easing).toEqual(hold);
     expect(checkInvariants(next)).toEqual([]);
   });
 
   it('SET_KEYFRAME_EASING on missing keyframe is rejected', () => {
     const state = makeStateWithEffectAndKeyframes();
-    const result = dispatch(state, makeTx('Ease', [{
-      type: 'SET_KEYFRAME_EASING',
-      clipId: toClipId('clip-1'),
-      effectId: toEffectId('eff-1'),
-      keyframeId: toKeyframeId('nope'),
-      easing: LINEAR_EASING,
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('Ease', [
+        {
+          type: 'SET_KEYFRAME_EASING',
+          clipId: toClipId('clip-1'),
+          effectId: toEffectId('eff-1'),
+          keyframeId: toKeyframeId('nope'),
+          easing: LINEAR_EASING,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('KEYFRAME_NOT_FOUND');
   });
@@ -353,7 +413,11 @@ describe('Phase 4 — Effect/keyframe invariants', () => {
         { id: toKeyframeId('b'), frame: toFrame(10), value: 2, easing: LINEAR_EASING },
       ],
     };
-    let next = applyOperation(state, { type: 'ADD_EFFECT', clipId: cid, effect: effWithBadKeyframes });
+    let next = applyOperation(state, {
+      type: 'ADD_EFFECT',
+      clipId: cid,
+      effect: effWithBadKeyframes,
+    });
     const violations = checkInvariants(next);
     expect(violations.some((v) => v.type === 'KEYFRAME_ORDER_VIOLATION')).toBe(true);
   });

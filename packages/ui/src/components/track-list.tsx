@@ -19,7 +19,9 @@ export const TrackList = React.memo(function TrackList({
 }: TrackListProps) {
   const { engine, ppf, scrollRef } = useTimelineContext();
   const labelColumnRef = useRef<HTMLDivElement>(null);
-  const resizeDragRef = useRef<{ trackId: string; startY: number; startHeight: number } | null>(null);
+  const resizeDragRef = useRef<{ trackId: string; startY: number; startHeight: number } | null>(
+    null,
+  );
 
   const trackIds = useTrackIdsWithEngine(engine);
 
@@ -44,11 +46,12 @@ export const TrackList = React.memo(function TrackList({
   const firstAudioIdx = trackIds.findIndex((tid) => trackTypesMap.get(tid) === 'audio');
 
   return (
-    <div ref={labelColumnRef} className={`timeline-label-column${className ? ` ${className}` : ''}`}>
+    <div
+      ref={labelColumnRef}
+      className={`timeline-label-column${className ? ` ${className}` : ''}`}
+    >
       <div className="timeline-label-header">
-        <span className="timecode">
-          {/* Timecode display will be handled by parent */}
-        </span>
+        <span className="timecode">{/* Timecode display will be handled by parent */}</span>
       </div>
 
       {trackIds.map((tid, i) => {

@@ -15,8 +15,8 @@
  *   notify() storm guard       — exactly ONE notify per handlePointerMove
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TimelineEngine, type EngineSnapshot } from '../engine';
+import { describe, it, expect, vi } from 'vitest';
+import { TimelineEngine } from '../engine';
 import {
   createTimelineState,
   createTimeline,
@@ -43,12 +43,12 @@ import type {
 function makeState(): TimelineState {
   return createTimelineState({
     timeline: createTimeline({
-      id:             'tl-1',
-      name:           'Test Timeline',
-      fps:            30,
-      duration:       toFrame(9000),
-      startTimecode:  toTimecode('00:00:00:00'),
-      tracks:         [],
+      id: 'tl-1',
+      name: 'Test Timeline',
+      fps: 30,
+      duration: toFrame(9000),
+      startTimecode: toTimecode('00:00:00:00'),
+      tracks: [],
     }),
   });
 }
@@ -57,16 +57,16 @@ const noModifiers: Modifiers = { shift: false, alt: false, ctrl: false, meta: fa
 
 function makePointerEvent(frame = 0): TimelinePointerEvent {
   return {
-    frame:    toFrame(frame),
-    trackId:  null,
-    clipId:   null,
+    frame: toFrame(frame),
+    trackId: null,
+    clipId: null,
     captionId: null,
-    x:        0,
-    y:        0,
-    buttons:  1,
+    x: 0,
+    y: 0,
+    buttons: 1,
     shiftKey: false,
-    altKey:   false,
-    metaKey:  false,
+    altKey: false,
+    metaKey: false,
   };
 }
 
@@ -84,9 +84,9 @@ function makeKeyEvent(key = 'x'): TimelineKeyEvent {
 /** Minimal valid transaction — rename the timeline. */
 function makeRenameTx(name: string): Transaction {
   return {
-    id:         `rename-${name}`,
-    label:      `Rename to ${name}`,
-    timestamp:  0,
+    id: `rename-${name}`,
+    label: `Rename to ${name}`,
+    timestamp: 0,
     operations: [{ type: 'RENAME_TIMELINE', name }],
   };
 }
@@ -94,9 +94,9 @@ function makeRenameTx(name: string): Transaction {
 /** Transaction that validators reject — MOVE_CLIP on a non-existent clipId. */
 function makeRejectTx(): Transaction {
   return {
-    id:         'reject-tx',
-    label:      'Invalid move',
-    timestamp:  0,
+    id: 'reject-tx',
+    label: 'Invalid move',
+    timestamp: 0,
     operations: [{ type: 'MOVE_CLIP', clipId: 'ghost-id' as any, newTimelineStart: toFrame(0) }],
   };
 }
@@ -130,7 +130,7 @@ describe('subscribe / getSnapshot', () => {
     const engine = makeEngine();
     const snap1 = engine.getSnapshot();
     const snap2 = engine.getSnapshot();
-    expect(snap1).toBe(snap2);   // stable ref before any change
+    expect(snap1).toBe(snap2); // stable ref before any change
   });
 
   it('subscribe() returns an unsubscribe function that stops future notifications', () => {
@@ -235,7 +235,7 @@ describe('provisional state', () => {
     const ghost = makeProvisional();
     let callCount = 0;
     const moveTool = makeTool('move', {
-      onPointerMove: () => callCount++ === 0 ? ghost : null,
+      onPointerMove: () => (callCount++ === 0 ? ghost : null),
     });
     const engine = new TimelineEngine({
       initialState: makeState(),
@@ -251,7 +251,7 @@ describe('provisional state', () => {
     const ghost = makeProvisional();
     const upTool = makeTool('up', {
       onPointerMove: () => ghost,
-      onPointerUp:   () => makeRenameTx('committed'),
+      onPointerUp: () => makeRenameTx('committed'),
     });
     const engine = new TimelineEngine({
       initialState: makeState(),
@@ -259,7 +259,7 @@ describe('provisional state', () => {
       defaultToolId: 'up',
     });
     engine.handlePointerMove(makePointerEvent(), noModifiers); // sets provisional
-    engine.handlePointerUp(makePointerEvent(), noModifiers);   // clears, dispatches
+    engine.handlePointerUp(makePointerEvent(), noModifiers); // clears, dispatches
     expect(engine.getSnapshot().provisional).toBeNull();
     expect(engine.getSnapshot().state.timeline.name).toBe('committed');
   });
@@ -268,7 +268,7 @@ describe('provisional state', () => {
     const ghost = makeProvisional();
     const upTool = makeTool('up', {
       onPointerMove: () => ghost,
-      onPointerUp:   () => null,               // no commit
+      onPointerUp: () => null, // no commit
     });
     const engine = new TimelineEngine({
       initialState: makeState(),

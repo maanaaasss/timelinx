@@ -93,7 +93,7 @@ const router = createToolRouter({
 
 container.addEventListener('pointerdown', router.onPointerDown);
 container.addEventListener('pointermove', router.onPointerMove);
-container.addEventListener('pointerup',   router.onPointerUp);
+container.addEventListener('pointerup', router.onPointerUp);
 ```
 
 ---
@@ -111,14 +111,14 @@ type ToolRouterOptions = {
 };
 ```
 
-| Option | Notes |
-|--------|-------|
-| `getEngine` | Returns the engine. Called on every event. |
-| `getFrameFromX` | Convert `clientX` to a frame index. Include scroll offset. |
-| `getTrackId` | Walk up the DOM from the event target to find `data-track-id`. |
-| `getClipId` | Walk up the DOM from the event target to find `data-clip-id`. |
-| `getModifiers` | Extract modifier keys from the native event. |
-| `getEdge` | Optional. Detect if the pointer is near a clip start/end handle. If omitted, the router uses the snap radius to infer. |
+| Option          | Notes                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `getEngine`     | Returns the engine. Called on every event.                                                                             |
+| `getFrameFromX` | Convert `clientX` to a frame index. Include scroll offset.                                                             |
+| `getTrackId`    | Walk up the DOM from the event target to find `data-track-id`.                                                         |
+| `getClipId`     | Walk up the DOM from the event target to find `data-clip-id`.                                                          |
+| `getModifiers`  | Extract modifier keys from the native event.                                                                           |
+| `getEdge`       | Optional. Detect if the pointer is near a clip start/end handle. If omitted, the router uses the snap radius to infer. |
 
 ---
 
@@ -129,7 +129,7 @@ Mark your track and clip DOM elements with these attributes so the router can re
 ```tsx
 // Track container
 <div data-track-id={track.id}>
-  {clips.map(clip => (
+  {clips.map((clip) => (
     // Clip element
     <div
       key={clip.id}
@@ -160,5 +160,6 @@ containerRef.current.setPointerCapture(event.pointerId);
 If you implement a custom router, set pointer capture on `pointerdown` to avoid losing drag events.
 
 <Callout title="Keyboard events">
-  The tool router handles pointer events only. For keyboard events (`onKeyDown`, `onKeyUp`), wire them separately to `engine.handleKeyDown()` and `engine.handleKeyUp()`.
+  The tool router handles pointer events only. For keyboard events (`onKeyDown`, `onKeyUp`), wire
+  them separately to `engine.handleKeyDown()` and `engine.handleKeyUp()`.
 </Callout>

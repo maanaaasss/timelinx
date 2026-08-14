@@ -37,19 +37,32 @@ function makeState(name: string) {
 /** Build a state with a clip for dispatch round-trip tests. */
 function makeStateWithClip() {
   const asset = createAsset({
-    id: 'asset-1', name: 'V', mediaType: 'video',
-    filePath: '/v.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    id: 'asset-1',
+    name: 'V',
+    mediaType: 'video',
+    filePath: '/v.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
   const clip = createClip({
-    id: 'clip-1', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-1',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Test', fps: 30, duration: toFrame(3000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Test',
+    fps: 30,
+    duration: toFrame(3000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[toAssetId('asset-1'), asset]]) });
 }
@@ -86,7 +99,7 @@ describe('pushHistory', () => {
   it('clears future when a new state is pushed', () => {
     let h = createHistory(makeState('S0'));
     h = pushHistory(h, makeState('S1'));
-    h = undo(h);                      // future = [S1]
+    h = undo(h); // future = [S1]
     h = pushHistory(h, makeState('S2')); // future should clear
     expect(canRedo(h)).toBe(false);
     expect(getCurrentState(h).timeline.name).toBe('S2');
@@ -140,10 +153,14 @@ describe('undo / redo', () => {
     h = pushHistory(h, makeState('B'));
     h = pushHistory(h, makeState('C'));
 
-    h = undo(h); expect(getCurrentState(h).timeline.name).toBe('B');
-    h = undo(h); expect(getCurrentState(h).timeline.name).toBe('A');
-    h = redo(h); expect(getCurrentState(h).timeline.name).toBe('B');
-    h = redo(h); expect(getCurrentState(h).timeline.name).toBe('C');
+    h = undo(h);
+    expect(getCurrentState(h).timeline.name).toBe('B');
+    h = undo(h);
+    expect(getCurrentState(h).timeline.name).toBe('A');
+    h = redo(h);
+    expect(getCurrentState(h).timeline.name).toBe('B');
+    h = redo(h);
+    expect(getCurrentState(h).timeline.name).toBe('C');
   });
 });
 

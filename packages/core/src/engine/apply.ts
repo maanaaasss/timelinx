@@ -24,19 +24,15 @@ import type { ClipTransform } from '../types/clip-transform';
 import { DEFAULT_CLIP_TRANSFORM } from '../types/clip-transform';
 import type { AudioProperties } from '../types/audio-properties';
 import { DEFAULT_AUDIO_PROPERTIES } from '../types/audio-properties';
-import type { Transition } from '../types/transition';
+
 import { defaultCaptionStyle } from './subtitle-import';
 
 // ---------------------------------------------------------------------------
 // applyOperation
 // ---------------------------------------------------------------------------
 
-export function applyOperation(
-  state: TimelineState,
-  op: OperationPrimitive,
-): TimelineState {
+export function applyOperation(state: TimelineState, op: OperationPrimitive): TimelineState {
   switch (op.type) {
-
     // — Clip operations ——————————————————————————————————————————————————
 
     case 'INSERT_CLIP': {
@@ -59,7 +55,10 @@ export function applyOperation(
       let foundClip: Clip | undefined;
       for (const track of state.timeline.tracks) {
         const c = track.clips.find((c) => c.id === op.clipId);
-        if (c) { foundClip = c; break; }
+        if (c) {
+          foundClip = c;
+          break;
+        }
       }
       if (!foundClip) return state;
 
@@ -101,7 +100,6 @@ export function applyOperation(
         timeline: { ...stateWithMovedClip.timeline, markers: shiftedMarkers },
       };
     }
-
 
     case 'RESIZE_CLIP': {
       return updateClip(state, op.clipId, (clip) => {
@@ -322,10 +320,8 @@ export function applyOperation(
       });
       const nextRegistry = new Map(state.assetRegistry);
       nextRegistry.set(genAsset.id, genAsset);
-      return updateTrack(
-        { ...state, assetRegistry: nextRegistry },
-        op.trackId,
-        (t) => sortTrackClips({ ...t, clips: [...t.clips, clip] }),
+      return updateTrack({ ...state, assetRegistry: nextRegistry }, op.trackId, (t) =>
+        sortTrackClips({ ...t, clips: [...t.clips, clip] }),
       );
     }
 
@@ -428,7 +424,7 @@ export function applyOperation(
         effects.map((e) => {
           if (e.id !== op.effectId) return e;
           const keyframes = e.keyframes
-            .map((k) => (k.id === op.keyframeId ? { ...k, frame: op.newFrame } as Keyframe : k))
+            .map((k) => (k.id === op.keyframeId ? ({ ...k, frame: op.newFrame } as Keyframe) : k))
             .sort((a, b) => a.frame - b.frame);
           return { ...e, keyframes };
         }),
@@ -490,7 +486,8 @@ export function applyOperation(
 
     case 'DELETE_TRANSITION': {
       return updateClip(state, op.clipId, (clip) => {
-        const { transition: _, ...rest } = clip;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest pattern discards transition
+        const { transition: _transition, ...rest } = clip;
         return rest as Clip;
       });
     }
@@ -522,9 +519,7 @@ export function applyOperation(
     case 'ADD_TRACK_GROUP': {
       const trackGroups = [...(state.timeline.trackGroups ?? []), op.trackGroup];
       const tracks = state.timeline.tracks.map((t) =>
-        op.trackGroup.trackIds.some((id) => id === t.id)
-          ? { ...t, groupId: op.trackGroup.id }
-          : t,
+        op.trackGroup.trackIds.some((id) => id === t.id) ? { ...t, groupId: op.trackGroup.id } : t,
       );
       return {
         ...state,
@@ -533,10 +528,13 @@ export function applyOperation(
     }
 
     case 'DELETE_TRACK_GROUP': {
-      const trackGroups = (state.timeline.trackGroups ?? []).filter((g) => g.id !== op.trackGroupId);
+      const trackGroups = (state.timeline.trackGroups ?? []).filter(
+        (g) => g.id !== op.trackGroupId,
+      );
       const tracks = state.timeline.tracks.map((t) => {
         if (t.groupId !== op.trackGroupId) return t;
-        const { groupId: _, ...rest } = t;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars -- rest pattern discards groupId
+        const { groupId: _groupId, ...rest } = t;
         return rest as Track;
       });
       return {
@@ -560,15 +558,14 @@ export function applyOperation(
   }
 }
 
-function shiftLinkedMarkers(
-  markers: readonly Marker[],
-  clipId: string,
-  delta: number,
-): Marker[] {
+function shiftLinkedMarkers(markers: readonly Marker[], clipId: string, delta: number): Marker[] {
   if (markers.length === 0) return markers as Marker[];
   let hasLinked = false;
   for (let i = 0; i < markers.length; i++) {
-    if (markers[i]!.clipId === clipId) { hasLinked = true; break; }
+    if (markers[i]!.clipId === clipId) {
+      hasLinked = true;
+      break;
+    }
   }
   if (!hasLinked) return markers as Marker[];
 
@@ -633,18 +630,12 @@ function updateTrackOfClip(
     ...state,
     timeline: {
       ...state.timeline,
-      tracks: state.timeline.tracks.map((t) =>
-        t.clips.some((c) => c.id === clipId) ? fn(t) : t,
-      ),
+      tracks: state.timeline.tracks.map((t) => (t.clips.some((c) => c.id === clipId) ? fn(t) : t)),
     },
   };
 }
 
-function updateClip(
-  state: TimelineState,
-  clipId: string,
-  fn: (clip: Clip) => Clip,
-): TimelineState {
+function updateClip(state: TimelineState, clipId: string, fn: (clip: Clip) => Clip): TimelineState {
   return {
     ...state,
     timeline: {

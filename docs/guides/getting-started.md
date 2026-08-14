@@ -110,6 +110,7 @@ const withClip = result.nextState;
 ```
 
 The invariant system verifies:
+
 - The asset exists in the registry
 - The clip fits within the timeline duration
 - No overlap with other clips on the track
@@ -122,11 +123,13 @@ const result = dispatch(withClip, {
   id: 'move-clip',
   label: 'Move clip forward',
   timestamp: Date.now(),
-  operations: [{
-    type: 'MOVE_CLIP',
-    clipId: 'clip-1',
-    newTimelineStart: toFrame(150), // move 5 seconds forward
-  }],
+  operations: [
+    {
+      type: 'MOVE_CLIP',
+      clipId: 'clip-1',
+      newTimelineStart: toFrame(150), // move 5 seconds forward
+    },
+  ],
 });
 
 const moved = result.nextState;
@@ -163,17 +166,33 @@ const result = dispatch(state, {
     // Delete the original clip
     { type: 'DELETE_CLIP', clipId: 'clip-1' },
     // Insert left half
-    { type: 'INSERT_CLIP', trackId: 'v1', clip: createClip({
-      id: 'clip-1-left', assetId: 'my-video', trackId: 'v1',
-      timelineStart: toFrame(0), timelineEnd: toFrame(150),
-      mediaIn: toFrame(0), mediaOut: toFrame(150),
-    })},
+    {
+      type: 'INSERT_CLIP',
+      trackId: 'v1',
+      clip: createClip({
+        id: 'clip-1-left',
+        assetId: 'my-video',
+        trackId: 'v1',
+        timelineStart: toFrame(0),
+        timelineEnd: toFrame(150),
+        mediaIn: toFrame(0),
+        mediaOut: toFrame(150),
+      }),
+    },
     // Insert right half
-    { type: 'INSERT_CLIP', trackId: 'v1', clip: createClip({
-      id: 'clip-1-right', assetId: 'my-video', trackId: 'v1',
-      timelineStart: toFrame(150), timelineEnd: toFrame(300),
-      mediaIn: toFrame(150), mediaOut: toFrame(300),
-    })},
+    {
+      type: 'INSERT_CLIP',
+      trackId: 'v1',
+      clip: createClip({
+        id: 'clip-1-right',
+        assetId: 'my-video',
+        trackId: 'v1',
+        timelineStart: toFrame(150),
+        timelineEnd: toFrame(300),
+        mediaIn: toFrame(150),
+        mediaOut: toFrame(300),
+      }),
+    },
   ],
 });
 ```

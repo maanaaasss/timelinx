@@ -22,7 +22,7 @@
   --clip-audio: #27ae60;
   --clip-title: #8e44ad;
   --clip-subtitle: #2471a3;
-  --clip-selected-border: #FFD700;
+  --clip-selected-border: #ffd700;
   --clip-selected-shadow: rgba(255, 215, 0, 0.35);
   --track-height: 56px;
   --header-height: 48px;
@@ -30,7 +30,9 @@
   --ruler-height: 28px;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -333,8 +335,9 @@ body {
 /* Yellow border that mimics a video-editor selection */
 .clip.selected {
   border-color: var(--clip-selected-border);
-  box-shadow: 0 0 0 1px var(--clip-selected-border),
-              0 0 10px var(--clip-selected-shadow);
+  box-shadow:
+    0 0 0 1px var(--clip-selected-border),
+    0 0 10px var(--clip-selected-shadow);
   overflow: visible;
   z-index: 10;
 }
@@ -385,7 +388,9 @@ body {
 
 .clip.targeted {
   border-color: var(--warning);
-  box-shadow: 0 0 0 1px var(--warning), 0 0 8px rgba(255, 170, 74, 0.3);
+  box-shadow:
+    0 0 0 1px var(--warning),
+    0 0 8px rgba(255, 170, 74, 0.3);
 }
 
 /* Clip inner text — clipped to prevent overflow onto handles */
@@ -427,8 +432,6 @@ body {
   flex-direction: column;
   user-select: none;
 }
-
-
 
 .caption-text {
   padding: 0 6px;
@@ -472,7 +475,9 @@ body {
 
 /* Targeted caption (being dragged) */
 .caption-block.targeted {
-  box-shadow: 0 0 0 2px var(--warning), 0 0 8px rgba(255, 170, 74, 0.3);
+  box-shadow:
+    0 0 0 2px var(--warning),
+    0 0 8px rgba(255, 170, 74, 0.3);
 }
 
 /* Playhead */
@@ -657,7 +662,9 @@ body {
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .panel-tab:hover {
@@ -756,7 +763,7 @@ body {
   font-family: inherit;
 }
 
-.field-group input[type="number"] {
+.field-group input[type='number'] {
   font-variant-numeric: tabular-nums;
 }
 

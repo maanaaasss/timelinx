@@ -45,13 +45,9 @@ export type AudioChunkResult = {
   readonly sampleRate: number;
 };
 
-export type VideoDecoder = (
-  request: VideoFrameRequest,
-) => Promise<VideoFrameResult>;
+export type VideoDecoder = (request: VideoFrameRequest) => Promise<VideoFrameResult>;
 
-export type AudioDecoder = (
-  request: AudioChunkRequest,
-) => Promise<AudioChunkResult>;
+export type AudioDecoder = (request: AudioChunkRequest) => Promise<AudioChunkResult>;
 
 // ---------------------------------------------------------------------------
 // Composite contract
@@ -102,9 +98,7 @@ export type ResolvedCompositeRequest = {
   readonly quality: PlaybackQuality;
 };
 
-export type Compositor = (
-  request: CompositeRequest,
-) => Promise<CompositeResult>;
+export type Compositor = (request: CompositeRequest) => Promise<CompositeResult>;
 
 // ---------------------------------------------------------------------------
 // Thumbnail contract
@@ -123,9 +117,7 @@ export type ThumbnailResult = {
   readonly bitmap: unknown;
 };
 
-export type ThumbnailProvider = (
-  request: ThumbnailRequest,
-) => Promise<ThumbnailResult>;
+export type ThumbnailProvider = (request: ThumbnailRequest) => Promise<ThumbnailResult>;
 
 // ---------------------------------------------------------------------------
 // Pipeline registry

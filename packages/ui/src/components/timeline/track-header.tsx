@@ -39,14 +39,17 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
 
   // Memoized so button onClick handlers don't get new function references
   // every render when unrelated state changes.
-  const dispatch = useCallback((label: string, op: any) => {
-    engine.dispatch({
-      id: crypto.randomUUID(),
-      label,
-      timestamp: Date.now(),
-      operations: [op],
-    });
-  }, [engine]);
+  const dispatch = useCallback(
+    (label: string, op: any) => {
+      engine.dispatch({
+        id: crypto.randomUUID(),
+        label,
+        timestamp: Date.now(),
+        operations: [op],
+      });
+    },
+    [engine],
+  );
 
   return (
     <div
@@ -62,35 +65,65 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
       <GripVertical size={14} className="tl-track-header-drag" />
       <TypeIcon
         size={13}
-        style={{ color: trackTypeColorVar[track.type] ?? 'var(--text-tertiary)', flexShrink: 0, opacity: 0.7 }}
+        style={{
+          color: trackTypeColorVar[track.type] ?? 'var(--text-tertiary)',
+          flexShrink: 0,
+          opacity: 0.7,
+        }}
       />
-      <span className="tl-track-header-name" title={track.name}>{track.name}</span>
+      <span className="tl-track-header-name" title={track.name}>
+        {track.name}
+      </span>
       <div className="tl-track-header-actions">
         <button
           className={cn('tl-track-header-btn', track.muted && 'is-active')}
           title="Mute (M)"
-          onClick={() => dispatch('Toggle mute', { type: 'SET_TRACK_MUTE', trackId: track.id, muted: !track.muted })}
+          onClick={() =>
+            dispatch('Toggle mute', {
+              type: 'SET_TRACK_MUTE',
+              trackId: track.id,
+              muted: !track.muted,
+            })
+          }
         >
           {track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
         </button>
         <button
           className={cn('tl-track-header-btn', track.solo && 'is-active')}
           title="Solo (S)"
-          onClick={() => dispatch('Toggle solo', { type: 'SET_TRACK_SOLO', trackId: track.id, solo: !track.solo })}
+          onClick={() =>
+            dispatch('Toggle solo', {
+              type: 'SET_TRACK_SOLO',
+              trackId: track.id,
+              solo: !track.solo,
+            })
+          }
         >
           <Headphones size={12} />
         </button>
         <button
           className={cn('tl-track-header-btn', track.locked && 'is-active')}
           title="Lock (L)"
-          onClick={() => dispatch('Toggle lock', { type: 'SET_TRACK_LOCK', trackId: track.id, locked: !track.locked })}
+          onClick={() =>
+            dispatch('Toggle lock', {
+              type: 'SET_TRACK_LOCK',
+              trackId: track.id,
+              locked: !track.locked,
+            })
+          }
         >
           {track.locked ? <Lock size={12} /> : <Unlock size={12} />}
         </button>
         <button
           className={cn('tl-track-header-btn', (track.opacity ?? 1) === 0 && 'is-active')}
           title="Hide (H)"
-          onClick={() => dispatch('Toggle visibility', { type: 'SET_TRACK_OPACITY', trackId: track.id, opacity: (track.opacity ?? 1) === 0 ? 1 : 0 })}
+          onClick={() =>
+            dispatch('Toggle visibility', {
+              type: 'SET_TRACK_OPACITY',
+              trackId: track.id,
+              opacity: (track.opacity ?? 1) === 0 ? 1 : 0,
+            })
+          }
         >
           {(track.opacity ?? 1) === 0 ? <EyeOff size={12} /> : <Eye size={12} />}
         </button>

@@ -11,12 +11,12 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 ## Package Overview
 
-| Package | Purpose | Peer dependencies |
-|---------|---------|-------------------|
-| `@timelinx/core` | Headless engine, types, dispatch, tools, serializers | None |
-| `@timelinx/react` | Hooks, context, `TimelineEngine` class | `react >=18`, `@timelinx/core` |
-| `@timelinx/ui` | React components, CSS design system | `react >=18`, `@timelinx/react`, `@timelinx/core` |
-| `@timelinx/media-web` | Browser media adapters | `react >=18`, `@timelinx/core` (not on npm yet) |
+| Package               | Purpose                                              | Peer dependencies                                 |
+| --------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| `@timelinx/core`      | Headless engine, types, dispatch, tools, serializers | None                                              |
+| `@timelinx/react`     | Hooks, context, `TimelineEngine` class               | `react >=18`, `@timelinx/core`                    |
+| `@timelinx/ui`        | React components, CSS design system                  | `react >=18`, `@timelinx/react`, `@timelinx/core` |
+| `@timelinx/media-web` | Browser media adapters                               | `react >=18`, `@timelinx/core` (not on npm yet)   |
 
 ---
 
@@ -43,6 +43,7 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
         ```
       </Tab>
     </Tabs>
+
   </Tab>
   <Tab value="Headless only">
     For custom React components. Includes Core and React bindings, but no UI components.
@@ -64,6 +65,7 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
         ```
       </Tab>
     </Tabs>
+
   </Tab>
   <Tab value="Core only">
     For scripts, server-side work, or non-React frameworks. Zero dependencies.
@@ -85,6 +87,7 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
         ```
       </Tab>
     </Tabs>
+
   </Tab>
 </Tabs>
 
@@ -109,10 +112,11 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 Import one preset to define the color tokens:
 
 ```css
-@import '@timelinx/ui/styles/presets/dark-pro';  /* default dark theme */
+@import '@timelinx/ui/styles/presets/dark-pro'; /* default dark theme */
 /* @import '@timelinx/ui/styles/presets/light'; */
 /* @import '@timelinx/ui/styles/presets/high-contrast'; */
 ```
+
 </Step>
 
 <Step>
@@ -123,11 +127,13 @@ Import the structure CSS to define layout and component styles:
 ```css
 @import '@timelinx/ui/styles/structure';
 ```
+
 </Step>
 </Steps>
 
 <Callout type="warn" title="Import order matters">
-  Always import the preset before `structure`. The structure CSS references CSS variables defined by the preset. Reversing the order causes unstyled components.
+  Always import the preset before `structure`. The structure CSS references CSS variables defined by
+  the preset. Reversing the order causes unstyled components.
 </Callout>
 
 The components will not render correctly without both imports. If you see unstyled or missing UI, this is the most common cause.
@@ -218,13 +224,15 @@ If the editor renders with a toolbar and empty track area, the installation is c
 
 <Accordions>
   <Accordion title="Cannot find module '@timelinx/ui/styles/presets/dark-pro'">
-    The package was not installed, or the path is wrong. Check that `@timelinx/ui` is in `node_modules` and that you are importing from the correct subpath.
+    The package was not installed, or the path is wrong. Check that `@timelinx/ui` is in
+    `node_modules` and that you are importing from the correct subpath.
   </Accordion>
   <Accordion title="Components render but are unstyled">
     CSS was not imported. Add the preset and structure imports to your global stylesheet.
   </Accordion>
   <Accordion title="useEngine() called outside TimelineProvider">
-    All components that use `@timelinx/react` hooks must be rendered inside a `TimelineProvider`. Wrap your editor tree.
+    All components that use `@timelinx/react` hooks must be rendered inside a `TimelineProvider`.
+    Wrap your editor tree.
   </Accordion>
   <Accordion title="ReferenceError: document is not defined">
     You are importing `@timelinx/ui` in a Next.js server component. Add `'use client'` to the file.

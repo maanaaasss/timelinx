@@ -55,13 +55,17 @@ export function CommandPaletteExample() {
       >
         Open Command Palette
       </button>
-      <div style={{ height: 300, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
+      <div
+        style={{
+          height: 300,
+          border: '1px solid var(--color-border, #333)',
+          borderRadius: 8,
+          overflow: 'hidden',
+        }}
+      >
         <ReactTimelineProvider engine={engine}>
           <UITimelineProvider engine={engine} onPpfChange={() => {}}>
-            <CommandPalette
-              isVisible={isVisible}
-              onClose={() => setIsVisible(false)}
-            />
+            <CommandPalette isVisible={isVisible} onClose={() => setIsVisible(false)} />
           </UITimelineProvider>
         </ReactTimelineProvider>
       </div>

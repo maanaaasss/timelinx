@@ -6,7 +6,7 @@ icon: AudioLines
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`WebAudioWaveformAdapter` decodes audio files using the Web Audio API and extracts peak amplitude data for waveform visualization in the timeline. It does not handle real-time audio playback  - it is a preprocessing step that produces `WaveformData` consumed by `TimelineTrack` to render the audio waveform bar.
+`WebAudioWaveformAdapter` decodes audio files using the Web Audio API and extracts peak amplitude data for waveform visualization in the timeline. It does not handle real-time audio playback - it is a preprocessing step that produces `WaveformData` consumed by `TimelineTrack` to render the audio waveform bar.
 
 ## Import
 
@@ -19,7 +19,7 @@ import { createWebAudioWaveform, WebAudioWaveformAdapter } from '@timelinx/media
 ## `createWebAudioWaveform(config?)`
 
 ```ts
-function createWebAudioWaveform(config?: WaveformConfig): WebAudioWaveformAdapter
+function createWebAudioWaveform(config?: WaveformConfig): WebAudioWaveformAdapter;
 ```
 
 ### `WaveformConfig`
@@ -31,10 +31,10 @@ type WaveformConfig = {
 };
 ```
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `samplesPerPixel` | `number` | `512` | How many audio samples are summarized per display pixel. Lower = higher resolution but slower. |
-| `channelCount` | `number` | `2` | Number of channels to extract. `1` = mono (averaged from source). |
+| Field             | Type     | Default | Notes                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `samplesPerPixel` | `number` | `512`   | How many audio samples are summarized per display pixel. Lower = higher resolution but slower. |
+| `channelCount`    | `number` | `2`     | Number of channels to extract. `1` = mono (averaged from source).                              |
 
 ---
 
@@ -52,7 +52,7 @@ const data = await adapter.extractWaveform(file, { samplesPerPixel: 256 });
 ```ts
 type WaveformExtractionResult = {
   readonly data: WaveformData;
-  readonly duration: number;   // seconds
+  readonly duration: number; // seconds
   readonly sampleRate: number;
 };
 
@@ -63,12 +63,12 @@ type WaveformData = {
 };
 
 type WaveformPeak = {
-  readonly min: number;  // -1.0 to 0.0
-  readonly max: number;  // 0.0 to 1.0
+  readonly min: number; // -1.0 to 0.0
+  readonly max: number; // 0.0 to 1.0
 };
 ```
 
-`peaks` has one entry per display pixel. Each entry contains the min and max amplitude in that window  - render both to get the classic symmetric waveform shape.
+`peaks` has one entry per display pixel. Each entry contains the min and max amplitude in that window - render both to get the classic symmetric waveform shape.
 
 ---
 
@@ -77,7 +77,15 @@ type WaveformPeak = {
 ```tsx
 import { useRef, useEffect } from 'react';
 
-function WaveformCanvas({ data, width, height }: { data: WaveformData, width: number, height: number }) {
+function WaveformCanvas({
+  data,
+  width,
+  height,
+}: {
+  data: WaveformData;
+  width: number;
+  height: number;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -90,7 +98,7 @@ function WaveformCanvas({ data, width, height }: { data: WaveformData, width: nu
     const midY = height / 2;
 
     data.peaks.forEach((peak, i) => {
-      const topY    = midY + peak.min * midY;
+      const topY = midY + peak.min * midY;
       const bottomY = midY + peak.max * midY;
       ctx.fillRect(i, topY, 1, bottomY - topY);
     });
@@ -124,7 +132,8 @@ async function onAudioFileImported(file: File, assetId: string) {
 ```
 
 <Callout title="Waveform extraction is a one-time cost">
-  Extract waveforms after import and cache them. You do not need to re-extract on every render or playback seek.
+  Extract waveforms after import and cache them. You do not need to re-extract on every render or
+  playback seek.
 </Callout>
 
 ---

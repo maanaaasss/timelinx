@@ -94,11 +94,16 @@ describe('Phase 4 Step 3 — SET_CLIP_TRANSFORM', () => {
 
   it('missing clip is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{
-      type: 'SET_CLIP_TRANSFORM',
-      clipId: toClipId('none'),
-      transform: { opacity: createAnimatableProperty(0.5) },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [
+        {
+          type: 'SET_CLIP_TRANSFORM',
+          clipId: toClipId('none'),
+          transform: { opacity: createAnimatableProperty(0.5) },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('CLIP_NOT_FOUND');
   });
@@ -119,22 +124,32 @@ describe('Phase 4 Step 3 — SET_AUDIO_PROPERTIES', () => {
 
   it('pan out of range [-1,1] is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{
-      type: 'SET_AUDIO_PROPERTIES',
-      clipId: toClipId('clip-1'),
-      properties: { pan: createAnimatableProperty(1.5) },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [
+        {
+          type: 'SET_AUDIO_PROPERTIES',
+          clipId: toClipId('clip-1'),
+          properties: { pan: createAnimatableProperty(1.5) },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_RANGE');
   });
 
   it('normalizationGain < 0 is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{
-      type: 'SET_AUDIO_PROPERTIES',
-      clipId: toClipId('clip-1'),
-      properties: { normalizationGain: -1 },
-    }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [
+        {
+          type: 'SET_AUDIO_PROPERTIES',
+          clipId: toClipId('clip-1'),
+          properties: { normalizationGain: -1 },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_RANGE');
   });
@@ -144,7 +159,11 @@ describe('Phase 4 Step 3 — ADD_TRANSITION / DELETE_TRANSITION', () => {
   it('ADD_TRANSITION sets transition on clip', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 15);
-    const next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
+    const next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
     expect(next.timeline.tracks[0]!.clips[0]!.transition).toBeDefined();
     expect(next.timeline.tracks[0]!.clips[0]!.transition!.durationFrames).toBe(15);
     expect(checkInvariants(next)).toEqual([]);
@@ -154,8 +173,16 @@ describe('Phase 4 Step 3 — ADD_TRANSITION / DELETE_TRANSITION', () => {
     const state = makeBaseState();
     const t1 = createTransition(toTransitionId('tr-1'), 'dissolve', 10);
     const t2 = createTransition(toTransitionId('tr-2'), 'wipe', 20);
-    let next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: t1 });
-    next = applyOperation(next, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: t2 });
+    let next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: t1,
+    });
+    next = applyOperation(next, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: t2,
+    });
     expect(next.timeline.tracks[0]!.clips[0]!.transition!.id).toBe('tr-2');
     expect(next.timeline.tracks[0]!.clips[0]!.transition!.durationFrames).toBe(20);
     expect(checkInvariants(next)).toEqual([]);
@@ -164,7 +191,11 @@ describe('Phase 4 Step 3 — ADD_TRANSITION / DELETE_TRANSITION', () => {
   it('DELETE_TRANSITION removes transition', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 15);
-    let next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
+    let next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
     next = applyOperation(next, { type: 'DELETE_TRANSITION', clipId: toClipId('clip-1') });
     expect(next.timeline.tracks[0]!.clips[0]!.transition).toBeUndefined();
     expect(checkInvariants(next)).toEqual([]);
@@ -172,7 +203,10 @@ describe('Phase 4 Step 3 — ADD_TRANSITION / DELETE_TRANSITION', () => {
 
   it('DELETE_TRANSITION on clip with no transition rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{ type: 'DELETE_TRANSITION', clipId: toClipId('clip-1') }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [{ type: 'DELETE_TRANSITION', clipId: toClipId('clip-1') }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('TRANSITION_NOT_FOUND');
   });
@@ -182,8 +216,16 @@ describe('Phase 4 Step 3 — SET_TRANSITION_DURATION / ALIGNMENT', () => {
   it('SET_TRANSITION_DURATION updates durationFrames', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 15);
-    let next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
-    next = applyOperation(next, { type: 'SET_TRANSITION_DURATION', clipId: toClipId('clip-1'), durationFrames: 30 });
+    let next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
+    next = applyOperation(next, {
+      type: 'SET_TRANSITION_DURATION',
+      clipId: toClipId('clip-1'),
+      durationFrames: 30,
+    });
     expect(next.timeline.tracks[0]!.clips[0]!.transition!.durationFrames).toBe(30);
     expect(checkInvariants(next)).toEqual([]);
   });
@@ -191,8 +233,17 @@ describe('Phase 4 Step 3 — SET_TRANSITION_DURATION / ALIGNMENT', () => {
   it('SET_TRANSITION_DURATION <= 0 is rejected', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 15);
-    let next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
-    const result = dispatch(next, makeTx('X', [{ type: 'SET_TRANSITION_DURATION', clipId: toClipId('clip-1'), durationFrames: 0 }]));
+    let next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
+    const result = dispatch(
+      next,
+      makeTx('X', [
+        { type: 'SET_TRANSITION_DURATION', clipId: toClipId('clip-1'), durationFrames: 0 },
+      ]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_RANGE');
   });
@@ -200,8 +251,16 @@ describe('Phase 4 Step 3 — SET_TRANSITION_DURATION / ALIGNMENT', () => {
   it('SET_TRANSITION_ALIGNMENT updates alignment', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 15);
-    let next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
-    next = applyOperation(next, { type: 'SET_TRANSITION_ALIGNMENT', clipId: toClipId('clip-1'), alignment: 'endAtCut' });
+    let next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
+    next = applyOperation(next, {
+      type: 'SET_TRANSITION_ALIGNMENT',
+      clipId: toClipId('clip-1'),
+      alignment: 'endAtCut',
+    });
     expect(next.timeline.tracks[0]!.clips[0]!.transition!.alignment).toBe('endAtCut');
     expect(checkInvariants(next)).toEqual([]);
   });
@@ -210,7 +269,10 @@ describe('Phase 4 Step 3 — SET_TRANSITION_DURATION / ALIGNMENT', () => {
 describe('Phase 4 Step 3 — LINK_CLIPS / UNLINK_CLIPS', () => {
   it('LINK_CLIPS creates link group with both clipIds', () => {
     const state = makeBaseState();
-    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [toClipId('clip-1'), toClipId('clip-2')]);
+    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [
+      toClipId('clip-1'),
+      toClipId('clip-2'),
+    ]);
     const next = applyOperation(state, { type: 'LINK_CLIPS', linkGroup });
     expect(next.timeline.linkGroups).toHaveLength(1);
     expect(next.timeline.linkGroups![0]!.clipIds).toHaveLength(2);
@@ -227,7 +289,10 @@ describe('Phase 4 Step 3 — LINK_CLIPS / UNLINK_CLIPS', () => {
 
   it('LINK_CLIPS with missing clipId is rejected', () => {
     const state = makeBaseState();
-    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [toClipId('clip-1'), toClipId('nope')]);
+    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [
+      toClipId('clip-1'),
+      toClipId('nope'),
+    ]);
     const result = dispatch(state, makeTx('X', [{ type: 'LINK_CLIPS', linkGroup }]));
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('CLIP_NOT_FOUND');
@@ -235,7 +300,10 @@ describe('Phase 4 Step 3 — LINK_CLIPS / UNLINK_CLIPS', () => {
 
   it('UNLINK_CLIPS removes link group', () => {
     const state = makeBaseState();
-    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [toClipId('clip-1'), toClipId('clip-2')]);
+    const linkGroup = createLinkGroup(toLinkGroupId('link-1'), [
+      toClipId('clip-1'),
+      toClipId('clip-2'),
+    ]);
     let next = applyOperation(state, { type: 'LINK_CLIPS', linkGroup });
     next = applyOperation(next, { type: 'UNLINK_CLIPS', linkGroupId: toLinkGroupId('link-1') });
     expect(next.timeline.linkGroups).toHaveLength(0);
@@ -244,7 +312,10 @@ describe('Phase 4 Step 3 — LINK_CLIPS / UNLINK_CLIPS', () => {
 
   it('UNLINK_CLIPS with missing groupId is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{ type: 'UNLINK_CLIPS', linkGroupId: toLinkGroupId('nope') }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [{ type: 'UNLINK_CLIPS', linkGroupId: toLinkGroupId('nope') }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('LINK_GROUP_NOT_FOUND');
   });
@@ -253,7 +324,10 @@ describe('Phase 4 Step 3 — LINK_CLIPS / UNLINK_CLIPS', () => {
 describe('Phase 4 Step 3 — ADD_TRACK_GROUP / DELETE_TRACK_GROUP', () => {
   it('ADD_TRACK_GROUP creates group and sets groupId on tracks', () => {
     const state = makeBaseState();
-    const group = createTrackGroup(toTrackGroupId('grp-1'), 'Group', [toTrackId('track-1'), toTrackId('track-2')]);
+    const group = createTrackGroup(toTrackGroupId('grp-1'), 'Group', [
+      toTrackId('track-1'),
+      toTrackId('track-2'),
+    ]);
     const next = applyOperation(state, { type: 'ADD_TRACK_GROUP', trackGroup: group });
     expect(next.timeline.trackGroups).toHaveLength(1);
     expect(next.timeline.tracks[0]!.groupId).toBe('grp-1');
@@ -263,9 +337,15 @@ describe('Phase 4 Step 3 — ADD_TRACK_GROUP / DELETE_TRACK_GROUP', () => {
 
   it('DELETE_TRACK_GROUP removes group and clears groupId', () => {
     const state = makeBaseState();
-    const group = createTrackGroup(toTrackGroupId('grp-1'), 'G', [toTrackId('track-1'), toTrackId('track-2')]);
+    const group = createTrackGroup(toTrackGroupId('grp-1'), 'G', [
+      toTrackId('track-1'),
+      toTrackId('track-2'),
+    ]);
     let next = applyOperation(state, { type: 'ADD_TRACK_GROUP', trackGroup: group });
-    next = applyOperation(next, { type: 'DELETE_TRACK_GROUP', trackGroupId: toTrackGroupId('grp-1') });
+    next = applyOperation(next, {
+      type: 'DELETE_TRACK_GROUP',
+      trackGroupId: toTrackGroupId('grp-1'),
+    });
     expect(next.timeline.trackGroups).toHaveLength(0);
     expect(next.timeline.tracks[0]!.groupId).toBeUndefined();
     expect(next.timeline.tracks[1]!.groupId).toBeUndefined();
@@ -274,7 +354,10 @@ describe('Phase 4 Step 3 — ADD_TRACK_GROUP / DELETE_TRACK_GROUP', () => {
 
   it('DELETE_TRACK_GROUP with missing id is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{ type: 'DELETE_TRACK_GROUP', trackGroupId: toTrackGroupId('nope') }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [{ type: 'DELETE_TRACK_GROUP', trackGroupId: toTrackGroupId('nope') }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('TRACK_GROUP_NOT_FOUND');
   });
@@ -283,28 +366,42 @@ describe('Phase 4 Step 3 — ADD_TRACK_GROUP / DELETE_TRACK_GROUP', () => {
 describe('Phase 4 Step 3 — SET_TRACK_BLEND_MODE / SET_TRACK_OPACITY', () => {
   it('SET_TRACK_BLEND_MODE sets blendMode on track', () => {
     const state = makeBaseState();
-    const next = applyOperation(state, { type: 'SET_TRACK_BLEND_MODE', trackId: toTrackId('track-1'), blendMode: 'multiply' });
+    const next = applyOperation(state, {
+      type: 'SET_TRACK_BLEND_MODE',
+      trackId: toTrackId('track-1'),
+      blendMode: 'multiply',
+    });
     expect(next.timeline.tracks[0]!.blendMode).toBe('multiply');
     expect(checkInvariants(next)).toEqual([]);
   });
 
   it('SET_TRACK_OPACITY sets opacity on track', () => {
     const state = makeBaseState();
-    const next = applyOperation(state, { type: 'SET_TRACK_OPACITY', trackId: toTrackId('track-1'), opacity: 0.7 });
+    const next = applyOperation(state, {
+      type: 'SET_TRACK_OPACITY',
+      trackId: toTrackId('track-1'),
+      opacity: 0.7,
+    });
     expect(next.timeline.tracks[0]!.opacity).toBe(0.7);
     expect(checkInvariants(next)).toEqual([]);
   });
 
   it('SET_TRACK_OPACITY > 1 is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{ type: 'SET_TRACK_OPACITY', trackId: toTrackId('track-1'), opacity: 1.5 }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [{ type: 'SET_TRACK_OPACITY', trackId: toTrackId('track-1'), opacity: 1.5 }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_OPACITY');
   });
 
   it('SET_TRACK_OPACITY < 0 is rejected', () => {
     const state = makeBaseState();
-    const result = dispatch(state, makeTx('X', [{ type: 'SET_TRACK_OPACITY', trackId: toTrackId('track-1'), opacity: -0.1 }]));
+    const result = dispatch(
+      state,
+      makeTx('X', [{ type: 'SET_TRACK_OPACITY', trackId: toTrackId('track-1'), opacity: -0.1 }]),
+    );
     expect(result.accepted).toBe(false);
     if (!result.accepted) expect(result.reason).toBe('INVALID_OPACITY');
   });
@@ -314,9 +411,15 @@ describe('Phase 4 Step 3 — Invariants', () => {
   it('checkInvariants catches transition durationFrames = 0', () => {
     const state = makeBaseState();
     const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 0);
-    const next = applyOperation(state, { type: 'ADD_TRANSITION', clipId: toClipId('clip-1'), transition: trans });
+    const next = applyOperation(state, {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('clip-1'),
+      transition: trans,
+    });
     const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'INVALID_RANGE' && v.message.includes('durationFrames'))).toBe(true);
+    expect(
+      violations.some((v) => v.type === 'INVALID_RANGE' && v.message.includes('durationFrames')),
+    ).toBe(true);
   });
 
   it('checkInvariants catches clipId in two link groups', () => {
@@ -326,20 +429,23 @@ describe('Phase 4 Step 3 — Invariants', () => {
     const g2 = createLinkGroup(toLinkGroupId('l2'), [toClipId('clip-1'), toClipId('clip-2')]);
     next = applyOperation(next, { type: 'LINK_CLIPS', linkGroup: g2 });
     const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'INVALID_RANGE' && v.message.includes('more than one link group'))).toBe(true);
+    expect(
+      violations.some(
+        (v) => v.type === 'INVALID_RANGE' && v.message.includes('more than one link group'),
+      ),
+    ).toBe(true);
   });
 
   it('checkInvariants catches orphaned track.groupId', () => {
     const state = makeBaseState();
     const track1 = state.timeline.tracks[0]!;
     const track2 = state.timeline.tracks[1]!;
-    const tracksWithOrphan = [
-      { ...track1, groupId: toTrackGroupId('orphan') },
-      track2,
-    ];
+    const tracksWithOrphan = [{ ...track1, groupId: toTrackGroupId('orphan') }, track2];
     const timeline = { ...state.timeline, tracks: tracksWithOrphan };
     const next = { ...state, timeline };
     const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'TRACK_GROUP_NOT_FOUND' && v.message.includes('orphan'))).toBe(true);
+    expect(
+      violations.some((v) => v.type === 'TRACK_GROUP_NOT_FOUND' && v.message.includes('orphan')),
+    ).toBe(true);
   });
 });

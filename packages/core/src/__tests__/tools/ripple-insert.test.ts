@@ -21,25 +21,25 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { RippleInsertTool, _setIdGenerator } from '../../tools/ripple-insert';
-import { checkInvariants }   from '../../validation/invariants';
-import { dispatch }          from '../../engine/dispatcher';
-import { createTimelineState }  from '../../types/state';
-import { createTimeline }    from '../../types/timeline';
+import { checkInvariants } from '../../validation/invariants';
+import { dispatch } from '../../engine/dispatcher';
+import { createTimelineState } from '../../types/state';
+import { createTimeline } from '../../types/timeline';
 import { createTrack, toTrackId } from '../../types/track';
-import { createClip, toClipId }   from '../../types/clip';
+import { createClip, toClipId } from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode, frameRate } from '../../types/frame';
-import { buildSnapIndex }    from '../../snap-index';
+import { buildSnapIndex } from '../../snap-index';
 import type { ToolContext, TimelinePointerEvent } from '../../tools/types';
-import type { TimelineState }   from '../../types/state';
-import type { TimelineFrame }   from '../../types/frame';
-import type { TrackId }         from '../../types/track';
-import type { ClipId }          from '../../types/clip';
+import type { TimelineState } from '../../types/state';
+import type { TimelineFrame } from '../../types/frame';
+import type { TrackId } from '../../types/track';
+import type { ClipId } from '../../types/clip';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TRACK_ID  = toTrackId('track-1');
-const ASSET_ID  = toAssetId('asset-1');
+const TRACK_ID = toTrackId('track-1');
+const ASSET_ID = toAssetId('asset-1');
 const PROVISIONAL_ID = 'provisional-insert' as ClipId;
 
 // ── Deterministic IDs in tests ────────────────────────────────────────────────
@@ -57,10 +57,14 @@ afterEach(() => {
 
 function makeAsset() {
   return createAsset({
-    id: 'asset-1', name: 'Test', mediaType: 'video',
+    id: 'asset-1',
+    name: 'Test',
+    mediaType: 'video',
     filePath: '/media/test.mp4',
     intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
 }
 
@@ -69,18 +73,26 @@ function makeAsset() {
  * timeline.duration = 9000 frames.
  */
 function makeState(existingStarts: number[] = []): TimelineState {
-  const asset  = makeAsset();
-  const clips  = existingStarts.map((start, i) =>
+  const asset = makeAsset();
+  const clips = existingStarts.map((start, i) =>
     createClip({
-      id: `clip-ex-${i}`, assetId: 'asset-1', trackId: 'track-1',
-      timelineStart: toFrame(start), timelineEnd: toFrame(start + 100),
-      mediaIn: toFrame(i * 100), mediaOut: toFrame(i * 100 + 100),
+      id: `clip-ex-${i}`,
+      assetId: 'asset-1',
+      trackId: 'track-1',
+      timelineStart: toFrame(start),
+      timelineEnd: toFrame(start + 100),
+      mediaIn: toFrame(i * 100),
+      mediaOut: toFrame(i * 100 + 100),
     }),
   );
-  const track    = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips });
+  const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips });
   const timeline = createTimeline({
-    id: 'tl', name: 'RippleInsert Test', fps: frameRate(30),
-    duration: toFrame(9000), startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'RippleInsert Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[ASSET_ID, asset]]) });
 }
@@ -88,27 +100,35 @@ function makeState(existingStarts: number[] = []): TimelineState {
 function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): ToolContext {
   return {
     state,
-    snapIndex:      buildSnapIndex(state, toFrame(0)),
+    snapIndex: buildSnapIndex(state, toFrame(0)),
     pixelsPerFrame: 10,
-    modifiers:      { shift: false, alt: false, ctrl: false, meta: false },
-    frameAtX:       (x) => toFrame(Math.floor(x / 10)),
-    trackAtY:       (_y) => TRACK_ID,
-    snap:           (frame, _excl?) => frame,
+    modifiers: { shift: false, alt: false, ctrl: false, meta: false },
+    frameAtX: (x) => toFrame(Math.floor(x / 10)),
+    trackAtY: (_y) => TRACK_ID,
+    snap: (frame, _excl?) => frame,
     ...overrides,
   };
 }
 
-function makeEv(overrides: {
-  frame?: TimelineFrame; trackId?: TrackId | null; clipId?: ClipId | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: TimelineFrame;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+  } = {},
+): TimelinePointerEvent {
   return {
-    frame:    overrides.frame   ?? toFrame(0),
-    trackId:  overrides.trackId !== undefined ? overrides.trackId : TRACK_ID,
-    clipId:   overrides.clipId  !== undefined ? overrides.clipId  : null,
+    frame: overrides.frame ?? toFrame(0),
+    trackId: overrides.trackId !== undefined ? overrides.trackId : TRACK_ID,
+    clipId: overrides.clipId !== undefined ? overrides.clipId : null,
     captionId: overrides.captionId ?? null,
-    x: 0, y: 24, buttons: 1,
-    shiftKey: false, altKey: false, metaKey: false,
+    x: 0,
+    y: 24,
+    buttons: 1,
+    shiftKey: false,
+    altKey: false,
+    metaKey: false,
   };
 }
 
@@ -130,7 +150,10 @@ function doDrop(
   return tool.onPointerUp(makeEv({ frame: toFrame(dropFrame), trackId }), ctx);
 }
 
-function applyAndCheck(state: TimelineState, tx: ReturnType<RippleInsertTool['onPointerUp']>): TimelineState {
+function applyAndCheck(
+  state: TimelineState,
+  tx: ReturnType<RippleInsertTool['onPointerUp']>,
+): TimelineState {
   expect(tx).not.toBeNull();
   const result = dispatch(state, tx!);
   expect(result.accepted).toBe(true);
@@ -151,7 +174,7 @@ describe('RippleInsertTool — 3 downstream clips: 3× MOVE then INSERT', () => 
   let state: TimelineState;
 
   beforeEach(() => {
-    tool  = new RippleInsertTool();
+    tool = new RippleInsertTool();
     state = makeState([300, 400, 500]);
   });
 
@@ -167,8 +190,8 @@ describe('RippleInsertTool — 3 downstream clips: 3× MOVE then INSERT', () => 
   });
 
   it('first 3 ops are MOVE_CLIP, sorted right-to-left (C first, A last)', () => {
-    const tx   = doDrop(tool, state, 300);
-    const ops  = tx!.operations;
+    const tx = doDrop(tool, state, 300);
+    const ops = tx!.operations;
 
     expect(ops[0]!.type).toBe('MOVE_CLIP');
     expect(ops[1]!.type).toBe('MOVE_CLIP');
@@ -183,16 +206,16 @@ describe('RippleInsertTool — 3 downstream clips: 3× MOVE then INSERT', () => 
   });
 
   it('each clip shifts by exactly insertDuration (50)', () => {
-    const tx          = doDrop(tool, state, 300);
-    const origStarts  = [300, 400, 500];
+    const tx = doDrop(tool, state, 300);
+    const origStarts = [300, 400, 500];
     const insertDuration = 50;
-    const moves       = tx!.operations.filter(o => o.type === 'MOVE_CLIP');
+    const moves = tx!.operations.filter((o) => o.type === 'MOVE_CLIP');
 
     // Build a map: clipId → newTimelineStart
     const moveMap = new Map(
       moves
-        .filter(o => o.type === 'MOVE_CLIP')
-        .map(o => o.type === 'MOVE_CLIP' ? [o.clipId, o.newTimelineStart] : ['', 0]),
+        .filter((o) => o.type === 'MOVE_CLIP')
+        .map((o) => (o.type === 'MOVE_CLIP' ? [o.clipId, o.newTimelineStart] : ['', 0])),
     );
 
     origStarts.forEach((start, i) => {
@@ -202,11 +225,11 @@ describe('RippleInsertTool — 3 downstream clips: 3× MOVE then INSERT', () => 
   });
 
   it('INSERT_CLIP lands at dropFrame (300)', () => {
-    const tx  = doDrop(tool, state, 300);
+    const tx = doDrop(tool, state, 300);
     const ins = tx!.operations[3]!;
     if (ins.type === 'INSERT_CLIP') {
       expect(ins.clip.timelineStart).toBe(toFrame(300));
-      expect(ins.clip.timelineEnd).toBe(toFrame(350));   // 300 + 50
+      expect(ins.clip.timelineEnd).toBe(toFrame(350)); // 300 + 50
     }
   });
 
@@ -219,9 +242,9 @@ describe('RippleInsertTool — 3 downstream clips: 3× MOVE then INSERT', () => 
 
 describe('RippleInsertTool — no downstream clips: 1 op (INSERT_CLIP only)', () => {
   it('operations.length === 1, type === INSERT_CLIP', () => {
-    const state = makeState([]);  // empty track
-    const tool  = new RippleInsertTool();
-    const tx    = doDrop(tool, state, 200);
+    const state = makeState([]); // empty track
+    const tool = new RippleInsertTool();
+    const tx = doDrop(tool, state, 200);
 
     expect(tx).not.toBeNull();
     expect(tx!.operations).toHaveLength(1);
@@ -230,9 +253,9 @@ describe('RippleInsertTool — no downstream clips: 1 op (INSERT_CLIP only)', ()
 
   it('INSERT_CLIP lands at dropFrame', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
-    const tx    = doDrop(tool, state, 200);
-    const ins   = tx!.operations[0]!;
+    const tool = new RippleInsertTool();
+    const tx = doDrop(tool, state, 200);
+    const ins = tx!.operations[0]!;
     if (ins.type === 'INSERT_CLIP') expect(ins.clip.timelineStart).toBe(toFrame(200));
   });
 
@@ -246,12 +269,12 @@ describe('RippleInsertTool — no downstream clips: 1 op (INSERT_CLIP only)', ()
 
 describe('RippleInsertTool — drop at frame 0: valid, no clamp', () => {
   it('INSERT_CLIP.timelineStart === 0', () => {
-    const state = makeState([100]);  // one existing clip pushed right
-    const tool  = new RippleInsertTool();
-    const tx    = doDrop(tool, state, 0);
+    const state = makeState([100]); // one existing clip pushed right
+    const tool = new RippleInsertTool();
+    const tx = doDrop(tool, state, 0);
 
     expect(tx).not.toBeNull();
-    const ins   = tx!.operations.find(o => o.type === 'INSERT_CLIP')!;
+    const ins = tx!.operations.find((o) => o.type === 'INSERT_CLIP')!;
     if (ins.type === 'INSERT_CLIP') expect(ins.clip.timelineStart).toBe(toFrame(0));
   });
 
@@ -267,14 +290,14 @@ describe('RippleInsertTool — clamp at timeline end', () => {
   it('dropFrame clamped so inserted clip fits within timeline (duration=9000)', () => {
     // insertDuration=50, drop at 8990 → 8990+50=9040 > 9000. Clamped to 8950.
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(8990), trackId: TRACK_ID }), ctx);
     const tx = tool.onPointerUp(makeEv({ frame: toFrame(8990), trackId: TRACK_ID }), ctx);
 
     expect(tx).not.toBeNull();
-    const ins = tx!.operations.find(o => o.type === 'INSERT_CLIP')!;
+    const ins = tx!.operations.find((o) => o.type === 'INSERT_CLIP')!;
     // clamped to 9000 - 50 = 8950
     if (ins.type === 'INSERT_CLIP') {
       expect(ins.clip.timelineStart).toBe(toFrame(8950));
@@ -289,8 +312,8 @@ describe('RippleInsertTool — clamp at timeline end', () => {
 describe('RippleInsertTool — no pending insert: no-op', () => {
   it('onPointerDown without setPendingInsert → onPointerUp returns null', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();  // no configureTool()
-    const ctx   = makeCtx(state);
+    const tool = new RippleInsertTool(); // no configureTool()
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
     const tx = tool.onPointerUp(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
     expect(tx).toBeNull();
@@ -302,19 +325,19 @@ describe('RippleInsertTool — no pending insert: no-op', () => {
 describe('RippleInsertTool — no trackId on event: null', () => {
   it('null trackId at onPointerDown → no drag, onPointerUp null', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ trackId: null }), ctx);
-    const tx = tool.onPointerUp(makeEv({ trackId: TRACK_ID }), ctx);  // even with trackId at up
+    const tx = tool.onPointerUp(makeEv({ trackId: TRACK_ID }), ctx); // even with trackId at up
     expect(tx).toBeNull();
   });
 
   it('null trackId at onPointerUp → null even if drag started', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
     const tx = tool.onPointerUp(makeEv({ trackId: null }), ctx);
     expect(tx).toBeNull();
@@ -325,60 +348,60 @@ describe('RippleInsertTool — no trackId on event: null', () => {
 
 describe('RippleInsertTool — ProvisionalState ghost', () => {
   it('ghost has 1 inserted clip + N shifted clips', () => {
-    const state = makeState([300, 400]);  // 2 existing clips
-    const tool  = new RippleInsertTool();
+    const state = makeState([300, 400]); // 2 existing clips
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(300), trackId: TRACK_ID }), ctx);
 
     const ghost = tool.onPointerMove(makeEv({ frame: toFrame(300), trackId: TRACK_ID }), ctx);
     expect(ghost).not.toBeNull();
     expect(ghost!.isProvisional).toBe(true);
-    expect(ghost!.clips).toHaveLength(3);  // 1 inserted + 2 shifted
+    expect(ghost!.clips).toHaveLength(3); // 1 inserted + 2 shifted
   });
 
   it('ghost inserted clip uses PROVISIONAL_INSERT_ID sentinel', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
 
-    const ghost     = tool.onPointerMove(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
-    const inserted  = ghost!.clips.find(c => c.id === PROVISIONAL_ID);
+    const ghost = tool.onPointerMove(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
+    const inserted = ghost!.clips.find((c) => c.id === PROVISIONAL_ID);
     expect(inserted).not.toBeUndefined();
   });
 
   it('ghost inserted clip has correct timelineStart/End', () => {
-    const state    = makeState([]);
-    const tool     = new RippleInsertTool();
-    configureTool(tool);  // mediaIn=0, mediaOut=50 → insertDuration=50
-    const ctx      = makeCtx(state);
+    const state = makeState([]);
+    const tool = new RippleInsertTool();
+    configureTool(tool); // mediaIn=0, mediaOut=50 → insertDuration=50
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
 
-    const ghost   = tool.onPointerMove(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
-    const ins     = ghost!.clips.find(c => c.id === PROVISIONAL_ID)!;
+    const ghost = tool.onPointerMove(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
+    const ins = ghost!.clips.find((c) => c.id === PROVISIONAL_ID)!;
     expect(ins.timelineStart).toBe(toFrame(200));
     expect(ins.timelineEnd).toBe(toFrame(250));
   });
 
   it('ghost shifted clips have timelineStart offset by insertDuration', () => {
-    const state = makeState([400]);  // 1 existing clip at 400
-    const tool  = new RippleInsertTool();
-    configureTool(tool);            // insertDuration=50
-    const ctx   = makeCtx(state);
+    const state = makeState([400]); // 1 existing clip at 400
+    const tool = new RippleInsertTool();
+    configureTool(tool); // insertDuration=50
+    const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(300), trackId: TRACK_ID }), ctx);
 
-    const ghost   = tool.onPointerMove(makeEv({ frame: toFrame(300), trackId: TRACK_ID }), ctx);
-    const shifted = ghost!.clips.find(c => c.id !== PROVISIONAL_ID)!;
-    expect(shifted.timelineStart).toBe(toFrame(450));  // 400 + 50
-    expect(shifted.timelineEnd).toBe(toFrame(550));    // 500 + 50
+    const ghost = tool.onPointerMove(makeEv({ frame: toFrame(300), trackId: TRACK_ID }), ctx);
+    const shifted = ghost!.clips.find((c) => c.id !== PROVISIONAL_ID)!;
+    expect(shifted.timelineStart).toBe(toFrame(450)); // 400 + 50
+    expect(shifted.timelineEnd).toBe(toFrame(550)); // 500 + 50
   });
 
   it('provisional id never appears in committed state after dispatch', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
-    const tx    = doDrop(tool, state, 200);
+    const tool = new RippleInsertTool();
+    const tx = doDrop(tool, state, 200);
     const nextState = applyAndCheck(state, tx);
 
     // Verify no clip in committed state uses the sentinel id
@@ -391,9 +414,9 @@ describe('RippleInsertTool — ProvisionalState ghost', () => {
 
   it('not mid-drag → onPointerMove returns null', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
-    const ctx   = makeCtx(state);
+    const ctx = makeCtx(state);
     // No pointerDown
     const ghost = tool.onPointerMove(makeEv({ frame: toFrame(200), trackId: TRACK_ID }), ctx);
     expect(ghost).toBeNull();
@@ -405,28 +428,33 @@ describe('RippleInsertTool — ProvisionalState ghost', () => {
 describe('RippleInsertTool — setPendingInsert mid-drag: ignored', () => {
   it('setPendingInsert during drag is silently ignored', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
-    configureTool(tool);  // mediaIn=0, mediaOut=50
+    const tool = new RippleInsertTool();
+    configureTool(tool); // mediaIn=0, mediaOut=50
 
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
 
     // Attempt to reconfigure mid-drag
     const newAsset = createAsset({
-      id: 'asset-2', name: 'Other', mediaType: 'video',
-      filePath: '/other.mp4', intrinsicDuration: toFrame(9000),
-      nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+      id: 'asset-2',
+      name: 'Other',
+      mediaType: 'video',
+      filePath: '/other.mp4',
+      intrinsicDuration: toFrame(9000),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
+      status: 'online',
     });
-    tool.setPendingInsert(newAsset, toFrame(0), toFrame(200));  // should be ignored
+    tool.setPendingInsert(newAsset, toFrame(0), toFrame(200)); // should be ignored
 
-    const tx  = tool.onPointerUp(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
+    const tx = tool.onPointerUp(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
     expect(tx).not.toBeNull();
 
     // Inserted clip should still use original asset (asset-1) not asset-2
-    const ins = tx!.operations.find(o => o.type === 'INSERT_CLIP')!;
+    const ins = tx!.operations.find((o) => o.type === 'INSERT_CLIP')!;
     if (ins.type === 'INSERT_CLIP') {
-      expect(ins.clip.assetId).toBe(ASSET_ID);   // original asset-1
-      expect(ins.clip.mediaOut).toBe(toFrame(50));  // original mediaOut, not 200
+      expect(ins.clip.assetId).toBe(ASSET_ID); // original asset-1
+      expect(ins.clip.mediaOut).toBe(toFrame(50)); // original mediaOut, not 200
     }
   });
 });
@@ -436,7 +464,7 @@ describe('RippleInsertTool — setPendingInsert mid-drag: ignored', () => {
 describe('RippleInsertTool — onCancel', () => {
   it('onCancel clears isDragging — subsequent pointerUp returns null', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
     const ctx = makeCtx(state);
     tool.onPointerDown(makeEv({ frame: toFrame(100), trackId: TRACK_ID }), ctx);
@@ -447,7 +475,7 @@ describe('RippleInsertTool — onCancel', () => {
 
   it('onCancel clears pendingAsset — getCursor returns default', () => {
     const state = makeState([]);
-    const tool  = new RippleInsertTool();
+    const tool = new RippleInsertTool();
     configureTool(tool);
     tool.onCancel();
     expect(tool.getCursor(makeCtx(state))).toBe('default');

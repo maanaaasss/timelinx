@@ -21,7 +21,7 @@ import { SerializationError } from './serialization-error';
 
 /**
  * HistoryState - The history container
- * 
+ *
  * Contains:
  * - past: Array of previous states (oldest first)
  * - present: Current state
@@ -37,15 +37,12 @@ export interface HistoryState {
 
 /**
  * Create a new history state
- * 
+ *
  * @param initialState - Initial timeline state
  * @param limit - Maximum number of past states to keep (default: 50)
  * @returns A new HistoryState
  */
-export function createHistory(
-  initialState: TimelineState,
-  limit: number = 50
-): HistoryState {
+export function createHistory(initialState: TimelineState, limit: number = 50): HistoryState {
   return {
     past: [],
     present: initialState,
@@ -56,25 +53,22 @@ export function createHistory(
 
 /**
  * Push a new state to history
- * 
+ *
  * Moves current state to past, sets new state as present,
  * and clears future (can't redo after new action).
- * 
+ *
  * @param history - Current history state
  * @param newState - New timeline state to push
  * @returns New history state with new state pushed
  */
-export function pushHistory(
-  history: HistoryState,
-  newState: TimelineState
-): HistoryState {
+export function pushHistory(history: HistoryState, newState: TimelineState): HistoryState {
   const newPast = [...history.past, history.present];
-  
+
   // Enforce limit by removing oldest states
   if (newPast.length > history.limit) {
     newPast.shift();
   }
-  
+
   return {
     ...history,
     past: newPast,
@@ -85,10 +79,10 @@ export function pushHistory(
 
 /**
  * Undo the last action
- * 
+ *
  * Moves current state to future, pops last state from past
  * and sets it as present.
- * 
+ *
  * @param history - Current history state
  * @returns New history state with undo applied
  */
@@ -97,10 +91,10 @@ export function undo(history: HistoryState): HistoryState {
     // Nothing to undo
     return history;
   }
-  
+
   const newPast = [...history.past];
   const previous = newPast.pop()!;
-  
+
   return {
     ...history,
     past: newPast,
@@ -111,10 +105,10 @@ export function undo(history: HistoryState): HistoryState {
 
 /**
  * Redo the last undone action
- * 
+ *
  * Moves current state to past, pops first state from future
  * and sets it as present.
- * 
+ *
  * @param history - Current history state
  * @returns New history state with redo applied
  */
@@ -123,10 +117,10 @@ export function redo(history: HistoryState): HistoryState {
     // Nothing to redo
     return history;
   }
-  
+
   const newFuture = [...history.future];
   const next = newFuture.shift()!;
-  
+
   return {
     ...history,
     past: [...history.past, history.present],
@@ -137,7 +131,7 @@ export function redo(history: HistoryState): HistoryState {
 
 /**
  * Check if undo is available
- * 
+ *
  * @param history - Current history state
  * @returns true if undo is available
  */
@@ -147,7 +141,7 @@ export function canUndo(history: HistoryState): boolean {
 
 /**
  * Check if redo is available
- * 
+ *
  * @param history - Current history state
  * @returns true if redo is available
  */
@@ -157,7 +151,7 @@ export function canRedo(history: HistoryState): boolean {
 
 /**
  * Get the current state from history
- * 
+ *
  * @param history - Current history state
  * @returns The current timeline state
  */
@@ -167,9 +161,9 @@ export function getCurrentState(history: HistoryState): TimelineState {
 
 /**
  * Clear history
- * 
+ *
  * Keeps the current state but clears past and future.
- * 
+ *
  * @param history - Current history state
  * @returns New history state with history cleared
  */
@@ -319,7 +313,11 @@ export class HistoryStack {
     if (!parsed || typeof parsed !== 'object' || !('version' in parsed)) {
       throw new SerializationError('Invalid history structure');
     }
-    const obj = parsed as { version: number; undoIndex: number; entries: Array<{ state: string; transaction: Transaction }> };
+    const obj = parsed as {
+      version: number;
+      undoIndex: number;
+      entries: Array<{ state: string; transaction: Transaction }>;
+    };
     if (obj.version !== 1) {
       throw new SerializationError(`Unknown history version: ${obj.version}`);
     }
@@ -339,9 +337,7 @@ export class HistoryStack {
     const stack = new HistoryStack(limit ?? entries.length + 50, policy, clock);
     stack.entries = entries;
     stack.undoIndex =
-      entries.length === 0
-        ? -1
-        : Math.min(Math.max(0, obj.undoIndex), entries.length - 1);
+      entries.length === 0 ? -1 : Math.min(Math.max(0, obj.undoIndex), entries.length - 1);
     return stack;
   }
 

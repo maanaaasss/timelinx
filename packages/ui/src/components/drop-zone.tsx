@@ -24,9 +24,7 @@ export const DropZone = React.memo(function DropZone({
         height: totalHeight,
       }}
     >
-      <span className="drop-zone-label">
-        {frameToTimecode(frame, fps)}
-      </span>
+      <span className="drop-zone-label">{frameToTimecode(frame, fps)}</span>
     </div>
   );
 });

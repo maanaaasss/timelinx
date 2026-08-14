@@ -34,8 +34,14 @@ interface MockAsset {
   filePath: string;
 }
 
-interface MockClip { assetId: string; }
-interface MockTrack { type: string; muted: boolean; clips: MockClip[]; }
+interface MockClip {
+  assetId: string;
+}
+interface MockTrack {
+  type: string;
+  muted: boolean;
+  clips: MockClip[];
+}
 interface MockState {
   timeline: { tracks: MockTrack[] };
   assetRegistry: Map<string, MockAsset>;
@@ -68,11 +74,13 @@ describe('collectAudioClips logic (T2-1 operator precedence fix)', () => {
     trackMuted = false,
   ): MockState => ({
     timeline: {
-      tracks: [{
-        type: 'audio',
-        muted: trackMuted,
-        clips: [{ assetId: 'clip-1' }],
-      }],
+      tracks: [
+        {
+          type: 'audio',
+          muted: trackMuted,
+          clips: [{ assetId: 'clip-1' }],
+        },
+      ],
     },
     assetRegistry: new Map([
       ['clip-1', { kind: assetKind, mediaType, id: 'clip-1', filePath: '/file.mp3' }],
@@ -107,11 +115,13 @@ describe('collectAudioClips logic (T2-1 operator precedence fix)', () => {
   it('excludes clips on video tracks', () => {
     const state: MockState = {
       timeline: {
-        tracks: [{
-          type: 'video', // <-- video track, not audio
-          muted: false,
-          clips: [{ assetId: 'clip-1' }],
-        }],
+        tracks: [
+          {
+            type: 'video', // <-- video track, not audio
+            muted: false,
+            clips: [{ assetId: 'clip-1' }],
+          },
+        ],
       },
       assetRegistry: new Map([
         ['clip-1', { kind: 'file', mediaType: 'audio', id: 'clip-1', filePath: '/file.mp3' }],
@@ -187,8 +197,20 @@ describe('getSupportedMimeType (T1-4 Safari MIME types)', () => {
 
     function getSupportedMimeType(hasAudio: boolean): string | null {
       const types = hasAudio
-        ? ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4']
-        : ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4;codecs=avc1', 'video/mp4'];
+        ? [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=vp8,opus',
+            'video/webm',
+            'video/mp4;codecs=avc1,mp4a.40.2',
+            'video/mp4',
+          ]
+        : [
+            'video/webm;codecs=vp9',
+            'video/webm;codecs=vp8',
+            'video/webm',
+            'video/mp4;codecs=avc1',
+            'video/mp4',
+          ];
       for (const type of types) {
         if (MediaRecorder.isTypeSupported(type)) return type;
       }
@@ -205,8 +227,20 @@ describe('getSupportedMimeType (T1-4 Safari MIME types)', () => {
 
     function getSupportedMimeType(hasAudio: boolean): string | null {
       const types = hasAudio
-        ? ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4']
-        : ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4;codecs=avc1', 'video/mp4'];
+        ? [
+            'video/webm;codecs=vp9,opus',
+            'video/webm;codecs=vp8,opus',
+            'video/webm',
+            'video/mp4;codecs=avc1,mp4a.40.2',
+            'video/mp4',
+          ]
+        : [
+            'video/webm;codecs=vp9',
+            'video/webm;codecs=vp8',
+            'video/webm',
+            'video/mp4;codecs=avc1',
+            'video/mp4',
+          ];
       for (const type of types) {
         if (MediaRecorder.isTypeSupported(type)) return type;
       }
@@ -228,18 +262,24 @@ describe('ExportRunner cleanup idempotency (T1-2)', () => {
     // Simulate the T1-2 fix: cleaned flag makes cleanup() idempotent
     let stopCallCount = 0;
     const mockSource = {
-      stop: () => { stopCallCount++; },
+      stop: () => {
+        stopCallCount++;
+      },
     };
 
     class MinimalCleanupable {
       private cleaned = false;
-      private audioSources: typeof mockSource[] = [mockSource];
+      private audioSources: (typeof mockSource)[] = [mockSource];
 
       cleanup() {
         if (this.cleaned) return;
         this.cleaned = true;
         for (const src of this.audioSources) {
-          try { src.stop(); } catch { /* stopped */ }
+          try {
+            src.stop();
+          } catch {
+            /* stopped */
+          }
         }
         this.audioSources = [];
       }
@@ -264,7 +304,13 @@ describe('Download URL revocation on re-export (T0-4)', () => {
     const fakeRevoke = (url: string) => revokedUrls.push(url);
 
     // Simulate the state updater pattern from startExport
-    let state: { status: string; downloadUrl: string | null; progress: number; error: null; fileName: string } = {
+    let state: {
+      status: string;
+      downloadUrl: string | null;
+      progress: number;
+      error: null;
+      fileName: string;
+    } = {
       status: 'complete',
       downloadUrl: 'blob:old-export-url',
       progress: 1,
@@ -290,7 +336,13 @@ describe('Download URL revocation on re-export (T0-4)', () => {
     const revokedUrls: string[] = [];
     const fakeRevoke = (url: string) => revokedUrls.push(url);
 
-    let state: { status: string; downloadUrl: string | null; progress: number; error: null; fileName: string } = {
+    let state: {
+      status: string;
+      downloadUrl: string | null;
+      progress: number;
+      error: null;
+      fileName: string;
+    } = {
       status: 'encoding',
       downloadUrl: 'blob:mid-export-url',
       progress: 0.5,

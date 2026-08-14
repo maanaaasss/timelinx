@@ -41,9 +41,7 @@ export interface MediaPreviewProps {
   className?: string;
 }
 
-export const MediaPreview = React.memo(function MediaPreview({
-  className,
-}: MediaPreviewProps) {
+export const MediaPreview = React.memo(function MediaPreview({ className }: MediaPreviewProps) {
   const { engine } = useTimelineContext();
   const mediaAssets = useMediaAssets();
   const frame = usePlayheadFrame(engine);

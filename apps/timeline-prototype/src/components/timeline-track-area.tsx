@@ -60,11 +60,7 @@ export function TimelineTrackArea({
         onUpdateClip={onUpdateClip}
         onSeek={onSeek}
       />
-      <Playhead
-        currentTime={currentTime}
-        ppf={ppf}
-        onDragStart={handlePlayheadDragStart}
-      />
+      <Playhead currentTime={currentTime} ppf={ppf} onDragStart={handlePlayheadDragStart} />
     </div>
   );
 }

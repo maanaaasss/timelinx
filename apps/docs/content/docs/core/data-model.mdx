@@ -18,11 +18,11 @@ type TimelineState = {
 };
 ```
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `schemaVersion` | `number` | Guards persisted projects from silent incompatibility. Always compare to `CURRENT_SCHEMA_VERSION` after loading from storage. |
-| `timeline` | `Timeline` | The one editorial document: tracks, clips, markers, groups, sequence settings. |
-| `assetRegistry` | `ReadonlyMap<AssetId, Asset>` | All media sources. Clips reference assets by `assetId`, not by embedding media metadata directly. |
+| Field           | Type                          | Purpose                                                                                                                       |
+| --------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion` | `number`                      | Guards persisted projects from silent incompatibility. Always compare to `CURRENT_SCHEMA_VERSION` after loading from storage. |
+| `timeline`      | `Timeline`                    | The one editorial document: tracks, clips, markers, groups, sequence settings.                                                |
+| `assetRegistry` | `ReadonlyMap<AssetId, Asset>` | All media sources. Clips reference assets by `assetId`, not by embedding media metadata directly.                             |
 
 **Create with:**
 
@@ -39,7 +39,7 @@ const state = createTimelineState({
 });
 ```
 
-`assetRegistry` defaults to an empty `ReadonlyMap`. The runtime wrapper rejects `set`, `delete`, and `clear` calls  - you mutate it only through `REGISTER_ASSET`, `UNREGISTER_ASSET`, and `SET_ASSET_STATUS` operations.
+`assetRegistry` defaults to an empty `ReadonlyMap`. The runtime wrapper rejects `set`, `delete`, and `clear` calls - you mutate it only through `REGISTER_ASSET`, `UNREGISTER_ASSET`, and `SET_ASSET_STATUS` operations.
 
 ---
 
@@ -63,21 +63,21 @@ type Timeline = {
 };
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | `string` | Stable across edits. |
-| `name` | `string` | Display name shown in `TopNav`. |
-| `fps` | `FrameRate` | `{ num: number, den: number }`  - rational. Use `frameRate(30)` or `frameRate(24000, 1001)` for 23.976. |
-| `duration` | `TimelineFrame` | Total length. Clips cannot extend past this. |
-| `version` | `number` | Increments by 1 on every accepted transaction. Hooks use it to detect staleness. |
-| `tracks` | `readonly Track[]` | Top-to-bottom visual order. V1 is index 0. |
-| `markers` | `readonly Marker[]` | Point and range markers on the ruler. |
-| `beatGrid?` | `BeatGrid` | BPM, time signature, and offset for music-aligned editing. Absent unless `ADD_BEAT_GRID` has been dispatched. |
-| `inPoint?` | `TimelineFrame` | Export region start. `SET_IN_POINT` sets this. |
-| `outPoint?` | `TimelineFrame` | Export region end. |
-| `trackGroups` | `readonly TrackGroup[]` | Collapsible track nesting. |
-| `linkGroups` | `readonly LinkGroup[]` | Sets of clips that move together. |
-| `sequenceSettings` | `SequenceSettings` | Resolution, pixel aspect ratio, audio sample rate, and field order. |
+| Field              | Type                    | Notes                                                                                                         |
+| ------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `id`               | `string`                | Stable across edits.                                                                                          |
+| `name`             | `string`                | Display name shown in `TopNav`.                                                                               |
+| `fps`              | `FrameRate`             | `{ num: number, den: number }` - rational. Use `frameRate(30)` or `frameRate(24000, 1001)` for 23.976.        |
+| `duration`         | `TimelineFrame`         | Total length. Clips cannot extend past this.                                                                  |
+| `version`          | `number`                | Increments by 1 on every accepted transaction. Hooks use it to detect staleness.                              |
+| `tracks`           | `readonly Track[]`      | Top-to-bottom visual order. V1 is index 0.                                                                    |
+| `markers`          | `readonly Marker[]`     | Point and range markers on the ruler.                                                                         |
+| `beatGrid?`        | `BeatGrid`              | BPM, time signature, and offset for music-aligned editing. Absent unless `ADD_BEAT_GRID` has been dispatched. |
+| `inPoint?`         | `TimelineFrame`         | Export region start. `SET_IN_POINT` sets this.                                                                |
+| `outPoint?`        | `TimelineFrame`         | Export region end.                                                                                            |
+| `trackGroups`      | `readonly TrackGroup[]` | Collapsible track nesting.                                                                                    |
+| `linkGroups`       | `readonly LinkGroup[]`  | Sets of clips that move together.                                                                             |
+| `sequenceSettings` | `SequenceSettings`      | Resolution, pixel aspect ratio, audio sample rate, and field order.                                           |
 
 **Factory:**
 
@@ -117,20 +117,20 @@ type Track = {
 type TrackType = 'video' | 'audio' | 'subtitle' | 'title';
 ```
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `id` | `TrackId` | required | Branded `string`. Use `toTrackId('v1')`. |
-| `name` | `string` | required | Display label in the track header. |
-| `type` | `TrackType` | required | Clips and assets must share the same type. |
-| `locked` | `boolean` | `false` | Dispatch rejects all edits to a locked track. |
-| `muted` | `boolean` | `false` | Playback-only  - muted tracks are excluded from the compositor. |
-| `solo` | `boolean` | `false` | Only soloed tracks play when any track is soloed. |
-| `height` | `number` | `56` | Row height in pixels. UI enforces 36–140 range. |
-| `clips` | `readonly Clip[]` | `[]` | Always sorted ascending by `timelineStart`. This is an invariant  - `checkInvariants()` rejects unsorted clips. |
-| `captions` | `readonly Caption[]` | `[]` | Subtitle/title items. Available on `subtitle` and `title` tracks. |
-| `blendMode?` | `string` | `'normal'` | CSS blend mode for compositing. |
-| `opacity?` | `number` | `1` | 0–1. Values outside this range cause `INVALID_OPACITY` invariant violations. |
-| `groupId?` | `TrackGroupId` | none | Reference to a `TrackGroup` for collapsible nesting. |
+| Field        | Type                 | Default    | Notes                                                                                                          |
+| ------------ | -------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
+| `id`         | `TrackId`            | required   | Branded `string`. Use `toTrackId('v1')`.                                                                       |
+| `name`       | `string`             | required   | Display label in the track header.                                                                             |
+| `type`       | `TrackType`          | required   | Clips and assets must share the same type.                                                                     |
+| `locked`     | `boolean`            | `false`    | Dispatch rejects all edits to a locked track.                                                                  |
+| `muted`      | `boolean`            | `false`    | Playback-only - muted tracks are excluded from the compositor.                                                 |
+| `solo`       | `boolean`            | `false`    | Only soloed tracks play when any track is soloed.                                                              |
+| `height`     | `number`             | `56`       | Row height in pixels. UI enforces 36–140 range.                                                                |
+| `clips`      | `readonly Clip[]`    | `[]`       | Always sorted ascending by `timelineStart`. This is an invariant - `checkInvariants()` rejects unsorted clips. |
+| `captions`   | `readonly Caption[]` | `[]`       | Subtitle/title items. Available on `subtitle` and `title` tracks.                                              |
+| `blendMode?` | `string`             | `'normal'` | CSS blend mode for compositing.                                                                                |
+| `opacity?`   | `number`             | `1`        | 0–1. Values outside this range cause `INVALID_OPACITY` invariant violations.                                   |
+| `groupId?`   | `TrackGroupId`       | none       | Reference to a `TrackGroup` for collapsible nesting.                                                           |
 
 **Factory:**
 
@@ -152,7 +152,8 @@ const audioTrack = createTrack({
 ```
 
 <Callout title="Track ordering">
-  Tracks are stored in the `tracks` array. The first entry (index 0) renders at the top of the timeline. Use `REORDER_TRACK` to change positions.
+  Tracks are stored in the `tracks` array. The first entry (index 0) renders at the top of the
+  timeline. Use `REORDER_TRACK` to change positions.
 </Callout>
 
 ---
@@ -161,8 +162,8 @@ const audioTrack = createTrack({
 
 A clip is a time-bound viewport into an asset. It has two independent sets of bounds:
 
-- **Timeline bounds**  - where the clip sits on the track
-- **Media bounds**  - which portion of the source asset plays
+- **Timeline bounds** - where the clip sits on the track
+- **Media bounds** - which portion of the source asset plays
 
 ```
 Timeline:  |----[  clip  ]-----|
@@ -196,28 +197,29 @@ type Clip = {
 };
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | `ClipId` | Branded `string`. Must be unique across all clips in all tracks. |
-| `assetId` | `AssetId` | Must exist in `assetRegistry`. `INSERT_CLIP` rejects if missing. |
-| `trackId` | `TrackId` | Must match the containing track's `id`. Invariant checks this. |
-| `timelineStart` | `TimelineFrame` | Inclusive start frame on the timeline. |
-| `timelineEnd` | `TimelineFrame` | Exclusive end frame. `timelineEnd > timelineStart` is invariant. |
-| `mediaIn` | `TimelineFrame` | Start of the media window inside the asset. |
-| `mediaOut` | `TimelineFrame` | End of the media window. `mediaOut > mediaIn` is invariant. |
-| `speed` | `number` | Must be `> 0`. At `speed=1.0`, `mediaOut - mediaIn === timelineEnd - timelineStart`. |
-| `enabled` | `boolean` | `false` = clip is skipped during compositing. |
-| `reversed` | `boolean` | `true` = asset plays from `mediaOut` backward to `mediaIn`. |
-| `name` | `string \| null` | Display name override. `null` falls back to the asset name. |
-| `color` | `string \| null` | Hex string for track-row color coding. |
-| `effects?` | `readonly Effect[]` | Applied in order during compositing. |
-| `transform?` | `ClipTransform` | Position, scale, rotation, anchor point, and crop. |
-| `audio?` | `AudioProperties` | Volume, pan, and channel routing. |
-| `transition?` | `Transition` | A single transition attached to this clip. |
+| Field           | Type                | Notes                                                                                |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------ |
+| `id`            | `ClipId`            | Branded `string`. Must be unique across all clips in all tracks.                     |
+| `assetId`       | `AssetId`           | Must exist in `assetRegistry`. `INSERT_CLIP` rejects if missing.                     |
+| `trackId`       | `TrackId`           | Must match the containing track's `id`. Invariant checks this.                       |
+| `timelineStart` | `TimelineFrame`     | Inclusive start frame on the timeline.                                               |
+| `timelineEnd`   | `TimelineFrame`     | Exclusive end frame. `timelineEnd > timelineStart` is invariant.                     |
+| `mediaIn`       | `TimelineFrame`     | Start of the media window inside the asset.                                          |
+| `mediaOut`      | `TimelineFrame`     | End of the media window. `mediaOut > mediaIn` is invariant.                          |
+| `speed`         | `number`            | Must be `> 0`. At `speed=1.0`, `mediaOut - mediaIn === timelineEnd - timelineStart`. |
+| `enabled`       | `boolean`           | `false` = clip is skipped during compositing.                                        |
+| `reversed`      | `boolean`           | `true` = asset plays from `mediaOut` backward to `mediaIn`.                          |
+| `name`          | `string \| null`    | Display name override. `null` falls back to the asset name.                          |
+| `color`         | `string \| null`    | Hex string for track-row color coding.                                               |
+| `effects?`      | `readonly Effect[]` | Applied in order during compositing.                                                 |
+| `transform?`    | `ClipTransform`     | Position, scale, rotation, anchor point, and crop.                                   |
+| `audio?`        | `AudioProperties`   | Volume, pan, and channel routing.                                                    |
+| `transition?`   | `Transition`        | A single transition attached to this clip.                                           |
 
 **The duration invariant:**
 
 At `speed = 1.0`:
+
 ```
 mediaOut - mediaIn === timelineEnd - timelineStart
 ```
@@ -234,21 +236,22 @@ const clip = createClip({
   assetId: 'asset-interview',
   trackId: 'v1',
   timelineStart: toFrame(0),
-  timelineEnd: toFrame(300),   // 10 seconds at 30fps
-  mediaIn: toFrame(90),        // starts 3 seconds into the source
+  timelineEnd: toFrame(300), // 10 seconds at 30fps
+  mediaIn: toFrame(90), // starts 3 seconds into the source
   mediaOut: toFrame(390),
 });
 ```
 
 <Callout type="warn" title="Asset must be registered first">
-  `INSERT_CLIP` will reject with `ASSET_MISSING` if the clip's `assetId` is not already in `assetRegistry`. Always dispatch `REGISTER_ASSET` in the same transaction or a prior one.
+  `INSERT_CLIP` will reject with `ASSET_MISSING` if the clip's `assetId` is not already in
+  `assetRegistry`. Always dispatch `REGISTER_ASSET` in the same transaction or a prior one.
 </Callout>
 
 ---
 
 ## `Asset`
 
-Assets are media sources registered in `assetRegistry`. A single asset can be referenced by many clips  - the registry stores the metadata once, clips store only the `assetId`.
+Assets are media sources registered in `assetRegistry`. A single asset can be referenced by many clips - the registry stores the metadata once, clips store only the `assetId`.
 
 ```ts
 type Asset = FileAsset | GeneratorAsset;
@@ -282,17 +285,17 @@ type AssetStatus = 'online' | 'offline' | 'proxy-only' | 'missing';
 
 **`FileAsset` fields:**
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `kind` | `'file'` | Discriminant. |
-| `id` | `AssetId` | Branded string. Must be unique in `assetRegistry`. |
-| `name` | `string` | Display name in `AssetBin`. |
-| `mediaType` | `TrackType` | Must match the track type of any clip that references this asset. |
-| `filePath` | `string` | Path or URL to the source file. Core treats this as opaque  - the media pipeline resolves it. |
-| `intrinsicDuration` | `TimelineFrame` | Full length of the source. `mediaOut` on clips cannot exceed this. |
-| `nativeFps` | `FrameRate` | Source frame rate. Used for media frame conversion. |
-| `sourceTimecodeOffset` | `TimelineFrame` | Where the source's own timecode starts (for media with embedded TC). |
-| `status` | `AssetStatus` | `'online'` = available; `'offline'` = not currently accessible; `'proxy-only'` = low-res proxy; `'missing'` = never found. |
+| Field                  | Type            | Notes                                                                                                                      |
+| ---------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `kind`                 | `'file'`        | Discriminant.                                                                                                              |
+| `id`                   | `AssetId`       | Branded string. Must be unique in `assetRegistry`.                                                                         |
+| `name`                 | `string`        | Display name in `AssetBin`.                                                                                                |
+| `mediaType`            | `TrackType`     | Must match the track type of any clip that references this asset.                                                          |
+| `filePath`             | `string`        | Path or URL to the source file. Core treats this as opaque - the media pipeline resolves it.                               |
+| `intrinsicDuration`    | `TimelineFrame` | Full length of the source. `mediaOut` on clips cannot exceed this.                                                         |
+| `nativeFps`            | `FrameRate`     | Source frame rate. Used for media frame conversion.                                                                        |
+| `sourceTimecodeOffset` | `TimelineFrame` | Where the source's own timecode starts (for media with embedded TC).                                                       |
+| `status`               | `AssetStatus`   | `'online'` = available; `'offline'` = not currently accessible; `'proxy-only'` = low-res proxy; `'missing'` = never found. |
 
 **Factories:**
 
@@ -305,7 +308,7 @@ const videoAsset = createAsset({
   name: 'interview.mp4',
   mediaType: 'video',
   filePath: '/media/interview.mp4',
-  intrinsicDuration: toFrame(9000),  // 5 minutes at 30fps
+  intrinsicDuration: toFrame(9000), // 5 minutes at 30fps
   nativeFps: frameRate(30),
   sourceTimecodeOffset: toFrame(0),
 });
@@ -333,7 +336,7 @@ const result = dispatch(state, {
   label: 'Register asset and add clip',
   timestamp: Date.now(),
   operations: [
-    { type: 'REGISTER_ASSET', asset: videoAsset },  // ← must come before INSERT_CLIP
+    { type: 'REGISTER_ASSET', asset: videoAsset }, // ← must come before INSERT_CLIP
     { type: 'INSERT_CLIP', trackId: track.id, clip },
   ],
 });
@@ -346,9 +349,9 @@ const result = dispatch(state, {
 All entity IDs are branded strings that prevent accidental cross-entity substitution at the TypeScript type level:
 
 ```ts
-type AssetId  = string & { readonly __brand: 'AssetId' };
-type ClipId   = string & { readonly __brand: 'ClipId' };
-type TrackId  = string & { readonly __brand: 'TrackId' };
+type AssetId = string & { readonly __brand: 'AssetId' };
+type ClipId = string & { readonly __brand: 'ClipId' };
+type TrackId = string & { readonly __brand: 'TrackId' };
 type MarkerId = string & { readonly __brand: 'MarkerId' };
 ```
 
@@ -357,9 +360,9 @@ type MarkerId = string & { readonly __brand: 'MarkerId' };
 ```ts
 import { toAssetId, toClipId, toTrackId, toMarkerId } from '@timelinx/core';
 
-const assetId  = toAssetId('my-video');
-const clipId   = toClipId('clip-1');
-const trackId  = toTrackId('v1');
+const assetId = toAssetId('my-video');
+const clipId = toClipId('clip-1');
+const trackId = toTrackId('v1');
 const markerId = toMarkerId('marker-chapter-1');
 ```
 
@@ -369,10 +372,10 @@ You rarely call these manually. Factories handle branding internally. Use them w
 
 ## Summary
 
-| Object | Created with | Contains |
-|--------|-------------|---------|
-| `TimelineState` | `createTimelineState()` | `timeline` + `assetRegistry` |
-| `Timeline` | `createTimeline()` | FPS, duration, tracks, markers, groups |
-| `Track` | `createTrack()` | Type, clips, captions, lock/mute/solo |
-| `Clip` | `createClip()` | Timeline bounds, media bounds, effects |
-| `Asset` | `createAsset()` / `createGeneratorAsset()` | File path or generator def, duration, status |
+| Object          | Created with                               | Contains                                     |
+| --------------- | ------------------------------------------ | -------------------------------------------- |
+| `TimelineState` | `createTimelineState()`                    | `timeline` + `assetRegistry`                 |
+| `Timeline`      | `createTimeline()`                         | FPS, duration, tracks, markers, groups       |
+| `Track`         | `createTrack()`                            | Type, clips, captions, lock/mute/solo        |
+| `Clip`          | `createClip()`                             | Timeline bounds, media bounds, effects       |
+| `Asset`         | `createAsset()` / `createGeneratorAsset()` | File path or generator def, duration, status |

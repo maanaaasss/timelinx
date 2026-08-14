@@ -24,16 +24,16 @@ const SNAP_DISTANCE = 2;
 
 interface ClipBounds {
   clipId: string;
-  x: number;      // left edge in canvas coords
-  y: number;      // top edge in canvas coords
-  width: number;  // width in canvas coords
+  x: number; // left edge in canvas coords
+  y: number; // top edge in canvas coords
+  width: number; // width in canvas coords
   height: number; // height in canvas coords
   transform: ClipTransform;
 }
 
 interface SnapLine {
   type: 'horizontal' | 'vertical';
-  position: number;  // y for horizontal, x for vertical (in canvas coords)
+  position: number; // y for horizontal, x for vertical (in canvas coords)
 }
 
 export interface PreviewOverlayProps {
@@ -61,10 +61,7 @@ function screenToCanvas(
 /**
  * Convert screen pixels to canvas logical pixels.
  */
-function screenToCanvasScale(
-  screenPixels: number,
-  containerRect: DOMRect,
-): number {
+function screenToCanvasScale(screenPixels: number, containerRect: DOMRect): number {
   const scale = CANVAS_W / containerRect.width;
   return screenPixels * scale;
 }
@@ -108,11 +105,7 @@ function getClipBounds(clip: Clip): ClipBounds {
 /**
  * Test if a point is inside a clip's AABB (ignoring rotation for simplicity).
  */
-function hitTestClip(
-  canvasX: number,
-  canvasY: number,
-  bounds: ClipBounds,
-): boolean {
+function hitTestClip(canvasX: number, canvasY: number, bounds: ClipBounds): boolean {
   return (
     canvasX >= bounds.x &&
     canvasX <= bounds.x + bounds.width &&
@@ -354,7 +347,11 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
 
   // ── Drag state ──
   const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef<{ screenX: number; screenY: number; pos: { x: number; y: number } } | null>(null);
+  const dragStartRef = useRef<{
+    screenX: number;
+    screenY: number;
+    pos: { x: number; y: number };
+  } | null>(null);
   const draftPosRef = useRef<{ x: number; y: number } | null>(null);
   const [draftPos, setDraftPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -434,11 +431,11 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
     // Convert screen threshold to canvas coords
     const snapThresholdCanvas = screenToCanvasScale(SNAP_THRESHOLD_SCREEN, rect);
 
-    const { snapLines: lines, snapDx, snapDy } = calculateSnaps(
-      selectedBounds,
-      otherClipBounds,
-      snapThresholdCanvas,
-    );
+    const {
+      snapLines: lines,
+      snapDx,
+      snapDy,
+    } = calculateSnaps(selectedBounds, otherClipBounds, snapThresholdCanvas);
 
     setSnapLines(lines);
 
@@ -498,7 +495,11 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
       const rect = container.getBoundingClientRect();
 
       // Calculate delta in canvas logical pixels
-      const startCanvas = screenToCanvas(dragStartRef.current.screenX, dragStartRef.current.screenY, rect);
+      const startCanvas = screenToCanvas(
+        dragStartRef.current.screenX,
+        dragStartRef.current.screenY,
+        rect,
+      );
       const currentCanvas = screenToCanvas(e.clientX, e.clientY, rect);
       const dx = currentCanvas.x - startCanvas.x;
       const dy = currentCanvas.y - startCanvas.y;

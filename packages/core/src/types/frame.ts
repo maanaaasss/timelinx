@@ -20,7 +20,7 @@
  * Branded so TypeScript prevents raw numbers from sneaking into frame positions.
  * The ONLY way to create one is via toFrame().
  */
-export type TimelineFrame = number & { readonly __brand: "TimelineFrame" };
+export type TimelineFrame = number & { readonly __brand: 'TimelineFrame' };
 
 /** The canonical factory. Use this everywhere instead of casting. */
 export const toFrame = (n: number): TimelineFrame => n as TimelineFrame;
@@ -71,9 +71,7 @@ export const FrameRates = {
 export function frameRate(value: number): FrameRate {
   const valid: FrameRate[] = [23.976, 24, 25, 29.97, 30, 50, 59.94, 60];
   if (!valid.includes(value as FrameRate)) {
-    throw new Error(
-      `FrameRate must be one of ${valid.join(", ")}, got: ${value}`,
-    );
+    throw new Error(`FrameRate must be one of ${valid.join(', ')}, got: ${value}`);
   }
   return value as FrameRate;
 }
@@ -94,7 +92,7 @@ export type RationalTime = {
 /**
  * Timecode — SMPTE timecode string, display-only. Never use for arithmetic.
  */
-export type Timecode = string & { readonly __brand: "Timecode" };
+export type Timecode = string & { readonly __brand: 'Timecode' };
 export const toTimecode = (s: string): Timecode => s as Timecode;
 
 /**

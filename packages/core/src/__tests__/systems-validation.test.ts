@@ -26,51 +26,66 @@ import type { Clip } from '../types/clip';
 // Fixtures
 // ---------------------------------------------------------------------------
 
-function makeAsset(overrides: Partial<{ id: string; intrinsicDuration: number; mediaType: string }> = {}) {
+function makeAsset(
+  overrides: Partial<{ id: string; intrinsicDuration: number; mediaType: string }> = {},
+) {
   return createAsset({
-    id:                   overrides.id ?? 'asset-1',
-    name:                 'Test Video',
-    mediaType:            (overrides.mediaType ?? 'video') as 'video',
-    filePath:             '/media/test.mp4',
-    intrinsicDuration:    toFrame(overrides.intrinsicDuration ?? 600),
-    nativeFps:            30,
+    id: overrides.id ?? 'asset-1',
+    name: 'Test Video',
+    mediaType: (overrides.mediaType ?? 'video') as 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(overrides.intrinsicDuration ?? 600),
+    nativeFps: 30,
     sourceTimecodeOffset: toFrame(0),
-    status:               'online',
+    status: 'online',
   });
 }
 
-function makeClip(overrides: Partial<{
-  id: string; assetId: string; trackId: string;
-  timelineStart: number; timelineEnd: number;
-  mediaIn: number; mediaOut: number;
-}> = {}) {
+function makeClip(
+  overrides: Partial<{
+    id: string;
+    assetId: string;
+    trackId: string;
+    timelineStart: number;
+    timelineEnd: number;
+    mediaIn: number;
+    mediaOut: number;
+  }> = {},
+) {
   return createClip({
-    id:            overrides.id ?? 'clip-1',
-    assetId:       overrides.assetId ?? 'asset-1',
-    trackId:       overrides.trackId ?? 'track-1',
+    id: overrides.id ?? 'clip-1',
+    assetId: overrides.assetId ?? 'asset-1',
+    trackId: overrides.trackId ?? 'track-1',
     timelineStart: toFrame(overrides.timelineStart ?? 0),
-    timelineEnd:   toFrame(overrides.timelineEnd ?? 100),
-    mediaIn:       toFrame(overrides.mediaIn ?? 0),
-    mediaOut:      toFrame(overrides.mediaOut ?? 100),
+    timelineEnd: toFrame(overrides.timelineEnd ?? 100),
+    mediaIn: toFrame(overrides.mediaIn ?? 0),
+    mediaOut: toFrame(overrides.mediaOut ?? 100),
   });
 }
 
-function makeState(clipOverrides?: Partial<{ timelineStart: number; timelineEnd: number; mediaIn: number; mediaOut: number }>): TimelineState {
+function makeState(
+  clipOverrides?: Partial<{
+    timelineStart: number;
+    timelineEnd: number;
+    mediaIn: number;
+    mediaOut: number;
+  }>,
+): TimelineState {
   const asset = makeAsset();
   const clip = makeClip(clipOverrides);
   const track = createTrack({
-    id:    'track-1',
-    name:  'Video 1',
-    type:  'video',
+    id: 'track-1',
+    name: 'Video 1',
+    type: 'video',
     clips: [clip],
   });
   const timeline = createTimeline({
-    id:            'tl-1',
-    name:          'Test',
-    fps:           frameRate(30),
-    duration:      toFrame(9000),
+    id: 'tl-1',
+    name: 'Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
     startTimecode: toTimecode('00:00:00:00'),
-    tracks:        [track],
+    tracks: [track],
   });
   return createTimelineState({
     timeline,
@@ -104,7 +119,7 @@ describe('validateClip', () => {
     const clip = makeClip({ timelineStart: 100, timelineEnd: 100 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'INVALID_TIMELINE_BOUNDS')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'INVALID_TIMELINE_BOUNDS')).toBe(true);
   });
 
   it('rejects when timelineEnd < timelineStart', () => {
@@ -112,7 +127,7 @@ describe('validateClip', () => {
     const clip = makeClip({ timelineStart: 200, timelineEnd: 100 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'INVALID_TIMELINE_BOUNDS')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'INVALID_TIMELINE_BOUNDS')).toBe(true);
   });
 
   it('rejects when mediaIn < 0', () => {
@@ -120,7 +135,7 @@ describe('validateClip', () => {
     const clip = makeClip({ mediaIn: -10, mediaOut: 90 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'INVALID_MEDIA_IN')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'INVALID_MEDIA_IN')).toBe(true);
   });
 
   it('rejects when mediaOut <= mediaIn', () => {
@@ -128,7 +143,7 @@ describe('validateClip', () => {
     const clip = makeClip({ mediaIn: 50, mediaOut: 50 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'INVALID_MEDIA_BOUNDS')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'INVALID_MEDIA_BOUNDS')).toBe(true);
   });
 
   it('rejects when mediaOut > asset intrinsicDuration', () => {
@@ -136,7 +151,7 @@ describe('validateClip', () => {
     const clip = makeClip({ mediaIn: 0, mediaOut: 700 }); // asset is 600
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'MEDIA_EXCEEDS_ASSET')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'MEDIA_EXCEEDS_ASSET')).toBe(true);
   });
 
   it('rejects when timeline duration != media duration (Phase 1)', () => {
@@ -145,7 +160,7 @@ describe('validateClip', () => {
     const clip = makeClip({ timelineStart: 0, timelineEnd: 150, mediaIn: 0, mediaOut: 80 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(true);
   });
 
   // ── DURATION_MISMATCH boundary tests (±0.5 frame tolerance) ──────────────
@@ -169,7 +184,7 @@ describe('validateClip', () => {
     const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 100 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(true);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(false);
   });
 
   it('DURATION_MISMATCH: integer frames — 1-frame mismatch is rejected', () => {
@@ -177,7 +192,7 @@ describe('validateClip', () => {
     const clip = makeClip({ timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 99 });
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(true);
   });
 
   it('DURATION_MISMATCH: sub-frame drift of 0.4 frames is tolerated', () => {
@@ -189,7 +204,7 @@ describe('validateClip', () => {
     // timelineDuration = 100, mediaDuration = 99.6, diff = 0.4
     const result = validateClip(state, clip);
     expect(result.valid).toBe(true);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(false);
   });
 
   it('DURATION_MISMATCH: 0.6-frame mismatch is rejected', () => {
@@ -199,7 +214,7 @@ describe('validateClip', () => {
     // timelineDuration = 100, mediaDuration = 99.4, diff = 0.6
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(true);
   });
 
   it('DURATION_MISMATCH: exactly ±0.5 frames is tolerated (inclusive boundary)', () => {
@@ -209,7 +224,7 @@ describe('validateClip', () => {
     // timelineDuration = 100, mediaDuration = 99.5, diff = 0.5
     const result = validateClip(state, clip);
     expect(result.valid).toBe(true);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(false);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(false);
   });
 
   it('DURATION_MISMATCH: just past boundary (0.5001) is rejected', () => {
@@ -219,7 +234,7 @@ describe('validateClip', () => {
     // timelineDuration = 100, mediaDuration = 99.4999, diff = 0.5001
     const result = validateClip(state, clip);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'DURATION_MISMATCH')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'DURATION_MISMATCH')).toBe(true);
   });
 
   it('collects multiple errors', () => {
@@ -251,21 +266,33 @@ describe('validateTrack', () => {
 
   it('rejects when track has overlapping clips', () => {
     const asset = makeAsset();
-    const clip1 = makeClip({ id: 'clip-1', timelineStart: 0, timelineEnd: 100, mediaIn: 0, mediaOut: 100 });
-    const clip2 = makeClip({ id: 'clip-2', timelineStart: 50, timelineEnd: 150, mediaIn: 0, mediaOut: 100 });
+    const clip1 = makeClip({
+      id: 'clip-1',
+      timelineStart: 0,
+      timelineEnd: 100,
+      mediaIn: 0,
+      mediaOut: 100,
+    });
+    const clip2 = makeClip({
+      id: 'clip-2',
+      timelineStart: 50,
+      timelineEnd: 150,
+      mediaIn: 0,
+      mediaOut: 100,
+    });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [clip1, clip2],
     });
     const timeline = createTimeline({
-      id:            'tl-1',
-      name:          'Test',
-      fps:           frameRate(30),
-      duration:      toFrame(9000),
+      id: 'tl-1',
+      name: 'Test',
+      fps: frameRate(30),
+      duration: toFrame(9000),
       startTimecode: toTimecode('00:00:00:00'),
-      tracks:        [track],
+      tracks: [track],
     });
     const state = createTimelineState({
       timeline,
@@ -274,15 +301,15 @@ describe('validateTrack', () => {
 
     const result = validateTrack(state, track);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.code === 'CLIPS_OVERLAP')).toBe(true);
+    expect(result.errors.some((e) => e.code === 'CLIPS_OVERLAP')).toBe(true);
   });
 
   it('returns valid for empty track', () => {
     const state = makeState();
     const track = createTrack({
-      id:    'track-empty',
-      name:  'Empty',
-      type:  'video',
+      id: 'track-empty',
+      name: 'Empty',
+      type: 'video',
       clips: [],
     });
     const result = validateTrack(state, track);
@@ -303,12 +330,12 @@ describe('validateTimeline', () => {
 
   it('returns valid for empty timeline', () => {
     const timeline = createTimeline({
-      id:            'tl-empty',
-      name:          'Empty',
-      fps:           frameRate(30),
-      duration:      toFrame(9000),
+      id: 'tl-empty',
+      name: 'Empty',
+      fps: frameRate(30),
+      duration: toFrame(9000),
       startTimecode: toTimecode('00:00:00:00'),
-      tracks:        [],
+      tracks: [],
     });
     const state = createTimelineState({ timeline });
     const result = validateTimeline(state);
@@ -324,9 +351,9 @@ describe('validateNoOverlap', () => {
   it('returns valid when no overlap', () => {
     const clip = makeClip({ id: 'new-clip', timelineStart: 200, timelineEnd: 300 });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [makeClip({ timelineStart: 0, timelineEnd: 100 })],
     });
     const result = validateNoOverlap(track, clip);
@@ -336,9 +363,9 @@ describe('validateNoOverlap', () => {
   it('rejects when clip overlaps existing', () => {
     const clip = makeClip({ id: 'new-clip', timelineStart: 50, timelineEnd: 150 });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [makeClip({ timelineStart: 0, timelineEnd: 100 })],
     });
     const result = validateNoOverlap(track, clip);
@@ -349,9 +376,9 @@ describe('validateNoOverlap', () => {
   it('skips self-comparison', () => {
     const existing = makeClip({ id: 'clip-1', timelineStart: 0, timelineEnd: 100 });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [existing],
     });
     const result = validateNoOverlap(track, existing);
@@ -361,9 +388,9 @@ describe('validateNoOverlap', () => {
   it('allows adjacent clips (no gap, no overlap)', () => {
     const clip = makeClip({ id: 'new-clip', timelineStart: 100, timelineEnd: 200 });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [makeClip({ timelineStart: 0, timelineEnd: 100 })],
     });
     const result = validateNoOverlap(track, clip);
@@ -388,9 +415,9 @@ describe('validateTrackTypeMatch', () => {
     const state = makeState();
     const clip = makeClip();
     const audioTrack = createTrack({
-      id:    'audio-1',
-      name:  'Audio 1',
-      type:  'audio',
+      id: 'audio-1',
+      name: 'Audio 1',
+      type: 'audio',
       clips: [],
     });
     const result = validateTrackTypeMatch(state, clip, audioTrack);
@@ -402,18 +429,18 @@ describe('validateTrackTypeMatch', () => {
     const asset = makeAsset({ id: 'audio-1', mediaType: 'audio' });
     const clip = makeClip({ id: 'audio-clip', assetId: 'audio-1' });
     const track = createTrack({
-      id:    'track-1',
-      name:  'Video 1',
-      type:  'video',
+      id: 'track-1',
+      name: 'Video 1',
+      type: 'video',
       clips: [],
     });
     const timeline = createTimeline({
-      id:            'tl-1',
-      name:          'Test',
-      fps:           frameRate(30),
-      duration:      toFrame(9000),
+      id: 'tl-1',
+      name: 'Test',
+      fps: frameRate(30),
+      duration: toFrame(9000),
       startTimecode: toTimecode('00:00:00:00'),
-      tracks:        [track],
+      tracks: [track],
     });
     const state = createTimelineState({
       timeline,

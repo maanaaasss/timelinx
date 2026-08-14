@@ -54,7 +54,7 @@ export class ZoomTool implements ITool {
     this.dragStartZoom = ctx.pixelsPerFrame;
   }
 
-  onPointerMove(event: TimelinePointerEvent, ctx: ToolContext): null {
+  onPointerMove(event: TimelinePointerEvent, _ctx: ToolContext): null {
     const deltaX = event.x - this.dragStartX;
     const factor = Math.pow(1.01, deltaX);
     const newZoom = clamp(
@@ -74,7 +74,8 @@ export class ZoomTool implements ITool {
 
   onKeyDown(event: TimelineKeyEvent, ctx: ToolContext): null {
     const current = ctx.pixelsPerFrame;
-    const { minPixelsPerFrame, maxPixelsPerFrame, initialPixelsPerFrame, onZoomChange } = this.options;
+    const { minPixelsPerFrame, maxPixelsPerFrame, initialPixelsPerFrame, onZoomChange } =
+      this.options;
     if (event.key === '+' || event.key === '=') {
       onZoomChange(clamp(current * 1.25, minPixelsPerFrame, maxPixelsPerFrame));
     } else if (event.key === '-') {

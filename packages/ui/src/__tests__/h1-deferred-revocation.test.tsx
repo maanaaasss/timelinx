@@ -77,9 +77,7 @@ describe('H1: deferred revocation protects concurrent draw-then-delete', () => {
 
     // 3. Verify: URL is NOT yet revoked synchronously.
     //    If it were, any concurrent drawImage using this URL would get a black frame.
-    const revokedSynchronously = revokespy.mock.calls.some(
-      ([url]) => url === 'blob:h1-url',
-    );
+    const revokedSynchronously = revokespy.mock.calls.some(([url]) => url === 'blob:h1-url');
     expect(revokedSynchronously).toBe(false);
 
     // 4. The context state is cleared synchronously (getBlobUrl returns undefined)
@@ -89,9 +87,7 @@ describe('H1: deferred revocation protects concurrent draw-then-delete', () => {
     // 5. After the microtask queue drains, the URL IS revoked.
     await Promise.resolve();
 
-    const revokedAfterMicrotask = revokespy.mock.calls.some(
-      ([url]) => url === 'blob:h1-url',
-    );
+    const revokedAfterMicrotask = revokespy.mock.calls.some(([url]) => url === 'blob:h1-url');
     expect(revokedAfterMicrotask).toBe(true);
   });
 
@@ -109,7 +105,9 @@ describe('H1: deferred revocation protects concurrent draw-then-delete', () => {
     // operations happen before the frame ends — representing multiple layers
     // in a composite operation all reading from the same asset.
     const urlStep1 = ctx.getBlobUrl('clip-draw'); // layer 1 read
-    act(() => { ctx.removeImportedAsset('clip-draw'); }); // delete fires between layers
+    act(() => {
+      ctx.removeImportedAsset('clip-draw');
+    }); // delete fires between layers
     const urlStep2 = ctx.getBlobUrl('clip-draw'); // layer 2 read AFTER delete
 
     // Layer 1 captured the URL before delete — it should have gotten a value
@@ -150,9 +148,7 @@ describe('H1: deferred revocation protects concurrent draw-then-delete', () => {
     expect(revoked).toBe(true);
 
     // Revoked exactly once, not twice
-    const revokeCount = revokespy.mock.calls.filter(
-      ([url]) => url === 'blob:tick-url',
-    ).length;
+    const revokeCount = revokespy.mock.calls.filter(([url]) => url === 'blob:tick-url').length;
     expect(revokeCount).toBe(1);
   });
 
@@ -185,7 +181,9 @@ describe('H1: deferred revocation protects concurrent draw-then-delete', () => {
     });
 
     // Remove only clip-a
-    act(() => { ctx.removeImportedAsset('clip-a'); });
+    act(() => {
+      ctx.removeImportedAsset('clip-a');
+    });
 
     // clip-b must still be accessible (its URL not affected by clip-a's removal)
     expect(ctx.getBlobUrl('clip-b')).toBe('blob:url-b');

@@ -24,33 +24,54 @@ export const TransitionsPanel = React.memo(function TransitionsPanel({
     ? clipsWithTransitions.find((c) => c.clipId === selectedClipId)
     : null;
 
-  const handleDeleteTransition = useCallback((clipId: string) => {
-    engine.dispatch({
-      id: `delete-transition-${Date.now()}`,
-      label: 'Delete transition',
-      timestamp: Date.now(),
-      operations: [{ type: 'DELETE_TRANSITION', clipId: clipId as ClipId }],
-    });
-    if (selectedClipId === clipId) setSelectedClipId(null);
-  }, [engine, selectedClipId]);
+  const handleDeleteTransition = useCallback(
+    (clipId: string) => {
+      engine.dispatch({
+        id: `delete-transition-${Date.now()}`,
+        label: 'Delete transition',
+        timestamp: Date.now(),
+        operations: [{ type: 'DELETE_TRANSITION', clipId: clipId as ClipId }],
+      });
+      if (selectedClipId === clipId) setSelectedClipId(null);
+    },
+    [engine, selectedClipId],
+  );
 
-  const handleSetDuration = useCallback((clipId: string, duration: number) => {
-    engine.dispatch({
-      id: `set-transition-duration-${Date.now()}`,
-      label: 'Set transition duration',
-      timestamp: Date.now(),
-      operations: [{ type: 'SET_TRANSITION_DURATION', clipId: clipId as ClipId, durationFrames: Math.max(1, duration) }],
-    });
-  }, [engine]);
+  const handleSetDuration = useCallback(
+    (clipId: string, duration: number) => {
+      engine.dispatch({
+        id: `set-transition-duration-${Date.now()}`,
+        label: 'Set transition duration',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'SET_TRANSITION_DURATION',
+            clipId: clipId as ClipId,
+            durationFrames: Math.max(1, duration),
+          },
+        ],
+      });
+    },
+    [engine],
+  );
 
-  const handleSetAlignment = useCallback((clipId: string, alignment: string) => {
-    engine.dispatch({
-      id: `set-transition-alignment-${Date.now()}`,
-      label: 'Set transition alignment',
-      timestamp: Date.now(),
-      operations: [{ type: 'SET_TRANSITION_ALIGNMENT', clipId: clipId as ClipId, alignment: alignment as import('@timelinx/core').TransitionAlignment }],
-    });
-  }, [engine]);
+  const handleSetAlignment = useCallback(
+    (clipId: string, alignment: string) => {
+      engine.dispatch({
+        id: `set-transition-alignment-${Date.now()}`,
+        label: 'Set transition alignment',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'SET_TRANSITION_ALIGNMENT',
+            clipId: clipId as ClipId,
+            alignment: alignment as import('@timelinx/core').TransitionAlignment,
+          },
+        ],
+      });
+    },
+    [engine],
+  );
 
   return (
     <div className={`inspector-panel${className ? ` ${className}` : ''}`}>
@@ -70,7 +91,9 @@ export const TransitionsPanel = React.memo(function TransitionsPanel({
           >
             <option value="">All tracks</option>
             {tracks.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
@@ -78,7 +101,9 @@ export const TransitionsPanel = React.memo(function TransitionsPanel({
         {clipsWithTransitions.length === 0 ? (
           <div className="empty-state">
             <p>No transitions found</p>
-            <p className="empty-state-hint">Use the Transition tool (G) and drag from a clip edge</p>
+            <p className="empty-state-hint">
+              Use the Transition tool (G) and drag from a clip edge
+            </p>
           </div>
         ) : (
           <>
@@ -96,7 +121,10 @@ export const TransitionsPanel = React.memo(function TransitionsPanel({
                   <button
                     className="transition-delete-btn"
                     title="Remove transition"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteTransition(clipId); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTransition(clipId);
+                    }}
                   >
                     ×
                   </button>

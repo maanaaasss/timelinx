@@ -50,7 +50,9 @@ function makeOTIOFixtureState() {
     nativeFps: 30,
     sourceTimecodeOffset: toFrame(0),
   });
-  const effect1 = createEffect(toEffectId('eff-1'), 'blur', 'preComposite', [{ key: 'radius', value: 5 }]);
+  const effect1 = createEffect(toEffectId('eff-1'), 'blur', 'preComposite', [
+    { key: 'radius', value: 5 },
+  ]);
   const clip1 = createClip({
     id: 'clip-1',
     assetId: 'asset-v1',
@@ -151,9 +153,13 @@ describe('Phase 5 — OTIO Export', () => {
     const state = makeOTIOFixtureState();
     const doc = exportToOTIO(state);
     const videoTrack = doc.tracks.children[0]!;
-    const firstClip = videoTrack.children.find((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1') as {
-      source_range: { duration: { value: number } };
-    } | undefined;
+    const firstClip = videoTrack.children.find(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1',
+    ) as
+      | {
+          source_range: { duration: { value: number } };
+        }
+      | undefined;
     expect(firstClip).toBeDefined();
     expect(firstClip!.source_range.duration.value).toBe(50);
   });
@@ -162,17 +168,25 @@ describe('Phase 5 — OTIO Export', () => {
     const state = makeOTIOFixtureState();
     const doc = exportToOTIO(state);
     const videoTrack = doc.tracks.children[0]!;
-    const gaps = videoTrack.children.filter((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Gap.1');
+    const gaps = videoTrack.children.filter(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Gap.1',
+    );
     expect(gaps.length).toBe(2);
-    expect((gaps[0] as { source_range: { duration: { value: number } } }).source_range.duration.value).toBe(50);
-    expect((gaps[1] as { source_range: { duration: { value: number } } }).source_range.duration.value).toBe(50);
+    expect(
+      (gaps[0] as { source_range: { duration: { value: number } } }).source_range.duration.value,
+    ).toBe(50);
+    expect(
+      (gaps[1] as { source_range: { duration: { value: number } } }).source_range.duration.value,
+    ).toBe(50);
   });
 
   it('FileAsset maps to ExternalReference with target_url', () => {
     const state = makeOTIOFixtureState();
     const doc = exportToOTIO(state);
     const videoTrack = doc.tracks.children[0]!;
-    const clip = videoTrack.children.find((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1') as {
+    const clip = videoTrack.children.find(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1',
+    ) as {
       media_reference: { OTIO_SCHEMA: string; target_url?: string };
     };
     expect(clip.media_reference.OTIO_SCHEMA).toBe('ExternalReference.1');
@@ -216,7 +230,9 @@ describe('Phase 5 — OTIO Export', () => {
       assetRegistry: new Map([[genAsset.id, genAsset]]),
     });
     const doc = exportToOTIO(state);
-    const otioClip = doc.tracks.children[0]!.children[0] as { media_reference: { OTIO_SCHEMA: string; generator_kind?: string } };
+    const otioClip = doc.tracks.children[0]!.children[0] as {
+      media_reference: { OTIO_SCHEMA: string; generator_kind?: string };
+    };
     expect(otioClip.media_reference.OTIO_SCHEMA).toBe('GeneratorReference.1');
     expect(otioClip.media_reference.generator_kind).toBe('solid');
   });
@@ -225,7 +241,9 @@ describe('Phase 5 — OTIO Export', () => {
     const state = makeOTIOFixtureState();
     const doc = exportToOTIO(state);
     const videoTrack = doc.tracks.children[0]!;
-    const firstClip = videoTrack.children.find((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1') as {
+    const firstClip = videoTrack.children.find(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1',
+    ) as {
       effects?: Array<{ effect_name: string }>;
     };
     expect(firstClip.effects).toHaveLength(1);
@@ -381,12 +399,18 @@ describe('Phase 5 — OTIO Import', () => {
     const videoTrack1 = doc1.tracks.children[0]!;
     const videoTrack2 = doc2.tracks.children[0]!;
     expect(videoTrack2.children.length).toBe(videoTrack1.children.length);
-    const clips1 = videoTrack1.children.filter((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1');
-    const clips2 = videoTrack2.children.filter((c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1');
+    const clips1 = videoTrack1.children.filter(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1',
+    );
+    const clips2 = videoTrack2.children.filter(
+      (c) => (c as { OTIO_SCHEMA: string }).OTIO_SCHEMA === 'Clip.1',
+    );
     expect(clips2.length).toBe(clips1.length);
     clips1.forEach((c, i) => {
-      const d1 = (c as { source_range: { duration: { value: number } } }).source_range.duration.value;
-      const d2 = (clips2[i] as { source_range: { duration: { value: number } } }).source_range.duration.value;
+      const d1 = (c as { source_range: { duration: { value: number } } }).source_range.duration
+        .value;
+      const d2 = (clips2[i] as { source_range: { duration: { value: number } } }).source_range
+        .duration.value;
       expect(d2).toBe(d1);
     });
   });

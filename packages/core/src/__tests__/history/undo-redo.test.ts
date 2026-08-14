@@ -10,8 +10,14 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import {
-  createHistory, pushHistory, undo, redo, canUndo, canRedo,
-  getCurrentState, HistoryStack,
+  createHistory,
+  pushHistory,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  getCurrentState,
+  HistoryStack,
 } from '../../engine/history';
 import { dispatch } from '../../engine/dispatcher';
 import { checkInvariants } from '../../validation/invariants';
@@ -51,19 +57,32 @@ function dispatchAndAssert(state: TimelineState, ops: OperationPrimitive[]): Tim
 
 function makeBaseState(): TimelineState {
   const asset = createAsset({
-    id: 'asset-1', name: 'Video', mediaType: 'video',
-    filePath: '/media/test.mp4', intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    id: 'asset-1',
+    name: 'Video',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(9000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
   const clip = createClip({
-    id: 'clip-1', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-1',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Test', fps: 30, duration: toFrame(3000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Test',
+    fps: 30,
+    duration: toFrame(3000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[toAssetId('asset-1'), asset]]) });
 }
@@ -100,11 +119,13 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('MOVE_CLIP: undo restores original clip position', () => {
     const original = makeBaseState();
-    const moved = dispatchAndAssert(original, [{
-      type: 'MOVE_CLIP',
-      clipId: toClipId('clip-1'),
-      newTimelineStart: toFrame(500),
-    }]);
+    const moved = dispatchAndAssert(original, [
+      {
+        type: 'MOVE_CLIP',
+        clipId: toClipId('clip-1'),
+        newTimelineStart: toFrame(500),
+      },
+    ]);
     expect(moved.timeline.tracks[0]!.clips[0]!.timelineStart).toBe(500);
 
     let h = createHistory(original);
@@ -115,12 +136,14 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('RESIZE_CLIP: undo restores original clip size', () => {
     const original = makeBaseState();
-    const resized = dispatchAndAssert(original, [{
-      type: 'RESIZE_CLIP',
-      clipId: toClipId('clip-1'),
-      edge: 'end',
-      newFrame: toFrame(150),
-    }]);
+    const resized = dispatchAndAssert(original, [
+      {
+        type: 'RESIZE_CLIP',
+        clipId: toClipId('clip-1'),
+        edge: 'end',
+        newFrame: toFrame(150),
+      },
+    ]);
     expect(resized.timeline.tracks[0]!.clips[0]!.timelineEnd).toBe(150);
 
     let h = createHistory(original);
@@ -144,15 +167,21 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('INSERT_CLIP: undo removes the clip', () => {
     const original = makeBaseState();
-    const inserted = dispatchAndAssert(original, [{
-      type: 'INSERT_CLIP',
-      clip: createClip({
-        id: 'clip-new', assetId: 'asset-1', trackId: 'track-1',
-        timelineStart: toFrame(500), timelineEnd: toFrame(700),
-        mediaIn: toFrame(0), mediaOut: toFrame(200),
-      }),
-      trackId: toTrackId('track-1'),
-    }]);
+    const inserted = dispatchAndAssert(original, [
+      {
+        type: 'INSERT_CLIP',
+        clip: createClip({
+          id: 'clip-new',
+          assetId: 'asset-1',
+          trackId: 'track-1',
+          timelineStart: toFrame(500),
+          timelineEnd: toFrame(700),
+          mediaIn: toFrame(0),
+          mediaOut: toFrame(200),
+        }),
+        trackId: toTrackId('track-1'),
+      },
+    ]);
     expect(inserted.timeline.tracks[0]!.clips).toHaveLength(2);
 
     let h = createHistory(original);
@@ -163,17 +192,20 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('SET_CLIP_SPEED: undo restores original speed', () => {
     const original = makeBaseState();
-    const sped = dispatchAndAssert(original, [{
-      type: 'SET_CLIP_SPEED',
-      clipId: toClipId('clip-1'),
-      speed: 2.0,
-      // Note: speed change + media bounds adjustment to maintain invariant
-    }, {
-      type: 'SET_MEDIA_BOUNDS',
-      clipId: toClipId('clip-1'),
-      mediaIn: toFrame(0),
-      mediaOut: toFrame(100),
-    }]);
+    const sped = dispatchAndAssert(original, [
+      {
+        type: 'SET_CLIP_SPEED',
+        clipId: toClipId('clip-1'),
+        speed: 2.0,
+        // Note: speed change + media bounds adjustment to maintain invariant
+      },
+      {
+        type: 'SET_MEDIA_BOUNDS',
+        clipId: toClipId('clip-1'),
+        mediaIn: toFrame(0),
+        mediaOut: toFrame(100),
+      },
+    ]);
     expect(sped.timeline.tracks[0]!.clips[0]!.speed).toBe(2.0);
 
     let h = createHistory(original);
@@ -184,10 +216,12 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('ADD_TRACK: undo removes the track', () => {
     const original = makeBaseState();
-    const withTrack = dispatchAndAssert(original, [{
-      type: 'ADD_TRACK',
-      track: createTrack({ id: 'track-2', name: 'V2', type: 'video', clips: [] }),
-    }]);
+    const withTrack = dispatchAndAssert(original, [
+      {
+        type: 'ADD_TRACK',
+        track: createTrack({ id: 'track-2', name: 'V2', type: 'video', clips: [] }),
+      },
+    ]);
     expect(withTrack.timeline.tracks).toHaveLength(2);
 
     let h = createHistory(original);
@@ -198,13 +232,20 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('ADD_MARKER: undo removes the marker', () => {
     const original = makeBaseState();
-    const withMarker = dispatchAndAssert(original, [{
-      type: 'ADD_MARKER',
-      marker: {
-        type: 'point', id: toMarkerId('m1'), frame: toFrame(100),
-        label: 'Test', color: 'red', scope: 'global', linkedClipId: null,
+    const withMarker = dispatchAndAssert(original, [
+      {
+        type: 'ADD_MARKER',
+        marker: {
+          type: 'point',
+          id: toMarkerId('m1'),
+          frame: toFrame(100),
+          label: 'Test',
+          color: 'red',
+          scope: 'global',
+          linkedClipId: null,
+        },
       },
-    }]);
+    ]);
     expect(withMarker.timeline.markers).toHaveLength(1);
 
     let h = createHistory(original);
@@ -215,9 +256,7 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('SET_IN_POINT: undo clears the in point', () => {
     const original = makeBaseState();
-    const withIn = dispatchAndAssert(original, [
-      { type: 'SET_IN_POINT', frame: toFrame(50) },
-    ]);
+    const withIn = dispatchAndAssert(original, [{ type: 'SET_IN_POINT', frame: toFrame(50) }]);
     expect(withIn.timeline.inPoint).toBe(50);
 
     let h = createHistory(original);
@@ -228,9 +267,7 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('SET_OUT_POINT: undo clears the out point', () => {
     const original = makeBaseState();
-    const withOut = dispatchAndAssert(original, [
-      { type: 'SET_OUT_POINT', frame: toFrame(2500) },
-    ]);
+    const withOut = dispatchAndAssert(original, [{ type: 'SET_OUT_POINT', frame: toFrame(2500) }]);
     expect(withOut.timeline.outPoint).toBe(2500);
 
     let h = createHistory(original);
@@ -241,11 +278,13 @@ describe('Undo/Redo Round-Trip — per operation', () => {
 
   it('ADD_EFFECT: undo removes the effect', () => {
     const original = makeBaseState();
-    const withEffect = dispatchAndAssert(original, [{
-      type: 'ADD_EFFECT',
-      clipId: toClipId('clip-1'),
-      effect: createEffect(toEffectId('e1'), 'blur', 'preComposite', []),
-    }]);
+    const withEffect = dispatchAndAssert(original, [
+      {
+        type: 'ADD_EFFECT',
+        clipId: toClipId('clip-1'),
+        effect: createEffect(toEffectId('e1'), 'blur', 'preComposite', []),
+      },
+    ]);
     expect(withEffect.timeline.tracks[0]!.clips[0]!.effects).toHaveLength(1);
 
     let h = createHistory(original);
@@ -264,13 +303,21 @@ describe('Undo/Redo Round-Trip — multiple operations', () => {
 
     state = dispatchAndAssert(state, [{ type: 'RENAME_TIMELINE', name: 'Step 1' }]);
     state = dispatchAndAssert(state, [{ type: 'SET_TIMELINE_DURATION', duration: toFrame(6000) }]);
-    state = dispatchAndAssert(state, [{
-      type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(100),
-    }]);
+    state = dispatchAndAssert(state, [
+      {
+        type: 'MOVE_CLIP',
+        clipId: toClipId('clip-1'),
+        newTimelineStart: toFrame(100),
+      },
+    ]);
     state = dispatchAndAssert(state, [{ type: 'RENAME_TIMELINE', name: 'Step 4' }]);
-    state = dispatchAndAssert(state, [{
-      type: 'SET_CLIP_SPEED', clipId: toClipId('clip-1'), speed: 1.0,
-    }]);
+    state = dispatchAndAssert(state, [
+      {
+        type: 'SET_CLIP_SPEED',
+        clipId: toClipId('clip-1'),
+        speed: 1.0,
+      },
+    ]);
 
     // Build history
     let h = createHistory(original);
@@ -328,7 +375,9 @@ describe('Undo/Redo Round-Trip — branching', () => {
     h = pushHistory(h, s5);
 
     // Undo 3 → should be at s2 (name='Step 2')
-    h = undo(h); h = undo(h); h = undo(h);
+    h = undo(h);
+    h = undo(h);
+    h = undo(h);
     expect(getCurrentState(h).timeline.name).toBe('Step 2');
 
     // New operation
@@ -344,9 +393,7 @@ describe('Undo/Redo Round-Trip — branching', () => {
 
   it('undo all the way, then redo works correctly', () => {
     const original = makeBaseState();
-    const renamed = dispatchAndAssert(original, [
-      { type: 'RENAME_TIMELINE', name: 'Changed' },
-    ]);
+    const renamed = dispatchAndAssert(original, [{ type: 'RENAME_TIMELINE', name: 'Changed' }]);
 
     let h = createHistory(original);
     h = pushHistory(h, renamed);
@@ -365,17 +412,16 @@ describe('Undo/Redo Round-Trip — branching', () => {
 describe('Undo/Redo Round-Trip — rejected operations', () => {
   it('rejected operation does not enter history', () => {
     const original = makeBaseState();
-    const renamed = dispatchAndAssert(original, [
-      { type: 'RENAME_TIMELINE', name: 'Valid' },
-    ]);
+    const renamed = dispatchAndAssert(original, [{ type: 'RENAME_TIMELINE', name: 'Valid' }]);
 
     let h = createHistory(original);
     h = pushHistory(h, renamed);
 
     // Try a rejected operation
-    const badResult = dispatch(getCurrentState(h), makeTx([
-      { type: 'DELETE_CLIP', clipId: toClipId('nonexistent') },
-    ]));
+    const badResult = dispatch(
+      getCurrentState(h),
+      makeTx([{ type: 'DELETE_CLIP', clipId: toClipId('nonexistent') }]),
+    );
     expect(badResult.accepted).toBe(false);
 
     // State should still be 'Valid', and undo should go to original
@@ -391,10 +437,13 @@ describe('Undo/Redo Round-Trip — rejected operations', () => {
     let h = createHistory(original);
 
     // Multi-op with one bad op — entire transaction rejected
-    const result = dispatch(getCurrentState(h), makeTx([
-      { type: 'RENAME_TIMELINE', name: 'Good' },
-      { type: 'DELETE_CLIP', clipId: toClipId('nonexistent') },
-    ]));
+    const result = dispatch(
+      getCurrentState(h),
+      makeTx([
+        { type: 'RENAME_TIMELINE', name: 'Good' },
+        { type: 'DELETE_CLIP', clipId: toClipId('nonexistent') },
+      ]),
+    );
     expect(result.accepted).toBe(false);
 
     // State should be unchanged
@@ -407,10 +456,7 @@ describe('Undo/Redo Round-Trip — rejected operations', () => {
 
 describe('Undo/Redo Round-Trip — HistoryStack compression', () => {
   it('compressed history still round-trips through undo/redo', () => {
-    const clock = vi.fn()
-      .mockReturnValue(1000)
-      .mockReturnValueOnce(1000)
-      .mockReturnValueOnce(1100);
+    const clock = vi.fn().mockReturnValue(1000).mockReturnValueOnce(1000).mockReturnValueOnce(1100);
 
     const stack = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY, clock);
 
@@ -421,7 +467,9 @@ describe('Undo/Redo Round-Trip — HistoryStack compression', () => {
     const mkEntry = (state: TimelineState, opType: string) => ({
       state,
       transaction: {
-        id: 'tx', label: 'test', timestamp: 0,
+        id: 'tx',
+        label: 'test',
+        timestamp: 0,
         operations: [{ type: opType } as OperationPrimitive],
       },
     });
@@ -439,10 +487,7 @@ describe('Undo/Redo Round-Trip — HistoryStack compression', () => {
   });
 
   it('undo after compression returns to correct prior state', () => {
-    const clock = vi.fn()
-      .mockReturnValue(1000)
-      .mockReturnValueOnce(1000)
-      .mockReturnValueOnce(1100);
+    const clock = vi.fn().mockReturnValue(1000).mockReturnValueOnce(1000).mockReturnValueOnce(1100);
 
     const stack = new HistoryStack(100, DEFAULT_COMPRESSION_POLICY, clock);
 
@@ -453,7 +498,9 @@ describe('Undo/Redo Round-Trip — HistoryStack compression', () => {
     const mkEntry = (state: TimelineState, opType: string) => ({
       state,
       transaction: {
-        id: 'tx', label: 'test', timestamp: 0,
+        id: 'tx',
+        label: 'test',
+        timestamp: 0,
         operations: [{ type: opType } as OperationPrimitive],
       },
     });
@@ -476,12 +523,14 @@ describe('Undo/Redo Round-Trip — invariant preservation', () => {
     let state = original;
 
     state = dispatchAndAssert(state, [{ type: 'RENAME_TIMELINE', name: 'A' }]);
+    state = dispatchAndAssert(state, [{ type: 'SET_TIMELINE_DURATION', duration: toFrame(6000) }]);
     state = dispatchAndAssert(state, [
-      { type: 'SET_TIMELINE_DURATION', duration: toFrame(6000) },
+      {
+        type: 'MOVE_CLIP',
+        clipId: toClipId('clip-1'),
+        newTimelineStart: toFrame(100),
+      },
     ]);
-    state = dispatchAndAssert(state, [{
-      type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(100),
-    }]);
 
     let h = createHistory(original);
     h = pushHistory(h, state);
@@ -500,9 +549,7 @@ describe('Undo/Redo Round-Trip — invariant preservation', () => {
     let state = original;
 
     state = dispatchAndAssert(state, [{ type: 'RENAME_TIMELINE', name: 'A' }]);
-    state = dispatchAndAssert(state, [
-      { type: 'SET_TIMELINE_DURATION', duration: toFrame(6000) },
-    ]);
+    state = dispatchAndAssert(state, [{ type: 'SET_TIMELINE_DURATION', duration: toFrame(6000) }]);
 
     let h = createHistory(original);
     h = pushHistory(h, state);

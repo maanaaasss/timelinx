@@ -22,18 +22,14 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
-import type { TrackId }      from '../types/track';
+import type { TrackId } from '../types/track';
 import type { CaptionId, Caption } from '../types/caption';
 import type { TimelineFrame } from '../types/frame';
-import type { Transaction }   from '../types/operations';
+import type { Transaction } from '../types/operations';
 import type { TimelineState } from '../types/state';
-import { findClipById }       from '../systems/queries';
+import { findClipById } from '../systems/queries';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -53,8 +49,8 @@ type TrimEdge = 'start' | 'end';
 
 type OriginalPosition = {
   readonly timelineStart: TimelineFrame;
-  readonly timelineEnd:   TimelineFrame;
-  readonly trackId:       TrackId;
+  readonly timelineEnd: TimelineFrame;
+  readonly trackId: TrackId;
 };
 
 // ---------------------------------------------------------------------------
@@ -77,11 +73,13 @@ function validMultiClipDelta(
   for (const id of selectedIds) {
     const orig = originalPositions.get(id);
     if (!orig) continue;
-    const duration = (orig.timelineEnd as number) - (orig.timelineStart as number);
     const newStart = (orig.timelineStart as number) + proposedDelta;
     const newEnd = (orig.timelineEnd as number) + proposedDelta;
 
-    maxDelta = Math.min(maxDelta, (state.timeline.duration as number) - (orig.timelineEnd as number));
+    maxDelta = Math.min(
+      maxDelta,
+      (state.timeline.duration as number) - (orig.timelineEnd as number),
+    );
     minDelta = Math.max(minDelta, -(orig.timelineStart as number));
 
     const track = state.timeline.tracks.find((t) => t.id === orig.trackId);
@@ -113,9 +111,9 @@ function hitEdge(
   originX: number,
 ): 'start' | 'end' | null {
   const startPx = clip.timelineStart * ppf + originX;
-  const endPx   = clip.timelineEnd   * ppf + originX;
+  const endPx = clip.timelineEnd * ppf + originX;
   if (Math.abs(clientX - startPx) <= EDGE_HIT_ZONE_PX) return 'start';
-  if (Math.abs(clientX - endPx)   <= EDGE_HIT_ZONE_PX) return 'end';
+  if (Math.abs(clientX - endPx) <= EDGE_HIT_ZONE_PX) return 'end';
   return null;
 }
 
@@ -161,7 +159,7 @@ function validCaptionStart(
   requestedStart: TimelineFrame,
   duration: TimelineFrame,
 ): TimelineFrame {
-  const maxStart = Math.max(0, (state.timeline.duration - duration)) as TimelineFrame;
+  const maxStart = Math.max(0, state.timeline.duration - duration) as TimelineFrame;
   const requested = Math.max(0, Math.min(requestedStart, maxStart)) as TimelineFrame;
 
   // Check for overlaps with other captions
@@ -189,14 +187,16 @@ function validCaptionStart(
 }
 
 let _txSeq = 0;
-function txId(): string { return `selection-tx-${++_txSeq}`; }
+function txId(): string {
+  return `selection-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // SelectionTool
 // ---------------------------------------------------------------------------
 
 export class SelectionTool implements ITool {
-  readonly id:          ToolId = toToolId('selection');
+  readonly id: ToolId = toToolId('selection');
   readonly shortcutKey: string = 'v';
 
   // ── Selection state ────────────────────────────────────────────────────
@@ -204,32 +204,32 @@ export class SelectionTool implements ITool {
   private readonly selectedCaptions: Set<CaptionId> = new Set();
 
   // ── Per-gesture tracking ───────────────────────────────────────────────
-  private mode:             DragMode      = 'idle';
+  private mode: DragMode = 'idle';
 
   // drag-clip mode
-  private dragStartFrame:   TimelineFrame | null     = null;
-  private dragStartX:       number        | null     = null;
-  private dragStartY:       number        | null     = null;
-  private dragClipId:       ClipId        | null     = null;
-  private isMultiDrag:      boolean                  = false;
+  private dragStartFrame: TimelineFrame | null = null;
+  private dragStartX: number | null = null;
+  private dragStartY: number | null = null;
+  private dragClipId: ClipId | null = null;
+  private isMultiDrag: boolean = false;
   private originalPositions: Map<ClipId, OriginalPosition> = new Map();
 
   // near-edge trim (click-based, not drag mode)
-  private pendingTrimEdge:  TrimEdge      | null = null;
+  private pendingTrimEdge: TrimEdge | null = null;
 
   // drag-caption mode
-  private dragCaptionId:       CaptionId     | null = null;
-  private dragCaptionTrackId:  TrackId       | null = null;
+  private dragCaptionId: CaptionId | null = null;
+  private dragCaptionTrackId: TrackId | null = null;
   private dragCaptionOrigStart: TimelineFrame | null = null;
-  private dragCaptionOrigEnd:   TimelineFrame | null = null;
+  private dragCaptionOrigEnd: TimelineFrame | null = null;
 
   // rubber-band mode
   private rubberBandStartFrame: TimelineFrame | null = null;
-  private rubberBandStartY:     number        | null = null;
+  private rubberBandStartY: number | null = null;
 
   // getCursor() state
-  private lastClientX:  number        | null = null;
-  private lastHitEdge:  'start'|'end' | null = null;
+  private lastClientX: number | null = null;
+  private lastHitEdge: 'start' | 'end' | null = null;
   private _lastHoveredClipId: ClipId | null = null;
 
   // ── Public read access ──────────────────────────────────────────────────
@@ -250,10 +250,10 @@ export class SelectionTool implements ITool {
   // ── ITool: getCursor ────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.mode === 'drag-clip')    return 'grabbing';
+    if (this.mode === 'drag-clip') return 'grabbing';
     if (this.mode === 'drag-caption') return 'grabbing';
-    if (this.mode === 'rubber-band')  return 'crosshair';
-    if (this.lastHitEdge !== null)    return 'ew-resize';
+    if (this.mode === 'rubber-band') return 'crosshair';
+    if (this.lastHitEdge !== null) return 'ew-resize';
     if (this._lastHoveredClipId !== null) return 'grab';
     return 'default';
   }
@@ -264,12 +264,14 @@ export class SelectionTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead'];
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
-    this.lastClientX       = event.x;
+    this.lastClientX = event.x;
     this._lastHoveredClipId = event.clipId;
 
     if (event.clipId !== null) {
@@ -281,11 +283,11 @@ export class SelectionTool implements ITool {
       this.pendingTrimEdge = edge;
 
       // Regular clip drag
-      this.mode          = 'drag-clip';
-      this.dragStartX    = event.x;
-      this.dragStartY    = event.y;
+      this.mode = 'drag-clip';
+      this.dragStartX = event.x;
+      this.dragStartY = event.y;
       this.dragStartFrame = event.frame;
-      this.dragClipId    = event.clipId;
+      this.dragClipId = event.clipId;
       this.isMultiDrag = this.selected.size > 1 && this.selected.has(event.clipId);
 
       this.originalPositions.clear();
@@ -295,8 +297,8 @@ export class SelectionTool implements ITool {
         if (c) {
           this.originalPositions.set(id, {
             timelineStart: c.timelineStart,
-            timelineEnd:   c.timelineEnd,
-            trackId:       c.trackId,
+            timelineEnd: c.timelineEnd,
+            trackId: c.trackId,
           });
         }
       }
@@ -331,17 +333,17 @@ export class SelectionTool implements ITool {
       this.dragCaptionOrigStart = caption.startFrame;
       this.dragCaptionOrigEnd = caption.endFrame;
     } else {
-      this.mode                  = 'rubber-band';
-      this.dragStartX            = event.x;
-      this.rubberBandStartFrame  = event.frame;
-      this.rubberBandStartY      = event.y;
+      this.mode = 'rubber-band';
+      this.dragStartX = event.x;
+      this.rubberBandStartFrame = event.frame;
+      this.rubberBandStartY = event.y;
     }
   }
 
   // ── ITool: onPointerMove ────────────────────────────────────────────────
 
   onPointerMove(event: TimelinePointerEvent, ctx: ToolContext): ProvisionalState | null {
-    this.lastClientX        = event.x;
+    this.lastClientX = event.x;
     this._lastHoveredClipId = event.clipId;
 
     // Update edge-hover state
@@ -349,7 +351,7 @@ export class SelectionTool implements ITool {
       const c = liveClip(ctx.state, event.clipId);
       this.lastHitEdge = c ? hitEdge(c, event.x, ctx.pixelsPerFrame, 0) : null;
     } else {
-      this.lastHitEdge        = null;
+      this.lastHitEdge = null;
       this._lastHoveredClipId = null;
     }
 
@@ -357,12 +359,12 @@ export class SelectionTool implements ITool {
     if (this.mode === 'rubber-band') {
       if (this.rubberBandStartFrame === null || this.rubberBandStartY === null) return null;
       return {
-        clips:      [],
+        clips: [],
         rubberBand: {
           startFrame: this.rubberBandStartFrame,
-          endFrame:   event.frame,
-          startY:     this.rubberBandStartY,
-          endY:       event.y,
+          endFrame: event.frame,
+          startY: this.rubberBandStartY,
+          endY: event.y,
         },
         isProvisional: true,
       };
@@ -370,7 +372,12 @@ export class SelectionTool implements ITool {
 
     // ── MODE 5: caption drag (with provisional ghost) ───────────────────
     if (this.mode === 'drag-caption') {
-      if (this.dragStartX === null || this.dragCaptionId === null || this.dragCaptionTrackId === null) return null;
+      if (
+        this.dragStartX === null ||
+        this.dragCaptionId === null ||
+        this.dragCaptionTrackId === null
+      )
+        return null;
       const dxPx = Math.abs(event.x - this.dragStartX);
       if (dxPx < DRAG_THRESHOLD_PX) return null;
 
@@ -383,7 +390,11 @@ export class SelectionTool implements ITool {
 
       // Snap caption start to nearby snap points
       const rawTarget = (origStart + frameDelta) as TimelineFrame;
-      const snappedStart = ctx.snap(rawTarget, [this.dragCaptionId], ['ClipStart', 'ClipEnd', 'Playhead']);
+      const snappedStart = ctx.snap(
+        rawTarget,
+        [this.dragCaptionId],
+        ['ClipStart', 'ClipEnd', 'Playhead'],
+      );
 
       // Collision avoidance: find non-overlapping position
       const track = ctx.state.timeline.tracks.find((t) => t.id === this.dragCaptionTrackId);
@@ -400,7 +411,14 @@ export class SelectionTool implements ITool {
         startFrame: clampedStart,
         endFrame: newEnd,
         language: origCaption?.language ?? 'en-US',
-        style: origCaption?.style ?? { fontFamily: 'Arial', fontSize: 14, color: '#fff', backgroundColor: '#000', hAlign: 'center', vAlign: 'bottom' },
+        style: origCaption?.style ?? {
+          fontFamily: 'Arial',
+          fontSize: 14,
+          color: '#fff',
+          backgroundColor: '#000',
+          hAlign: 'center',
+          vAlign: 'bottom',
+        },
         burnIn: origCaption?.burnIn ?? false,
         _trackId: this.dragCaptionTrackId,
       };
@@ -423,24 +441,26 @@ export class SelectionTool implements ITool {
       const clip = liveClip(ctx.state, this.dragClipId);
       if (!clip || this.dragStartFrame === null) return null;
 
-      const frameDelta    = event.frame - this.dragStartFrame;
-      const orig          = this.originalPositions.get(this.dragClipId);
+      const frameDelta = event.frame - this.dragStartFrame;
+      const orig = this.originalPositions.get(this.dragClipId);
       if (!orig) return null;
 
-      const rawTarget     = (orig.timelineStart + frameDelta) as TimelineFrame;
-      const snappedStart  = validSingleClipStart(
+      const rawTarget = (orig.timelineStart + frameDelta) as TimelineFrame;
+      const snappedStart = validSingleClipStart(
         ctx.state,
         clip,
         ctx.snap(rawTarget, [this.dragClipId]),
       );
-      const duration      = (clip.timelineEnd - clip.timelineStart) as TimelineFrame;
+      const duration = (clip.timelineEnd - clip.timelineStart) as TimelineFrame;
 
       return {
-        clips: [{
-          ...clip,
-          timelineStart: snappedStart,
-          timelineEnd:   (snappedStart + duration) as TimelineFrame,
-        }],
+        clips: [
+          {
+            ...clip,
+            timelineStart: snappedStart,
+            timelineEnd: (snappedStart + duration) as TimelineFrame,
+          },
+        ],
         isProvisional: true,
       };
     }
@@ -449,15 +469,18 @@ export class SelectionTool implements ITool {
     if (this.mode === 'drag-clip' && this.isMultiDrag && this.dragClipId !== null) {
       if (this.dragStartFrame === null) return null;
 
-      const frameDelta   = event.frame - this.dragStartFrame;
-      const anchorOrig   = this.originalPositions.get(this.dragClipId);
+      const frameDelta = event.frame - this.dragStartFrame;
+      const anchorOrig = this.originalPositions.get(this.dragClipId);
       if (!anchorOrig) return null;
 
-      const rawAnchor    = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
+      const rawAnchor = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
       const snappedAnchor = ctx.snap(rawAnchor, [...this.selected]);
-      const rawDelta     = (snappedAnchor - anchorOrig.timelineStart) as number;
+      const rawDelta = (snappedAnchor - anchorOrig.timelineStart) as number;
       const clampedDelta = validMultiClipDelta(
-        ctx.state, this.selected, this.originalPositions, rawDelta,
+        ctx.state,
+        this.selected,
+        this.originalPositions,
+        rawDelta,
       );
 
       const ghosts: Clip[] = [];
@@ -469,7 +492,7 @@ export class SelectionTool implements ITool {
         ghosts.push({
           ...c,
           timelineStart: ((orig.timelineStart as number) + clampedDelta) as TimelineFrame,
-          timelineEnd:   ((orig.timelineEnd   as number) + clampedDelta) as TimelineFrame,
+          timelineEnd: ((orig.timelineEnd as number) + clampedDelta) as TimelineFrame,
         });
       }
 
@@ -482,19 +505,19 @@ export class SelectionTool implements ITool {
   // ── ITool: onPointerUp ──────────────────────────────────────────────────
 
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
-    const previousMode        = this.mode;
-    const savedDragClipId     = this.dragClipId;
+    const previousMode = this.mode;
+    const savedDragClipId = this.dragClipId;
     const savedDragStartFrame = this.dragStartFrame;
-    const savedDragStartX     = this.dragStartX;
-    const savedIsMultiDrag    = this.isMultiDrag;
-    const savedOrigPositions  = new Map(this.originalPositions);
-    const savedRbStartFrame   = this.rubberBandStartFrame;
-    const savedSelected       = new Set(this.selected);
+    const savedDragStartX = this.dragStartX;
+    const savedIsMultiDrag = this.isMultiDrag;
+    const savedOrigPositions = new Map(this.originalPositions);
+    const savedRbStartFrame = this.rubberBandStartFrame;
+    const savedSelected = new Set(this.selected);
     const savedPendingTrimEdge = this.pendingTrimEdge;
-    const savedCaptionId      = this.dragCaptionId;
+    const savedCaptionId = this.dragCaptionId;
     const savedCaptionTrackId = this.dragCaptionTrackId;
     const savedCaptionOrigStart = this.dragCaptionOrigStart;
-    const savedCaptionOrigEnd   = this.dragCaptionOrigEnd;
+    const savedCaptionOrigEnd = this.dragCaptionOrigEnd;
 
     this._resetDragState();
 
@@ -532,7 +555,11 @@ export class SelectionTool implements ITool {
       const rawTarget = (savedCaptionOrigStart + frameDelta) as TimelineFrame;
 
       // Snap caption start to nearby snap points
-      const snappedStart = ctx.snap(rawTarget, [savedCaptionId], ['ClipStart', 'ClipEnd', 'Playhead']);
+      const snappedStart = ctx.snap(
+        rawTarget,
+        [savedCaptionId],
+        ['ClipStart', 'ClipEnd', 'Playhead'],
+      );
 
       // Collision avoidance: find non-overlapping position
       const track = ctx.state.timeline.tracks.find((t) => t.id === savedCaptionTrackId);
@@ -549,13 +576,15 @@ export class SelectionTool implements ITool {
         id: txId(),
         label: 'Move Caption' as const,
         timestamp: Date.now(),
-        operations: [{
-          type: 'EDIT_CAPTION' as const,
-          captionId: savedCaptionId,
-          trackId: savedCaptionTrackId,
-          startFrame: clampedStart,
-          endFrame: clampedEnd,
-        }],
+        operations: [
+          {
+            type: 'EDIT_CAPTION' as const,
+            captionId: savedCaptionId,
+            trackId: savedCaptionTrackId,
+            startFrame: clampedStart,
+            endFrame: clampedEnd,
+          },
+        ],
       };
       return captionTx;
     }
@@ -588,7 +617,7 @@ export class SelectionTool implements ITool {
         // Alt/Option held → roll trim (resize both clips at cut point, no ripple)
         if (event.altKey) {
           // Find the adjacent clip at the cut point
-          const track = ctx.state.timeline.tracks.find(t => t.id === clip.trackId);
+          const track = ctx.state.timeline.tracks.find((t) => t.id === clip.trackId);
           if (!track) return null;
 
           let leftClip: typeof clip | null = null;
@@ -597,15 +626,15 @@ export class SelectionTool implements ITool {
           if (savedPendingTrimEdge === 'end') {
             // Trimming end of this clip → find clip whose start matches this clip's end
             leftClip = clip;
-            rightClip = track.clips.find(
-              c => c.id !== clip.id && c.timelineStart === clip.timelineEnd,
-            ) ?? null;
+            rightClip =
+              track.clips.find((c) => c.id !== clip.id && c.timelineStart === clip.timelineEnd) ??
+              null;
           } else {
             // Trimming start of this clip → find clip whose end matches this clip's start
             rightClip = clip;
-            leftClip = track.clips.find(
-              c => c.id !== clip.id && c.timelineEnd === clip.timelineStart,
-            ) ?? null;
+            leftClip =
+              track.clips.find((c) => c.id !== clip.id && c.timelineEnd === clip.timelineStart) ??
+              null;
           }
 
           // Roll trim: both clips resize to newFrame, no downstream shift
@@ -637,7 +666,7 @@ export class SelectionTool implements ITool {
         const delta = (newFrame - originalEdge) as TimelineFrame;
 
         // Find downstream clips to shift
-        const downstreamClips: typeof clip[] = [];
+        const downstreamClips: (typeof clip)[] = [];
         if (savedPendingTrimEdge === 'end') {
           // END edge trim: clips with timelineStart >= clip.timelineEnd (to the right)
           for (const track of ctx.state.timeline.tracks) {
@@ -660,7 +689,7 @@ export class SelectionTool implements ITool {
 
         const operations: Transaction['operations'][number][] = [
           { type: 'RESIZE_CLIP', clipId: clip.id, edge: savedPendingTrimEdge, newFrame },
-          ...downstreamClips.map(c => ({
+          ...downstreamClips.map((c) => ({
             type: 'MOVE_CLIP' as const,
             clipId: c.id,
             newTimelineStart: (c.timelineStart + delta) as TimelineFrame,
@@ -677,7 +706,7 @@ export class SelectionTool implements ITool {
       if (event.clipId !== null) {
         if (event.shiftKey) {
           if (this.selected.has(event.clipId)) this.selected.delete(event.clipId);
-          else                                  this.selected.add(event.clipId);
+          else this.selected.add(event.clipId);
         } else {
           this.selected.clear();
           this.selected.add(event.clipId);
@@ -694,26 +723,24 @@ export class SelectionTool implements ITool {
       if (!orig) return null;
 
       const frameDelta = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
-      const rawTarget  = (orig.timelineStart + frameDelta) as TimelineFrame;
+      const rawTarget = (orig.timelineStart + frameDelta) as TimelineFrame;
       const clip = liveClip(ctx.state, savedDragClipId);
       if (!clip) return null;
-      const snapped = validSingleClipStart(
-        ctx.state,
-        clip,
-        ctx.snap(rawTarget, [savedDragClipId]),
-      );
+      const snapped = validSingleClipStart(ctx.state, clip, ctx.snap(rawTarget, [savedDragClipId]));
 
       if (snapped === orig.timelineStart) return null;
 
       return {
-        id:         txId(),
-        label:      'Move Clip',
-        timestamp:  Date.now(),
-        operations: [{
-          type:             'MOVE_CLIP',
-          clipId:           savedDragClipId,
-          newTimelineStart: snapped,
-        }],
+        id: txId(),
+        label: 'Move Clip',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'MOVE_CLIP',
+            clipId: savedDragClipId,
+            newTimelineStart: snapped,
+          },
+        ],
       };
     }
 
@@ -721,31 +748,36 @@ export class SelectionTool implements ITool {
     const anchorOrig = savedOrigPositions.get(savedDragClipId);
     if (!anchorOrig) return null;
 
-    const frameDelta    = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
-    const rawAnchor     = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
+    const frameDelta = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
+    const rawAnchor = (anchorOrig.timelineStart + frameDelta) as TimelineFrame;
     const snappedAnchor = ctx.snap(rawAnchor, [...savedSelected]);
-    const rawDelta      = (snappedAnchor - anchorOrig.timelineStart) as number;
-    const clampedDelta  = validMultiClipDelta(
-      ctx.state, savedSelected, savedOrigPositions, rawDelta,
+    const rawDelta = (snappedAnchor - anchorOrig.timelineStart) as number;
+    const clampedDelta = validMultiClipDelta(
+      ctx.state,
+      savedSelected,
+      savedOrigPositions,
+      rawDelta,
     );
 
     if (clampedDelta === 0) return null;
 
-    const operations = [...savedSelected].flatMap(id => {
+    const operations = [...savedSelected].flatMap((id) => {
       const orig = savedOrigPositions.get(id);
       if (!orig) return [];
-      return [{
-        type:             'MOVE_CLIP' as const,
-        clipId:           id,
-        newTimelineStart: ((orig.timelineStart as number) + clampedDelta) as TimelineFrame,
-      }];
+      return [
+        {
+          type: 'MOVE_CLIP' as const,
+          clipId: id,
+          newTimelineStart: ((orig.timelineStart as number) + clampedDelta) as TimelineFrame,
+        },
+      ];
     });
 
     if (operations.length === 0) return null;
 
     return {
-      id:        txId(),
-      label:     `Move ${operations.length} Clips`,
+      id: txId(),
+      label: `Move ${operations.length} Clips`,
       timestamp: Date.now(),
       operations,
     };
@@ -762,37 +794,37 @@ export class SelectionTool implements ITool {
   // ── ITool: onCancel ─────────────────────────────────────────────────────
 
   onCancel(): void {
-    this.mode                  = 'idle';
-    this.dragStartFrame        = null;
-    this.dragStartX            = null;
-    this.dragStartY            = null;
-    this.dragClipId            = null;
-    this.isMultiDrag           = false;
+    this.mode = 'idle';
+    this.dragStartFrame = null;
+    this.dragStartX = null;
+    this.dragStartY = null;
+    this.dragClipId = null;
+    this.isMultiDrag = false;
     this.originalPositions.clear();
-    this.pendingTrimEdge       = null;
-    this.rubberBandStartFrame  = null;
-    this.rubberBandStartY      = null;
-    this.lastClientX           = null;
-    this.lastHitEdge           = null;
-    this._lastHoveredClipId    = null;
+    this.pendingTrimEdge = null;
+    this.rubberBandStartFrame = null;
+    this.rubberBandStartY = null;
+    this.lastClientX = null;
+    this.lastHitEdge = null;
+    this._lastHoveredClipId = null;
     this.selectedCaptions.clear();
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────
 
   private _resetDragState(): void {
-    this.mode                  = 'idle';
-    this.dragStartFrame        = null;
-    this.dragStartX            = null;
-    this.dragStartY            = null;
-    this.isMultiDrag           = false;
+    this.mode = 'idle';
+    this.dragStartFrame = null;
+    this.dragStartX = null;
+    this.dragStartY = null;
+    this.isMultiDrag = false;
     this.originalPositions.clear();
-    this.pendingTrimEdge       = null;
-    this.dragCaptionId         = null;
-    this.dragCaptionTrackId    = null;
-    this.dragCaptionOrigStart  = null;
-    this.dragCaptionOrigEnd    = null;
-    this.rubberBandStartFrame  = null;
-    this.rubberBandStartY      = null;
+    this.pendingTrimEdge = null;
+    this.dragCaptionId = null;
+    this.dragCaptionTrackId = null;
+    this.dragCaptionOrigStart = null;
+    this.dragCaptionOrigEnd = null;
+    this.rubberBandStartFrame = null;
+    this.rubberBandStartY = null;
   }
 }

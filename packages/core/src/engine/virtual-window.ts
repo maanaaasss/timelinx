@@ -30,10 +30,7 @@ export type VirtualClipEntry = {
  * Returns all clips with visibility and layout (left, width).
  * Sorted by trackIndex ascending, then by clip timelineStart ascending.
  */
-export function getVisibleClips(
-  state: TimelineState,
-  window: VirtualWindow,
-): VirtualClipEntry[] {
+export function getVisibleClips(state: TimelineState, window: VirtualWindow): VirtualClipEntry[] {
   const startN = window.startFrame as number;
   const endN = window.endFrame as number;
   const ppf = window.pixelsPerFrame;
@@ -70,9 +67,7 @@ export function getVisibleFrameRange(
   pixelsPerFrame: number,
 ): VirtualWindow {
   const startFrame = toFrame(Math.floor(scrollLeft / pixelsPerFrame));
-  const endFrame = toFrame(
-    Math.ceil((scrollLeft + viewportWidth) / pixelsPerFrame),
-  );
+  const endFrame = toFrame(Math.ceil((scrollLeft + viewportWidth) / pixelsPerFrame));
   return {
     startFrame,
     endFrame,

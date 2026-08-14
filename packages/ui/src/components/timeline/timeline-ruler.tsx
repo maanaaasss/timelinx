@@ -77,17 +77,20 @@ export function TimelineRulerV2({
 
     // Read colors from CSS custom properties so we respect light/dark theme.
     const style = getComputedStyle(container);
-    const minorTickColor  = style.getPropertyValue('--tl-grid-line').trim()  || 'rgba(255,255,255,0.04)';
-    const majorTickColor  = style.getPropertyValue('--border-default').trim() || 'rgba(255,255,255,0.10)';
-    const labelColor      = style.getPropertyValue('--text-tertiary').trim()  || '#8888A0';
-    const inOutRangeColor = style.getPropertyValue('--accent-subtle').trim()  || 'rgba(224,122,47,0.08)';
+    const minorTickColor =
+      style.getPropertyValue('--tl-grid-line').trim() || 'rgba(255,255,255,0.04)';
+    const majorTickColor =
+      style.getPropertyValue('--border-default').trim() || 'rgba(255,255,255,0.10)';
+    const labelColor = style.getPropertyValue('--text-tertiary').trim() || '#8888A0';
+    const inOutRangeColor =
+      style.getPropertyValue('--accent-subtle').trim() || 'rgba(224,122,47,0.08)';
 
     const startFrame = Math.floor(scrollLeft / ppf);
-    const endFrame   = Math.ceil((scrollLeft + w) / ppf);
+    const endFrame = Math.ceil((scrollLeft + w) / ppf);
 
     // In/Out point shading
     if (inPoint != null && outPoint != null && outPoint > inPoint) {
-      const inX  = Math.round(inPoint  * ppf - scrollLeft);
+      const inX = Math.round(inPoint * ppf - scrollLeft);
       const outX = Math.round(outPoint * ppf - scrollLeft);
       ctx.fillStyle = inOutRangeColor;
       ctx.fillRect(inX, 0, outX - inX, h);

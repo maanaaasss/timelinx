@@ -223,7 +223,9 @@ describe('Phase 6 — PlayheadController', () => {
     const { clock } = createTestClock();
     const c = new PlayheadController(FIXTURE, clock);
     let received = false;
-    c.on(() => { received = true; });
+    c.on(() => {
+      received = true;
+    });
     c.play();
     expect(received).toBe(true);
   });
@@ -232,7 +234,9 @@ describe('Phase 6 — PlayheadController', () => {
     const { clock } = createTestClock();
     const c = new PlayheadController(FIXTURE, clock);
     let count = 0;
-    const unsub = c.on(() => { count++; });
+    const unsub = c.on(() => {
+      count++;
+    });
     c.play();
     expect(count).toBe(1);
     unsub();
@@ -245,7 +249,9 @@ describe('Phase 6 — PlayheadController', () => {
     const { clock, tick } = createTestClock();
     const c = new PlayheadController(FIXTURE, clock);
     let count = 0;
-    c.on(() => { count++; });
+    c.on(() => {
+      count++;
+    });
     c.play();
     tick(1000 / 30);
     c.destroy();

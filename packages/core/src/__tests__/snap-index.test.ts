@@ -12,13 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  buildSnapIndex,
-  nearest,
-  toggleSnap,
-  type SnapPoint,
-  type SnapIndex,
-} from '../snap-index';
+import { buildSnapIndex, nearest, toggleSnap, type SnapPoint, type SnapIndex } from '../snap-index';
 import { createTimelineState } from '../types/state';
 import { createTimeline } from '../types/timeline';
 import { createTrack, toTrackId } from '../types/track';
@@ -31,23 +25,35 @@ import { toFrame, toTimecode } from '../types/frame';
 function makeStateWithClips(clips: Array<{ id: string; start: number; end: number }>) {
   const assetId = toAssetId('asset-1');
   const asset = createAsset({
-    id: 'asset-1', name: 'A', mediaType: 'video',
-    filePath: '/a.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0),
+    id: 'asset-1',
+    name: 'A',
+    mediaType: 'video',
+    filePath: '/a.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
   });
 
   const trackClips = clips.map(({ id, start, end }) =>
     createClip({
-      id, assetId: 'asset-1', trackId: 'track-1',
-      timelineStart: toFrame(start), timelineEnd: toFrame(end),
-      mediaIn: toFrame(0), mediaOut: toFrame(end - start),
-    })
+      id,
+      assetId: 'asset-1',
+      trackId: 'track-1',
+      timelineStart: toFrame(start),
+      timelineEnd: toFrame(end),
+      mediaIn: toFrame(0),
+      mediaOut: toFrame(end - start),
+    }),
   );
 
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: trackClips });
   const timeline = createTimeline({
-    id: 'tl', name: 'T', fps: 30, duration: toFrame(9000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'T',
+    fps: 30,
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
 
   return createTimelineState({ timeline, assetRegistry: new Map([[assetId, asset]]) });
@@ -58,7 +64,7 @@ function makeStateWithClips(clips: Array<{ id: string; start: number; end: numbe
 describe('buildSnapIndex — point generation', () => {
   it('3 clips produce 6 clip boundary points + 1 playhead = 7 total', () => {
     const state = makeStateWithClips([
-      { id: 'c1', start: 0,   end: 100 },
+      { id: 'c1', start: 0, end: 100 },
       { id: 'c2', start: 200, end: 300 },
       { id: 'c3', start: 400, end: 500 },
     ]);
@@ -67,21 +73,21 @@ describe('buildSnapIndex — point generation', () => {
     // 6 clip boundaries + 1 playhead
     expect(index.points.length).toBe(7);
 
-    const types = index.points.map(p => p.type);
-    expect(types.filter(t => t === 'ClipStart').length).toBe(3);
-    expect(types.filter(t => t === 'ClipEnd').length).toBe(3);
-    expect(types.filter(t => t === 'Playhead').length).toBe(1);
+    const types = index.points.map((p) => p.type);
+    expect(types.filter((t) => t === 'ClipStart').length).toBe(3);
+    expect(types.filter((t) => t === 'ClipEnd').length).toBe(3);
+    expect(types.filter((t) => t === 'Playhead').length).toBe(1);
   });
 
   it('points are sorted ascending by frame', () => {
     const state = makeStateWithClips([
       { id: 'c1', start: 400, end: 500 },
-      { id: 'c2', start: 0,   end: 100 },
+      { id: 'c2', start: 0, end: 100 },
       { id: 'c3', start: 200, end: 300 },
     ]);
 
     const index = buildSnapIndex(state, toFrame(999));
-    const frames = index.points.map(p => p.frame);
+    const frames = index.points.map((p) => p.frame);
     for (let i = 1; i < frames.length; i++) {
       expect(frames[i]).toBeGreaterThanOrEqual(frames[i - 1]!);
     }
@@ -90,14 +96,14 @@ describe('buildSnapIndex — point generation', () => {
   it('each clip point carries the correct sourceId (clipId)', () => {
     const state = makeStateWithClips([{ id: 'clip-xyz', start: 100, end: 200 }]);
     const index = buildSnapIndex(state, toFrame(0));
-    const clipPoints = index.points.filter(p => p.sourceId === 'clip-xyz');
+    const clipPoints = index.points.filter((p) => p.sourceId === 'clip-xyz');
     expect(clipPoints.length).toBe(2); // ClipStart + ClipEnd
   });
 
   it('playhead point has sourceId "__playhead__" and trackId null', () => {
     const state = makeStateWithClips([]);
     const index = buildSnapIndex(state, toFrame(500));
-    const ph = index.points.find(p => p.type === 'Playhead');
+    const ph = index.points.find((p) => p.type === 'Playhead');
     expect(ph).toBeDefined();
     expect(ph!.sourceId).toBe('__playhead__');
     expect(ph!.trackId).toBeNull();
@@ -180,8 +186,8 @@ describe('nearest — radius behaviour', () => {
 describe('nearest — exclusion list', () => {
   it('skips snap points whose sourceId is in the exclude list', () => {
     const state = makeStateWithClips([
-      { id: 'dragging', start: 0,   end: 100 },
-      { id: 'anchor',   start: 200, end: 300 },
+      { id: 'dragging', start: 0, end: 100 },
+      { id: 'anchor', start: 200, end: 300 },
     ]);
     const index = buildSnapIndex(state, toFrame(999));
 
@@ -195,7 +201,7 @@ describe('nearest — exclusion list', () => {
     // Two clips: c1 starts at 100, c2 ends at 102 (different sourceId)
     const state = makeStateWithClips([
       { id: 'c1', start: 100, end: 200 },
-      { id: 'c2', start: 0,   end: 102 },
+      { id: 'c2', start: 0, end: 102 },
     ]);
     const index = buildSnapIndex(state, toFrame(999));
 
@@ -244,8 +250,11 @@ describe('nearest — priority tiebreak', () => {
 
     // Inject a Marker at frame 100 with priority 100
     const markerPoint: SnapPoint = {
-      frame: toFrame(100), type: 'Marker', priority: 100,
-      trackId: null, sourceId: 'marker-1',
+      frame: toFrame(100),
+      type: 'Marker',
+      priority: 100,
+      trackId: null,
+      sourceId: 'marker-1',
     };
     const withMarker: SnapIndex = {
       ...base,
@@ -261,8 +270,8 @@ describe('nearest — priority tiebreak', () => {
 
   it('returns closer point when two candidates have different distances and same priority', () => {
     const state = makeStateWithClips([
-      { id: 'c1', start: 97,  end: 500 },  // ClipStart at 97, dist = 3
-      { id: 'c2', start: 103, end: 500 },  // ClipStart at 103, dist = 3 — equal!
+      { id: 'c1', start: 97, end: 500 }, // ClipStart at 97, dist = 3
+      { id: 'c2', start: 103, end: 500 }, // ClipStart at 103, dist = 3 — equal!
     ]);
     const index = buildSnapIndex(state, toFrame(999));
     // At frame 100 both are equidistant (distance 3). Same priority.
@@ -304,7 +313,7 @@ describe('toggleSnap', () => {
 
   it('re-enabling with toggleSnap(index, true) restores snap', () => {
     const state = makeStateWithClips([{ id: 'c1', start: 100, end: 200 }]);
-    const index   = buildSnapIndex(state, toFrame(999));
+    const index = buildSnapIndex(state, toFrame(999));
     const disabled = toggleSnap(index, false);
     const restored = toggleSnap(disabled, true);
 

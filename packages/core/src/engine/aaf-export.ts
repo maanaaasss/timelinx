@@ -8,7 +8,7 @@
 import type { TimelineState } from '../types/state';
 import type { Clip } from '../types/clip';
 import type { Track } from '../types/track';
-import type { Asset, FileAsset, GeneratorAsset } from '../types/asset';
+import type { FileAsset, GeneratorAsset } from '../types/asset';
 
 // ---------------------------------------------------------------------------
 // Options
@@ -26,10 +26,7 @@ export type AAFExportOptions = {
 // ---------------------------------------------------------------------------
 
 function xmlEscape(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function clipDurationFrames(clip: Clip): number {
@@ -51,10 +48,7 @@ function dataDefinition(track: Track): string {
 // Export
 // ---------------------------------------------------------------------------
 
-export function exportToAAF(
-  state: TimelineState,
-  options?: AAFExportOptions,
-): string {
+export function exportToAAF(state: TimelineState, options?: AAFExportOptions): string {
   const projectName = xmlEscape(options?.projectName ?? state.timeline.name ?? 'Untitled');
   const fps = state.timeline.fps as number;
   const editRate = options?.frameRate ?? `${fps}/1`;
@@ -106,7 +100,7 @@ export function exportToAAF(
       const len = clipDurationFrames(clip);
       const clipId = xmlEscape(clip.id);
       lines.push(`${indent(5)}<SourceClip length="${len}" sourceRef="${clipId}"/>`);
-      cursor = (clip.timelineEnd as number);
+      cursor = clip.timelineEnd as number;
     }
     lines.push(`${indent(4)}</Sequence>`);
     lines.push(`${indent(3)}</TimelineMobSlot>`);

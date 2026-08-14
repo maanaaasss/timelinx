@@ -22,19 +22,32 @@ import type { Transaction, OperationPrimitive } from '../../types/operations';
 
 function makeBaseState(): TimelineState {
   const asset = createAsset({
-    id: 'asset-1', name: 'Video', mediaType: 'video',
-    filePath: '/media/test.mp4', intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    id: 'asset-1',
+    name: 'Video',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(9000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
   const clip = createClip({
-    id: 'clip-1', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-1',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Test', fps: 30, duration: toFrame(3000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Test',
+    fps: 30,
+    duration: toFrame(3000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[toAssetId('asset-1'), asset]]) });
 }
@@ -105,21 +118,26 @@ describe('VERIFICATION: Object.freeze depth (Item #10)', () => {
   it('clips effects array is NOT frozen (one level deep only)', () => {
     const state = makeBaseState();
     // Add an effect to the clip
-    const result = dispatch(state, tx([{
-      type: 'ADD_EFFECT',
-      clipId: 'clip-1',
-      effect: {
-        id: 'effect-1',
-        effectType: 'blur',
-        renderStage: 'preComposite',
-        enabled: true,
-        params: [],
-        keyframes: [],
-      },
-    }]));
+    const result = dispatch(
+      state,
+      tx([
+        {
+          type: 'ADD_EFFECT',
+          clipId: 'clip-1',
+          effect: {
+            id: 'effect-1',
+            effectType: 'blur',
+            renderStage: 'preComposite',
+            enabled: true,
+            params: [],
+            keyframes: [],
+          },
+        },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (!result.accepted) throw new Error('Rejected');
-    
+
     const clip = result.nextState.timeline.tracks[0]!.clips[0]!;
     // The clip itself is frozen
     expect(Object.isFrozen(clip)).toBe(true);
@@ -135,7 +153,7 @@ describe('VERIFICATION: Track opacity check (Item #13)', () => {
     const state = makeBaseState();
     // Track without opacity (using createTrack which doesn't set opacity by default)
     const violations = checkInvariants(state);
-    expect(violations.some(v => v.type === 'INVALID_OPACITY')).toBe(false);
+    expect(violations.some((v) => v.type === 'INVALID_OPACITY')).toBe(false);
   });
 
   it('track with opacity in [0, 1] passes invariants', () => {
@@ -146,7 +164,7 @@ describe('VERIFICATION: Track opacity check (Item #13)', () => {
     const tracks = [trackWithOpacity, ...state.timeline.tracks.slice(1)];
     const badState = { ...state, timeline: { ...state.timeline, tracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'INVALID_OPACITY')).toBe(false);
+    expect(violations.some((v) => v.type === 'INVALID_OPACITY')).toBe(false);
   });
 
   it('track with opacity < 0 is detected', () => {
@@ -156,7 +174,7 @@ describe('VERIFICATION: Track opacity check (Item #13)', () => {
     const tracks = [trackWithOpacity, ...state.timeline.tracks.slice(1)];
     const badState = { ...state, timeline: { ...state.timeline, tracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'INVALID_OPACITY')).toBe(true);
+    expect(violations.some((v) => v.type === 'INVALID_OPACITY')).toBe(true);
   });
 
   it('track with opacity > 1 is detected', () => {
@@ -166,7 +184,7 @@ describe('VERIFICATION: Track opacity check (Item #13)', () => {
     const tracks = [trackWithOpacity, ...state.timeline.tracks.slice(1)];
     const badState = { ...state, timeline: { ...state.timeline, tracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'INVALID_OPACITY')).toBe(true);
+    expect(violations.some((v) => v.type === 'INVALID_OPACITY')).toBe(true);
   });
 
   it('track with NaN opacity is detected', () => {
@@ -176,16 +194,21 @@ describe('VERIFICATION: Track opacity check (Item #13)', () => {
     const tracks = [trackWithOpacity, ...state.timeline.tracks.slice(1)];
     const badState = { ...state, timeline: { ...state.timeline, tracks } };
     const violations = checkInvariants(badState);
-    expect(violations.some(v => v.type === 'INVALID_OPACITY')).toBe(true);
+    expect(violations.some((v) => v.type === 'INVALID_OPACITY')).toBe(true);
   });
 
   it('SET_TRACK_OPACITY with out-of-range value is rejected by validator', () => {
     const state = makeBaseState();
-    const result = dispatch(state, tx([{
-      type: 'SET_TRACK_OPACITY',
-      trackId: toTrackId('track-1'),
-      opacity: 1.5,
-    }]));
+    const result = dispatch(
+      state,
+      tx([
+        {
+          type: 'SET_TRACK_OPACITY',
+          trackId: toTrackId('track-1'),
+          opacity: 1.5,
+        },
+      ]),
+    );
     expect(result.accepted).toBe(false);
   });
 });

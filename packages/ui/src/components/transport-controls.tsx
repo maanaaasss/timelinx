@@ -2,18 +2,8 @@ import React, { useCallback } from 'react';
 import { usePlayheadFrame, useIsPlaying, useTimelineWithEngine } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { frameToTimecode } from '../shared/time';
-import {
-  IconPlayerPlay,
-  IconPlayerPause,
-} from './icons';
-import {
-  SkipBack,
-  SkipForward,
-  ChevronLeft,
-  ChevronRight,
-  Volume2,
-  Maximize,
-} from 'lucide-react';
+import { IconPlayerPlay, IconPlayerPause } from './icons';
+import { SkipBack, SkipForward, ChevronLeft, ChevronRight, Volume2, Maximize } from 'lucide-react';
 import { toFrame } from '@timelinx/core';
 
 export interface TransportControlsProps {

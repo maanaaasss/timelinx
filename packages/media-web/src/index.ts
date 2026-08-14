@@ -9,19 +9,11 @@
 // Adapters
 // ---------------------------------------------------------------------------
 
-export {
-  WebCodecsDecoderAdapter,
-  createWebCodecsDecoder,
-} from './adapters/webcodecs-decoder';
+export { WebCodecsDecoderAdapter, createWebCodecsDecoder } from './adapters/webcodecs-decoder';
 
-export type {
-  WebCodecsDecoderConfig,
-} from './adapters/webcodecs-decoder';
+export type { WebCodecsDecoderConfig } from './adapters/webcodecs-decoder';
 
-export {
-  WebAudioWaveformAdapter,
-  createWebAudioWaveform,
-} from './adapters/webaudio-waveform';
+export { WebAudioWaveformAdapter, createWebAudioWaveform } from './adapters/webaudio-waveform';
 
 export type {
   WaveformConfig,
@@ -35,14 +27,9 @@ export {
   createThumbnailExtractor,
 } from './adapters/thumbnail-extractor';
 
-export type {
-  ThumbnailConfig,
-} from './adapters/thumbnail-extractor';
+export type { ThumbnailConfig } from './adapters/thumbnail-extractor';
 
-export {
-  SimpleExportAdapter,
-  createSimpleExporter,
-} from './adapters/simple-export';
+export { SimpleExportAdapter, createSimpleExporter } from './adapters/simple-export';
 
 export type {
   ExportFormat,
@@ -51,14 +38,9 @@ export type {
   ExportResult,
 } from './adapters/simple-export';
 
-export {
-  WebGLCompositorAdapter,
-  createWebGLCompositor,
-} from './adapters/webgl-compositor';
+export { WebGLCompositorAdapter, createWebGLCompositor } from './adapters/webgl-compositor';
 
-export type {
-  WebGLCompositorConfig,
-} from './adapters/webgl-compositor';
+export type { WebGLCompositorConfig } from './adapters/webgl-compositor';
 
 // ---------------------------------------------------------------------------
 // Utilities

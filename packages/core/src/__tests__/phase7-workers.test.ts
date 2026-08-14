@@ -258,19 +258,32 @@ describe('Phase 7 — WaveformWorkerMessage type tests', () => {
 
 function makeWorkerState() {
   const asset = createAsset({
-    id: 'asset-1', name: 'V', mediaType: 'video',
-    filePath: '/v.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    id: 'asset-1',
+    name: 'V',
+    mediaType: 'video',
+    filePath: '/v.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
   const clip = createClip({
-    id: 'clip-1', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(0), timelineEnd: toFrame(200),
-    mediaIn: toFrame(0), mediaOut: toFrame(200),
+    id: 'clip-1',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(200),
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
-    id: 'tl', name: 'Worker Test', fps: 30, duration: toFrame(5000),
-    startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Worker Test',
+    fps: 30,
+    duration: toFrame(5000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline, assetRegistry: new Map([[toAssetId('asset-1'), asset]]) });
 }
@@ -296,9 +309,7 @@ describe('Worker-safe: structuredClone', () => {
     const state = makeWorkerState();
     const cloned = structuredClone(state);
 
-    const result = dispatch(cloned, wTx([
-      { type: 'RENAME_TIMELINE', name: 'Cloned' },
-    ]));
+    const result = dispatch(cloned, wTx([{ type: 'RENAME_TIMELINE', name: 'Cloned' }]));
     expect(result.accepted).toBe(true);
     if (!result.accepted) return;
     expect(result.nextState.timeline.name).toBe('Cloned');
@@ -324,9 +335,10 @@ describe('Worker-safe: dispatch on cloned state', () => {
     const state = makeWorkerState();
     const cloned = structuredClone(state);
 
-    const result = dispatch(cloned, wTx([
-      { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(500) },
-    ]));
+    const result = dispatch(
+      cloned,
+      wTx([{ type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(500) }]),
+    );
     expect(result.accepted).toBe(true);
     if (!result.accepted) return;
     expect(result.nextState.timeline.tracks[0]!.clips[0]!.timelineStart).toBe(500);
@@ -337,11 +349,14 @@ describe('Worker-safe: dispatch on cloned state', () => {
     const state = makeWorkerState();
     const cloned = structuredClone(state);
 
-    const result = dispatch(cloned, wTx([
-      { type: 'RENAME_TIMELINE', name: 'Worker Edit' },
-      { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(100) },
-      { type: 'SET_TIMELINE_DURATION', duration: toFrame(8000) },
-    ]));
+    const result = dispatch(
+      cloned,
+      wTx([
+        { type: 'RENAME_TIMELINE', name: 'Worker Edit' },
+        { type: 'MOVE_CLIP', clipId: toClipId('clip-1'), newTimelineStart: toFrame(100) },
+        { type: 'SET_TIMELINE_DURATION', duration: toFrame(8000) },
+      ]),
+    );
     expect(result.accepted).toBe(true);
     if (!result.accepted) return;
     expect(result.nextState.timeline.name).toBe('Worker Edit');
@@ -356,12 +371,8 @@ describe('Worker-safe: race conditions', () => {
     const state = makeWorkerState();
 
     // Two concurrent dispatches on the same state
-    const r1 = dispatch(state, wTx([
-      { type: 'RENAME_TIMELINE', name: 'Worker A' },
-    ]));
-    const r2 = dispatch(state, wTx([
-      { type: 'RENAME_TIMELINE', name: 'Worker B' },
-    ]));
+    const r1 = dispatch(state, wTx([{ type: 'RENAME_TIMELINE', name: 'Worker A' }]));
+    const r2 = dispatch(state, wTx([{ type: 'RENAME_TIMELINE', name: 'Worker B' }]));
 
     // Both should succeed independently (they're against the same frozen state)
     expect(r1.accepted).toBe(true);
@@ -377,9 +388,7 @@ describe('Worker-safe: race conditions', () => {
     let state = structuredClone(makeWorkerState());
 
     for (let i = 1; i <= 10; i++) {
-      const result = dispatch(state, wTx([
-        { type: 'RENAME_TIMELINE', name: `Step ${i}` },
-      ]));
+      const result = dispatch(state, wTx([{ type: 'RENAME_TIMELINE', name: `Step ${i}` }]));
       expect(result.accepted).toBe(true);
       if (!result.accepted) break;
       expect(result.nextState.timeline.version).toBe(i);

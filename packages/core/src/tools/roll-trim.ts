@@ -32,15 +32,11 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
-import type { Track }        from '../types/track';
+import type { Track } from '../types/track';
 import type { TimelineFrame } from '../types/frame';
-import type { Transaction }   from '../types/operations';
+import type { Transaction } from '../types/operations';
 import type { TimelineState } from '../types/state';
 import type { CaptionId, Caption } from '../types/caption';
 import { findClipById } from '../systems/queries';
@@ -70,19 +66,19 @@ const MIN_DURATION = 1;
  *     (a gap means it is not a true cut — roll trim requires adjacency)
  */
 function findRollTarget(
-  frame:  TimelineFrame,
-  track:  Track,
+  frame: TimelineFrame,
+  track: Track,
   zonePx: number,
-  ppf:    number,
+  ppf: number,
 ): { leftClip: Clip; rightClip: Clip } | null {
   const zoneFrames = zonePx / ppf;
 
-  const leftClip  = track.clips.find(c => Math.abs(c.timelineEnd   - frame) <= zoneFrames);
-  const rightClip = track.clips.find(c => Math.abs(c.timelineStart - frame) <= zoneFrames);
+  const leftClip = track.clips.find((c) => Math.abs(c.timelineEnd - frame) <= zoneFrames);
+  const rightClip = track.clips.find((c) => Math.abs(c.timelineStart - frame) <= zoneFrames);
 
-  if (!leftClip || !rightClip)              return null;
-  if (leftClip.id === rightClip.id)         return null;  // same clip (degenerate)
-  if (leftClip.timelineEnd !== rightClip.timelineStart) return null;  // gap — not a cut
+  if (!leftClip || !rightClip) return null;
+  if (leftClip.id === rightClip.id) return null; // same clip (degenerate)
+  if (leftClip.timelineEnd !== rightClip.timelineStart) return null; // gap — not a cut
 
   return { leftClip, rightClip };
 }
@@ -92,19 +88,19 @@ function findRollTarget(
  * Returns null if no shared boundary is within the hit zone.
  */
 function findCaptionRollTarget(
-  frame:   TimelineFrame,
-  track:   Track,
-  zonePx:  number,
-  ppf:     number,
+  frame: TimelineFrame,
+  track: Track,
+  zonePx: number,
+  ppf: number,
 ): { leftCaption: Caption; rightCaption: Caption } | null {
   const zoneFrames = zonePx / ppf;
 
-  const leftCaption  = track.captions.find(c => Math.abs(c.endFrame   - frame) <= zoneFrames);
-  const rightCaption = track.captions.find(c => Math.abs(c.startFrame - frame) <= zoneFrames);
+  const leftCaption = track.captions.find((c) => Math.abs(c.endFrame - frame) <= zoneFrames);
+  const rightCaption = track.captions.find((c) => Math.abs(c.startFrame - frame) <= zoneFrames);
 
   if (!leftCaption || !rightCaption) return null;
-  if (leftCaption.id === rightCaption.id) return null;  // same caption
-  if (leftCaption.endFrame !== rightCaption.startFrame) return null;  // gap — not a cut
+  if (leftCaption.id === rightCaption.id) return null; // same caption
+  if (leftCaption.endFrame !== rightCaption.startFrame) return null; // gap — not a cut
 
   return { leftCaption, rightCaption };
 }
@@ -114,7 +110,7 @@ function findCaptionRollTarget(
 // ---------------------------------------------------------------------------
 
 function findTrack(state: TimelineState, trackId: string) {
-  return state.timeline.tracks.find(t => t.id === trackId) ?? null;
+  return state.timeline.tracks.find((t) => t.id === trackId) ?? null;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -122,31 +118,33 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 let _txSeq = 0;
-function txId(): string { return `roll-trim-tx-${++_txSeq}`; }
+function txId(): string {
+  return `roll-trim-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // RollTrimTool
 // ---------------------------------------------------------------------------
 
 export class RollTrimTool implements ITool {
-  readonly id:          ToolId = toToolId('roll-trim');
-  readonly shortcutKey: string = 't';   // 'T' for trim — standard in DaVinci Resolve
+  readonly id: ToolId = toToolId('roll-trim');
+  readonly shortcutKey: string = 't'; // 'T' for trim — standard in DaVinci Resolve
 
   // ── Per-drag tracking (clips) ─────────────────────────────────────────────
-  private leftClipId:   ClipId        | null = null;
-  private rightClipId:  ClipId        | null = null;
+  private leftClipId: ClipId | null = null;
+  private rightClipId: ClipId | null = null;
 
   /**
    * Precomputed clamp bounds — computed once at onPointerDown from all 4 constraints.
    * Avoids storing all 8 original clip bounds as separate instance vars.
    */
-  private minBoundary:  TimelineFrame | null = null;
-  private maxBoundary:  TimelineFrame | null = null;
+  private minBoundary: TimelineFrame | null = null;
+  private maxBoundary: TimelineFrame | null = null;
 
   // ── Per-drag tracking (captions) ──────────────────────────────────────────
-  private leftCaptionId:      CaptionId     | null = null;
-  private rightCaptionId:     CaptionId     | null = null;
-  private captionTrackId:     string        | null = null;
+  private leftCaptionId: CaptionId | null = null;
+  private rightCaptionId: CaptionId | null = null;
+  private captionTrackId: string | null = null;
   /** [min, max] boundary range for caption roll — ensures each caption stays ≥ 1 frame. */
   private captionMinBoundary: TimelineFrame | null = null;
   private captionMaxBoundary: TimelineFrame | null = null;
@@ -158,8 +156,8 @@ export class RollTrimTool implements ITool {
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.leftClipId !== null) return 'ew-resize';   // mid-drag
-    if (this.isHoveringCut)      return 'ew-resize';   // hovering cut
+    if (this.leftClipId !== null) return 'ew-resize'; // mid-drag
+    if (this.isHoveringCut) return 'ew-resize'; // hovering cut
     return 'default';
   }
 
@@ -169,7 +167,9 @@ export class RollTrimTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
@@ -181,28 +181,26 @@ export class RollTrimTool implements ITool {
 
     // ── Caption roll target ─────────────────────────────────────────────────
     const captionTarget = findCaptionRollTarget(
-      event.frame, track, EDGE_ZONE_PX, ctx.pixelsPerFrame,
+      event.frame,
+      track,
+      EDGE_ZONE_PX,
+      ctx.pixelsPerFrame,
     );
     if (captionTarget) {
       const { leftCaption, rightCaption } = captionTarget;
-      const origBoundary = leftCaption.endFrame;  // === rightCaption.startFrame
 
       // Caption clamp: each must stay ≥ 1 frame
-      const captionMin = Math.max(
-        leftCaption.startFrame + MIN_DURATION,
-      ) as TimelineFrame;
-      const captionMax = Math.min(
-        rightCaption.endFrame - MIN_DURATION,
-      ) as TimelineFrame;
+      const captionMin = Math.max(leftCaption.startFrame + MIN_DURATION) as TimelineFrame;
+      const captionMax = Math.min(rightCaption.endFrame - MIN_DURATION) as TimelineFrame;
 
-      if (captionMin > captionMax) return;  // no valid range
+      if (captionMin > captionMax) return; // no valid range
 
-      this.leftCaptionId      = leftCaption.id;
-      this.rightCaptionId     = rightCaption.id;
-      this.captionTrackId     = event.trackId;
+      this.leftCaptionId = leftCaption.id;
+      this.rightCaptionId = rightCaption.id;
+      this.captionTrackId = event.trackId;
       this.captionMinBoundary = captionMin;
       this.captionMaxBoundary = captionMax;
-      return;  // caption gesture wins over clip gesture
+      return; // caption gesture wins over clip gesture
     }
 
     // ── Clip roll target (original) ───────────────────────────────────────────
@@ -210,7 +208,7 @@ export class RollTrimTool implements ITool {
     if (!target) return;
 
     const { leftClip, rightClip } = target;
-    const origBoundary = leftClip.timelineEnd;   // === rightClip.timelineStart
+    const origBoundary = leftClip.timelineEnd; // === rightClip.timelineStart
 
     // Precompute [minBoundary, maxBoundary] from all valid constraints.
     //
@@ -233,25 +231,27 @@ export class RollTrimTool implements ITool {
 
     // Look up left clip's asset for intrinsicDuration (needed for B')
     const leftAsset = ctx.state.assetRegistry.get(leftClip.assetId);
-    const leftIntrinsicDuration = leftAsset ? leftAsset.intrinsicDuration : (Infinity as TimelineFrame);
+    const leftIntrinsicDuration = leftAsset
+      ? leftAsset.intrinsicDuration
+      : (Infinity as TimelineFrame);
 
     const minBoundary = Math.max(
-      leftClip.timelineStart + MIN_DURATION,           // (A) left min-duration
-      origBoundary - rightClip.mediaIn,                // (E) right media leftward bound
+      leftClip.timelineStart + MIN_DURATION, // (A) left min-duration
+      origBoundary - rightClip.mediaIn, // (E) right media leftward bound
     ) as TimelineFrame;
 
     const maxBoundary = Math.min(
-      rightClip.timelineEnd - MIN_DURATION,            // (C) right min-duration
+      rightClip.timelineEnd - MIN_DURATION, // (C) right min-duration
       origBoundary + (leftIntrinsicDuration - leftClip.mediaOut), // (B') left media rightward bound
     ) as TimelineFrame;
 
     // If there's no valid roll range (clips already at media limits), abort
     if (minBoundary > maxBoundary) return;
 
-    this.leftClipId   = leftClip.id;
-    this.rightClipId  = rightClip.id;
-    this.minBoundary  = minBoundary;
-    this.maxBoundary  = maxBoundary;
+    this.leftClipId = leftClip.id;
+    this.rightClipId = rightClip.id;
+    this.minBoundary = minBoundary;
+    this.maxBoundary = maxBoundary;
   }
 
   // ── ITool: onPointerMove ──────────────────────────────────────────────────
@@ -260,32 +260,46 @@ export class RollTrimTool implements ITool {
     // Update isHoveringCut for getCursor()
     if (event.trackId !== null) {
       const track = findTrack(ctx.state, event.trackId);
-      this.isHoveringCut = track !== null
-        && (
-          findRollTarget(event.frame, track, EDGE_ZONE_PX, ctx.pixelsPerFrame) !== null ||
-          findCaptionRollTarget(event.frame, track, EDGE_ZONE_PX, ctx.pixelsPerFrame) !== null
-        );
+      this.isHoveringCut =
+        track !== null &&
+        (findRollTarget(event.frame, track, EDGE_ZONE_PX, ctx.pixelsPerFrame) !== null ||
+          findCaptionRollTarget(event.frame, track, EDGE_ZONE_PX, ctx.pixelsPerFrame) !== null);
     } else {
       this.isHoveringCut = false;
     }
 
     // ── Caption roll ghost ───────────────────────────────────────────────────
-    if (this.leftCaptionId !== null && this.rightCaptionId !== null &&
-        this.captionMinBoundary !== null && this.captionMaxBoundary !== null &&
-        this.captionTrackId !== null) {
-      const snapped       = ctx.snap(event.frame, [this.leftCaptionId, this.rightCaptionId]) as TimelineFrame;
-      const boundaryFrame = clamp(snapped, this.captionMinBoundary, this.captionMaxBoundary) as TimelineFrame;
+    if (
+      this.leftCaptionId !== null &&
+      this.rightCaptionId !== null &&
+      this.captionMinBoundary !== null &&
+      this.captionMaxBoundary !== null &&
+      this.captionTrackId !== null
+    ) {
+      const snapped = ctx.snap(event.frame, [
+        this.leftCaptionId,
+        this.rightCaptionId,
+      ]) as TimelineFrame;
+      const boundaryFrame = clamp(
+        snapped,
+        this.captionMinBoundary,
+        this.captionMaxBoundary,
+      ) as TimelineFrame;
       return this._buildCaptionGhost(boundaryFrame, ctx.state);
     }
 
     // ── Clip roll ghost (original) ──────────────────────────────────────────
     // Not mid-drag
-    if (this.leftClipId === null || this.rightClipId === null ||
-        this.minBoundary === null || this.maxBoundary === null) {
+    if (
+      this.leftClipId === null ||
+      this.rightClipId === null ||
+      this.minBoundary === null ||
+      this.maxBoundary === null
+    ) {
       return null;
     }
 
-    const snapped       = ctx.snap(event.frame, [this.leftClipId, this.rightClipId]) as TimelineFrame;
+    const snapped = ctx.snap(event.frame, [this.leftClipId, this.rightClipId]) as TimelineFrame;
     const boundaryFrame = clamp(snapped, this.minBoundary, this.maxBoundary) as TimelineFrame;
 
     return this._buildGhost(boundaryFrame, ctx.state);
@@ -295,44 +309,52 @@ export class RollTrimTool implements ITool {
 
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // ── Caption roll-trim path ───────────────────────────────────────────────
-    if (this.leftCaptionId !== null && this.captionMinBoundary !== null &&
-        this.captionMaxBoundary !== null && this.captionTrackId !== null) {
+    if (
+      this.leftCaptionId !== null &&
+      this.captionMinBoundary !== null &&
+      this.captionMaxBoundary !== null &&
+      this.captionTrackId !== null
+    ) {
       const snapped = ctx.snap(event.frame, [
-        ...(this.leftCaptionId  ? [this.leftCaptionId]  : []),
+        ...(this.leftCaptionId ? [this.leftCaptionId] : []),
         ...(this.rightCaptionId ? [this.rightCaptionId] : []),
       ]) as TimelineFrame;
-      const boundaryFrame = clamp(snapped, this.captionMinBoundary, this.captionMaxBoundary) as TimelineFrame;
+      const boundaryFrame = clamp(
+        snapped,
+        this.captionMinBoundary,
+        this.captionMaxBoundary,
+      ) as TimelineFrame;
 
-      const leftId   = this.leftCaptionId;
-      const rightId  = this.rightCaptionId;
-      const trackId  = this.captionTrackId;
+      const leftId = this.leftCaptionId;
+      const rightId = this.rightCaptionId;
+      const trackId = this.captionTrackId;
       this._resetCaptionDragState();
 
       if (!leftId || !rightId || !trackId) return null;
 
-      const track       = ctx.state.timeline.tracks.find(t => t.id === trackId);
-      const liveLeft    = track?.captions.find(c => c.id === leftId);
-      const liveRight   = track?.captions.find(c => c.id === rightId);
+      const track = ctx.state.timeline.tracks.find((t) => t.id === trackId);
+      const liveLeft = track?.captions.find((c) => c.id === leftId);
+      const liveRight = track?.captions.find((c) => c.id === rightId);
       if (!liveLeft || !liveRight) return null;
 
       const origBoundary = liveLeft.endFrame;
-      if (boundaryFrame === origBoundary) return null;  // no-op
+      if (boundaryFrame === origBoundary) return null; // no-op
 
       return {
-        id:        txId(),
-        label:     'Roll Trim Caption',
+        id: txId(),
+        label: 'Roll Trim Caption',
         timestamp: Date.now(),
         operations: [
           {
-            type:      'EDIT_CAPTION' as const,
+            type: 'EDIT_CAPTION' as const,
             captionId: leftId,
-            trackId:   trackId as import('../types/track').TrackId,
-            endFrame:  boundaryFrame,
+            trackId: trackId as import('../types/track').TrackId,
+            endFrame: boundaryFrame,
           },
           {
-            type:       'EDIT_CAPTION' as const,
-            captionId:  rightId,
-            trackId:    trackId as import('../types/track').TrackId,
+            type: 'EDIT_CAPTION' as const,
+            captionId: rightId,
+            trackId: trackId as import('../types/track').TrackId,
             startFrame: boundaryFrame,
           },
         ],
@@ -346,14 +368,14 @@ export class RollTrimTool implements ITool {
       this._resetDragState();
       return null;
     }
-    const snapped       = ctx.snap(event.frame, [
-      ...(this.leftClipId  ? [this.leftClipId]  : []),
+    const snapped = ctx.snap(event.frame, [
+      ...(this.leftClipId ? [this.leftClipId] : []),
       ...(this.rightClipId ? [this.rightClipId] : []),
     ]) as TimelineFrame;
     const boundaryFrame = clamp(snapped, this.minBoundary, this.maxBoundary) as TimelineFrame;
 
     // STEP 2: Capture, then reset
-    const leftId  = this.leftClipId;
+    const leftId = this.leftClipId;
     const rightId = this.rightClipId;
     this._resetDragState();
 
@@ -361,7 +383,7 @@ export class RollTrimTool implements ITool {
 
     // STEP 3: Read origBoundary from ctx.state (committed — not yet changed)
     // Option B: avoids a 6th instance variable; ctx.state is safe here.
-    const liveLeft     = findClipById(ctx.state, leftId);
+    const liveLeft = findClipById(ctx.state, leftId);
     const origBoundary = liveLeft?.timelineEnd ?? null;
     if (origBoundary === null) return null;
 
@@ -369,11 +391,11 @@ export class RollTrimTool implements ITool {
     if (boundaryFrame === origBoundary) return null;
 
     return {
-      id:        txId(),
-      label:     'Roll Trim',
+      id: txId(),
+      label: 'Roll Trim',
       timestamp: Date.now(),
       operations: [
-        { type: 'RESIZE_CLIP', clipId: leftId,  edge: 'end',   newFrame: boundaryFrame },
+        { type: 'RESIZE_CLIP', clipId: leftId, edge: 'end', newFrame: boundaryFrame },
         { type: 'RESIZE_CLIP', clipId: rightId, edge: 'start', newFrame: boundaryFrame },
       ],
     };
@@ -390,15 +412,15 @@ export class RollTrimTool implements ITool {
   // ── ITool: onCancel ───────────────────────────────────────────────────────
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
-    this.leftClipId    = null;
-    this.rightClipId   = null;
-    this.minBoundary   = null;
-    this.maxBoundary   = null;
+    this.leftClipId = null;
+    this.rightClipId = null;
+    this.minBoundary = null;
+    this.maxBoundary = null;
     this.isHoveringCut = false;
     // Caption drag state
-    this.leftCaptionId      = null;
-    this.rightCaptionId     = null;
-    this.captionTrackId     = null;
+    this.leftCaptionId = null;
+    this.rightCaptionId = null;
+    this.captionTrackId = null;
     this.captionMinBoundary = null;
     this.captionMaxBoundary = null;
   }
@@ -408,49 +430,52 @@ export class RollTrimTool implements ITool {
   private _buildGhost(boundaryFrame: TimelineFrame, state: TimelineState): ProvisionalState | null {
     if (!this.leftClipId || !this.rightClipId) return null;
 
-    const liveLeft  = findClipById(state, this.leftClipId);
+    const liveLeft = findClipById(state, this.leftClipId);
     const liveRight = findClipById(state, this.rightClipId);
     if (!liveLeft || !liveRight) return null;
 
-    const ghostLeft:  Clip = { ...liveLeft,  timelineEnd:   boundaryFrame };
+    const ghostLeft: Clip = { ...liveLeft, timelineEnd: boundaryFrame };
     const ghostRight: Clip = { ...liveRight, timelineStart: boundaryFrame };
 
     return {
-      clips:         [ghostLeft, ghostRight],
+      clips: [ghostLeft, ghostRight],
       isProvisional: true,
     };
   }
 
-  private _buildCaptionGhost(boundaryFrame: TimelineFrame, state: TimelineState): ProvisionalState | null {
+  private _buildCaptionGhost(
+    boundaryFrame: TimelineFrame,
+    state: TimelineState,
+  ): ProvisionalState | null {
     if (!this.leftCaptionId || !this.rightCaptionId || !this.captionTrackId) return null;
 
-    const track      = state.timeline.tracks.find(t => t.id === this.captionTrackId);
-    const liveLeft   = track?.captions.find(c => c.id === this.leftCaptionId);
-    const liveRight  = track?.captions.find(c => c.id === this.rightCaptionId);
+    const track = state.timeline.tracks.find((t) => t.id === this.captionTrackId);
+    const liveLeft = track?.captions.find((c) => c.id === this.leftCaptionId);
+    const liveRight = track?.captions.find((c) => c.id === this.rightCaptionId);
     if (!liveLeft || !liveRight) return null;
 
-    const ghostLeft:  Caption = { ...liveLeft,  endFrame:   boundaryFrame };
+    const ghostLeft: Caption = { ...liveLeft, endFrame: boundaryFrame };
     const ghostRight: Caption = { ...liveRight, startFrame: boundaryFrame };
 
     return {
-      clips:         [],
-      captions:      [ghostLeft, ghostRight],
+      clips: [],
+      captions: [ghostLeft, ghostRight],
       isProvisional: true,
     };
   }
 
   private _resetDragState(): void {
-    this.leftClipId   = null;
-    this.rightClipId  = null;
-    this.minBoundary  = null;
-    this.maxBoundary  = null;
+    this.leftClipId = null;
+    this.rightClipId = null;
+    this.minBoundary = null;
+    this.maxBoundary = null;
     // isHoveringCut is NOT reset here — it is a hover-state var, not drag-state
   }
 
   private _resetCaptionDragState(): void {
-    this.leftCaptionId      = null;
-    this.rightCaptionId     = null;
-    this.captionTrackId     = null;
+    this.leftCaptionId = null;
+    this.rightCaptionId = null;
+    this.captionTrackId = null;
     this.captionMinBoundary = null;
     this.captionMaxBoundary = null;
   }

@@ -15,9 +15,9 @@ export function toEffectId(s: string): EffectId {
 export type EffectType = string;
 
 export type RenderStage =
-  | 'preComposite'   // applied before track composite
-  | 'postComposite'  // applied after track composite
-  | 'output';        // applied to final output
+  | 'preComposite' // applied before track composite
+  | 'postComposite' // applied after track composite
+  | 'output'; // applied to final output
 
 export type EffectParam = {
   readonly key: string;

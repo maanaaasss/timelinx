@@ -58,7 +58,9 @@ function EditorApp({ initialState }) {
 ```
 
 <Callout type="warn" title="Canvas must exist before engine creation">
-  The WebGL compositor needs a canvas element at creation time. Use a ref and wait for it to be populated before constructing the engine. The `useMemo` dependency on `canvasRef.current` handles this  - it re-runs once the canvas mounts.
+  The WebGL compositor needs a canvas element at creation time. Use a ref and wait for it to be
+  populated before constructing the engine. The `useMemo` dependency on `canvasRef.current` handles
+  this - it re-runs once the canvas mounts.
 </Callout>
 
 ---

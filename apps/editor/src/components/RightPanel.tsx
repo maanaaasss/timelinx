@@ -13,7 +13,7 @@ const TABS = [
   { id: 'text', label: 'Text' },
 ] as const;
 
-type TabId = typeof TABS[number]['id'];
+type TabId = (typeof TABS)[number]['id'];
 
 export function RightPanel() {
   const [activeTab, setActiveTab] = useState<TabId>('inspector');

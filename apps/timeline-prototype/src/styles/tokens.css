@@ -4,7 +4,8 @@
    Premiere Pro-inspired. Instrument-black canvas.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap') layer(fonts);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap')
+layer(fonts);
 
 /* ============================================================
    LAYER 1 — PRIMITIVES
@@ -15,112 +16,112 @@
   color-scheme: dark;
 
   /* ── Neutral palette ── */
-  --gray-950:  #0C0C10;
-  --gray-925:  #101014;
-  --gray-900:  #121216;
-  --gray-875:  #141418;
-  --gray-850:  #18181E;
-  --gray-800:  #1E1E26;
-  --gray-750:  #242430;
-  --gray-500:  #4A4A5C;
-  --gray-400:  #8888A0;
-  --gray-300:  #B4B4C8;
-  --gray-100:  #ECECF0;
+  --gray-950: #0c0c10;
+  --gray-925: #101014;
+  --gray-900: #121216;
+  --gray-875: #141418;
+  --gray-850: #18181e;
+  --gray-800: #1e1e26;
+  --gray-750: #242430;
+  --gray-500: #4a4a5c;
+  --gray-400: #8888a0;
+  --gray-300: #b4b4c8;
+  --gray-100: #ececf0;
 
   /* ── Amber accent palette ── */
-  --amber-50:  #FDF3E8;
-  --amber-100: #FAD9A8;
-  --amber-200: #F5B94C;
-  --amber-300: #EE9D1E;
-  --amber-400: #E07A2F;
-  --amber-500: #C4641A;
-  --amber-600: #A34E0E;
+  --amber-50: #fdf3e8;
+  --amber-100: #fad9a8;
+  --amber-200: #f5b94c;
+  --amber-300: #ee9d1e;
+  --amber-400: #e07a2f;
+  --amber-500: #c4641a;
+  --amber-600: #a34e0e;
 
   /* ── Cyan selection palette ── */
-  --cyan-400:  #00C2FF;
-  --cyan-500:  #1ABFFF;
+  --cyan-400: #00c2ff;
+  --cyan-500: #1abfff;
 
   /* ── Track-type palettes ── */
-  --blue-400:  #60A5FA;
-  --blue-500:  #3B82F6;
-  --blue-600:  #2563EB;
-  --blue-700:  #1D4ED8;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
 
-  --amber-t-500: #F59E0B;
-  --amber-t-600: #D97706;
-  --amber-t-700: #B45309;
+  --amber-t-500: #f59e0b;
+  --amber-t-600: #d97706;
+  --amber-t-700: #b45309;
 
-  --pink-500:  #EC4899;
-  --pink-600:  #DB2777;
-  --pink-700:  #BE185D;
+  --pink-500: #ec4899;
+  --pink-600: #db2777;
+  --pink-700: #be185d;
 
-  --green-500: #10B981;
+  --green-500: #10b981;
   --green-600: #059669;
   --green-700: #047857;
 
-  --purple-500: #A855F7;
-  --purple-600: #9333EA;
-  --purple-700: #7E22CE;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7e22ce;
 
   /* ── Semantic status colors ── */
-  --red-500:   #EF4444;
-  --green-400: #22C55E;
+  --red-500: #ef4444;
+  --green-400: #22c55e;
 
   /* ── Typography primitives ── */
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-sans:    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-  --text-xs:   11px;
-  --text-sm:   12px;
+  --text-xs: 11px;
+  --text-sm: 12px;
   --text-base: 13px;
-  --text-md:   14px;
-  --text-lg:   16px;
-  --text-xl:   20px;
-  --text-2xl:  24px;
-  --text-3xl:  32px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
 
-  --weight-regular:  400;
-  --weight-medium:   500;
+  --weight-regular: 400;
+  --weight-medium: 500;
   --weight-semibold: 600;
-  --weight-bold:     700;
+  --weight-bold: 700;
 
-  --leading-tight:   1.25;
-  --leading-normal:  1.5;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
   --leading-relaxed: 1.625;
 
   /* ── Spacing (4px grid) ── */
-  --space-0:  0px;
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-7:  28px;
-  --space-8:  32px;
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
 
   /* ── Radius ── */
   --radius-none: 0px;
-  --radius-xs:   2px;
-  --radius-sm:   4px;
-  --radius-md:   6px;
-  --radius-lg:   8px;
-  --radius-xl:   12px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
   --radius-full: 999px;
 
   /* ── Easing curves ── */
-  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* ── Durations ── */
-  --duration-fast:   120ms;
-  --duration-base:   180ms;
-  --duration-slow:   280ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
   --duration-normal: 180ms;
 }
 
@@ -131,73 +132,73 @@
 
 :root {
   /* ── Surfaces ── */
-  --bg-canvas:         var(--gray-950);
-  --bg-app:            var(--gray-950);
-  --bg-panel:          var(--gray-900);
-  --bg-surface:        var(--gray-850);
+  --bg-canvas: var(--gray-950);
+  --bg-app: var(--gray-950);
+  --bg-panel: var(--gray-900);
+  --bg-surface: var(--gray-850);
   --bg-surface-raised: var(--gray-800);
-  --bg-surface-soft:   var(--gray-875);
-  --bg-subtle:         var(--gray-925);
-  --bg-raised:         var(--gray-800);
-  --bg-overlay:        var(--gray-750);
-  --bg-input:          var(--gray-850);
-  --bg-input-focus:    var(--gray-800);
+  --bg-surface-soft: var(--gray-875);
+  --bg-subtle: var(--gray-925);
+  --bg-raised: var(--gray-800);
+  --bg-overlay: var(--gray-750);
+  --bg-input: var(--gray-850);
+  --bg-input-focus: var(--gray-800);
 
   /* ── State overlays ── */
-  --state-hover:       rgba(255,255,255,0.04);
-  --state-active:      rgba(255,255,255,0.06);
-  --state-focus:       rgba(255,255,255,0.08);
+  --state-hover: rgba(255, 255, 255, 0.04);
+  --state-active: rgba(255, 255, 255, 0.06);
+  --state-focus: rgba(255, 255, 255, 0.08);
 
   /* ── Borders ── */
-  --border-faint:      rgba(255,255,255,0.04);
-  --border-subtle:     rgba(255,255,255,0.06);
-  --border-default:    rgba(255,255,255,0.10);
-  --border-strong:     rgba(255,255,255,0.16);
-  --border-focus:      var(--amber-400);
+  --border-faint: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-focus: var(--amber-400);
 
   /* ── Text ── */
-  --text-primary:   var(--gray-100);
+  --text-primary: var(--gray-100);
   --text-secondary: var(--gray-300);
-  --text-tertiary:  var(--gray-400);
-  --text-disabled:  var(--gray-500);
-  --text-inverse:   var(--gray-950);
+  --text-tertiary: var(--gray-400);
+  --text-disabled: var(--gray-500);
+  --text-inverse: var(--gray-950);
 
   /* ── Accent — blue selection ── */
-  --accent:        #4a8cff;
-  --accent-hover:  #5a9cff;
+  --accent: #4a8cff;
+  --accent-hover: #5a9cff;
   --accent-active: #3a7cee;
-  --accent-subtle: rgba(74,140,255,0.15);
-  --accent-border: rgba(74,140,255,0.35);
-  --accent-glow:   rgba(74,140,255,0.20);
+  --accent-subtle: rgba(74, 140, 255, 0.15);
+  --accent-border: rgba(74, 140, 255, 0.35);
+  --accent-glow: rgba(74, 140, 255, 0.2);
   --accent-on-fill: var(--gray-950);
 
   /* ── Selection — electric cyan ── */
-  --selection:         var(--cyan-400);
-  --selection-ring:    var(--cyan-500);
-  --selection-glow:    rgba(0,194,255,0.12);
-  --selection-handle:  var(--cyan-400);
+  --selection: var(--cyan-400);
+  --selection-ring: var(--cyan-500);
+  --selection-glow: rgba(0, 194, 255, 0.12);
+  --selection-handle: var(--cyan-400);
   --selection-on-fill: var(--gray-950);
 
   /* ── Status ── */
-  --color-danger:         var(--red-500);
-  --color-danger-subtle:  rgba(239,68,68,0.10);
-  --color-success:        var(--green-400);
-  --color-success-subtle: rgba(34,197,94,0.10);
-  --color-warning:        var(--amber-t-500);
-  --color-warning-subtle: rgba(245,158,11,0.10);
+  --color-danger: var(--red-500);
+  --color-danger-subtle: rgba(239, 68, 68, 0.1);
+  --color-success: var(--green-400);
+  --color-success-subtle: rgba(34, 197, 94, 0.1);
+  --color-warning: var(--amber-t-500);
+  --color-warning-subtle: rgba(245, 158, 11, 0.1);
 
   /* ── Shadows ── */
-  --shadow-xs:      0 1px 2px rgba(0,0,0,0.30);
-  --shadow-sm:      0 2px 8px rgba(0,0,0,0.40);
-  --shadow-md:      0 4px 16px rgba(0,0,0,0.50);
-  --shadow-lg:      0 8px 32px rgba(0,0,0,0.60);
-  --shadow-overlay: 0 16px 48px rgba(0,0,0,0.70);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.7);
 
   /* ── Rings ── */
   --ring-surface: inset 0 0 0 1px var(--border-subtle);
-  --ring-raised:  inset 0 0 0 1px var(--border-default);
-  --ring-accent:  0 0 0 2px var(--accent-subtle);
-  --ring-focus:   0 0 0 2px rgba(224,122,47,0.30);
+  --ring-raised: inset 0 0 0 1px var(--border-default);
+  --ring-accent: 0 0 0 2px var(--accent-subtle);
+  --ring-focus: 0 0 0 2px rgba(224, 122, 47, 0.3);
 
   /* ── Transitions ── */
   --transition-fast: 80ms ease;
@@ -205,13 +206,13 @@
   --transition-slow: 250ms ease;
 
   /* ── Micro-interactions ── */
-  --scale-press:       0.97;
+  --scale-press: 0.97;
   --translate-hover-y: -1px;
 
   /* ── Scrollbar ── */
-  --scrollbar-track:       transparent;
-  --scrollbar-thumb:       rgba(255,255,255,0.08);
-  --scrollbar-thumb-hover: rgba(255,255,255,0.14);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.14);
 }
 
 /* ============================================================
@@ -221,100 +222,114 @@
 
 :root {
   /* ── Track-type colors ── */
-  --track-video:              var(--blue-500);
-  --track-video-dim:          rgba(59,130,246,0.7);
-  --track-video-bg:           rgba(59,130,246,0.12);
-  --track-video-border:       rgba(59,130,246,0.30);
-  --track-video-solid:        var(--blue-600);
+  --track-video: var(--blue-500);
+  --track-video-dim: rgba(59, 130, 246, 0.7);
+  --track-video-bg: rgba(59, 130, 246, 0.12);
+  --track-video-border: rgba(59, 130, 246, 0.3);
+  --track-video-solid: var(--blue-600);
   --track-video-border-solid: var(--blue-700);
 
-  --track-audio:              var(--blue-400);
-  --track-audio-dim:          rgba(96,165,250,0.7);
-  --track-audio-bg:           rgba(96,165,250,0.12);
-  --track-audio-border:       rgba(96,165,250,0.30);
-  --track-audio-solid:        var(--blue-500);
+  --track-audio: var(--blue-400);
+  --track-audio-dim: rgba(96, 165, 250, 0.7);
+  --track-audio-bg: rgba(96, 165, 250, 0.12);
+  --track-audio-border: rgba(96, 165, 250, 0.3);
+  --track-audio-solid: var(--blue-500);
   --track-audio-border-solid: var(--blue-600);
 
-  --track-subtitle:              var(--amber-t-500);
-  --track-subtitle-dim:          rgba(245,158,11,0.7);
-  --track-subtitle-bg:           rgba(245,158,11,0.12);
-  --track-subtitle-border:       rgba(245,158,11,0.30);
-  --track-subtitle-solid:        var(--amber-t-600);
+  --track-subtitle: var(--amber-t-500);
+  --track-subtitle-dim: rgba(245, 158, 11, 0.7);
+  --track-subtitle-bg: rgba(245, 158, 11, 0.12);
+  --track-subtitle-border: rgba(245, 158, 11, 0.3);
+  --track-subtitle-solid: var(--amber-t-600);
   --track-subtitle-border-solid: var(--amber-t-700);
 
-  --track-image:              var(--pink-500);
-  --track-image-bg:           rgba(236,72,153,0.12);
-  --track-image-border:       rgba(236,72,153,0.30);
-  --track-image-solid:        var(--pink-600);
+  --track-image: var(--pink-500);
+  --track-image-bg: rgba(236, 72, 153, 0.12);
+  --track-image-border: rgba(236, 72, 153, 0.3);
+  --track-image-solid: var(--pink-600);
   --track-image-border-solid: var(--pink-700);
 
-  --track-effect:              var(--green-500);
-  --track-effect-dim:          rgba(16,185,129,0.7);
-  --track-effect-bg:           rgba(16,185,129,0.12);
-  --track-effect-border:       rgba(16,185,129,0.30);
-  --track-effect-solid:        var(--green-600);
+  --track-effect: var(--green-500);
+  --track-effect-dim: rgba(16, 185, 129, 0.7);
+  --track-effect-bg: rgba(16, 185, 129, 0.12);
+  --track-effect-border: rgba(16, 185, 129, 0.3);
+  --track-effect-solid: var(--green-600);
   --track-effect-border-solid: var(--green-700);
 
-  --track-music:              var(--purple-500);
-  --track-music-dim:          rgba(168,85,247,0.7);
-  --track-music-bg:           rgba(168,85,247,0.12);
-  --track-music-border:       rgba(168,85,247,0.30);
-  --track-music-solid:        var(--purple-600);
+  --track-music: var(--purple-500);
+  --track-music-dim: rgba(168, 85, 247, 0.7);
+  --track-music-bg: rgba(168, 85, 247, 0.12);
+  --track-music-border: rgba(168, 85, 247, 0.3);
+  --track-music-solid: var(--purple-600);
   --track-music-border-solid: var(--purple-700);
 
   /* ── Track-type glows ── */
-  --glow-video:    rgba(59,130,246,0.12);
-  --glow-audio:    rgba(96,165,250,0.12);
-  --glow-subtitle: rgba(245,158,11,0.12);
-  --glow-image:    rgba(236,72,153,0.12);
-  --glow-effect:   rgba(16,185,129,0.12);
-  --glow-music:    rgba(168,85,247,0.12);
+  --glow-video: rgba(59, 130, 246, 0.12);
+  --glow-audio: rgba(96, 165, 250, 0.12);
+  --glow-subtitle: rgba(245, 158, 11, 0.12);
+  --glow-image: rgba(236, 72, 153, 0.12);
+  --glow-effect: rgba(16, 185, 129, 0.12);
+  --glow-music: rgba(168, 85, 247, 0.12);
 
   /* ── Timeline sizing ── */
-  --tl-track-height:       80px;
+  --tl-track-height: 80px;
   --tl-track-height-video: 80px;
   --tl-track-height-audio: 80px;
   --tl-track-header-width: 180px;
-  --tl-ruler-height:       36px;
-  --tl-toolbar-height:     44px;
-  --tl-topbar-height:      48px;
-  --tl-sidebar-width:      180px;
+  --tl-ruler-height: 36px;
+  --tl-toolbar-height: 44px;
+  --tl-topbar-height: 48px;
+  --tl-sidebar-width: 180px;
 
   /* ── Playhead ── */
-  --tl-playhead-color:  var(--amber-400);
-  --tl-playhead-shadow: 0 0 8px rgba(224,122,47,0.4);
+  --tl-playhead-color: var(--amber-400);
+  --tl-playhead-shadow: 0 0 8px rgba(224, 122, 47, 0.4);
 
   /* ── Clip ── */
-  --tl-clip-radius:  2px;
+  --tl-clip-radius: 2px;
   --tl-clip-padding: 0 10px;
 
   /* ── Snap ── */
-  --tl-snap-color:     var(--selection);
+  --tl-snap-color: var(--selection);
   --tl-timecode-color: var(--text-secondary);
 
   /* ── Grid ── */
-  --tl-separator:    var(--border-faint);
-  --tl-grid-line:    rgba(255,255,255,0.04);
+  --tl-separator: var(--border-faint);
+  --tl-grid-line: rgba(255, 255, 255, 0.04);
 }
 
 /* ============================================================
    BASE RESETS & SHARED
    ============================================================ */
 
-button, input, select, textarea { font: inherit; }
-button { color: inherit; }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  color: inherit;
+}
 
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: var(--radius-full);
 }
-::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
 
 .timecode {
   color: var(--text-secondary);

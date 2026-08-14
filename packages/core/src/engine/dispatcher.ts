@@ -14,10 +14,7 @@
  */
 
 import type { TimelineState } from '../types/state';
-import type {
-  Transaction,
-  DispatchResult,
-} from '../types/operations';
+import type { Transaction, DispatchResult } from '../types/operations';
 import { applyOperation } from './apply';
 import { checkInvariants } from '../validation/invariants';
 import { validateOperation } from '../validation/validators';
@@ -26,10 +23,7 @@ import { validateOperation } from '../validation/validators';
 // dispatch
 // ---------------------------------------------------------------------------
 
-export function dispatch(
-  state: TimelineState,
-  transaction: Transaction,
-): DispatchResult {
+export function dispatch(state: TimelineState, transaction: Transaction): DispatchResult {
   // Step 1 + Step 2: Validate each operation against the rolling state, then apply it.
   // Validating against rolling state is necessary for compound transactions like
   //   [ DELETE_CLIP, INSERT_CLIP(left), INSERT_CLIP(right) ]
@@ -72,20 +66,18 @@ export function dispatch(
   // those operate on internal slots, not object properties. Wrap in a
   // read-only proxy BEFORE freezing the top-level object (freeze makes
   // properties non-writable, preventing later reassignment).
-  const frozenRegistry = new Proxy(
-    proposedState.assetRegistry as Map<unknown, unknown>,
-    {
-      get(target, prop, receiver) {
-        if (prop === 'set' || prop === 'delete' || prop === 'clear') {
-          throw new TypeError(
-            `Cannot modify frozen AssetRegistry: ${(prop as string).toUpperCase()} is disabled`,
-          );
-        }
-        const value = Reflect.get(target, prop, target);
-        return typeof value === 'function' ? value.bind(target) : value;
-      },
+  const frozenRegistry = new Proxy(proposedState.assetRegistry as Map<unknown, unknown>, {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by Proxy handler signature
+    get(target, prop, _receiver) {
+      if (prop === 'set' || prop === 'delete' || prop === 'clear') {
+        throw new TypeError(
+          `Cannot modify frozen AssetRegistry: ${(prop as string).toUpperCase()} is disabled`,
+        );
+      }
+      const value = Reflect.get(target, prop, target);
+      return typeof value === 'function' ? value.bind(target) : value;
     },
-  ) as typeof proposedState.assetRegistry;
+  }) as typeof proposedState.assetRegistry;
 
   const nextState: TimelineState = {
     ...proposedState,

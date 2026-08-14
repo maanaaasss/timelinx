@@ -14,11 +14,7 @@ export function TabbedPanelExample() {
 
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
-      <TabbedPanel
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      >
+      <TabbedPanel tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
         <div>
           <p style={{ margin: 0 }}>General settings content goes here.</p>
           <p style={{ margin: '8px 0 0', color: 'var(--color-muted, #888)', fontSize: 13 }}>

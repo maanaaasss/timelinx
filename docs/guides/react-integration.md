@@ -15,8 +15,14 @@ Peer dependencies: `react ^18 || ^19`.
 ```tsx
 import { useState } from 'react';
 import {
-  createAsset, createClip, createTrack, createTimeline, createTimelineState,
-  TimelineEngine, toFrame, frameRate,
+  createAsset,
+  createClip,
+  createTrack,
+  createTimeline,
+  createTimelineState,
+  TimelineEngine,
+  toFrame,
+  frameRate,
 } from '@timelinx/core';
 import { TimelineProvider, useTimeline, useTrackIds, useClip } from '@timelinx/react';
 ```
@@ -78,8 +84,12 @@ function TimelineEditor() {
   return (
     <div>
       <h1>{timeline.name}</h1>
-      <p>{trackIds.length} tracks, {timeline.duration} frames</p>
-      {trackIds.map(id => <TrackView key={id} trackId={id} />)}
+      <p>
+        {trackIds.length} tracks, {timeline.duration} frames
+      </p>
+      {trackIds.map((id) => (
+        <TrackView key={id} trackId={id} />
+      ))}
     </div>
   );
 }
@@ -91,7 +101,7 @@ function TrackView({ trackId }: { trackId: string }) {
   return (
     <div>
       <h3>{track.name}</h3>
-      {track.clips.map(clip => (
+      {track.clips.map((clip) => (
         <ClipView key={clip.id} clipId={clip.id} />
       ))}
     </div>
@@ -125,19 +135,21 @@ function AddClipButton() {
       id: 'add-clip',
       label: 'Add clip',
       timestamp: Date.now(),
-      operations: [{
-        type: 'INSERT_CLIP',
-        trackId: 'v1',
-        clip: createClip({
-          id: `clip-${Date.now()}`,
-          assetId: 'asset-v',
+      operations: [
+        {
+          type: 'INSERT_CLIP',
           trackId: 'v1',
-          timelineStart: toFrame(0),
-          timelineEnd: toFrame(300),
-          mediaIn: toFrame(0),
-          mediaOut: toFrame(300),
-        }),
-      }],
+          clip: createClip({
+            id: `clip-${Date.now()}`,
+            assetId: 'asset-v',
+            trackId: 'v1',
+            timelineStart: toFrame(0),
+            timelineEnd: toFrame(300),
+            mediaIn: toFrame(0),
+            mediaOut: toFrame(300),
+          }),
+        },
+      ],
     });
   };
 
@@ -154,8 +166,12 @@ function UndoRedoButtons() {
 
   return (
     <div>
-      <button disabled={!canUndo} onClick={() => engine.undo()}>Undo</button>
-      <button disabled={!canRedo} onClick={() => engine.redo()}>Redo</button>
+      <button disabled={!canUndo} onClick={() => engine.undo()}>
+        Undo
+      </button>
+      <button disabled={!canRedo} onClick={() => engine.redo()}>
+        Redo
+      </button>
     </div>
   );
 }
@@ -179,10 +195,10 @@ it('useClip isolation: dispatch MOVE_CLIP on clip A -> render count for clip B u
   expect(clipBRenderCount).toBe(1);
   act(() => {
     engine.dispatch({
-      id: 'move', label: 'Move A', timestamp: 0,
-      operations: [
-        { type: 'MOVE_CLIP', clipId: toClipId(clipAId), newTimelineStart: toFrame(20) },
-      ],
+      id: 'move',
+      label: 'Move A',
+      timestamp: 0,
+      operations: [{ type: 'MOVE_CLIP', clipId: toClipId(clipAId), newTimelineStart: toFrame(20) }],
     });
   });
   expect(result.current!.id).toBe(clipBId);
@@ -194,48 +210,48 @@ it('useClip isolation: dispatch MOVE_CLIP on clip A -> render count for clip B u
 
 ### Context-Based (read engine from `<TimelineProvider>`)
 
-| Hook | Returns |
-|------|---------|
-| `useEngine()` | `TimelineEngine` |
-| `useTimeline()` | `Timeline` object |
-| `useTrackIds()` | `readonly string[]` |
-| `useTrack(id)` | `Track \| null` |
-| `useClip(id)` | `Clip \| null` (provisional-aware) |
-| `useClips(trackId)` | `readonly Clip[]` |
-| `useMarkers()` | `readonly Marker[]` |
-| `useHistory()` | `{ canUndo, canRedo }` |
-| `useActiveTool()` | `{ id: string, cursor: string }` |
-| `useActiveToolId()` | `string` |
-| `useCanUndo()` | `boolean` |
-| `useCanRedo()` | `boolean` |
-| `useCanUndoRedo()` | `{ canUndo, canRedo }` |
-| `useCursor()` | `string` (CSS cursor) |
-| `useProvisional()` | `ProvisionalState \| null` |
-| `useSelectedClipIds()` | `ReadonlySet<string>` |
+| Hook                   | Returns                            |
+| ---------------------- | ---------------------------------- |
+| `useEngine()`          | `TimelineEngine`                   |
+| `useTimeline()`        | `Timeline` object                  |
+| `useTrackIds()`        | `readonly string[]`                |
+| `useTrack(id)`         | `Track \| null`                    |
+| `useClip(id)`          | `Clip \| null` (provisional-aware) |
+| `useClips(trackId)`    | `readonly Clip[]`                  |
+| `useMarkers()`         | `readonly Marker[]`                |
+| `useHistory()`         | `{ canUndo, canRedo }`             |
+| `useActiveTool()`      | `{ id: string, cursor: string }`   |
+| `useActiveToolId()`    | `string`                           |
+| `useCanUndo()`         | `boolean`                          |
+| `useCanRedo()`         | `boolean`                          |
+| `useCanUndoRedo()`     | `{ canUndo, canRedo }`             |
+| `useCursor()`          | `string` (CSS cursor)              |
+| `useProvisional()`     | `ProvisionalState \| null`         |
+| `useSelectedClipIds()` | `ReadonlySet<string>`              |
 
 ### Engine-First (require explicit `engine` argument)
 
-| Hook | Returns |
-|------|---------|
-| `useTimelineWithEngine(engine)` | `Timeline` |
-| `useTrackIdsWithEngine(engine)` | `readonly string[]` |
-| `useTrackWithEngine(engine, id)` | `Track \| null` |
-| `useClipWithEngine(engine, id)` | `Clip \| null` |
+| Hook                               | Returns                    |
+| ---------------------------------- | -------------------------- |
+| `useTimelineWithEngine(engine)`    | `Timeline`                 |
+| `useTrackIdsWithEngine(engine)`    | `readonly string[]`        |
+| `useTrackWithEngine(engine, id)`   | `Track \| null`            |
+| `useClipWithEngine(engine, id)`    | `Clip \| null`             |
 | `useProvisionalWithEngine(engine)` | `ProvisionalState \| null` |
-| `usePlayheadFrame(engine)` | `TimelineFrame` |
-| `useIsPlaying(engine)` | `boolean` |
-| `useChange(engine)` | `StateChange` |
-| `usePlaybackEngine(engine)` | `PlaybackEngine \| null` |
+| `usePlayheadFrame(engine)`         | `TimelineFrame`            |
+| `useIsPlaying(engine)`             | `boolean`                  |
+| `useChange(engine)`                | `StateChange`              |
+| `usePlaybackEngine(engine)`        | `PlaybackEngine \| null`   |
 
 ### Playback & Tool Routing
 
-| Hook / Function | Purpose |
-|-----------------|---------|
-| `usePlayhead(engine)` | Full playhead state + stable action callbacks (play, pause, seek) |
-| `usePlayheadEvent(engine, type, handler)` | Subscribe to specific playhead events |
-| `useToolRouter(engine, options)` | Stable pointer/keyboard handlers from `createToolRouter` |
-| `useVirtualWindow(engine, width, scroll, ppf)` | Viewport-aware frame range |
-| `useVisibleClips(engine, window)` | Clips visible in the current viewport |
+| Hook / Function                                | Purpose                                                           |
+| ---------------------------------------------- | ----------------------------------------------------------------- |
+| `usePlayhead(engine)`                          | Full playhead state + stable action callbacks (play, pause, seek) |
+| `usePlayheadEvent(engine, type, handler)`      | Subscribe to specific playhead events                             |
+| `useToolRouter(engine, options)`               | Stable pointer/keyboard handlers from `createToolRouter`          |
+| `useVirtualWindow(engine, width, scroll, ppf)` | Viewport-aware frame range                                        |
+| `useVisibleClips(engine, window)`              | Clips visible in the current viewport                             |
 
 ## Verified Example Test
 
@@ -248,13 +264,19 @@ it('dispatch INSERT_CLIP -> useClips returns new clip', () => {
   const { result } = renderHook(() => useClips(engine, trackId));
   const countBefore = result.current.length;
   const newClip = createClip({
-    id: 'v1-new', assetId: toAssetId('asset-v'), trackId: 'v1',
-    timelineStart: toFrame(300), timelineEnd: toFrame(400),
-    mediaIn: toFrame(0), mediaOut: toFrame(100),
+    id: 'v1-new',
+    assetId: toAssetId('asset-v'),
+    trackId: 'v1',
+    timelineStart: toFrame(300),
+    timelineEnd: toFrame(400),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(100),
   });
   act(() => {
     engine.dispatch({
-      id: 'add', label: 'Add clip', timestamp: 0,
+      id: 'add',
+      label: 'Add clip',
+      timestamp: 0,
       operations: [{ type: 'INSERT_CLIP', trackId, clip: newClip }],
     });
   });

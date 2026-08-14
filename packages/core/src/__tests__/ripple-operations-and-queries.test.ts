@@ -23,14 +23,14 @@ import {
 } from '../systems/queries';
 
 import { createTimelineState } from '../types/state';
-import { createTimeline }       from '../types/timeline';
+import { createTimeline } from '../types/timeline';
 import { createTrack, toTrackId } from '../types/track';
-import { createClip, toClipId }   from '../types/clip';
+import { createClip, toClipId } from '../types/clip';
 import { createAsset, toAssetId } from '../types/asset';
 import { toFrame, toTimecode, frameRate } from '../types/frame';
 import type { TimelineState } from '../types/state';
-import type { Clip }          from '../types/clip';
-import type { TrackId }       from '../types/track';
+import type { Clip } from '../types/clip';
+import type { TrackId } from '../types/track';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,25 +40,37 @@ const ASSET_1 = toAssetId('asset-1');
 
 function asset() {
   return createAsset({
-    id: 'asset-1', name: 'Test', mediaType: 'video',
+    id: 'asset-1',
+    name: 'Test',
+    mediaType: 'video',
     filePath: '/media/test.mp4',
     intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
 }
 
 function clip(id: string, start: number, end: number, trackId: TrackId = TRACK_1): Clip {
   return createClip({
-    id, assetId: 'asset-1', trackId,
-    timelineStart: toFrame(start), timelineEnd: toFrame(end),
-    mediaIn: toFrame(0), mediaOut: toFrame(end - start),
+    id,
+    assetId: 'asset-1',
+    trackId,
+    timelineStart: toFrame(start),
+    timelineEnd: toFrame(end),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(end - start),
   });
 }
 
 function state(tracks: ReturnType<typeof createTrack>[]): TimelineState {
   const tl = createTimeline({
-    id: 'tl', name: 'Test', fps: frameRate(30),
-    duration: toFrame(9000), startTimecode: toTimecode('00:00:00:00'), tracks,
+    id: 'tl',
+    name: 'Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks,
   });
   return createTimelineState({ timeline: tl, assetRegistry: new Map([[ASSET_1, asset()]]) });
 }
@@ -68,10 +80,14 @@ function state(tracks: ReturnType<typeof createTrack>[]): TimelineState {
 describe('ripple operations', () => {
   describe('rippleDelete', () => {
     it('deletes clip and shifts subsequent clips left', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
+        }),
+      ]);
       const result = rippleDelete(s, 'a');
       const tracks = result.timeline.tracks;
       const clips = tracks[0]!.clips;
@@ -90,10 +106,14 @@ describe('ripple operations', () => {
 
   describe('rippleTrim', () => {
     it('trims clip end and shifts subsequent clips', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 100, 200)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 100, 200)],
+        }),
+      ]);
       const result = rippleTrim(s, 'a', toFrame(150));
       const clips = result.timeline.tracks[0]!.clips;
       expect(clips[0]!.timelineEnd).toBe(toFrame(150));
@@ -106,63 +126,87 @@ describe('ripple operations', () => {
     });
 
     it('throws when newEnd <= clip start', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 100, 200)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 100, 200)],
+        }),
+      ]);
       expect(() => rippleTrim(s, 'a', toFrame(50))).toThrow('New end must be after clip start');
     });
   });
 
   describe('insertEdit', () => {
     it('inserts clip and shifts subsequent clips right', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 200, 300)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 200, 300)],
+        }),
+      ]);
       const newClip = clip('new', 0, 50);
       const result = insertEdit(s, TRACK_1, newClip, toFrame(150));
       const clips = result.timeline.tracks[0]!.clips;
       expect(clips).toHaveLength(3);
-      const inserted = clips.find(c => c.id === 'new')!;
+      const inserted = clips.find((c) => c.id === 'new')!;
       expect(inserted.timelineStart).toBe(toFrame(150));
       expect(inserted.timelineEnd).toBe(toFrame(200));
-      const shifted = clips.find(c => c.id === 'b')!;
+      const shifted = clips.find((c) => c.id === 'b')!;
       expect(shifted.timelineStart).toBe(toFrame(250));
     });
 
     it('throws on missing track', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => insertEdit(s, toTrackId('bad'), clip('x', 0, 50), toFrame(0))).toThrow('Track not found');
+      expect(() => insertEdit(s, toTrackId('bad'), clip('x', 0, 50), toFrame(0))).toThrow(
+        'Track not found',
+      );
     });
   });
 
   describe('rippleMove', () => {
     it('moving left closes gap and shifts subsequent clips', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 200, 300)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 200, 300)],
+        }),
+      ]);
       const result = rippleMove(s, 'b', toFrame(100));
       const clips = result.timeline.tracks[0]!.clips;
-      const moved = clips.find(c => c.id === 'b')!;
+      const moved = clips.find((c) => c.id === 'b')!;
       expect(moved.timelineStart).toBe(toFrame(100));
     });
 
     it('moving right makes room at destination', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
+        }),
+      ]);
       const result = rippleMove(s, 'a', toFrame(250));
       const clips = result.timeline.tracks[0]!.clips;
-      const moved = clips.find(c => c.id === 'a')!;
+      const moved = clips.find((c) => c.id === 'a')!;
       expect(moved.timelineStart).toBe(toFrame(150));
     });
 
     it('no-op when moving to same position', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 0, 100)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100)],
+        }),
+      ]);
       const result = rippleMove(s, 'a', toFrame(0));
       expect(result).toBe(s);
     });
@@ -173,36 +217,55 @@ describe('ripple operations', () => {
     });
 
     it('throws on negative start', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 100, 200)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 100, 200)],
+        }),
+      ]);
       expect(() => rippleMove(s, 'a', toFrame(-10))).toThrow('before timeline start');
     });
 
     it('throws when moving beyond timeline duration', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 0, 100)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100)],
+        }),
+      ]);
       expect(() => rippleMove(s, 'a', toFrame(10000))).toThrow('beyond timeline duration');
     });
   });
 
   describe('insertMove', () => {
     it('moves clip and shifts destination clips right', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video',
-        clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100), clip('b', 100, 200), clip('c', 200, 300)],
+        }),
+      ]);
       const result = insertMove(s, 'a', toFrame(250));
       const clips = result.timeline.tracks[0]!.clips;
-      const moved = clips.find(c => c.id === 'a')!;
+      const moved = clips.find((c) => c.id === 'a')!;
       expect(moved.timelineStart).toBe(toFrame(250));
     });
 
     it('no-op when moving to same position', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 0, 100)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100)],
+        }),
+      ]);
       const result = insertMove(s, 'a', toFrame(0));
       expect(result).toBe(s);
     });
@@ -213,16 +276,26 @@ describe('ripple operations', () => {
     });
 
     it('throws on negative start', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 100, 200)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 100, 200)],
+        }),
+      ]);
       expect(() => insertMove(s, 'a', toFrame(-10))).toThrow('before timeline start');
     });
 
     it('throws when moving beyond timeline duration', () => {
-      const s = state([createTrack({
-        id: TRACK_1, name: 'V1', type: 'video', clips: [clip('a', 0, 100)],
-      })]);
+      const s = state([
+        createTrack({
+          id: TRACK_1,
+          name: 'V1',
+          type: 'video',
+          clips: [clip('a', 0, 100)],
+        }),
+      ]);
       expect(() => insertMove(s, 'a', toFrame(10000))).toThrow('beyond timeline duration');
     });
   });
@@ -232,7 +305,12 @@ describe('ripple operations', () => {
 
 describe('query system', () => {
   const multiTrackState = state([
-    createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [clip('c1', 0, 100), clip('c2', 100, 200)] }),
+    createTrack({
+      id: TRACK_1,
+      name: 'V1',
+      type: 'video',
+      clips: [clip('c1', 0, 100), clip('c2', 100, 200)],
+    }),
     createTrack({ id: TRACK_2, name: 'V2', type: 'audio', clips: [clip('c3', 50, 150, TRACK_2)] }),
   ]);
 
@@ -266,7 +344,7 @@ describe('query system', () => {
   describe('getClipsAtFrame', () => {
     it('returns clips containing the frame', () => {
       const clips = getClipsAtFrame(multiTrackState, toFrame(75));
-      expect(clips.map(c => c.id).sort()).toEqual(['c1', 'c3']);
+      expect(clips.map((c) => c.id).sort()).toEqual(['c1', 'c3']);
     });
     it('returns empty when no clips at frame', () => {
       expect(getClipsAtFrame(multiTrackState, toFrame(500))).toEqual([]);
@@ -276,7 +354,7 @@ describe('query system', () => {
   describe('getClipsInRange', () => {
     it('returns overlapping clips', () => {
       const clips = getClipsInRange(multiTrackState, toFrame(80), toFrame(120));
-      expect(clips.map(c => c.id).sort()).toEqual(['c1', 'c2', 'c3']);
+      expect(clips.map((c) => c.id).sort()).toEqual(['c1', 'c2', 'c3']);
     });
     it('returns empty for non-overlapping range', () => {
       expect(getClipsInRange(multiTrackState, toFrame(500), toFrame(600))).toEqual([]);

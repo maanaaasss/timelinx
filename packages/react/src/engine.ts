@@ -202,23 +202,29 @@ export class TimelineEngine {
     try {
       result = coreDispatch(this.currentState, transaction);
     } catch (err) {
-      try { this.options.onError?.(err, 'dispatch'); } catch (_) { console.error('onError callback threw', _); }
-      return { accepted: false, reason: 'INVARIANT_VIOLATED', message: err instanceof Error ? err.message : 'coreDispatch threw' };
+      try {
+        this.options.onError?.(err, 'dispatch');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
+      return {
+        accepted: false,
+        reason: 'INVARIANT_VIOLATED',
+        message: err instanceof Error ? err.message : 'coreDispatch threw',
+      };
     }
     if (!result.accepted) {
-      console.error(
-        `[TimelineEngine] Dispatch rejected: ${result.reason} — ${result.message}`,
-        { transactionId: transaction.id, label: transaction.label, reason: result.reason },
-      );
+      console.error(`[TimelineEngine] Dispatch rejected: ${result.reason} — ${result.message}`, {
+        transactionId: transaction.id,
+        label: transaction.label,
+        reason: result.reason,
+      });
       return result;
     }
 
     const change = diffStates(this.currentState, result.nextState);
     this.currentState = result.nextState;
-    this.history.pushWithCompression(
-      { state: result.nextState, transaction },
-      transaction,
-    );
+    this.history.pushWithCompression({ state: result.nextState, transaction }, transaction);
 
     this._rebuildAndNotify(result.nextState, change);
     return result;
@@ -284,15 +290,25 @@ export class TimelineEngine {
    */
   private _syncSelectionFromTool(): void {
     const tool = getActiveTool(this.toolRegistry);
-    if (typeof (tool as ITool & { getSelection?: () => ReadonlySet<string> }).getSelection === 'function') {
-      const toolSelection = (tool as ITool & { getSelection: () => ReadonlySet<string> }).getSelection();
+    if (
+      typeof (tool as ITool & { getSelection?: () => ReadonlySet<string> }).getSelection ===
+      'function'
+    ) {
+      const toolSelection = (
+        tool as ITool & { getSelection: () => ReadonlySet<string> }
+      ).getSelection();
       this._selectedClipIds = new Set(toolSelection);
     }
     // Caption selection is always maintained by SelectionTool
     const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
     const captionTool = selectionTool ?? tool;
-    if (typeof (captionTool as ITool & { getCaptionSelection?: () => ReadonlySet<string> }).getCaptionSelection === 'function') {
-      const captionSelection = (captionTool as ITool & { getCaptionSelection: () => ReadonlySet<string> }).getCaptionSelection();
+    if (
+      typeof (captionTool as ITool & { getCaptionSelection?: () => ReadonlySet<string> })
+        .getCaptionSelection === 'function'
+    ) {
+      const captionSelection = (
+        captionTool as ITool & { getCaptionSelection: () => ReadonlySet<string> }
+      ).getCaptionSelection();
       this._selectedCaptionIds = new Set(captionSelection);
     }
   }
@@ -305,21 +321,37 @@ export class TimelineEngine {
       // Gesture tool: active tool if it supports captions, else SelectionTool
       if (typeof activeTool.supportsCaptions === 'function' && activeTool.supportsCaptions()) {
         this._captionGestureTool = activeTool;
-        try { activeTool.onPointerDown(event, ctx); } catch { /* ignore */ }
+        try {
+          activeTool.onPointerDown(event, ctx);
+        } catch {
+          /* ignore */
+        }
       } else {
         const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
         this._captionGestureTool = selectionTool ?? activeTool;
         if (selectionTool) {
-          try { selectionTool.onPointerDown(event, ctx); } catch { /* ignore */ }
+          try {
+            selectionTool.onPointerDown(event, ctx);
+          } catch {
+            /* ignore */
+          }
         }
       }
-      console.log('[CAP-D] down:', { active: activeTool.id, gesture: this._captionGestureTool?.id ?? null, captionId: event.captionId });
+      console.log('[CAP-D] down:', {
+        active: activeTool.id,
+        gesture: this._captionGestureTool?.id ?? null,
+        captionId: event.captionId,
+      });
     } else {
       this._captionGestureTool = null;
       try {
         activeTool.onPointerDown(event, ctx);
       } catch (err) {
-        try { this.options.onError?.(err, 'onPointerDown'); } catch (_) { console.error('onError callback threw', _); }
+        try {
+          this.options.onError?.(err, 'onPointerDown');
+        } catch (_) {
+          console.error('onError callback threw', _);
+        }
       }
     }
     this._syncSelectionFromTool();
@@ -334,7 +366,11 @@ export class TimelineEngine {
     try {
       provisional = tool.onPointerMove(event, ctx);
     } catch (err) {
-      try { this.options.onError?.(err, 'onPointerMove'); } catch (_) { console.error('onError callback threw', _); }
+      try {
+        this.options.onError?.(err, 'onPointerMove');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
     }
 
     const prevProvisional = this.provisional;
@@ -373,10 +409,18 @@ export class TimelineEngine {
     try {
       tx = tool.onPointerUp(event, ctx);
     } catch (err) {
-      try { this.options.onError?.(err, 'onPointerUp'); } catch (_) { console.error('onError callback threw', _); }
+      try {
+        this.options.onError?.(err, 'onPointerUp');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
     }
     this._captionGestureTool = null;
-    console.log('[CAP-D] up:', { toolId: tool.id, captionId: event.captionId, tx: tx?.label ?? null });
+    console.log('[CAP-D] up:', {
+      toolId: tool.id,
+      captionId: event.captionId,
+      tx: tx?.label ?? null,
+    });
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -392,7 +436,11 @@ export class TimelineEngine {
       const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
       tool.onCancel();
     } catch (err) {
-      try { this.options.onError?.(err, 'onCancel'); } catch (_) { console.error('onError callback threw', _); }
+      try {
+        this.options.onError?.(err, 'onCancel');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
     }
     this._captionGestureTool = null;
     this._syncSelectionFromTool();
@@ -420,7 +468,11 @@ export class TimelineEngine {
     try {
       tx = getActiveTool(this.toolRegistry).onKeyDown(event, ctx);
     } catch (err) {
-      try { this.options.onError?.(err, 'onKeyDown'); } catch (_) { console.error('onError callback threw', _); }
+      try {
+        this.options.onError?.(err, 'onKeyDown');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
     }
     if (tx !== null) {
       this.dispatch(tx);
@@ -434,7 +486,11 @@ export class TimelineEngine {
     try {
       getActiveTool(this.toolRegistry).onKeyUp(event, ctx);
     } catch (err) {
-      try { this.options.onError?.(err, 'onKeyUp'); } catch (_) { console.error('onError callback threw', _); }
+      try {
+        this.options.onError?.(err, 'onKeyUp');
+      } catch (_) {
+        console.error('onError callback threw', _);
+      }
     }
   }
 
@@ -568,7 +624,8 @@ export class TimelineEngine {
    * Keeps the tool's internal Set in sync with external API calls.
    */
   private _writeSelectionToTool(ids: ReadonlySet<string>): void {
-    const tool = this.toolRegistry.tools.get(toToolId('selection')) ?? getActiveTool(this.toolRegistry);
+    const tool =
+      this.toolRegistry.tools.get(toToolId('selection')) ?? getActiveTool(this.toolRegistry);
     if (typeof (tool as ITool & { clearSelection?: () => void }).clearSelection === 'function') {
       (tool as ITool & { clearSelection: () => void }).clearSelection();
       // SelectionTool.clearSelection() clears the set; we can't add back via public API

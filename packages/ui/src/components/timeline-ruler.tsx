@@ -59,9 +59,10 @@ export const TimelineRuler = React.memo(function TimelineRuler({
           const min = Math.floor(sec / 60);
           const s = sec % 60;
           const hr = Math.floor(min / 60);
-          label = hr > 0
-            ? `${hr}:${String(min % 60).padStart(2, '0')}`
-            : `${min}:${String(s).padStart(2, '0')}`;
+          label =
+            hr > 0
+              ? `${hr}:${String(min % 60).padStart(2, '0')}`
+              : `${min}:${String(s).padStart(2, '0')}`;
         }
       }
 
@@ -97,7 +98,6 @@ export const TimelineRuler = React.memo(function TimelineRuler({
         if (e.buttons & 1) handlePointer(e);
       }}
     >
-
       {ticks.map((tick, i) => (
         <React.Fragment key={i}>
           <div
@@ -107,9 +107,7 @@ export const TimelineRuler = React.memo(function TimelineRuler({
               bottom: 0,
               width: 1,
               height: tick.isMajor ? 8 : 4,
-              background: tick.isMajor
-                ? 'var(--border-default)'
-                : 'var(--border-faint)',
+              background: tick.isMajor ? 'var(--border-default)' : 'var(--border-faint)',
             }}
           />
           {tick.label && (

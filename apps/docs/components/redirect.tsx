@@ -8,5 +8,9 @@ export function Redirect({ to }: { to: string }) {
   useEffect(() => {
     router.replace(to);
   }, [router, to]);
-  return <p>Redirecting to <a href={to}>{to}</a>...</p>;
+  return (
+    <p>
+      Redirecting to <a href={to}>{to}</a>...
+    </p>
+  );
 }

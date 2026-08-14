@@ -31,11 +31,7 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { Transaction } from '../types/operations';
 
 // ---------------------------------------------------------------------------
@@ -43,8 +39,8 @@ import type { Transaction } from '../types/operations';
 // ---------------------------------------------------------------------------
 
 export class HandTool implements ITool {
-  readonly id:          ToolId = toToolId('hand');
-  readonly shortcutKey: string = 'h';   // standard NLE convention
+  readonly id: ToolId = toToolId('hand');
+  readonly shortcutKey: string = 'h'; // standard NLE convention
 
   // ── Scroll callback ────────────────────────────────────────────────────────
   /**
@@ -84,14 +80,14 @@ export class HandTool implements ITool {
   // ── ITool: getSnapCandidateTypes ─────────────────────────────────────────
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
-    return [];  // pure scroll, no snapping
+    return []; // pure scroll, no snapping
   }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, _ctx: ToolContext): void {
     this.isDragging = true;
-    this.lastX      = event.x;
+    this.lastX = event.x;
     // scrollCallback may be null — drag tracking still activates.
     // Delta will be computed but discarded if no callback is registered.
   }
@@ -101,25 +97,25 @@ export class HandTool implements ITool {
   onPointerMove(event: TimelinePointerEvent, _ctx: ToolContext): ProvisionalState | null {
     if (!this.isDragging) return null;
 
-    const deltaX    = event.x - this.lastX;
-    this.scrollCallback?.(deltaX);   // no-op if null
+    const deltaX = event.x - this.lastX;
+    this.scrollCallback?.(deltaX); // no-op if null
     this.lastX = event.x;
 
-    return null;  // scroll is not a ProvisionalState concern
+    return null; // scroll is not a ProvisionalState concern
   }
 
   // ── ITool: onPointerUp ────────────────────────────────────────────────────
 
   onPointerUp(_event: TimelinePointerEvent, _ctx: ToolContext): Transaction | null {
     this.isDragging = false;
-    this.lastX      = 0;
-    return null;  // always — HandTool never produces a Transaction
+    this.lastX = 0;
+    return null; // always — HandTool never produces a Transaction
   }
 
   // ── ITool: onKeyDown / onKeyUp ────────────────────────────────────────────
 
   onKeyDown(_event: TimelineKeyEvent, _ctx: ToolContext): Transaction | null {
-    return null;  // always — no keyboard interactions
+    return null; // always — no keyboard interactions
   }
 
   onKeyUp(_event: TimelineKeyEvent, _ctx: ToolContext): void {}
@@ -132,6 +128,6 @@ export class HandTool implements ITool {
    */
   onCancel(): void {
     this.isDragging = false;
-    this.lastX      = 0;
+    this.lastX = 0;
   }
 }

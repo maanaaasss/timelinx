@@ -53,7 +53,11 @@ export const TimelineToolbar = React.memo(function TimelineToolbar({
   }, [isPlaying, engine]);
 
   return (
-    <div className={`tl-toolbar${className ? ` ${className}` : ''}`} role="toolbar" aria-label="Timeline tools">
+    <div
+      className={`tl-toolbar${className ? ` ${className}` : ''}`}
+      role="toolbar"
+      aria-label="Timeline tools"
+    >
       {/* Group 1: Undo/Redo */}
       <div className="tl-tool-group">
         <button
@@ -132,10 +136,7 @@ export const TimelineToolbar = React.memo(function TimelineToolbar({
         >
           <IconHand size={15} />
         </button>
-        <button
-          className="tool-btn"
-          title="Snap"
-        >
+        <button className="tool-btn" title="Snap">
           <IconSnap size={15} />
         </button>
       </div>

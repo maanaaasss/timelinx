@@ -32,18 +32,13 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
-import type { ClipId, Clip }                from '../types/clip';
-import type { TrackId }                      from '../types/track';
-import type { TimelineFrame }                from '../types/frame';
+import { toToolId, type ToolId, type SnapPointType } from './types';
+import type { ClipId, Clip } from '../types/clip';
+import type { TrackId } from '../types/track';
+import type { TimelineFrame } from '../types/frame';
 import type { OperationPrimitive, Transaction } from '../types/operations';
-import type { TimelineState }                from '../types/state';
-import type { Asset }                        from '../types/asset';
-import type { Caption }                      from '../types/caption';
+import type { TimelineState } from '../types/state';
+import type { Asset } from '../types/asset';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -61,7 +56,8 @@ const PROVISIONAL_INSERT_ID = 'provisional-insert' as ClipId;
 // ---------------------------------------------------------------------------
 
 /** Production default: crypto.randomUUID() */
-let generateId: () => string = () => (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
+let generateId: () => string = () =>
+  globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
 
 /**
  * Replace the ID generator for deterministic IDs in tests.
@@ -79,7 +75,7 @@ export function _setIdGenerator(fn: () => string): void {
 // ---------------------------------------------------------------------------
 
 function findTrack(state: TimelineState, trackId: TrackId) {
-  return state.timeline.tracks.find(t => t.id === trackId) ?? null;
+  return state.timeline.tracks.find((t) => t.id === trackId) ?? null;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -87,7 +83,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 let _txSeq = 0;
-function txId(): string { return `ripple-insert-tx-${++_txSeq}`; }
+function txId(): string {
+  return `ripple-insert-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // computeRippleInsertOps — pure function, module scope, not exported
@@ -104,10 +102,10 @@ function txId(): string { return `ripple-insert-tx-${++_txSeq}`; }
  * INSERT_CLIP LAST — after all MOVE_CLIPs, [dropFrame, dropFrame+insertDuration) is vacant.
  */
 function computeRippleInsertOps(
-  dropFrame:     TimelineFrame,
-  insertClip:    Clip,
+  dropFrame: TimelineFrame,
+  insertClip: Clip,
   targetTrackId: TrackId,
-  state:         TimelineState,
+  state: TimelineState,
 ): OperationPrimitive[] {
   const insertDuration = (insertClip.timelineEnd - insertClip.timelineStart) as number;
 
@@ -115,28 +113,28 @@ function computeRippleInsertOps(
 
   // Clips whose timelineStart >= dropFrame are pushed right
   const rightClips = (track?.clips ?? [])
-    .filter(c => c.timelineStart >= dropFrame)
-    .sort((a, b) => b.timelineStart - a.timelineStart);  // RIGHT-TO-LEFT — +delta rule
+    .filter((c) => c.timelineStart >= dropFrame)
+    .sort((a, b) => b.timelineStart - a.timelineStart); // RIGHT-TO-LEFT — +delta rule
 
   // Captions whose startFrame >= dropFrame are pushed right (same rule)
   const rightCaptions = (track?.captions ?? [])
-    .filter(c => c.startFrame >= dropFrame)
-    .sort((a, b) => b.startFrame - a.startFrame);  // RIGHT-TO-LEFT — +delta rule
+    .filter((c) => c.startFrame >= dropFrame)
+    .sort((a, b) => b.startFrame - a.startFrame); // RIGHT-TO-LEFT — +delta rule
 
   return [
     // MOVE_CLIPs first — rightmost moves into empty space first
-    ...rightClips.map(c => ({
-      type:             'MOVE_CLIP' as const,
-      clipId:            c.id,
+    ...rightClips.map((c) => ({
+      type: 'MOVE_CLIP' as const,
+      clipId: c.id,
       newTimelineStart: (c.timelineStart + insertDuration) as TimelineFrame,
     })),
     // EDIT_CAPTIONs — shift captions right in the same pass
-    ...rightCaptions.map(c => ({
-      type:       'EDIT_CAPTION' as const,
-      captionId:  c.id,
-      trackId:    targetTrackId,
+    ...rightCaptions.map((c) => ({
+      type: 'EDIT_CAPTION' as const,
+      captionId: c.id,
+      trackId: targetTrackId,
       startFrame: (c.startFrame + insertDuration) as TimelineFrame,
-      endFrame:   (c.endFrame   + insertDuration) as TimelineFrame,
+      endFrame: (c.endFrame + insertDuration) as TimelineFrame,
     })),
     // INSERT_CLIP last — [dropFrame, dropFrame+insertDuration) is now vacant
     { type: 'INSERT_CLIP' as const, clip: insertClip, trackId: targetTrackId },
@@ -148,14 +146,14 @@ function computeRippleInsertOps(
 // ---------------------------------------------------------------------------
 
 export class RippleInsertTool implements ITool {
-  readonly id:          ToolId = toToolId('ripple-insert');
-  readonly shortcutKey: string = '';   // activated programmatically
+  readonly id: ToolId = toToolId('ripple-insert');
+  readonly shortcutKey: string = ''; // activated programmatically
 
   // ── GROUP A: Pending-insert state ─────────────────────────────────────────
   // Set by setPendingInsert(). Preserved across drops. Cleared by onCancel().
   // Cannot be changed mid-drag (guard in setPendingInsert).
-  private pendingAsset:    Asset         | null = null;
-  private pendingMediaIn:  TimelineFrame | null = null;
+  private pendingAsset: Asset | null = null;
+  private pendingMediaIn: TimelineFrame | null = null;
   private pendingMediaOut: TimelineFrame | null = null;
 
   // ── GROUP B: Drag-tracking state ──────────────────────────────────────────
@@ -171,21 +169,17 @@ export class RippleInsertTool implements ITool {
    * Guard: ignored if a drag is in progress — prevents ghost/Transaction mismatch
    * from async React state updates firing setPendingInsert mid-drag.
    */
-  setPendingInsert(
-    asset:    Asset,
-    mediaIn:  TimelineFrame,
-    mediaOut: TimelineFrame,
-  ): void {
-    if (this.isDragging) return;   // mid-drag guard: silent ignore
-    this.pendingAsset    = asset;
-    this.pendingMediaIn  = mediaIn;
+  setPendingInsert(asset: Asset, mediaIn: TimelineFrame, mediaOut: TimelineFrame): void {
+    if (this.isDragging) return; // mid-drag guard: silent ignore
+    this.pendingAsset = asset;
+    this.pendingMediaIn = mediaIn;
     this.pendingMediaOut = mediaOut;
   }
 
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    if (this.pendingAsset !== null) return 'copy';  // pending insert configured
+    if (this.pendingAsset !== null) return 'copy'; // pending insert configured
     return 'default';
   }
 
@@ -195,13 +189,15 @@ export class RippleInsertTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, _ctx: ToolContext): void {
-    if (this.pendingAsset === null) return;        // no clip configured
-    if (event.trackId === null)     return;        // not over a track
+    if (this.pendingAsset === null) return; // no clip configured
+    if (event.trackId === null) return; // not over a track
     this.isDragging = true;
   }
 
@@ -214,39 +210,38 @@ export class RippleInsertTool implements ITool {
     const insertDuration = (this.pendingMediaOut! - this.pendingMediaIn!) as number;
     const timelineDuration = ctx.state.timeline.duration as number;
 
-    const snapped    = ctx.snap(event.frame) as TimelineFrame;
-    const dropFrame  = clamp(snapped, 0, timelineDuration - insertDuration) as TimelineFrame;
+    const snapped = ctx.snap(event.frame) as TimelineFrame;
+    const dropFrame = clamp(snapped, 0, timelineDuration - insertDuration) as TimelineFrame;
 
-    const track      = findTrack(ctx.state, event.trackId);
-    const rightClips = (track?.clips ?? [])
-      .filter(c => c.timelineStart >= dropFrame);
+    const track = findTrack(ctx.state, event.trackId);
+    const rightClips = (track?.clips ?? []).filter((c) => c.timelineStart >= dropFrame);
 
     // Ghost inserted clip — sentinel id, NEVER committed
     const ghostInserted: Clip = {
-      id:            PROVISIONAL_INSERT_ID,
-      assetId:       this.pendingAsset.id,
-      trackId:       event.trackId,
+      id: PROVISIONAL_INSERT_ID,
+      assetId: this.pendingAsset.id,
+      trackId: event.trackId,
       timelineStart: dropFrame,
-      timelineEnd:   (dropFrame + insertDuration) as TimelineFrame,
-      mediaIn:       this.pendingMediaIn!,
-      mediaOut:      this.pendingMediaOut!,
-      speed:         1.0,
-      enabled:       true,
-      reversed:      false,
-      name:          null,
-      color:         null,
-      metadata:      {},
+      timelineEnd: (dropFrame + insertDuration) as TimelineFrame,
+      mediaIn: this.pendingMediaIn!,
+      mediaOut: this.pendingMediaOut!,
+      speed: 1.0,
+      enabled: true,
+      reversed: false,
+      name: null,
+      color: null,
+      metadata: {},
     };
 
     // Ghost shifted clips — all right-side clips moved right
-    const ghostsShifted: Clip[] = rightClips.map(c => ({
+    const ghostsShifted: Clip[] = rightClips.map((c) => ({
       ...c,
       timelineStart: (c.timelineStart + insertDuration) as TimelineFrame,
-      timelineEnd:   (c.timelineEnd   + insertDuration) as TimelineFrame,
+      timelineEnd: (c.timelineEnd + insertDuration) as TimelineFrame,
     }));
 
     return {
-      clips:         [ghostInserted, ...ghostsShifted],
+      clips: [ghostInserted, ...ghostsShifted],
       isProvisional: true,
     };
   }
@@ -256,11 +251,11 @@ export class RippleInsertTool implements ITool {
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // Capture-before-reset pattern:
     // All capture must happen before _resetDragState() clears isDragging.
-    const wasDragging  = this.isDragging;
-    const asset        = this.pendingAsset;
-    const mediaIn      = this.pendingMediaIn;
-    const mediaOut     = this.pendingMediaOut;
-    const trackId      = event.trackId;
+    const wasDragging = this.isDragging;
+    const asset = this.pendingAsset;
+    const mediaIn = this.pendingMediaIn;
+    const mediaOut = this.pendingMediaOut;
+    const trackId = event.trackId;
 
     // Reset Group B only — Group A (pendingAsset etc.) preserved for re-use
     this._resetDragState();
@@ -268,34 +263,34 @@ export class RippleInsertTool implements ITool {
     if (!wasDragging || !asset || mediaIn === null || mediaOut === null) return null;
     if (trackId === null) return null;
 
-    const insertDuration   = (mediaOut - mediaIn) as number;
+    const insertDuration = (mediaOut - mediaIn) as number;
     const timelineDuration = ctx.state.timeline.duration as number;
 
-    const snapped   = ctx.snap(event.frame) as TimelineFrame;
+    const snapped = ctx.snap(event.frame) as TimelineFrame;
     const dropFrame = clamp(snapped, 0, timelineDuration - insertDuration) as TimelineFrame;
 
     // Build the real inserted clip — new id from _generateId(), NOT the sentinel
     const newClip: Clip = {
-      id:            generateId() as ClipId,
-      assetId:       asset.id,
+      id: generateId() as ClipId,
+      assetId: asset.id,
       trackId,
       timelineStart: dropFrame,
-      timelineEnd:   (dropFrame + insertDuration) as TimelineFrame,
+      timelineEnd: (dropFrame + insertDuration) as TimelineFrame,
       mediaIn,
       mediaOut,
-      speed:         1.0,
-      enabled:       true,
-      reversed:      false,
-      name:          null,
-      color:         null,
-      metadata:      {},
+      speed: 1.0,
+      enabled: true,
+      reversed: false,
+      name: null,
+      color: null,
+      metadata: {},
     };
 
     const operations = computeRippleInsertOps(dropFrame, newClip, trackId, ctx.state);
 
     return {
-      id:        txId(),
-      label:     'Ripple Insert',
+      id: txId(),
+      label: 'Ripple Insert',
       timestamp: Date.now(),
       operations,
     };
@@ -312,10 +307,10 @@ export class RippleInsertTool implements ITool {
   // ── ITool: onCancel ───────────────────────────────────────────────────────
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
-    this.pendingAsset    = null;
-    this.pendingMediaIn  = null;
+    this.pendingAsset = null;
+    this.pendingMediaIn = null;
     this.pendingMediaOut = null;
-    this.isDragging      = false;
+    this.isDragging = false;
   }
 
   // ── Private ───────────────────────────────────────────────────────────────

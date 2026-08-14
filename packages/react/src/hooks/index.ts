@@ -21,7 +21,8 @@ const EMPTY_CLIPS: readonly Clip[] = [];
 const EMPTY_MARKERS: readonly Marker[] = [];
 const EMPTY_EFFECTS: readonly Effect[] = [];
 const EMPTY_CAPTIONS: readonly Caption[] = [];
-const EMPTY_TRANSITIONS: readonly { clipId: string; trackId: string; transition: Transition }[] = [];
+const EMPTY_TRANSITIONS: readonly { clipId: string; trackId: string; transition: Transition }[] =
+  [];
 
 function getServerSnapshot<T>(engine: TimelineEngine, selector: (snap: EngineSnapshot) => T): T {
   return selector(engine.getSnapshot());
@@ -87,15 +88,11 @@ export function useClip(engine: TimelineEngine, clipId: ClipId | string): Clip |
 // useClips
 // ---------------------------------------------------------------------------
 
-export function useClips(
-  engine: TimelineEngine,
-  trackId: TrackId | string,
-): readonly Clip[] {
+export function useClips(engine: TimelineEngine, trackId: TrackId | string): readonly Clip[] {
   const id = typeof trackId === 'string' ? trackId : (trackId as string);
   return useSyncExternalStore(
     engine.subscribe,
-    () =>
-      engine.getSnapshot().state.timeline.tracks.find((t) => t.id === id)?.clips ?? EMPTY_CLIPS,
+    () => engine.getSnapshot().state.timeline.tracks.find((t) => t.id === id)?.clips ?? EMPTY_CLIPS,
     () =>
       getServerSnapshot(
         engine,
@@ -112,11 +109,7 @@ export function useMarkers(engine: TimelineEngine): readonly Marker[] {
   return useSyncExternalStore(
     engine.subscribe,
     () => engine.getSnapshot().state.timeline.markers ?? EMPTY_MARKERS,
-    () =>
-      getServerSnapshot(
-        engine,
-        (snap) => snap.state.timeline.markers ?? EMPTY_MARKERS,
-      ),
+    () => getServerSnapshot(engine, (snap) => snap.state.timeline.markers ?? EMPTY_MARKERS),
   );
 }
 
@@ -284,7 +277,10 @@ export function useClipEffects(engine: TimelineEngine, clipId: ClipId | string):
 // useClipTransition — returns transition for a specific clip reactively
 // ---------------------------------------------------------------------------
 
-export function useClipTransition(engine: TimelineEngine, clipId: ClipId | string): Transition | null {
+export function useClipTransition(
+  engine: TimelineEngine,
+  clipId: ClipId | string,
+): Transition | null {
   const id = typeof clipId === 'string' ? clipId : (clipId as string);
   const tracks = useAllTracks(engine);
   if (!id) return null;
@@ -299,7 +295,10 @@ export function useClipTransition(engine: TimelineEngine, clipId: ClipId | strin
 // useTrackCaptions — returns captions for a specific track reactively
 // ---------------------------------------------------------------------------
 
-export function useTrackCaptions(engine: TimelineEngine, trackId: TrackId | string): readonly Caption[] {
+export function useTrackCaptions(
+  engine: TimelineEngine,
+  trackId: TrackId | string,
+): readonly Caption[] {
   const id = typeof trackId === 'string' ? trackId : (trackId as string);
   const tracks = useAllTracks(engine);
   if (!id) return EMPTY_CAPTIONS;

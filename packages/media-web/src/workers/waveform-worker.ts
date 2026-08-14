@@ -35,8 +35,7 @@ export type WaveformResult = {
 };
 
 export type WaveformWorkerMessage =
-  | { type: 'request'; payload: WaveformRequest }
-  | { type: 'cancel'; requestId: string };
+  { type: 'request'; payload: WaveformRequest } | { type: 'cancel'; requestId: string };
 
 export type WaveformWorkerResponse =
   | { type: 'result'; payload: WaveformResult }
@@ -129,9 +128,7 @@ async function handleWaveformRequest(request: WaveformRequest): Promise<void> {
  * Extract waveform peaks from audio data.
  * This is a placeholder implementation.
  */
-async function extractWaveformPeaks(
-  request: WaveformRequest,
-): Promise<WaveformPeak[]> {
+async function extractWaveformPeaks(request: WaveformRequest): Promise<WaveformPeak[]> {
   const { buckets } = request;
   const peaks: WaveformPeak[] = [];
 
@@ -154,7 +151,6 @@ async function extractWaveformPeaks(
       max: amplitude,
       rms: amplitude * 0.707,
     });
-
   }
 
   return peaks;
@@ -273,10 +269,7 @@ export class WaveformWorkerClient {
   /**
    * Handle messages from workers.
    */
-  private handleWorkerMessage(
-    worker: Worker,
-    event: MessageEvent<WaveformWorkerResponse>,
-  ): void {
+  private handleWorkerMessage(worker: Worker, event: MessageEvent<WaveformWorkerResponse>): void {
     const { type } = event.data;
 
     switch (type) {

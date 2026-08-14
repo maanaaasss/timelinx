@@ -48,9 +48,7 @@ export const TabbedPanel = React.memo(function TabbedPanel({
           </button>
         ))}
       </div>
-      <div className="tabbed-panel-content">
-        {activeChild}
-      </div>
+      <div className="tabbed-panel-content">{activeChild}</div>
     </div>
   );
 });

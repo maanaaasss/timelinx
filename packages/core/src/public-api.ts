@@ -6,10 +6,10 @@
  */
 
 // ── Core factories ─────────────────────────────────────────────────────────
-export { createTimeline }        from './types/timeline';
-export { createTrack }           from './types/track';
-export { createClip }            from './types/clip';
-export { createAsset }           from './types/asset';
+export { createTimeline } from './types/timeline';
+export { createTrack } from './types/track';
+export { createClip } from './types/clip';
+export { createAsset } from './types/asset';
 export { createTimelineState, CURRENT_SCHEMA_VERSION } from './types/state';
 
 // ── Frame utilities ────────────────────────────────────────────────────────
@@ -18,13 +18,13 @@ export { framesToTimecode, framesToSeconds, secondsToFrames } from './utils/fram
 export type { TimelineFrame as Frame } from './types/frame'; // backward compat alias
 
 // ── High-level engine class ───────────────────────────────────────────────
-export { TimelineEngine }        from './engine/timeline-engine';
+export { TimelineEngine } from './engine/timeline-engine';
 
 // ── Dispatcher (the ONLY way to mutate state) ─────────────────────────────
-export { dispatch }              from './engine/dispatcher';
+export { dispatch } from './engine/dispatcher';
 
 // ── Invariant checker (run in every test after every mutation) ────────────
-export { checkInvariants }       from './validation/invariants';
+export { checkInvariants } from './validation/invariants';
 
 // ── History ────────────────────────────────────────────────────────────────
 export {
@@ -39,10 +39,7 @@ export {
 export type { HistoryState, HistoryEntry } from './engine/history';
 export { HistoryStack } from './engine/history';
 export type { CompressionPolicy, CompressibleOpType } from './types/compression';
-export {
-  DEFAULT_COMPRESSION_POLICY,
-  NO_COMPRESSION,
-} from './types/compression';
+export { DEFAULT_COMPRESSION_POLICY, NO_COMPRESSION } from './types/compression';
 export { TransactionCompressor } from './engine/transaction-compressor';
 
 // ── Public types ───────────────────────────────────────────────────────────
@@ -51,21 +48,21 @@ export { TransactionCompressor } from './engine/transaction-compressor';
 export type { TimelineFrame, FrameRate, RationalTime, Timecode, TimeRange } from './types/frame';
 
 // Branded IDs
-export type { AssetId }   from './types/asset';
-export { toAssetId }      from './types/asset';
-export type { ClipId }    from './types/clip';
-export { toClipId }       from './types/clip';
-export type { TrackId }   from './types/track';
-export { toTrackId }      from './types/track';
-export type { MarkerId }  from './types/marker';
-export { toMarkerId }     from './types/marker';
+export type { AssetId } from './types/asset';
+export { toAssetId } from './types/asset';
+export type { ClipId } from './types/clip';
+export { toClipId } from './types/clip';
+export type { TrackId } from './types/track';
+export { toTrackId } from './types/track';
+export type { MarkerId } from './types/marker';
+export { toMarkerId } from './types/marker';
 
 // Entity types
 export type { Asset, AssetStatus, FileAsset, GeneratorAsset } from './types/asset';
-export type { Clip }                            from './types/clip';
-export type { Track, TrackType }                from './types/track';
-export type { Timeline, SequenceSettings }      from './types/timeline';
-export type { TimelineState, AssetRegistry }    from './types/state';
+export type { Clip } from './types/clip';
+export type { Track, TrackType } from './types/track';
+export type { Timeline, SequenceSettings } from './types/timeline';
+export type { TimelineState, AssetRegistry } from './types/state';
 
 // Operation types
 export type {
@@ -75,21 +72,13 @@ export type {
   RejectionReason,
   InvariantViolation,
   ViolationType,
-}                                               from './types/operations';
+} from './types/operations';
 
 // ── Phase 1 exports ────────────────────────────────────────────────────────
 
 // Snap index
-export {
-  buildSnapIndex,
-  nearest,
-  toggleSnap,
-} from './snap-index';
-export type {
-  SnapPointType,
-  SnapPoint,
-  SnapIndex,
-} from './snap-index';
+export { buildSnapIndex, nearest, toggleSnap } from './snap-index';
+export type { SnapPointType, SnapPoint, SnapIndex } from './snap-index';
 export { SnapIndexManager } from './engine/snap-index-manager';
 
 // Tool system
@@ -135,20 +124,11 @@ export { LINEAR_EASING, HOLD_EASING } from './types/easing';
 export type { KeyframeId, Keyframe } from './types/keyframe';
 export { toKeyframeId } from './types/keyframe';
 
-export type {
-  EffectId,
-  EffectType,
-  RenderStage,
-  EffectParam,
-  Effect,
-} from './types/effect';
+export type { EffectId, EffectType, RenderStage, EffectParam, Effect } from './types/effect';
 export { toEffectId, createEffect } from './types/effect';
 
 export type { AnimatableProperty, ClipTransform } from './types/clip-transform';
-export {
-  createAnimatableProperty,
-  DEFAULT_CLIP_TRANSFORM,
-} from './types/clip-transform';
+export { createAnimatableProperty, DEFAULT_CLIP_TRANSFORM } from './types/clip-transform';
 
 export type { ChannelRouting, AudioProperties } from './types/audio-properties';
 export { DEFAULT_AUDIO_PROPERTIES } from './types/audio-properties';
@@ -171,7 +151,12 @@ export { toLinkGroupId, createLinkGroup } from './types/link-group';
 // Caption types and subtitle import
 export type { CaptionId, CaptionStyle, Caption } from './types/caption';
 export { toCaptionId } from './types/caption';
-export { parseSRT, parseVTT, subtitleImportToOps, defaultCaptionStyle } from './engine/subtitle-import';
+export {
+  parseSRT,
+  parseVTT,
+  subtitleImportToOps,
+  defaultCaptionStyle,
+} from './engine/subtitle-import';
 
 // Generator types (for INSERT_GENERATOR operations)
 export type { GeneratorId, GeneratorType, Generator } from './types/generator';
@@ -251,11 +236,6 @@ export { diffStates, EMPTY_STATE_CHANGE } from './types/state-change';
 export type { StateChange } from './types/state-change';
 
 // Phase 6 Step 4: Keyboard (J/K/L jog-shuttle)
-export type {
-  TimelineKeyAction,
-  KeyBinding,
-  KeyboardHandlerOptions,
-} from './types/keyboard';
+export type { TimelineKeyAction, KeyBinding, KeyboardHandlerOptions } from './types/keyboard';
 export { DEFAULT_KEY_BINDINGS } from './types/keyboard';
 export { KeyboardHandler } from './engine/keyboard-handler';
-

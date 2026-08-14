@@ -18,7 +18,7 @@
  */
 
 import type { TimelineFrame } from './types/frame';
-import type { TrackId }       from './types/track';
+import type { TrackId } from './types/track';
 import type { TimelineState } from './types/state';
 
 // ---------------------------------------------------------------------------
@@ -30,25 +30,25 @@ import type { TimelineState } from './types/state';
  * Defined in full now so SnapPoint & allowedTypes filters are stable.
  */
 export type SnapPointType =
-  | 'ClipStart'   // Phase 1
-  | 'ClipEnd'     // Phase 1
-  | 'Playhead'    // Phase 1
-  | 'Marker'      // Phase 2
-  | 'InPoint'     // Phase 2
-  | 'OutPoint'    // Phase 2
-  | 'BeatGrid';   // Phase 3
+  | 'ClipStart' // Phase 1
+  | 'ClipEnd' // Phase 1
+  | 'Playhead' // Phase 1
+  | 'Marker' // Phase 2
+  | 'InPoint' // Phase 2
+  | 'OutPoint' // Phase 2
+  | 'BeatGrid'; // Phase 3
 
 export type SnapPoint = {
-  readonly frame:    TimelineFrame;
-  readonly type:     SnapPointType;
+  readonly frame: TimelineFrame;
+  readonly type: SnapPointType;
   readonly priority: number;
-  readonly trackId:  TrackId | null;  // null = timeline-wide (playhead, markers)
-  readonly sourceId: string;          // clipId, markerId — used for exclusion list
+  readonly trackId: TrackId | null; // null = timeline-wide (playhead, markers)
+  readonly sourceId: string; // clipId, markerId — used for exclusion list
 };
 
 export type SnapIndex = {
-  readonly points:  readonly SnapPoint[];  // sorted ascending by frame
-  readonly builtAt: number;               // Date.now()
+  readonly points: readonly SnapPoint[]; // sorted ascending by frame
+  readonly builtAt: number; // Date.now()
   readonly enabled: boolean;
 };
 
@@ -57,13 +57,13 @@ export type SnapIndex = {
 // ---------------------------------------------------------------------------
 
 const PRIORITIES: Record<SnapPointType, number> = {
-  Marker:    100,
-  InPoint:    90,
-  OutPoint:   90,
-  ClipStart:  80,
-  ClipEnd:    80,
-  Playhead:   70,
-  BeatGrid:   50,
+  Marker: 100,
+  InPoint: 90,
+  OutPoint: 90,
+  ClipStart: 80,
+  ClipEnd: 80,
+  Playhead: 70,
+  BeatGrid: 50,
 };
 
 // ---------------------------------------------------------------------------
@@ -81,9 +81,9 @@ const PRIORITIES: Record<SnapPointType, number> = {
  *   2. Playhead position (trackId = null)
  */
 export function buildSnapIndex(
-  state:         TimelineState,
+  state: TimelineState,
   playheadFrame: TimelineFrame,
-  enabled        = true,
+  enabled = true,
 ): SnapIndex {
   const points: SnapPoint[] = [];
 
@@ -91,17 +91,17 @@ export function buildSnapIndex(
   for (const track of state.timeline.tracks) {
     for (const clip of track.clips) {
       points.push({
-        frame:    clip.timelineStart,
-        type:     'ClipStart',
+        frame: clip.timelineStart,
+        type: 'ClipStart',
         priority: PRIORITIES.ClipStart,
-        trackId:  track.id,
+        trackId: track.id,
         sourceId: clip.id,
       });
       points.push({
-        frame:    clip.timelineEnd,
-        type:     'ClipEnd',
+        frame: clip.timelineEnd,
+        type: 'ClipEnd',
         priority: PRIORITIES.ClipEnd,
-        trackId:  track.id,
+        trackId: track.id,
         sourceId: clip.id,
       });
     }
@@ -109,10 +109,10 @@ export function buildSnapIndex(
 
   // 2. Playhead (timeline-wide)
   points.push({
-    frame:    playheadFrame,
-    type:     'Playhead',
+    frame: playheadFrame,
+    type: 'Playhead',
     priority: PRIORITIES.Playhead,
-    trackId:  null,
+    trackId: null,
     sourceId: '__playhead__',
   });
 
@@ -125,10 +125,10 @@ export function buildSnapIndex(
     let f: TimelineFrame = beatGrid.offset;
     while (f < dur) {
       points.push({
-        frame:    f,
-        type:     'BeatGrid',
+        frame: f,
+        type: 'BeatGrid',
         priority: PRIORITIES.BeatGrid,
-        trackId:  null,
+        trackId: null,
         sourceId: `__beat_${f}__`,
       });
       f = (f + beatDurationFrames) as TimelineFrame;
@@ -159,11 +159,11 @@ export function buildSnapIndex(
  * @param allowedTypes if provided, only consider points of these types
  */
 export function nearest(
-  index:          SnapIndex,
-  frame:          TimelineFrame,
-  radiusFrames:   number,
-  exclude?:       readonly string[],
-  allowedTypes?:  readonly SnapPointType[],
+  index: SnapIndex,
+  frame: TimelineFrame,
+  radiusFrames: number,
+  exclude?: readonly string[],
+  allowedTypes?: readonly SnapPointType[],
 ): SnapPoint | null {
   if (!index.enabled) return null;
 
@@ -183,10 +183,7 @@ export function nearest(
     if (dist > radiusFrames) continue;
 
     // Prefer closer, then higher priority (higher wins)
-    if (
-      dist < bestDist ||
-      (dist === bestDist && best !== null && point.priority > best.priority)
-    ) {
+    if (dist < bestDist || (dist === bestDist && best !== null && point.priority > best.priority)) {
       best = point;
       bestDist = dist;
     }

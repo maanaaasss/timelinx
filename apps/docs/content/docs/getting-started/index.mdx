@@ -38,6 +38,7 @@ This guide builds a minimal edit using Core, then shows where the React and UI p
         ```
       </Tab>
     </Tabs>
+
   </Tab>
   <Tab value="Full stack">
     For React apps with UI components.
@@ -59,6 +60,7 @@ This guide builds a minimal edit using Core, then shows where the React and UI p
         ```
       </Tab>
     </Tabs>
+
   </Tab>
 </Tabs>
 
@@ -104,7 +106,8 @@ let state = createTimelineState({
 ```
 
 <Callout type="info">
-  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()` rejects the transaction with `ASSET_MISSING`.
+  The asset registry matters. If you insert a clip that references an unknown asset, `dispatch()`
+  rejects the transaction with `ASSET_MISSING`.
 </Callout>
 
 ## Commit A Track
@@ -197,13 +200,7 @@ state = moveClip.nextState;
 The pure history helpers keep snapshots outside the dispatcher. Push only accepted states.
 
 ```ts
-import {
-  canUndo,
-  createHistory,
-  getCurrentState,
-  pushHistory,
-  undo,
-} from '@timelinx/core';
+import { canUndo, createHistory, getCurrentState, pushHistory, undo } from '@timelinx/core';
 
 let history = createHistory(state);
 

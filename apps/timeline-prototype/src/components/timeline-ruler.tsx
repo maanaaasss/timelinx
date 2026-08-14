@@ -27,7 +27,15 @@ function getLabelInterval(ppf: number, fps: number): number {
   return Math.round(1 * fps);
 }
 
-export function TimelineRuler({ fps, ppf, duration, scrollLeft, currentTime, onSeek, containerRef: externalContainerRef }: TimelineRulerProps) {
+export function TimelineRuler({
+  fps,
+  ppf,
+  duration,
+  scrollLeft,
+  currentTime,
+  onSeek,
+  containerRef: externalContainerRef,
+}: TimelineRulerProps) {
   const internalRef = useRef<HTMLDivElement>(null);
   const containerRef = externalContainerRef ?? internalRef;
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -56,7 +56,9 @@ function buildComplexState(): TimelineState {
   const duration = 5400;
 
   const timeline = createTimeline({
-    id: 'rt', name: 'RoundTripTest', fps,
+    id: 'rt',
+    name: 'RoundTripTest',
+    fps,
     duration: toFrame(duration),
     startTimecode: toTimecode('00:00:00:00'),
     tracks: [],
@@ -76,20 +78,33 @@ function buildComplexState(): TimelineState {
 
   // Assets
   const vidAsset = createAsset({
-    id: 'vid-asset', name: 'clip-a', mediaType: 'video',
-    filePath: '/media/clip-a.mp4', intrinsicDuration: toFrame(10000),
-    nativeFps: fps, sourceTimecodeOffset: toFrame(0),
+    id: 'vid-asset',
+    name: 'clip-a',
+    mediaType: 'video',
+    filePath: '/media/clip-a.mp4',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: fps,
+    sourceTimecodeOffset: toFrame(0),
   });
   const audAsset = createAsset({
-    id: 'aud-asset', name: 'clip-audio', mediaType: 'audio',
-    filePath: '/media/clip-a.wav', intrinsicDuration: toFrame(10000),
-    nativeFps: fps, sourceTimecodeOffset: toFrame(0),
+    id: 'aud-asset',
+    name: 'clip-audio',
+    mediaType: 'audio',
+    filePath: '/media/clip-a.wav',
+    intrinsicDuration: toFrame(10000),
+    nativeFps: fps,
+    sourceTimecodeOffset: toFrame(0),
   });
   const genAsset = createGeneratorAsset({
-    id: 'gen-asset', name: 'Solid', mediaType: 'video',
+    id: 'gen-asset',
+    name: 'Solid',
+    mediaType: 'video',
     generatorDef: {
-      id: 'gen-1' as any, type: 'solid', params: { color: '#fff' },
-      duration: toFrame(10000), name: 'Solid',
+      id: 'gen-1' as any,
+      type: 'solid',
+      params: { color: '#fff' },
+      duration: toFrame(10000),
+      name: 'Solid',
     },
     nativeFps: fps,
   });
@@ -102,24 +117,40 @@ function buildComplexState(): TimelineState {
 
   // Clips
   const c1 = createClip({
-    id: 'c1', assetId: 'vid-asset', trackId: v1,
-    timelineStart: toFrame(0), timelineEnd: toFrame(900),
-    mediaIn: toFrame(0), mediaOut: toFrame(900),
+    id: 'c1',
+    assetId: 'vid-asset',
+    trackId: v1,
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(900),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(900),
   });
   const c2 = createClip({
-    id: 'c2', assetId: 'vid-asset', trackId: v1,
-    timelineStart: toFrame(1000), timelineEnd: toFrame(1900),
-    mediaIn: toFrame(0), mediaOut: toFrame(900),
+    id: 'c2',
+    assetId: 'vid-asset',
+    trackId: v1,
+    timelineStart: toFrame(1000),
+    timelineEnd: toFrame(1900),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(900),
   });
   const c3 = createClip({
-    id: 'c3', assetId: 'gen-asset', trackId: v2,
-    timelineStart: toFrame(0), timelineEnd: toFrame(900),
-    mediaIn: toFrame(0), mediaOut: toFrame(900),
+    id: 'c3',
+    assetId: 'gen-asset',
+    trackId: v2,
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(900),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(900),
   });
   const c4 = createClip({
-    id: 'c4', assetId: 'aud-asset', trackId: a1,
-    timelineStart: toFrame(0), timelineEnd: toFrame(900),
-    mediaIn: toFrame(0), mediaOut: toFrame(900),
+    id: 'c4',
+    assetId: 'aud-asset',
+    trackId: a1,
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(900),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(900),
   });
 
   state = applyTx(state, 'Insert clips', [
@@ -130,41 +161,65 @@ function buildComplexState(): TimelineState {
   ]);
 
   // Effect + keyframes on c1
-  const effect = createEffect(toEffectId('e1'), 'blur', 'preComposite', [{ key: 'radius', value: 5 }]);
+  const effect = createEffect(toEffectId('e1'), 'blur', 'preComposite', [
+    { key: 'radius', value: 5 },
+  ]);
   state = applyTx(state, 'Add effect', [{ type: 'ADD_EFFECT', clipId: toClipId('c1'), effect }]);
   state = applyTx(state, 'Add keyframes', [
     {
-      type: 'ADD_KEYFRAME', clipId: toClipId('c1'), effectId: toEffectId('e1'),
+      type: 'ADD_KEYFRAME',
+      clipId: toClipId('c1'),
+      effectId: toEffectId('e1'),
       keyframe: { id: toKeyframeId('kf1'), frame: toFrame(0), value: 0, easing: LINEAR_EASING },
     },
     {
-      type: 'ADD_KEYFRAME', clipId: toClipId('c1'), effectId: toEffectId('e1'),
+      type: 'ADD_KEYFRAME',
+      clipId: toClipId('c1'),
+      effectId: toEffectId('e1'),
       keyframe: { id: toKeyframeId('kf2'), frame: toFrame(899), value: 10, easing: LINEAR_EASING },
     },
   ]);
 
   // Transition on c1
-  state = applyTx(state, 'Add transition', [{
-    type: 'ADD_TRANSITION',
-    clipId: toClipId('c1'),
-    transition: createTransition(toTransitionId('tr1'), 'dissolve', 15, 'centerOnCut', LINEAR_EASING),
-  }]);
+  state = applyTx(state, 'Add transition', [
+    {
+      type: 'ADD_TRANSITION',
+      clipId: toClipId('c1'),
+      transition: createTransition(
+        toTransitionId('tr1'),
+        'dissolve',
+        15,
+        'centerOnCut',
+        LINEAR_EASING,
+      ),
+    },
+  ]);
 
   // Markers
   state = applyTx(state, 'Add markers', [
     {
       type: 'ADD_MARKER',
       marker: {
-        type: 'point', id: toMarkerId('m1'), frame: toFrame(900),
-        label: 'Scene 2', color: 'red', scope: 'global', linkedClipId: null,
+        type: 'point',
+        id: toMarkerId('m1'),
+        frame: toFrame(900),
+        label: 'Scene 2',
+        color: 'red',
+        scope: 'global',
+        linkedClipId: null,
       },
     },
     {
       type: 'ADD_MARKER',
       marker: {
-        type: 'range', id: toMarkerId('m2'),
-        frameStart: toFrame(1000), frameEnd: toFrame(1900),
-        label: 'Act 1', color: 'blue', scope: 'global', linkedClipId: null,
+        type: 'range',
+        id: toMarkerId('m2'),
+        frameStart: toFrame(1000),
+        frameEnd: toFrame(1900),
+        label: 'Act 1',
+        color: 'blue',
+        scope: 'global',
+        linkedClipId: null,
       },
     },
   ]);
@@ -203,7 +258,7 @@ describe('Serialization: JSON round-trip', () => {
   it('effect keyframes preserved', () => {
     const state = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
-    const c1 = round.timeline.tracks.flatMap(t => t.clips).find(c => c.id === 'c1')!;
+    const c1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === 'c1')!;
     expect(c1.effects).toBeDefined();
     expect(c1.effects![0]!.keyframes).toHaveLength(2);
     expect(c1.effects![0]!.keyframes[0]!.frame).toBe(0);
@@ -213,7 +268,7 @@ describe('Serialization: JSON round-trip', () => {
   it('transition preserved', () => {
     const state = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
-    const c1 = round.timeline.tracks.flatMap(t => t.clips).find(c => c.id === 'c1')!;
+    const c1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === 'c1')!;
     expect(c1.transition).toBeDefined();
     expect(c1.transition!.type).toBe('dissolve');
     expect(c1.transition!.durationFrames).toBe(15);
@@ -222,7 +277,7 @@ describe('Serialization: JSON round-trip', () => {
   it('clip durations preserved exactly', () => {
     const state = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
-    const c1 = round.timeline.tracks.flatMap(t => t.clips).find(c => c.id === 'c1')!;
+    const c1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === 'c1')!;
     expect((c1.timelineEnd - c1.timelineStart) as number).toBe(900);
   });
 
@@ -235,7 +290,9 @@ describe('Serialization: JSON round-trip', () => {
 
   it('empty state round-trips correctly', () => {
     const timeline = createTimeline({
-      id: 'empty', name: 'Empty', fps: 30,
+      id: 'empty',
+      name: 'Empty',
+      fps: 30,
       duration: toFrame(1000),
       startTimecode: toTimecode('00:00:00:00'),
       tracks: [],
@@ -262,7 +319,7 @@ describe('Serialization: remapAssetPaths', () => {
     const state = buildComplexState();
     const remapped = remapAssetPaths(state, (a) => ({ ...a, filePath: `/rel${a.filePath}` }));
     const values = Array.from(remapped.assetRegistry.values());
-    const paths = values.filter(a => a.kind === 'file').map(a => (a as any).filePath);
+    const paths = values.filter((a) => a.kind === 'file').map((a) => (a as any).filePath);
     expect(paths).toContain('/rel/media/clip-a.mp4');
     expect(paths).toContain('/rel/media/clip-a.wav');
     expect(checkInvariants(remapped)).toEqual([]);
@@ -301,15 +358,15 @@ describe('Serialization: OTIO round-trip', () => {
   it('OTIO round-trip: clip durations preserved', () => {
     const state = buildComplexState();
     const round = importFromOTIO(exportToOTIO(state));
-    const c1 = round.timeline.tracks.flatMap(t => t.clips).find(c => c.id === 'c1')!;
+    const c1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === 'c1')!;
     expect((c1.timelineEnd - c1.timelineStart) as number).toBe(900);
   });
 
   it('OTIO round-trip: gap between clips produces Gap in export', () => {
     const state = buildComplexState();
     const doc = exportToOTIO(state);
-    const v1 = doc.tracks.children.find(t => t.kind === 'Video')!;
-    const gaps = v1.children.filter(c => (c as any).OTIO_SCHEMA === 'Gap.1');
+    const v1 = doc.tracks.children.find((t) => t.kind === 'Video')!;
+    const gaps = v1.children.filter((c) => (c as any).OTIO_SCHEMA === 'Gap.1');
     expect(gaps.length).toBeGreaterThan(0);
   });
 
@@ -326,14 +383,14 @@ describe('Serialization: EDL export', () => {
   it('exportToEDL produces correct event count for first video track', () => {
     const state = buildComplexState();
     const edl = exportToEDL(state, { trackIndex: 0 });
-    const events = edl.split('\n').filter(l => /^\d{3}\s+/.test(l));
+    const events = edl.split('\n').filter((l) => /^\d{3}\s+/.test(l));
     expect(events).toHaveLength(2); // c1 + c2 on v1
   });
 
   it('EDL timecode for first clip starts at 00:00:00:00', () => {
     const state = buildComplexState();
     const edl = exportToEDL(state, { trackIndex: 0 });
-    const line1 = edl.split('\n').find(l => l.startsWith('001 '))!;
+    const line1 = edl.split('\n').find((l) => l.startsWith('001 '))!;
     expect(line1).toContain('00:00:00:00');
   });
 
@@ -377,7 +434,7 @@ describe('Serialization: AAF export', () => {
   it('AAF contains TimelineMobSlot for each track', () => {
     const state = buildComplexState();
     const xml = exportToAAF(state);
-    const slots = (xml.match(/<TimelineMobSlot slotID=/g)) ?? [];
+    const slots = xml.match(/<TimelineMobSlot slotID=/g) ?? [];
     expect(slots).toHaveLength(3);
   });
 

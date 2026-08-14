@@ -37,10 +37,7 @@ export function TrackRow({
   const resolvedHeight = height ?? track.height;
 
   return (
-    <div
-      className="tl-track-row"
-      style={{ height: resolvedHeight, minHeight: resolvedHeight }}
-    >
+    <div className="tl-track-row" style={{ height: resolvedHeight, minHeight: resolvedHeight }}>
       <TrackHeader
         track={track}
         engine={engine}

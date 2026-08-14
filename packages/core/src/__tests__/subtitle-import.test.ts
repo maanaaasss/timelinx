@@ -5,7 +5,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseSRT, parseVTT, defaultCaptionStyle, subtitleImportToOps } from '../engine/subtitle-import';
+import {
+  parseSRT,
+  parseVTT,
+  defaultCaptionStyle,
+  subtitleImportToOps,
+} from '../engine/subtitle-import';
 import { toTrackId } from '../types/track';
 
 const FPS = 30;

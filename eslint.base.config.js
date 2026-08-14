@@ -1,16 +1,13 @@
-import js from '@eslint/js'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export function createBaseConfig(options = {}) {
   return defineConfig([
     globalIgnores(['dist', 'coverage']),
     {
       files: ['**/*.ts'],
-      extends: [
-        js.configs.recommended,
-        tseslint.configs.recommended,
-      ],
+      extends: [js.configs.recommended, tseslint.configs.recommended],
       languageOptions: {
         ecmaVersion: 2020,
       },
@@ -37,5 +34,5 @@ export function createBaseConfig(options = {}) {
         '@typescript-eslint/no-require-imports': 'off',
       },
     },
-  ])
+  ]);
 }

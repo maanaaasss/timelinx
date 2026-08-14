@@ -23,13 +23,15 @@ import type { TimelineFrame, FrameRate } from '../../types/frame';
 
 // ── Asset builder ────────────────────────────────────────────────────────────
 
-export function buildAsset(overrides: {
-  id?: string;
-  name?: string;
-  mediaType?: TrackType;
-  intrinsicDuration?: number;
-  fps?: FrameRate;
-} = {}): Asset {
+export function buildAsset(
+  overrides: {
+    id?: string;
+    name?: string;
+    mediaType?: TrackType;
+    intrinsicDuration?: number;
+    fps?: FrameRate;
+  } = {},
+): Asset {
   const id = overrides.id ?? 'asset-1';
   return createAsset({
     id,
@@ -45,16 +47,18 @@ export function buildAsset(overrides: {
 
 // ── Clip builder ─────────────────────────────────────────────────────────────
 
-export function buildClip(overrides: {
-  id?: string;
-  assetId?: string;
-  trackId?: string;
-  start?: number;
-  end?: number;
-  mediaIn?: number;
-  mediaOut?: number;
-  speed?: number;
-} = {}): Clip {
+export function buildClip(
+  overrides: {
+    id?: string;
+    assetId?: string;
+    trackId?: string;
+    start?: number;
+    end?: number;
+    mediaIn?: number;
+    mediaOut?: number;
+    speed?: number;
+  } = {},
+): Clip {
   const id = overrides.id ?? 'clip-1';
   const start = overrides.start ?? 0;
   const end = overrides.end ?? 100;
@@ -123,9 +127,7 @@ export function buildState(params: StateBuilderParams = {}): TimelineState {
     tracks,
   });
 
-  const registry = new Map<AssetId, Asset>(
-    assets.map(a => [a.id as AssetId, a]),
-  );
+  const registry = new Map<AssetId, Asset>(assets.map((a) => [a.id as AssetId, a]));
 
   return createTimelineState({ timeline, assetRegistry: registry });
 }
@@ -133,18 +135,22 @@ export function buildState(params: StateBuilderParams = {}): TimelineState {
 // ── Multi-track state builder ────────────────────────────────────────────────
 
 export function buildMultiTrackState(config: {
-  tracks: Array<{ id: string; type: TrackType; clips: Array<{ id: string; start: number; end: number }> }>;
+  tracks: Array<{
+    id: string;
+    type: TrackType;
+    clips: Array<{ id: string; start: number; end: number }>;
+  }>;
   duration?: number;
   assetDuration?: number;
 }): TimelineState {
   const assetId = 'asset-1';
   const asset = buildAsset({ id: assetId, intrinsicDuration: config.assetDuration ?? 9000 });
 
-  const tracks = config.tracks.map(t =>
+  const tracks = config.tracks.map((t) =>
     buildTrack(
       t.id,
       t.type,
-      t.clips.map(c =>
+      t.clips.map((c) =>
         buildClip({
           id: c.id,
           assetId,

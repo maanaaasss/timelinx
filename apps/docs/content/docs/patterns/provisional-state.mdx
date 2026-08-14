@@ -8,6 +8,7 @@ During direct manipulation (drag, scrub, resize), we update React local state on
 ## The Problem
 
 If you dispatch on every pointer move during a drag:
+
 - 60 dispatches/second × 3 second drag = 180 history entries
 - User presses Cmd+Z once → only reverts 1/60th of the drag
 - Undo becomes useless for direct manipulation
@@ -76,7 +77,7 @@ const handleDragPointerMove = (e) => {
 const handleDragPointerUp = (e) => {
   engine.dispatch({
     type: 'SET_CLIP_TRANSFORM',
-    transform: { positionX: draftPosRef.current.x, positionY: draftPosRef.current.y }
+    transform: { positionX: draftPosRef.current.x, positionY: draftPosRef.current.y },
   });
   setIsDragging(false);
   draftPosRef.current = null;
@@ -148,18 +149,26 @@ If any dispatch leaks during drag (e.g., from a side effect), compression catche
 CSS cursor should reflect the interaction state:
 
 ```css
-.selection-box { cursor: grab; }
-.selection-box.is-dragging { cursor: grabbing; }
+.selection-box {
+  cursor: grab;
+}
+.selection-box.is-dragging {
+  cursor: grabbing;
+}
 
-.number-scrubber-label { cursor: ew-resize; }
-.number-scrubber.is-scrubbing { cursor: ew-resize; }
+.number-scrubber-label {
+  cursor: ew-resize;
+}
+.number-scrubber.is-scrubbing {
+  cursor: ew-resize;
+}
 ```
 
 ## Related Components
 
-| Component | Provisional Mechanism |
-|-----------|----------------------|
-| `NumberScrubber` | Built-in (`isScrubbing` state) |
-| `PreviewOverlay` | Draft position ref |
-| `useProvisionalValue` | Generic hook |
-| `useProvisionalTransform` | 2D position hook |
+| Component                 | Provisional Mechanism          |
+| ------------------------- | ------------------------------ |
+| `NumberScrubber`          | Built-in (`isScrubbing` state) |
+| `PreviewOverlay`          | Draft position ref             |
+| `useProvisionalValue`     | Generic hook                   |
+| `useProvisionalTransform` | 2D position hook               |

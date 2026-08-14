@@ -16,13 +16,12 @@ Visit the [packages](packages) directory for package-level READMEs, or read [CON
 
 ### Packages
 
-| Package | Description | Status |
-|---------|-------------|--------|
-| [`@timelinx/core`](https://www.npmjs.com/package/@timelinx/core) | Headless TypeScript engine — zero dependencies, runs anywhere | Published |
-| [`@timelinx/react`](https://www.npmjs.com/package/@timelinx/react) | React adapter — hooks, context, tool routing | Published |
-| [`@timelinx/ui`](https://www.npmjs.com/package/@timelinx/ui) | Browser-native React timeline editor components | Published |
-| `@timelinx/media-web` | WebCodecs, WebAudio, thumbnails, export | In development |
-
+| Package                                                            | Description                                                   | Status         |
+| ------------------------------------------------------------------ | ------------------------------------------------------------- | -------------- |
+| [`@timelinx/core`](https://www.npmjs.com/package/@timelinx/core)   | Headless TypeScript engine — zero dependencies, runs anywhere | Published      |
+| [`@timelinx/react`](https://www.npmjs.com/package/@timelinx/react) | React adapter — hooks, context, tool routing                  | Published      |
+| [`@timelinx/ui`](https://www.npmjs.com/package/@timelinx/ui)       | Browser-native React timeline editor components               | Published      |
+| `@timelinx/media-web`                                              | WebCodecs, WebAudio, thumbnails, export                       | In development |
 
 ## Contributing
 

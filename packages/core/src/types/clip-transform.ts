@@ -17,14 +17,14 @@ export function createAnimatableProperty(value: number): AnimatableProperty {
 }
 
 export type ClipTransform = {
-  readonly positionX: AnimatableProperty;  // pixels, default 0
-  readonly positionY: AnimatableProperty;  // pixels, default 0
-  readonly scaleX: AnimatableProperty;     // multiplier, default 1
-  readonly scaleY: AnimatableProperty;     // multiplier, default 1
-  readonly rotation: AnimatableProperty;    // degrees, default 0
-  readonly opacity: AnimatableProperty;    // 0–1, default 1
-  readonly anchorX: AnimatableProperty;    // pixels, default 0
-  readonly anchorY: AnimatableProperty;    // pixels, default 0
+  readonly positionX: AnimatableProperty; // pixels, default 0
+  readonly positionY: AnimatableProperty; // pixels, default 0
+  readonly scaleX: AnimatableProperty; // multiplier, default 1
+  readonly scaleY: AnimatableProperty; // multiplier, default 1
+  readonly rotation: AnimatableProperty; // degrees, default 0
+  readonly opacity: AnimatableProperty; // 0–1, default 1
+  readonly anchorX: AnimatableProperty; // pixels, default 0
+  readonly anchorY: AnimatableProperty; // pixels, default 0
 };
 
 export const DEFAULT_CLIP_TRANSFORM: ClipTransform = {

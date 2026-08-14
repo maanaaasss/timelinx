@@ -31,7 +31,7 @@ The envelope shape:
 
 ```ts
 type ProjectDocument = {
-  readonly schemaVersion: number;    // current schema version
+  readonly schemaVersion: number; // current schema version
   readonly state: TimelineState;
   readonly metadata?: ProjectMetadata;
 };
@@ -90,7 +90,9 @@ import { CURRENT_SCHEMA_VERSION } from '@timelinx/core';
 `CURRENT_SCHEMA_VERSION` is an integer that increments with each breaking change to `TimelineState`. The serializer stores this in `ProjectDocument.schemaVersion`. The migrator reads it to determine which migration functions to run.
 
 <Callout title="Always run through the deserializer">
-  Do not use `JSON.parse(raw) as TimelineState` directly from storage. The shape of `TimelineState` changes between schema versions. `deserializeProject()` + `migrateProject()` is the only safe path.
+  Do not use `JSON.parse(raw) as TimelineState` directly from storage. The shape of `TimelineState`
+  changes between schema versions. `deserializeProject()` + `migrateProject()` is the only safe
+  path.
 </Callout>
 
 ---
@@ -203,7 +205,7 @@ const result = engine.dispatch({
 });
 ```
 
-This imports each caption as an individual `ADD_CAPTION` operation. They are validated and applied atomically  - if any caption overlaps an existing one, the entire import is rejected.
+This imports each caption as an individual `ADD_CAPTION` operation. They are validated and applied atomically - if any caption overlaps an existing one, the entire import is rejected.
 
 ### `defaultCaptionStyle()`
 

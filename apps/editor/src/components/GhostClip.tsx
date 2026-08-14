@@ -19,9 +19,7 @@ export function GhostClip({ clip, ppf, trackType }: GhostClipProps) {
         width,
       }}
     >
-      {width > 40 && (
-        <div className="clip-info">{clip.id} (preview)</div>
-      )}
+      {width > 40 && <div className="clip-info">{clip.id} (preview)</div>}
       {width > 80 && (
         <div className="clip-duration">
           {duration}fr @ {String(clip.timelineStart)}

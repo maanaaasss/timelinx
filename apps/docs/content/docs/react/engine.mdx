@@ -32,21 +32,21 @@ const engine = new TimelineEngine({
 new TimelineEngine(options: TimelineEngineOptions)
 ```
 
-| Option | Type | Default | Purpose |
-|--------|------|---------|---------|
-| `initialState` | `TimelineState` | required | The starting document. |
-| `historyLimit` | `number` | `100` | Maximum number of undo entries. Older entries are evicted when the limit is reached. |
-| `compression` | `CompressionPolicy` | `DEFAULT_COMPRESSION_POLICY` | Controls which operations merge in history (e.g., repeated drag frames merge into one). |
-| `tools` | `ITool[]` | `[]` | Additional tools merged with the 12 defaults. Same ID overwrites the built-in. |
-| `defaultToolId` | `string` | `'selection'` | Which tool is active on mount. |
-| `getPixelsPerFrame` | `() => number` | `() => 10` | Returns current zoom level for snap radius calculation. Wire this to the UI provider's `ppf`. |
-| `onZoomChange` | `(ppf: number) => void` | noop | Called by `ZoomTool` when the user zooms. Update UI `ppf` state here. |
-| `pipeline` | `PipelineConfig` | none | Media backend  - video decoder, compositor, thumbnail provider. Without this, the engine runs edit-only. |
-| `dimensions` | `{ width: number; height: number }` | `{ width: 1920, height: 1080 }` | Compositor canvas dimensions passed to `PlaybackEngine`. |
-| `clock` | `Clock` | `browserClock` | Time source for playback. Swap for `createTestClock()` in tests. |
-| `onMarkIn` | `() => void` | none | Called when the user presses the I key (mark in-point). |
-| `onMarkOut` | `() => void` | none | Called when the user presses the O key. |
-| `onError` | `(err: unknown, phase: string) => void` | none | Called when a tool or dispatch throws an unexpected error. `phase` is `'dispatch'`, `'onPointerDown'`, etc. |
+| Option              | Type                                    | Default                         | Purpose                                                                                                     |
+| ------------------- | --------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `initialState`      | `TimelineState`                         | required                        | The starting document.                                                                                      |
+| `historyLimit`      | `number`                                | `100`                           | Maximum number of undo entries. Older entries are evicted when the limit is reached.                        |
+| `compression`       | `CompressionPolicy`                     | `DEFAULT_COMPRESSION_POLICY`    | Controls which operations merge in history (e.g., repeated drag frames merge into one).                     |
+| `tools`             | `ITool[]`                               | `[]`                            | Additional tools merged with the 12 defaults. Same ID overwrites the built-in.                              |
+| `defaultToolId`     | `string`                                | `'selection'`                   | Which tool is active on mount.                                                                              |
+| `getPixelsPerFrame` | `() => number`                          | `() => 10`                      | Returns current zoom level for snap radius calculation. Wire this to the UI provider's `ppf`.               |
+| `onZoomChange`      | `(ppf: number) => void`                 | noop                            | Called by `ZoomTool` when the user zooms. Update UI `ppf` state here.                                       |
+| `pipeline`          | `PipelineConfig`                        | none                            | Media backend - video decoder, compositor, thumbnail provider. Without this, the engine runs edit-only.     |
+| `dimensions`        | `{ width: number; height: number }`     | `{ width: 1920, height: 1080 }` | Compositor canvas dimensions passed to `PlaybackEngine`.                                                    |
+| `clock`             | `Clock`                                 | `browserClock`                  | Time source for playback. Swap for `createTestClock()` in tests.                                            |
+| `onMarkIn`          | `() => void`                            | none                            | Called when the user presses the I key (mark in-point).                                                     |
+| `onMarkOut`         | `() => void`                            | none                            | Called when the user presses the O key.                                                                     |
+| `onError`           | `(err: unknown, phase: string) => void` | none                            | Called when a tool or dispatch throws an unexpected error. `phase` is `'dispatch'`, `'onPointerDown'`, etc. |
 
 ---
 
@@ -59,6 +59,7 @@ dispatch(transaction: Transaction): DispatchResult
 ```
 
 Validates and applies a transaction. On acceptance:
+
 1. Core `dispatch()` validates each operation and applies them in order.
 2. `diffStates()` computes what changed.
 3. The accepted entry is pushed to history with compression.
@@ -104,8 +105,12 @@ function UndoRedoButtons() {
 
   return (
     <>
-      <button disabled={!canUndo} onClick={() => engine.undo()}>Undo</button>
-      <button disabled={!canRedo} onClick={() => engine.redo()}>Redo</button>
+      <button disabled={!canUndo} onClick={() => engine.undo()}>
+        Undo
+      </button>
+      <button disabled={!canRedo} onClick={() => engine.redo()}>
+        Redo
+      </button>
     </>
   );
 }
@@ -156,7 +161,7 @@ pause(): void
 stop(): void
 ```
 
-`setPlayheadFrame` moves the playhead without playing. `play()` starts playback from the current frame  - only available when `pipeline` was provided in the constructor. Without a pipeline, `play()` has no effect.
+`setPlayheadFrame` moves the playhead without playing. `play()` starts playback from the current frame - only available when `pipeline` was provided in the constructor. Without a pipeline, `play()` has no effect.
 
 ---
 
@@ -167,7 +172,7 @@ subscribe(callback: () => void): () => void
 getSnapshot(): EngineSnapshot
 ```
 
-These are the `useSyncExternalStore` integration points. React hooks call these internally  - you only need them when building a custom subscription outside React.
+These are the `useSyncExternalStore` integration points. React hooks call these internally - you only need them when building a custom subscription outside React.
 
 The returned `subscribe` function returns an unsubscribe function:
 
@@ -183,7 +188,7 @@ unsubscribe();
 
 ## `EngineSnapshot`
 
-Hooks read from an `EngineSnapshot`  - an immutable frozen object rebuilt after every state change:
+Hooks read from an `EngineSnapshot` - an immutable frozen object rebuilt after every state change:
 
 ```ts
 type EngineSnapshot = {
@@ -202,20 +207,20 @@ type EngineSnapshot = {
 };
 ```
 
-| Field | Notes |
-|-------|-------|
-| `state` | Current `TimelineState`. |
-| `stableTrackIds` | Track ID array. Stable reference  - only replaced when track count or order changes. React hooks use this to mount/unmount per-track components without re-running on unrelated state changes. |
-| `history` | `canUndo` and `canRedo` flags. Updated once when availability changes, not on every snapshot. |
-| `activeToolId` | String ID of the current tool. |
-| `cursor` | CSS cursor string for the current tool and hover state. |
-| `provisional` | Drag-preview state from the active tool. `null` when idle. |
-| `playheadFrame` | Current playhead position. |
-| `isPlaying` | `true` when playback is running. |
-| `selectedClipIds` | `ReadonlySet<string>` from the `SelectionTool`. |
-| `selectedCaptionIds` | `ReadonlySet<string>` of selected captions. |
-| `snapIndex` | Current snap index  - rebuilt after every dispatch. |
-| `change` | `StateChange` diff from the previous snapshot. Use with `useChange()` for coarse re-renders. |
+| Field                | Notes                                                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`              | Current `TimelineState`.                                                                                                                                                                      |
+| `stableTrackIds`     | Track ID array. Stable reference - only replaced when track count or order changes. React hooks use this to mount/unmount per-track components without re-running on unrelated state changes. |
+| `history`            | `canUndo` and `canRedo` flags. Updated once when availability changes, not on every snapshot.                                                                                                 |
+| `activeToolId`       | String ID of the current tool.                                                                                                                                                                |
+| `cursor`             | CSS cursor string for the current tool and hover state.                                                                                                                                       |
+| `provisional`        | Drag-preview state from the active tool. `null` when idle.                                                                                                                                    |
+| `playheadFrame`      | Current playhead position.                                                                                                                                                                    |
+| `isPlaying`          | `true` when playback is running.                                                                                                                                                              |
+| `selectedClipIds`    | `ReadonlySet<string>` from the `SelectionTool`.                                                                                                                                               |
+| `selectedCaptionIds` | `ReadonlySet<string>` of selected captions.                                                                                                                                                   |
+| `snapIndex`          | Current snap index - rebuilt after every dispatch.                                                                                                                                            |
+| `change`             | `StateChange` diff from the previous snapshot. Use with `useChange()` for coarse re-renders.                                                                                                  |
 
 ---
 
@@ -228,17 +233,25 @@ type EngineSnapshot = {
 const engine = new TimelineEngine({ initialState });
 
 function App() {
-  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+  return (
+    <TimelineProvider engine={engine}>
+      <Editor />
+    </TimelineProvider>
+  );
 }
 ```
 
-**Wrong  - recreating on every render resets all state:**
+**Wrong - recreating on every render resets all state:**
 
 ```tsx
 // ❌ Wrong: engine resets on every render
 function App() {
   const engine = new TimelineEngine({ initialState }); // don't do this
-  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+  return (
+    <TimelineProvider engine={engine}>
+      <Editor />
+    </TimelineProvider>
+  );
 }
 ```
 
@@ -262,12 +275,18 @@ function App() {
 
   if (!engine) return <LoadingScreen />;
 
-  return <TimelineProvider engine={engine}><Editor /></TimelineProvider>;
+  return (
+    <TimelineProvider engine={engine}>
+      <Editor />
+    </TimelineProvider>
+  );
 }
 ```
 
 <Callout title="Do not memoize with stale deps">
-  If `initialState` changes identity on every render (e.g., from a selector that constructs a new object), the engine will be recreated on every render. Load your state once and keep the reference stable.
+  If `initialState` changes identity on every render (e.g., from a selector that constructs a new
+  object), the engine will be recreated on every render. Load your state once and keep the reference
+  stable.
 </Callout>
 
 ---

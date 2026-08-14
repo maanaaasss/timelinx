@@ -2,20 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from 'fumadocs-ui/components/ui/popover';
-import {
-  BookOpen,
-  Layout,
-  Box,
-  Pencil,
-  Video,
-  ChevronsUpDown,
-  Check,
-} from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from 'fumadocs-ui/components/ui/popover';
+import { BookOpen, Layout, Box, Pencil, Video, ChevronsUpDown, Check } from 'lucide-react';
 
 const PACKAGES = [
   {
@@ -87,61 +75,59 @@ export function PackageSelector() {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            data-popup-open={open || undefined}
-            className="inline-flex items-center gap-2 w-full rounded-lg border bg-fd-secondary/50 p-1.5 ps-2 text-sm text-fd-muted-foreground text-start transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground data-[popup-open]:bg-fd-accent data-[popup-open]:text-fd-accent-foreground cursor-pointer"
-          >
-            <div
-              className="size-4 shrink-0 [&_svg]:size-full"
-              style={{ color: current.color }}
-            >
-              <current.icon />
-            </div>
-            <div className="flex-1 min-w-0">
-              <span className="font-medium truncate">{current.name}</span>
-            </div>
-            <ChevronsUpDown className="shrink-0 size-3.5" />
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          align="start"
-          sideOffset={6}
-          className="w-[var(--radix-popover-trigger-width)] p-1 rounded-lg border border-fd-border/60 bg-fd-card shadow-2xl"
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          data-popup-open={open || undefined}
+          className="inline-flex items-center gap-2 w-full rounded-lg border bg-fd-secondary/50 p-1.5 ps-2 text-sm text-fd-muted-foreground text-start transition-colors hover:bg-fd-accent hover:text-fd-accent-foreground data-[popup-open]:bg-fd-accent data-[popup-open]:text-fd-accent-foreground cursor-pointer"
         >
-          {PACKAGES.map((pkg) => {
-            const Icon = pkg.icon;
-            const isActive = pkg.id === selected;
-            return (
-              <button
-                key={pkg.id}
-                type="button"
-                onClick={() => {
-                  setSelected(pkg.id);
-                  setOpen(false);
-                  router.push(pkg.href);
-                }}
-                className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-start transition-colors cursor-pointer hover:bg-fd-accent/50"
-                style={isActive ? { backgroundColor: `color-mix(in srgb, ${pkg.color} 8%, transparent)` } : undefined}
-              >
-                <div
-                  className="size-4 shrink-0 [&_svg]:size-full"
-                  style={{ color: pkg.color }}
-                >
-                  <Icon />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium leading-tight truncate">{pkg.name}</p>
-                  <p className="text-[11px] leading-tight text-fd-muted-foreground truncate mt-0.5">{pkg.subtitle}</p>
-                </div>
-                {isActive && (
-                  <Check className="shrink-0 size-3.5" style={{ color: pkg.color }} />
-                )}
-              </button>
-            );
-          })}
-        </PopoverContent>
-      </Popover>
+          <div className="size-4 shrink-0 [&_svg]:size-full" style={{ color: current.color }}>
+            <current.icon />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="font-medium truncate">{current.name}</span>
+          </div>
+          <ChevronsUpDown className="shrink-0 size-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[var(--radix-popover-trigger-width)] p-1 rounded-lg border border-fd-border/60 bg-fd-card shadow-2xl"
+      >
+        {PACKAGES.map((pkg) => {
+          const Icon = pkg.icon;
+          const isActive = pkg.id === selected;
+          return (
+            <button
+              key={pkg.id}
+              type="button"
+              onClick={() => {
+                setSelected(pkg.id);
+                setOpen(false);
+                router.push(pkg.href);
+              }}
+              className="flex items-center gap-3 w-full rounded-md px-3 py-2 text-start transition-colors cursor-pointer hover:bg-fd-accent/50"
+              style={
+                isActive
+                  ? { backgroundColor: `color-mix(in srgb, ${pkg.color} 8%, transparent)` }
+                  : undefined
+              }
+            >
+              <div className="size-4 shrink-0 [&_svg]:size-full" style={{ color: pkg.color }}>
+                <Icon />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-tight truncate">{pkg.name}</p>
+                <p className="text-[11px] leading-tight text-fd-muted-foreground truncate mt-0.5">
+                  {pkg.subtitle}
+                </p>
+              </div>
+              {isActive && <Check className="shrink-0 size-3.5" style={{ color: pkg.color }} />}
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 }

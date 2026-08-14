@@ -7,10 +7,10 @@ Timelinx has two provider exports with the same component name. They serve relat
 
 ## Provider Choice
 
-| Import | Use When | Provides |
-|--------|----------|----------|
-| `TimelineProvider` from `@timelinx/react` | You are building custom React components and using only React hooks. | The `TimelineEngine` instance through React context. |
-| `TimelineProvider` from `@timelinx/ui` | You are rendering `@timelinx/ui` editor components. | The `TimelineEngine` plus layout state: pixels-per-frame, scroll position, viewport width, label width, ruler height, and toolbar height. |
+| Import                                    | Use When                                                             | Provides                                                                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `TimelineProvider` from `@timelinx/react` | You are building custom React components and using only React hooks. | The `TimelineEngine` instance through React context.                                                                                      |
+| `TimelineProvider` from `@timelinx/ui`    | You are rendering `@timelinx/ui` editor components.                  | The `TimelineEngine` plus layout state: pixels-per-frame, scroll position, viewport width, label width, ruler height, and toolbar height. |
 
 Most UI apps should use the UI provider. `TimelineEditor`, `TimelineTrack`, `TimelineRuler`, panels, and other UI components expect the UI context because they need zoom and layout information in addition to the engine.
 
@@ -75,11 +75,7 @@ These values keep the ruler, playhead, clips, track labels, and scroll container
 `@timelinx/ui` also exposes `MediaAssetsProvider` for media import and preview workflows.
 
 ```tsx
-import {
-  MediaAssetsProvider,
-  TimelineEditor,
-  TimelineProvider,
-} from '@timelinx/ui';
+import { MediaAssetsProvider, TimelineEditor, TimelineProvider } from '@timelinx/ui';
 
 export function App() {
   return (
@@ -99,10 +95,7 @@ Use it around editor surfaces that need imported media metadata, preview records
 Create the engine outside render or memoize it. Recreating it on every render resets history, tool state, selected IDs, indexes, and subscribers.
 
 ```tsx
-const engine = useMemo(
-  () => new TimelineEngine({ initialState }),
-  [initialState],
-);
+const engine = useMemo(() => new TimelineEngine({ initialState }), [initialState]);
 ```
 
 If `initialState` is loaded asynchronously, create the engine after loading completes and render a loading state until it exists.

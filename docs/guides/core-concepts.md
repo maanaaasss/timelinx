@@ -90,20 +90,17 @@ After dispatch, the returned `nextState` is deeply frozen. The `assetRegistry` M
 
 ```ts
 // From packages/core/src/engine/dispatcher.ts (lines 75-88)
-const frozenRegistry = new Proxy(
-  proposedState.assetRegistry as Map<unknown, unknown>,
-  {
-    get(target, prop, receiver) {
-      if (prop === 'set' || prop === 'delete' || prop === 'clear') {
-        throw new TypeError(
-          `Cannot modify frozen AssetRegistry: ${(prop as string).toUpperCase()} is disabled`,
-        );
-      }
-      const value = Reflect.get(target, prop, target);
-      return typeof value === 'function' ? value.bind(target) : value;
-    },
+const frozenRegistry = new Proxy(proposedState.assetRegistry as Map<unknown, unknown>, {
+  get(target, prop, receiver) {
+    if (prop === 'set' || prop === 'delete' || prop === 'clear') {
+      throw new TypeError(
+        `Cannot modify frozen AssetRegistry: ${(prop as string).toUpperCase()} is disabled`,
+      );
+    }
+    const value = Reflect.get(target, prop, target);
+    return typeof value === 'function' ? value.bind(target) : value;
   },
-) as typeof proposedState.assetRegistry;
+}) as typeof proposedState.assetRegistry;
 ```
 
 Structural sharing is preserved intentionally — `Object.is` checks on selector results don't trigger unnecessary React re-renders.
@@ -130,21 +127,21 @@ it('creates transaction context', () => {
 
 it('applies operation to state', () => {
   let tx = beginTransaction(baseState);
-  tx = applyOperation(tx, s => removeClip(s, 'a'));
+  tx = applyOperation(tx, (s) => removeClip(s, 'a'));
   expect(tx.operations).toHaveLength(1);
   expect(tx.currentState.timeline.tracks[0]!.clips).toHaveLength(0);
 });
 
 it('returns final state', () => {
   let tx = beginTransaction(baseState);
-  tx = applyOperation(tx, s => removeClip(s, 'a'));
+  tx = applyOperation(tx, (s) => removeClip(s, 'a'));
   const result = commitTransaction(tx);
   expect(result.timeline.tracks[0]!.clips).toHaveLength(0);
 });
 
 it('returns initial state (rollback)', () => {
   let tx = beginTransaction(baseState);
-  tx = applyOperation(tx, s => removeClip(s, 'a'));
+  tx = applyOperation(tx, (s) => removeClip(s, 'a'));
   const result = rollbackTransaction(tx);
   expect(result).toBe(baseState);
 });
@@ -169,26 +166,26 @@ it('returns initial state (rollback)', () => {
 
 The invariant checker enforces **24 distinct violation types** across these categories:
 
-| Category | Violation Types | What It Catches |
-|----------|----------------|-----------------|
-| **Schema** | `SCHEMA_VERSION_MISMATCH` | State from a future engine version |
-| **Identity** | `DUPLICATE_ID` | Duplicate clip, track, marker, or asset IDs |
-| **Overlap** | `OVERLAP` | Two clips sharing any frame on the same track |
-| **Asset** | `ASSET_MISSING` | Clip references non-existent asset |
-| **Track type** | `TRACK_TYPE_MISMATCH` | Audio clip on video track (or vice versa) |
-| **Media bounds** | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH` | mediaIn/mediaOut out of range, duration mismatch |
-| **Timeline bounds** | `CLIP_BEYOND_TIMELINE` | Clip extends past timeline duration |
-| **Sort order** | `TRACK_NOT_SORTED` | Clips not ascending by timelineStart |
-| **Speed** | `SPEED_INVALID` | Speed <= 0 |
-| **Frame integrity** | `INVALID_RANGE` | Non-finite, non-integer, or negative frame values; zero-duration clips |
-| **Track properties** | `INVALID_OPACITY` | Opacity outside [0, 1] |
-| **Markers** | `MARKER_OUT_OF_BOUNDS` | Marker frame outside timeline bounds |
-| **In/Out points** | `IN_OUT_INVALID` | inPoint >= outPoint or outside timeline |
-| **Beat grid** | `BEAT_GRID_INVALID` | BPM <= 0, invalid time signature |
-| **Captions** | `CAPTION_OUT_OF_BOUNDS`, `CAPTION_OVERLAP` | Caption exceeds timeline, overlapping captions |
-| **Effects** | `EFFECT_NOT_FOUND`, `EFFECT_INDEX_OUT_OF_RANGE`, `INVALID_RENDER_STAGE`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION` | Invalid effect/keyframe state |
-| **Transitions** | `INVALID_RANGE` (via transition checks) | durationFrames <= 0, invalid alignment |
-| **Groups** | `LINK_GROUP_NOT_FOUND`, `TRACK_GROUP_NOT_FOUND` | Broken group references |
+| Category             | Violation Types                                                                                                           | What It Catches                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Schema**           | `SCHEMA_VERSION_MISMATCH`                                                                                                 | State from a future engine version                                     |
+| **Identity**         | `DUPLICATE_ID`                                                                                                            | Duplicate clip, track, marker, or asset IDs                            |
+| **Overlap**          | `OVERLAP`                                                                                                                 | Two clips sharing any frame on the same track                          |
+| **Asset**            | `ASSET_MISSING`                                                                                                           | Clip references non-existent asset                                     |
+| **Track type**       | `TRACK_TYPE_MISMATCH`                                                                                                     | Audio clip on video track (or vice versa)                              |
+| **Media bounds**     | `MEDIA_BOUNDS_INVALID`, `DURATION_MISMATCH`                                                                               | mediaIn/mediaOut out of range, duration mismatch                       |
+| **Timeline bounds**  | `CLIP_BEYOND_TIMELINE`                                                                                                    | Clip extends past timeline duration                                    |
+| **Sort order**       | `TRACK_NOT_SORTED`                                                                                                        | Clips not ascending by timelineStart                                   |
+| **Speed**            | `SPEED_INVALID`                                                                                                           | Speed <= 0                                                             |
+| **Frame integrity**  | `INVALID_RANGE`                                                                                                           | Non-finite, non-integer, or negative frame values; zero-duration clips |
+| **Track properties** | `INVALID_OPACITY`                                                                                                         | Opacity outside [0, 1]                                                 |
+| **Markers**          | `MARKER_OUT_OF_BOUNDS`                                                                                                    | Marker frame outside timeline bounds                                   |
+| **In/Out points**    | `IN_OUT_INVALID`                                                                                                          | inPoint >= outPoint or outside timeline                                |
+| **Beat grid**        | `BEAT_GRID_INVALID`                                                                                                       | BPM <= 0, invalid time signature                                       |
+| **Captions**         | `CAPTION_OUT_OF_BOUNDS`, `CAPTION_OVERLAP`                                                                                | Caption exceeds timeline, overlapping captions                         |
+| **Effects**          | `EFFECT_NOT_FOUND`, `EFFECT_INDEX_OUT_OF_RANGE`, `INVALID_RENDER_STAGE`, `KEYFRAME_NOT_FOUND`, `KEYFRAME_ORDER_VIOLATION` | Invalid effect/keyframe state                                          |
+| **Transitions**      | `INVALID_RANGE` (via transition checks)                                                                                   | durationFrames <= 0, invalid alignment                                 |
+| **Groups**           | `LINK_GROUP_NOT_FOUND`, `TRACK_GROUP_NOT_FOUND`                                                                           | Broken group references                                                |
 
 ### What It Does NOT Check
 
@@ -232,19 +229,25 @@ it('multiple undo/redo cycles maintain invariant compliance', () => {
 it('detects two clips that overlap by one frame', () => {
   const state = makeBaseState();
   const clip2 = createClip({
-    id: 'clip-2', assetId: 'asset-1', trackId: 'track-1',
-    timelineStart: toFrame(50), timelineEnd: toFrame(150),
-    mediaIn: toFrame(50), mediaOut: toFrame(150),
+    id: 'clip-2',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(50),
+    timelineEnd: toFrame(150),
+    mediaIn: toFrame(50),
+    mediaOut: toFrame(150),
   });
   // ... add clip2 to same track as clip1 ...
   const violations = checkInvariants(badState);
-  expect(violations.some(v => v.type === 'OVERLAP')).toBe(true);
+  expect(violations.some((v) => v.type === 'OVERLAP')).toBe(true);
 });
 
 it('flags a clip referencing an asset that is not in the registry', () => {
   // ... create clip with assetId 'non-existent-asset' ...
   const violations = checkInvariants(badState);
-  expect(violations.some(v => v.type === 'ASSET_MISSING' && v.entityId === 'clip-ghost')).toBe(true);
+  expect(violations.some((v) => v.type === 'ASSET_MISSING' && v.entityId === 'clip-ghost')).toBe(
+    true,
+  );
 });
 ```
 
@@ -270,7 +273,7 @@ it('creates history with no past or future', () => {
 it('clears future when a new state is pushed', () => {
   let h = createHistory(makeState('S0'));
   h = pushHistory(h, makeState('S1'));
-  h = undo(h);                      // future = [S1]
+  h = undo(h); // future = [S1]
   h = pushHistory(h, makeState('S2')); // future should clear
   expect(canRedo(h)).toBe(false);
   expect(getCurrentState(h).timeline.name).toBe('S2');
@@ -354,11 +357,13 @@ interface ITool {
 The 12 built-in tools fall into three categories:
 
 **Selection & Navigation:**
+
 - `SelectionTool` — click to select, rubber-band for multi-select
 - `HandTool` — pan the timeline view
 - `ZoomTool` — click/scroll to zoom
 
 **Editing:**
+
 - `RazorTool` — split clips at click point
 - `RippleTrimTool` — trim a clip edge, rippling subsequent clips
 - `RollTrimTool` — trim the cut point between two adjacent clips
@@ -368,6 +373,7 @@ The 12 built-in tools fall into three categories:
 - `RippleInsertTool` — insert a clip at a point, rippling subsequent clips
 
 **Effects & Transitions:**
+
 - `TransitionTool` — add/adjust transitions between clips
 - `KeyframeTool` — add/adjust keyframes on effects
 

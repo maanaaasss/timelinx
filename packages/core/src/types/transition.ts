@@ -16,9 +16,9 @@ export function toTransitionId(s: string): TransitionId {
 export type TransitionType = string;
 
 export type TransitionAlignment =
-  | 'centerOnCut'   // straddles the cut point equally
-  | 'endAtCut'      // ends exactly at the cut point
-  | 'startAtCut';   // starts exactly at the cut point
+  | 'centerOnCut' // straddles the cut point equally
+  | 'endAtCut' // ends exactly at the cut point
+  | 'startAtCut'; // starts exactly at the cut point
 
 export type TransitionParam = {
   readonly key: string;

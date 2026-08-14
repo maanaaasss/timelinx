@@ -1,4 +1,10 @@
-import { useRef, useCallback, useState, useEffect, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useRef,
+  useCallback,
+  useState,
+  useEffect,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import type { Clip as ClipType, TimelineFrame, TimelineState, Transition } from '@timelinx/core';
 import { useActiveToolId } from '@timelinx/react';
 import type { TimelineEngine } from '@timelinx/react';
@@ -31,9 +37,7 @@ function clampToNeighbors(
   newStart: number,
   duration: number,
 ): number {
-  const track = state.timeline.tracks.find((t) =>
-    t.clips.some((c) => c.id === clipId),
-  );
+  const track = state.timeline.tracks.find((t) => t.clips.some((c) => c.id === clipId));
   if (!track) return Math.max(0, newStart);
   const others = track.clips.filter((c) => c.id !== clipId);
   let minStart = 0;
@@ -57,9 +61,7 @@ function clampEdgeToNeighbor(
   edge: 'start' | 'end',
   newFrame: number,
 ): number {
-  const track = state.timeline.tracks.find((t) =>
-    t.clips.some((c) => c.id === clipId),
-  );
+  const track = state.timeline.tracks.find((t) => t.clips.some((c) => c.id === clipId));
   if (!track) return Math.max(0, newFrame);
   const clip = track.clips.find((c) => c.id === clipId);
   if (!clip) return Math.max(0, newFrame);
@@ -112,8 +114,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
     existingTransition?: Transition | null;
   } | null>(null);
 
-  const isAdjacentToNext = nextClip && 
-    Math.abs(clip.timelineEnd - nextClip.timelineStart) < 1;
+  const isAdjacentToNext = nextClip && Math.abs(clip.timelineEnd - nextClip.timelineStart) < 1;
 
   const existingTransition = clip.transition;
 
@@ -185,11 +186,11 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
       e.stopPropagation();
       e.preventDefault();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
-      
+
       const clipADuration = clip.timelineEnd - clip.timelineStart;
       const clipBDuration = nextClip ? nextClip.timelineEnd - nextClip.timelineStart : 0;
       const maxTransitionDuration = Math.floor(Math.min(clipADuration, clipBDuration) * 0.5);
-      
+
       dragRef.current = {
         mode: 'transition',
         startX: e.clientX,
@@ -222,7 +223,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         setSnapGuideX(Math.max(0, clampedStart) * ppf);
       } else if (drag.mode === 'trim-left') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
         const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'start', snapped);
@@ -231,7 +232,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         setSnapGuideX(Math.max(0, drag.origStart + clamped) * ppf);
       } else if (drag.mode === 'trim-right') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
         const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'end', snapped);
@@ -242,10 +243,13 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         const clipADuration = clip.timelineEnd - clip.timelineStart;
         const clipBDuration = nextClip.timelineEnd - nextClip.timelineStart;
         const maxTransitionDuration = Math.floor(Math.min(clipADuration, clipBDuration) * 0.5);
-        
+
         const baseDuration = drag.existingTransition?.durationFrames ?? 0;
         const deltaDuration = Math.round(-dFrames);
-        const newDuration = Math.max(0, Math.min(maxTransitionDuration, baseDuration + deltaDuration));
+        const newDuration = Math.max(
+          0,
+          Math.min(maxTransitionDuration, baseDuration + deltaDuration),
+        );
         setTransitionDraftDuration(newDuration);
       }
     },
@@ -278,7 +282,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         } as any);
       } else if (drag.mode === 'trim-left') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origStart + dFrames;
         const snapped = snapToFrame(raw);
         const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'start', snapped);
@@ -292,7 +296,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         } as any);
       } else if (drag.mode === 'trim-right') {
         const minFrames = Math.ceil(MIN_DURATION_PX / ppf);
-        const maxDelta = (drag.origEnd - drag.origStart) - minFrames;
+        const maxDelta = drag.origEnd - drag.origStart - minFrames;
         const raw = drag.origEnd + dFrames;
         const snapped = snapToFrame(raw);
         const neighborClamped = clampEdgeToNeighbor(engine.getState(), clip.id, 'end', snapped);
@@ -311,11 +315,13 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
               id: crypto.randomUUID(),
               label: 'Set transition duration',
               timestamp: Date.now(),
-              operations: [{
-                type: 'SET_TRANSITION_DURATION',
-                clipId: clip.id,
-                durationFrames: transitionDraftDuration,
-              }],
+              operations: [
+                {
+                  type: 'SET_TRANSITION_DURATION',
+                  clipId: clip.id,
+                  durationFrames: transitionDraftDuration,
+                },
+              ],
             } as any);
           } else {
             const transition = {
@@ -330,11 +336,13 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
               id: crypto.randomUUID(),
               label: 'Add transition',
               timestamp: Date.now(),
-              operations: [{
-                type: 'ADD_TRANSITION',
-                clipId: clip.id,
-                transition,
-              }],
+              operations: [
+                {
+                  type: 'ADD_TRANSITION',
+                  clipId: clip.id,
+                  transition,
+                },
+              ],
             } as any);
           }
         } else if (existingTransition) {
@@ -342,10 +350,12 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
             id: crypto.randomUUID(),
             label: 'Delete transition',
             timestamp: Date.now(),
-            operations: [{
-              type: 'DELETE_TRANSITION',
-              clipId: clip.id,
-            }],
+            operations: [
+              {
+                type: 'DELETE_TRANSITION',
+                clipId: clip.id,
+              },
+            ],
           } as any);
         }
       }
@@ -385,21 +395,21 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         // Do NOT reconstruct clips manually here — that's RazorTool's job.
         const modifiers = {
           shift: e.shiftKey,
-          alt:   e.altKey,
-          ctrl:  e.ctrlKey,
-          meta:  e.metaKey,
+          alt: e.altKey,
+          ctrl: e.ctrlKey,
+          meta: e.metaKey,
         };
         const pointerEvent = {
-          frame:     atFrame,
-          trackId:   clip.trackId,
-          clipId:    clip.id,
+          frame: atFrame,
+          trackId: clip.trackId,
+          clipId: clip.id,
           captionId: null,
-          x:         e.clientX,
-          y:         e.clientY,
-          buttons:   1,
-          shiftKey:  e.shiftKey,
-          altKey:    e.altKey,
-          metaKey:   e.metaKey,
+          x: e.clientX,
+          y: e.clientY,
+          buttons: 1,
+          shiftKey: e.shiftKey,
+          altKey: e.altKey,
+          metaKey: e.metaKey,
         };
         engine.handlePointerDown(pointerEvent, modifiers);
         engine.handlePointerUp({ ...pointerEvent, buttons: 0 }, modifiers);
@@ -436,11 +446,14 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
     setRazorHoverFrame(null);
   }, []);
 
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setRenameValue(clip.name ?? '');
-    setIsRenaming(true);
-  }, [clip.name]);
+  const handleDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setRenameValue(clip.name ?? '');
+      setIsRenaming(true);
+    },
+    [clip.name],
+  );
 
   useEffect(() => {
     if (isRenaming && renameInputRef.current) {
@@ -487,15 +500,13 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
   const left = displayStart * ppf;
   const width = Math.max(MIN_DURATION_PX, (displayEnd - displayStart) * ppf);
 
-  const razorLineX = razorHoverFrame !== null
-    ? (razorHoverFrame - clip.timelineStart) * ppf
-    : null;
+  const razorLineX = razorHoverFrame !== null ? (razorHoverFrame - clip.timelineStart) * ppf : null;
 
   const transitionWidth = isTransitionDragging
     ? transitionDraftDuration * ppf
     : existingTransition
-    ? existingTransition.durationFrames * ppf
-    : 0;
+      ? existingTransition.durationFrames * ppf
+      : 0;
 
   return (
     <>
@@ -513,7 +524,9 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         tabIndex={isSelected ? 0 : -1}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
-        onPointerMove={isDragging ? handlePointerMove : isRazorMode ? handleRazorPointerMove : undefined}
+        onPointerMove={
+          isDragging ? handlePointerMove : isRazorMode ? handleRazorPointerMove : undefined
+        }
         onPointerUp={isDragging ? handlePointerUp : undefined}
         onPointerLeave={isRazorMode ? handleRazorPointerLeave : undefined}
       >

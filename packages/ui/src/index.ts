@@ -120,19 +120,11 @@ export {
   TimelineCtx,
 } from './context/timeline-context';
 
-export type {
-  TimelineContextValue,
-  TimelineProviderProps,
-} from './context/timeline-context';
+export type { TimelineContextValue, TimelineProviderProps } from './context/timeline-context';
 
-export {
-  MediaAssetsProvider,
-  useMediaAssets,
-} from './context/media-assets-context';
+export { MediaAssetsProvider, useMediaAssets } from './context/media-assets-context';
 
-export type {
-  MediaAssetsContextValue,
-} from './context/media-assets-context';
+export type { MediaAssetsContextValue } from './context/media-assets-context';
 
 // ── Icons (for custom toolbars) ────────────────────────────────────────────
 export {
@@ -163,12 +155,7 @@ export {
 } from './components/icons';
 
 // ── Shared utilities ───────────────────────────────────────────────────────
-export {
-  frameToPx,
-  pxToFrame,
-  frameToTimecode,
-  rulerTickInterval,
-} from './shared/time';
+export { frameToPx, pxToFrame, frameToTimecode, rulerTickInterval } from './shared/time';
 
 export { useTimelineRefs } from './shared/use-refs';
 export { clamp } from './shared/geometry';

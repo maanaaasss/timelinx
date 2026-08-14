@@ -19,11 +19,7 @@ import { SnapIndicatorExample } from '@/components/examples/snap-indicator-examp
 ```tsx
 import { SnapIndicator } from '@timelinx/ui';
 
-<SnapIndicator
-  frames={[100, 300, 600, 900]}
-  ppf={4}
-  totalHeight={200}
-/>
+<SnapIndicator frames={[100, 300, 600, 900]} ppf={4} totalHeight={200} />;
 ```
 
 ## Props
@@ -36,4 +32,4 @@ import { SnapIndicator } from '@timelinx/ui';
 
 ## Standalone Component
 
-`SnapIndicator` is a pure presentational component. It renders a fragment of absolutely-positioned vertical lines  - no providers or context required. Wrap it in a `position: relative` container to position the snap lines correctly.
+`SnapIndicator` is a pure presentational component. It renders a fragment of absolutely-positioned vertical lines - no providers or context required. Wrap it in a `position: relative` container to position the snap lines correctly.

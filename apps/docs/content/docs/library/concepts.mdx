@@ -18,7 +18,7 @@ type TimelineState = {
 };
 ```
 
-**The root document.** Everything the engine knows about a project lives in one `TimelineState`. It is a plain object  - no class instances, no circular references. Serialize it with `JSON.stringify()` or pass it to `serializeProject()` for versioned storage.
+**The root document.** Everything the engine knows about a project lives in one `TimelineState`. It is a plain object - no class instances, no circular references. Serialize it with `JSON.stringify()` or pass it to `serializeProject()` for versioned storage.
 
 Every accepted transaction returns a new `TimelineState`. The old one remains untouched (structural sharing via Immer-style updates keeps this efficient).
 
@@ -39,7 +39,7 @@ type Timeline = {
 };
 ```
 
-**The editorial document.** `Timeline` holds the track list, marker list, frame rate, and total duration. `version` increments by 1 on every accepted transaction  - hooks use it to detect stale data.
+**The editorial document.** `Timeline` holds the track list, marker list, frame rate, and total duration. `version` increments by 1 on every accepted transaction - hooks use it to detect stale data.
 
 A project has exactly one `Timeline`.
 
@@ -50,7 +50,7 @@ A project has exactly one `Timeline`.
 ```ts
 type Track = {
   readonly id: TrackId;
-  readonly type: TrackType;  // 'video' | 'audio' | 'subtitle' | 'title'
+  readonly type: TrackType; // 'video' | 'audio' | 'subtitle' | 'title'
   readonly clips: readonly Clip[];
   readonly captions: readonly Caption[];
   readonly locked: boolean;
@@ -61,7 +61,7 @@ type Track = {
 };
 ```
 
-**A horizontal container for clips.** Tracks enforce a type constraint: a `'video'` track only accepts clips backed by video assets. `clips` is always sorted ascending by `timelineStart`  - this is enforced by the invariant checker.
+**A horizontal container for clips.** Tracks enforce a type constraint: a `'video'` track only accepts clips backed by video assets. `clips` is always sorted ascending by `timelineStart` - this is enforced by the invariant checker.
 
 ---
 
@@ -85,8 +85,8 @@ type Clip = {
 
 **A time-bound viewport into an asset.** The clip has two coordinate systems:
 
-- **Timeline bounds**  - where the clip appears in the edit (`timelineStart` to `timelineEnd`)
-- **Media bounds**  - which frames of the source asset play (`mediaIn` to `mediaOut`)
+- **Timeline bounds** - where the clip appears in the edit (`timelineStart` to `timelineEnd`)
+- **Media bounds** - which frames of the source asset play (`mediaIn` to `mediaOut`)
 
 These are independent. Moving `mediaIn` without changing `timelineStart` is a "slip" edit. The core invariant at `speed=1.0`:
 
@@ -112,7 +112,7 @@ type FileAsset = {
 };
 ```
 
-**A media source registered in `assetRegistry`.** Clips reference assets by `assetId`  - they do not embed file paths or durations. One asset can be used by many clips. This design allows:
+**A media source registered in `assetRegistry`.** Clips reference assets by `assetId` - they do not embed file paths or durations. One asset can be used by many clips. This design allows:
 
 - Reconnecting offline media by updating `filePath` on the asset without touching any clips
 - Knowing the total duration of a source once, not per-clip
@@ -131,8 +131,8 @@ type TimelineFrame = number & { readonly __brand: 'TimelineFrame' };
 ```ts
 import { toFrame, secondsToFrames, frameRate } from '@timelinx/core';
 
-const frame = toFrame(450);                           // brand a known integer
-const dur   = secondsToFrames(15, frameRate(30));     // 450 frames
+const frame = toFrame(450); // brand a known integer
+const dur = secondsToFrames(15, frameRate(30)); // 450 frames
 ```
 
 ---
@@ -148,7 +148,7 @@ type Transaction = {
 };
 ```
 
-**A labeled, atomic batch of operations.** This is the only way to mutate state. A transaction is either accepted in full or rejected in full  - there is no partial application. One transaction becomes one undo history entry.
+**A labeled, atomic batch of operations.** This is the only way to mutate state. A transaction is either accepted in full or rejected in full - there is no partial application. One transaction becomes one undo history entry.
 
 The `label` is human-readable and appears in the undo menu (`'Move clip'`, `'Split interview'`).
 
@@ -160,8 +160,8 @@ The `label` is human-readable and appears in the undo menu (`'Move clip'`, `'Spl
 type OperationPrimitive =
   | { type: 'MOVE_CLIP'; clipId: ClipId; newTimelineStart: TimelineFrame }
   | { type: 'DELETE_CLIP'; clipId: ClipId }
-  | { type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId }
-  // ... 39 more variants
+  | { type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId };
+// ... 39 more variants
 ```
 
 **A single mutation intent.** Operations are lower-level than user actions. A "razor cut" UI action might produce one `SLICE_CLIP` primitive, while a "ripple delete" produces one `DELETE_CLIP` and several `MOVE_CLIP` primitives. All 42 variants are documented in [Operations](/docs/core/operations).
@@ -172,7 +172,7 @@ type OperationPrimitive =
 
 ```ts
 type DispatchResult =
-  | { accepted: true;  nextState: TimelineState }
+  | { accepted: true; nextState: TimelineState }
   | { accepted: false; reason: RejectionReason; message: string };
 ```
 
@@ -222,7 +222,7 @@ type EngineSnapshot = {
 };
 ```
 
-**The frozen object that React hooks read from.** `TimelineEngine` rebuilds a new snapshot after every state change and notifies all `useSyncExternalStore` subscribers. Hooks compute their return value from this snapshot, not from the state directly  - this is what makes them selective about re-renders.
+**The frozen object that React hooks read from.** `TimelineEngine` rebuilds a new snapshot after every state change and notifies all `useSyncExternalStore` subscribers. Hooks compute their return value from this snapshot, not from the state directly - this is what makes them selective about re-renders.
 
 ---
 
@@ -235,7 +235,7 @@ type ProvisionalState = {
 };
 ```
 
-**A drag-in-progress preview.** During a clip drag, `onPointerMove` returns provisional state with ghost clip positions. This state is stored in the snapshot and rendered by the UI as translucent overlay clips. It is never committed to `TimelineState`  - it disappears on pointer up.
+**A drag-in-progress preview.** During a clip drag, `onPointerMove` returns provisional state with ghost clip positions. This state is stored in the snapshot and rendered by the UI as translucent overlay clips. It is never committed to `TimelineState` - it disappears on pointer up.
 
 ---
 
@@ -259,7 +259,7 @@ type PipelineConfig = {
 ```ts
 type SnapPoint = {
   readonly frame: TimelineFrame;
-  readonly type: SnapPointType;  // 'ClipStart' | 'ClipEnd' | 'Playhead' | 'Marker' | ...
+  readonly type: SnapPointType; // 'ClipStart' | 'ClipEnd' | 'Playhead' | 'Marker' | ...
   readonly priority: number;
   readonly trackId: TrackId | null;
   readonly sourceId: string;

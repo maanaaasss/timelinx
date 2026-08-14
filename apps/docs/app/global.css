@@ -29,6 +29,6 @@
 }
 
 /* Hide Fumadocs layout tabs (package selector replaces them) */
-[data-grid-area="main"] {
+[data-grid-area='main'] {
   display: none;
 }

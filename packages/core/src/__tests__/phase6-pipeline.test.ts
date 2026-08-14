@@ -182,9 +182,7 @@ describe('Phase 6 — Pipeline', () => {
     bitmap: null,
   });
 
-  const mockCompositor = async (req: {
-    timelineFrame: unknown;
-  }): Promise<CompositeResult> => ({
+  const mockCompositor = async (req: { timelineFrame: unknown }): Promise<CompositeResult> => ({
     timelineFrame: req.timelineFrame as CompositeResult['timelineFrame'],
     bitmap: null,
   });

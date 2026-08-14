@@ -35,7 +35,10 @@ export function TrackList({
     const map = new Map<string, ClipType[]>();
     for (const clip of clips) {
       let list = map.get(clip.trackId);
-      if (!list) { list = []; map.set(clip.trackId, list); }
+      if (!list) {
+        list = [];
+        map.set(clip.trackId, list);
+      }
       list.push(clip);
     }
     return map;

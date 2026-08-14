@@ -40,7 +40,7 @@ export type Track = {
   readonly captions: readonly Caption[];
   // — Phase 4 —
   readonly blendMode?: string;
-  readonly opacity?: number;   // 0–1, default 1
+  readonly opacity?: number; // 0–1, default 1
   readonly groupId?: TrackGroupId;
 };
 

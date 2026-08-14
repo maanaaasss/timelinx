@@ -17,8 +17,8 @@ function TransformPanel() {
     <NumberScrubber
       label="X"
       value={x}
-      onChange={(v) => setX(v)}      // local state during scrub
-      onCommit={(v) => dispatch(v)}  // engine dispatch on release
+      onChange={(v) => setX(v)} // local state during scrub
+      onCommit={(v) => dispatch(v)} // engine dispatch on release
       step={1}
     />
   );
@@ -27,44 +27,44 @@ function TransformPanel() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | `string` |  - | Short label displayed in the scrubber badge (e.g., "X", "Y", "SX") |
-| `value` | `number` |  - | Current value |
-| `onChange` | `(value: number) => void` |  - | Called during scrub/typing for local state updates |
-| `onCommit` | `(value: number) => void` |  - | Called on pointerup/blur/Enter to commit the final value |
-| `min` | `number` |  - | Minimum allowed value |
-| `max` | `number` |  - | Maximum allowed value |
-| `step` | `number` | `1` | Arrow key increment |
-| `shiftStep` | `number` | `10` | Arrow key increment with Shift held |
-| `disabled` | `boolean` | `false` | Disable all interactions |
+| Prop        | Type                      | Default | Description                                                        |
+| ----------- | ------------------------- | ------- | ------------------------------------------------------------------ |
+| `label`     | `string`                  | -       | Short label displayed in the scrubber badge (e.g., "X", "Y", "SX") |
+| `value`     | `number`                  | -       | Current value                                                      |
+| `onChange`  | `(value: number) => void` | -       | Called during scrub/typing for local state updates                 |
+| `onCommit`  | `(value: number) => void` | -       | Called on pointerup/blur/Enter to commit the final value           |
+| `min`       | `number`                  | -       | Minimum allowed value                                              |
+| `max`       | `number`                  | -       | Maximum allowed value                                              |
+| `step`      | `number`                  | `1`     | Arrow key increment                                                |
+| `shiftStep` | `number`                  | `10`    | Arrow key increment with Shift held                                |
+| `disabled`  | `boolean`                 | `false` | Disable all interactions                                           |
 
 ## Interaction Model
 
 ### Mouse / Trackpad
 
-| Action | Behavior |
-|--------|----------|
+| Action                    | Behavior                                             |
+| ------------------------- | ---------------------------------------------------- |
 | **Drag label left/right** | Scrubs value (1px = 1 unit, accelerates after 100px) |
-| **Click label** | Focuses the input for typing |
-| **Click input** | Places cursor for text editing |
+| **Click label**           | Focuses the input for typing                         |
+| **Click input**           | Places cursor for text editing                       |
 
 ### Keyboard
 
-| Key | Behavior |
-|-----|----------|
-| **Arrow Up/Down** | Increment/decrement by `step` |
-| **Shift + Arrow** | Increment/decrement by `shiftStep` |
-| **Enter** | Commits current value, keeps focus |
-| **Escape** | Reverts to original value, blurs input |
-| **Tab** | Natural focus flow to next element |
+| Key               | Behavior                               |
+| ----------------- | -------------------------------------- |
+| **Arrow Up/Down** | Increment/decrement by `step`          |
+| **Shift + Arrow** | Increment/decrement by `shiftStep`     |
+| **Enter**         | Commits current value, keeps focus     |
+| **Escape**        | Reverts to original value, blurs input |
+| **Tab**           | Natural focus flow to next element     |
 
 ## History Safety
 
 The `onChange` / `onCommit` split prevents undo spam:
 
-- `onChange` updates local React state only  - no engine dispatch
-- `onCommit` triggers `engine.dispatch`  - creates a single history entry
+- `onChange` updates local React state only - no engine dispatch
+- `onCommit` triggers `engine.dispatch` - creates a single history entry
 - A full scrub gesture (pointerdown → drag → pointerup) creates exactly one history entry
 
 ## Accessibility
@@ -75,13 +75,13 @@ The `onChange` / `onCommit` split prevents undo spam:
 
 ## CSS Classes
 
-| Class | Description |
-|-------|-------------|
-| `.number-scrubber` | Root container |
-| `.number-scrubber-label` | Draggable label badge |
-| `.number-scrubber-input` | Text input for direct editing |
+| Class                           | Description                    |
+| ------------------------------- | ------------------------------ |
+| `.number-scrubber`              | Root container                 |
+| `.number-scrubber-label`        | Draggable label badge          |
+| `.number-scrubber-input`        | Text input for direct editing  |
 | `.number-scrubber.is-scrubbing` | Active during drag interaction |
-| `.number-scrubber.is-disabled` | Disabled state |
+| `.number-scrubber.is-disabled`  | Disabled state                 |
 
 ## Example: Inspector Integration
 
@@ -101,14 +101,16 @@ function ClipTransform({ clipId }) {
       id: `set-${property}`,
       label: `Set ${property}`,
       timestamp: Date.now(),
-      operations: [{
-        type: 'SET_CLIP_TRANSFORM',
-        clipId,
-        transform: {
-          ...transform,
-          [property]: { ...transform[property], value },
+      operations: [
+        {
+          type: 'SET_CLIP_TRANSFORM',
+          clipId,
+          transform: {
+            ...transform,
+            [property]: { ...transform[property], value },
+          },
         },
-      }],
+      ],
     });
   };
 

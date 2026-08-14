@@ -127,10 +127,7 @@ export class WebAudioWaveformAdapter {
   /**
    * Extract waveform data from a File or Blob.
    */
-  async extractFromFile(
-    assetId: AssetId,
-    file: File | Blob,
-  ): Promise<WaveformExtractionResult> {
+  async extractFromFile(assetId: AssetId, file: File | Blob): Promise<WaveformExtractionResult> {
     try {
       const audioContext = await this.getAudioContext();
       const arrayBuffer = await file.arrayBuffer();
@@ -148,10 +145,7 @@ export class WebAudioWaveformAdapter {
   /**
    * Extract waveform data from a URL.
    */
-  async extractFromUrl(
-    assetId: AssetId,
-    url: string,
-  ): Promise<WaveformExtractionResult> {
+  async extractFromUrl(assetId: AssetId, url: string): Promise<WaveformExtractionResult> {
     try {
       const response = await fetch(url);
       if (!response.ok) {
@@ -294,8 +288,6 @@ export class WebAudioWaveformAdapter {
 /**
  * Create a WebAudio waveform adapter with default configuration.
  */
-export function createWebAudioWaveform(
-  config?: WaveformConfig,
-): WebAudioWaveformAdapter {
+export function createWebAudioWaveform(config?: WaveformConfig): WebAudioWaveformAdapter {
   return new WebAudioWaveformAdapter(config);
 }

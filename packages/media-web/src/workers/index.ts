@@ -10,10 +10,7 @@ export {
   createWaveformWorkerClient,
 } from './waveform-worker';
 
-export type {
-  WaveformWorkerClientConfig,
-  WaveformJob,
-} from './waveform-worker';
+export type { WaveformWorkerClientConfig, WaveformJob } from './waveform-worker';
 
 export {
   createThumbnailWorker,
@@ -21,6 +18,4 @@ export {
   createThumbnailWorkerClient,
 } from './thumbnail-worker';
 
-export type {
-  ThumbnailWorkerClientConfig,
-} from './thumbnail-worker';
+export type { ThumbnailWorkerClientConfig } from './thumbnail-worker';

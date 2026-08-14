@@ -26,10 +26,7 @@ function HelpButton() {
   return (
     <>
       <button onClick={() => setShow(true)}>?</button>
-      <KeyboardShortcutsOverlay
-        isVisible={show}
-        onClose={() => setShow(false)}
-      />
+      <KeyboardShortcutsOverlay isVisible={show} onClose={() => setShow(false)} />
     </>
   );
 }
@@ -45,4 +42,4 @@ function HelpButton() {
 
 ## Standalone
 
-`KeyboardShortcutsOverlay` is a standalone component  - no context providers needed.
+`KeyboardShortcutsOverlay` is a standalone component - no context providers needed.

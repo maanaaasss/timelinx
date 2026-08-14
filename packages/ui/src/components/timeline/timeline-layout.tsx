@@ -56,22 +56,31 @@ export function TimelineLayout({
   const tracks = timeline.tracks;
   const allClips = tracks.flatMap((t: any) => t.clips);
 
-  const handleToolChange = useCallback((tool: ToolId) => {
-    setActiveTool(tool);
-    engine.activateTool(TOOL_MAP[tool]);
-  }, [engine]);
+  const handleToolChange = useCallback(
+    (tool: ToolId) => {
+      setActiveTool(tool);
+      engine.activateTool(TOOL_MAP[tool]);
+    },
+    [engine],
+  );
 
   const handleTrackScroll = useCallback((scrollLeft: number) => {
     setRulerScrollLeft(scrollLeft);
   }, []);
 
-  const handleSeek = useCallback((frame: number) => {
-    engine.seekTo(frame as any);
-  }, [engine]);
+  const handleSeek = useCallback(
+    (frame: number) => {
+      engine.seekTo(frame as any);
+    },
+    [engine],
+  );
 
-  const handleZoomChange = useCallback((v: number) => {
-    setPpf(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, v)));
-  }, [setPpf]);
+  const handleZoomChange = useCallback(
+    (v: number) => {
+      setPpf(Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, v)));
+    },
+    [setPpf],
+  );
 
   const handleZoomIn = useCallback(() => {
     setPpf(Math.min(ZOOM_MAX, ppf * 1.5));
@@ -81,39 +90,45 @@ export function TimelineLayout({
     setPpf(Math.max(ZOOM_MIN, ppf / 1.5));
   }, [ppf, setPpf]);
 
-  const handleAddTrack = useCallback((type: 'video' | 'audio') => {
-    const trackCount = tracks.length;
-    const newTrack = createTrack({
-      id: crypto.randomUUID(),
-      name: type === 'video' ? `V${trackCount + 1}` : `A${trackCount + 1}`,
-      type,
-    });
-    engine.dispatch({
-      id: crypto.randomUUID(),
-      label: `Add ${type} track`,
-      timestamp: Date.now(),
-      operations: [{ type: 'ADD_TRACK', track: newTrack }],
-    });
-  }, [engine, tracks.length]);
+  const handleAddTrack = useCallback(
+    (type: 'video' | 'audio') => {
+      const trackCount = tracks.length;
+      const newTrack = createTrack({
+        id: crypto.randomUUID(),
+        name: type === 'video' ? `V${trackCount + 1}` : `A${trackCount + 1}`,
+        type,
+      });
+      engine.dispatch({
+        id: crypto.randomUUID(),
+        label: `Add ${type} track`,
+        timestamp: Date.now(),
+        operations: [{ type: 'ADD_TRACK', track: newTrack }],
+      });
+    },
+    [engine, tracks.length],
+  );
 
   // Persist track height to engine state. The local override is set during
   // the live drag gesture; after engine commit we clear it so undo/redo
   // (which modifies engine state) isn't masked by a stale local value.
-  const handleHeightChange = useCallback((trackId: string, height: number) => {
-    setTrackHeights((prev) => ({ ...prev, [trackId]: height }));
-    engine.dispatch({
-      id: crypto.randomUUID(),
-      label: 'Resize track',
-      timestamp: Date.now(),
-      operations: [{ type: 'SET_TRACK_HEIGHT', trackId: toTrackId(trackId), height }],
-    });
-    // Clear local override: engine is now the source of truth for this track.
-    setTrackHeights((prev) => {
-      const next = { ...prev };
-      delete next[trackId];
-      return next;
-    });
-  }, [engine]);
+  const handleHeightChange = useCallback(
+    (trackId: string, height: number) => {
+      setTrackHeights((prev) => ({ ...prev, [trackId]: height }));
+      engine.dispatch({
+        id: crypto.randomUUID(),
+        label: 'Resize track',
+        timestamp: Date.now(),
+        operations: [{ type: 'SET_TRACK_HEIGHT', trackId: toTrackId(trackId), height }],
+      });
+      // Clear local override: engine is now the source of truth for this track.
+      setTrackHeights((prev) => {
+        const next = { ...prev };
+        delete next[trackId];
+        return next;
+      });
+    },
+    [engine],
+  );
 
   useTimelineKeyboard({
     containerRef,
@@ -124,11 +139,7 @@ export function TimelineLayout({
   });
 
   return (
-    <div
-      className={`tl-layout${className ? ` ${className}` : ''}`}
-      ref={containerRef}
-      tabIndex={0}
-    >
+    <div className={`tl-layout${className ? ` ${className}` : ''}`} ref={containerRef} tabIndex={0}>
       {showToolbar && (
         <TimelineToolbarV2
           activeTool={activeTool}

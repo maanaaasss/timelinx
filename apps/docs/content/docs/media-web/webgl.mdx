@@ -19,7 +19,7 @@ import { createWebGLCompositor, WebGLCompositorAdapter } from '@timelinx/media-w
 ## `createWebGLCompositor(config)`
 
 ```ts
-function createWebGLCompositor(config: WebGLCompositorConfig): WebGLCompositorAdapter
+function createWebGLCompositor(config: WebGLCompositorConfig): WebGLCompositorAdapter;
 ```
 
 ### `WebGLCompositorConfig`
@@ -33,12 +33,12 @@ type WebGLCompositorConfig = {
 };
 ```
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `canvas` | `HTMLCanvasElement \| OffscreenCanvas` | required | The output canvas. |
-| `width` | `number` | canvas.width | Compositor internal resolution. |
-| `height` | `number` | canvas.height | |
-| `antialias` | `boolean` | `false` | WebGL antialias hint. |
+| Field       | Type                                   | Default       | Notes                           |
+| ----------- | -------------------------------------- | ------------- | ------------------------------- |
+| `canvas`    | `HTMLCanvasElement \| OffscreenCanvas` | required      | The output canvas.              |
+| `width`     | `number`                               | canvas.width  | Compositor internal resolution. |
+| `height`    | `number`                               | canvas.height |                                 |
+| `antialias` | `boolean`                              | `false`       | WebGL antialias hint.           |
 
 ---
 
@@ -63,7 +63,7 @@ type CompositeLayer = {
   readonly clipId: ClipId;
   readonly trackId: TrackId;
   readonly trackIndex: number;
-  readonly frame: VideoFrameResult;   // decoded bitmap
+  readonly frame: VideoFrameResult; // decoded bitmap
   readonly transform: ClipTransform;
   readonly opacity: number;
   readonly blendMode: string;
@@ -79,13 +79,13 @@ The compositor renders layers bottom-up (highest `trackIndex` first), applying t
 
 Each layer's `ClipTransform` maps to WebGL uniform values:
 
-| Transform field | WebGL operation |
-|----------------|----------------|
-| `x`, `y` | Translation in pixels |
-| `scaleX`, `scaleY` | Scale factors |
-| `rotation` | Rotation in degrees (converted to radians) |
-| `anchorX`, `anchorY` | Pivot point (0–1 normalized) |
-| `cropLeft/Right/Top/Bottom` | Texture coordinate clipping |
+| Transform field             | WebGL operation                            |
+| --------------------------- | ------------------------------------------ |
+| `x`, `y`                    | Translation in pixels                      |
+| `scaleX`, `scaleY`          | Scale factors                              |
+| `rotation`                  | Rotation in degrees (converted to radians) |
+| `anchorX`, `anchorY`        | Pivot point (0–1 normalized)               |
+| `cropLeft/Right/Top/Bottom` | Texture coordinate clipping                |
 
 ---
 
@@ -93,20 +93,20 @@ Each layer's `ClipTransform` maps to WebGL uniform values:
 
 The compositor supports CSS-compatible blend modes via WebGL fragment shaders:
 
-| Mode | WebGL shader |
-|------|-------------|
-| `'normal'` | Standard alpha compositing |
-| `'multiply'` | RGB channel multiplication |
-| `'screen'` | Inverse multiplication |
-| `'overlay'` | Combination of multiply and screen |
-| `'darken'` | Min of source and destination |
-| `'lighten'` | Max |
-| `'color-dodge'` | |
-| `'color-burn'` | |
-| `'hard-light'` | |
-| `'soft-light'` | |
-| `'difference'` | |
-| `'exclusion'` | |
+| Mode            | WebGL shader                       |
+| --------------- | ---------------------------------- |
+| `'normal'`      | Standard alpha compositing         |
+| `'multiply'`    | RGB channel multiplication         |
+| `'screen'`      | Inverse multiplication             |
+| `'overlay'`     | Combination of multiply and screen |
+| `'darken'`      | Min of source and destination      |
+| `'lighten'`     | Max                                |
+| `'color-dodge'` |                                    |
+| `'color-burn'`  |                                    |
+| `'hard-light'`  |                                    |
+| `'soft-light'`  |                                    |
+| `'difference'`  |                                    |
+| `'exclusion'`   |                                    |
 
 ---
 
@@ -130,7 +130,8 @@ const engine = new TimelineEngine({
 ```
 
 <Callout title="Match compositor and engine dimensions">
-  Pass the same `width` and `height` to both the compositor config and `TimelineEngineOptions.dimensions`. A mismatch causes clipping or stretching.
+  Pass the same `width` and `height` to both the compositor config and
+  `TimelineEngineOptions.dimensions`. A mismatch causes clipping or stretching.
 </Callout>
 
 ---

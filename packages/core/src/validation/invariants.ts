@@ -25,9 +25,9 @@ export function checkInvariants(state: TimelineState): InvariantViolation[] {
   // —— Null/malformed state guard ————————————————————————————————————————
   if (!state || !state.timeline || !Array.isArray(state.timeline.tracks)) {
     violations.push({
-      type:     'SCHEMA_VERSION_MISMATCH',
+      type: 'SCHEMA_VERSION_MISMATCH',
       entityId: 'timeline',
-      message:  'State or timeline is null/undefined/malformed.',
+      message: 'State or timeline is null/undefined/malformed.',
     });
     return violations;
   }
@@ -35,9 +35,9 @@ export function checkInvariants(state: TimelineState): InvariantViolation[] {
   // —— Schema version check (runs first — a version mismatch invalidates everything) ——
   if (state.schemaVersion !== CURRENT_SCHEMA_VERSION) {
     violations.push({
-      type:     'SCHEMA_VERSION_MISMATCH',
+      type: 'SCHEMA_VERSION_MISMATCH',
       entityId: 'timeline',
-      message:  `Expected schema v${CURRENT_SCHEMA_VERSION}, got v${state.schemaVersion}`,
+      message: `Expected schema v${CURRENT_SCHEMA_VERSION}, got v${state.schemaVersion}`,
     });
     return violations;
   }
@@ -117,11 +117,7 @@ export function checkInvariants(state: TimelineState): InvariantViolation[] {
 // Per-track checks
 // ---------------------------------------------------------------------------
 
-function checkTrack(
-  state: TimelineState,
-  track: Track,
-  violations: InvariantViolation[],
-): void {
+function checkTrack(state: TimelineState, track: Track, violations: InvariantViolation[]): void {
   const clips = track.clips;
 
   // —— Check: track opacity must be in [0, 1] ————————————————————————
@@ -192,8 +188,7 @@ function checkClip(
     violations.push({
       type: 'TRACK_TYPE_MISMATCH',
       entityId: clip.id,
-      message:
-        `Clip '${clip.id}' has trackId '${clip.trackId}' but is on track '${track.id}'.`,
+      message: `Clip '${clip.id}' has trackId '${clip.trackId}' but is on track '${track.id}'.`,
     });
   }
 
@@ -244,7 +239,11 @@ function checkClip(
   }
 
   // —— Check: zero-duration clips are not allowed ————————————————————
-  if (Number.isFinite(clip.timelineStart) && Number.isFinite(clip.timelineEnd) && clip.timelineStart === clip.timelineEnd) {
+  if (
+    Number.isFinite(clip.timelineStart) &&
+    Number.isFinite(clip.timelineEnd) &&
+    clip.timelineStart === clip.timelineEnd
+  ) {
     violations.push({
       type: 'MEDIA_BOUNDS_INVALID',
       entityId: clip.id,
@@ -253,7 +252,11 @@ function checkClip(
   }
 
   // —— Check: timelineStart < timelineEnd —————————————————————————————
-  if (Number.isFinite(clip.timelineStart) && Number.isFinite(clip.timelineEnd) && clip.timelineStart > clip.timelineEnd) {
+  if (
+    Number.isFinite(clip.timelineStart) &&
+    Number.isFinite(clip.timelineEnd) &&
+    clip.timelineStart > clip.timelineEnd
+  ) {
     violations.push({
       type: 'MEDIA_BOUNDS_INVALID',
       entityId: clip.id,
@@ -344,10 +347,7 @@ function checkClip(
   checkTransitions(clip, state, violations);
 }
 
-function checkEffects(
-  clip: Clip,
-  violations: InvariantViolation[],
-): void {
+function checkEffects(clip: Clip, violations: InvariantViolation[]): void {
   const effects = clip.effects ?? [];
   const validStages = ['preComposite', 'postComposite', 'output'] as const;
   for (const effect of effects) {
@@ -378,10 +378,7 @@ function checkEffects(
 // Phase 3: Marker bounds
 // ---------------------------------------------------------------------------
 
-function checkMarkerBounds(
-  state: TimelineState,
-  violations: InvariantViolation[],
-): void {
+function checkMarkerBounds(state: TimelineState, violations: InvariantViolation[]): void {
   const dur = state.timeline.duration;
   const markers = state.timeline.markers ?? [];
   for (const m of markers) {
@@ -437,10 +434,7 @@ function checkMarkerBounds(
 // Phase 3: In/Out points
 // ---------------------------------------------------------------------------
 
-function checkInOutPoints(
-  state: TimelineState,
-  violations: InvariantViolation[],
-): void {
+function checkInOutPoints(state: TimelineState, violations: InvariantViolation[]): void {
   const dur = state.timeline.duration;
   const inPt = state.timeline.inPoint;
   const outPt = state.timeline.outPoint;
@@ -458,7 +452,13 @@ function checkInOutPoints(
       message: `Out point (${outPt}) must be <= timeline duration (${dur}).`,
     });
   }
-  if (inPt !== null && outPt !== null && !Number.isNaN(inPt) && !Number.isNaN(outPt) && inPt >= outPt) {
+  if (
+    inPt !== null &&
+    outPt !== null &&
+    !Number.isNaN(inPt) &&
+    !Number.isNaN(outPt) &&
+    inPt >= outPt
+  ) {
     violations.push({
       type: 'IN_OUT_INVALID',
       entityId: 'timeline',
@@ -471,10 +471,7 @@ function checkInOutPoints(
 // Phase 3: Beat grid
 // ---------------------------------------------------------------------------
 
-function checkBeatGrid(
-  state: TimelineState,
-  violations: InvariantViolation[],
-): void {
+function checkBeatGrid(state: TimelineState, violations: InvariantViolation[]): void {
   const bg = state.timeline.beatGrid;
   if (bg === null) return;
   if (Number.isNaN(bg.bpm) || bg.bpm <= 0) {
@@ -554,7 +551,11 @@ function checkTransitions(
       message: `Clip '${clip.id}' transition durationFrames (${trans.durationFrames}) must be > 0.`,
     });
   }
-  if (!VALID_TRANSITION_ALIGNMENTS.includes(trans.alignment as typeof VALID_TRANSITION_ALIGNMENTS[number])) {
+  if (
+    !VALID_TRANSITION_ALIGNMENTS.includes(
+      trans.alignment as (typeof VALID_TRANSITION_ALIGNMENTS)[number],
+    )
+  ) {
     violations.push({
       type: 'INVALID_RANGE',
       entityId: clip.id,
@@ -631,5 +632,3 @@ function checkTrackGroups(state: TimelineState, violations: InvariantViolation[]
     }
   }
 }
-
-

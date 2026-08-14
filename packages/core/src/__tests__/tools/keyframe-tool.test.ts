@@ -50,7 +50,19 @@ function makeState(): TimelineState {
     timelineEnd: toFrame(100),
     mediaIn: toFrame(0),
     mediaOut: toFrame(100),
-    effects: [{ ...effect, keyframes: [{ id: toKeyframeId('kf-1'), frame: toFrame(KEYFRAME_1_FRAME), value: 0.5, easing: LINEAR_EASING }] }],
+    effects: [
+      {
+        ...effect,
+        keyframes: [
+          {
+            id: toKeyframeId('kf-1'),
+            frame: toFrame(KEYFRAME_1_FRAME),
+            value: 0.5,
+            easing: LINEAR_EASING,
+          },
+        ],
+      },
+    ],
   });
   const track = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [clip] });
   const timeline = createTimeline({
@@ -77,7 +89,9 @@ function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): To
   };
 }
 
-function makeEv(overrides: Partial<TimelinePointerEvent> & { x?: number } = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: Partial<TimelinePointerEvent> & { x?: number } = {},
+): TimelinePointerEvent {
   const x = overrides.x ?? 0;
   return {
     frame: toFrame(Math.round(x / PIXELS_PER_FRAME)),

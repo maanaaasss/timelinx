@@ -41,11 +41,7 @@ export function Playhead({ engine, ppf }: PlayheadProps) {
 
   return (
     <div className={cn('tl-v2-playhead', isDragging && 'is-dragging')} style={{ left }}>
-      <div
-        className="tl-v2-playhead-hit"
-        tabIndex={-1}
-        onPointerDown={handlePointerDown}
-      />
+      <div className="tl-v2-playhead-hit" tabIndex={-1} onPointerDown={handlePointerDown} />
     </div>
   );
 }

@@ -112,14 +112,16 @@ function makeCtx(state: TimelineState, overrides: Partial<ToolContext> = {}): To
   };
 }
 
-function makeEv(overrides: {
-  frame?: number;
-  trackId?: TrackId | null;
-  clipId?: ClipId | null;
-  captionId?: import('@timelinx/core').CaptionId | null;
-  x?: number;
-  y?: number;
-} = {}): TimelinePointerEvent {
+function makeEv(
+  overrides: {
+    frame?: number;
+    trackId?: TrackId | null;
+    clipId?: ClipId | null;
+    captionId?: import('@timelinx/core').CaptionId | null;
+    x?: number;
+    y?: number;
+  } = {},
+): TimelinePointerEvent {
   const frame = overrides.frame ?? 0;
   return {
     frame: toFrame(frame),
@@ -169,8 +171,8 @@ describe('SlideTool — onPointerMove shows provisional at new position', () => 
     const prov = tool.onPointerMove(makeEv({ clipId: CLIP2_ID, x: 2500, frame: 250 }), ctx);
     expect(prov).not.toBeNull();
     const ghost = prov!.clips[0]!;
-    expect((ghost.timelineStart as number)).toBe(250);
-    expect((ghost.timelineEnd as number)).toBe(450);
+    expect(ghost.timelineStart as number).toBe(250);
+    expect(ghost.timelineEnd as number).toBe(450);
   });
 });
 
@@ -183,8 +185,8 @@ describe('SlideTool — onPointerMove clamps to left neighbor boundary', () => {
     const prov = tool.onPointerMove(makeEv({ clipId: CLIP2_ID, x: 1000, frame: 100 }), ctx);
     expect(prov).not.toBeNull();
     const ghost = prov!.clips[0]!;
-    expect((ghost.timelineStart as number)).toBe(200);
-    expect((ghost.timelineEnd as number)).toBe(400);
+    expect(ghost.timelineStart as number).toBe(200);
+    expect(ghost.timelineEnd as number).toBe(400);
   });
 });
 
@@ -197,8 +199,8 @@ describe('SlideTool — onPointerMove clamps to right neighbor boundary', () => 
     const prov = tool.onPointerMove(makeEv({ clipId: CLIP2_ID, x: 4000, frame: 400 }), ctx);
     expect(prov).not.toBeNull();
     const ghost = prov!.clips[0]!;
-    expect((ghost.timelineStart as number)).toBe(300);
-    expect((ghost.timelineEnd as number)).toBe(500);
+    expect(ghost.timelineStart as number).toBe(300);
+    expect(ghost.timelineEnd as number).toBe(500);
   });
 });
 
@@ -210,11 +212,13 @@ describe('SlideTool — onPointerUp dispatches MOVE_CLIP for clip2', () => {
     tool.onPointerDown(makeEv({ clipId: CLIP2_ID, x: 3000, frame: 300 }), ctx);
     const tx = tool.onPointerUp(makeEv({ clipId: CLIP2_ID, x: 2500, frame: 250 }), ctx);
     expect(tx).not.toBeNull();
-    const moveOps = tx!.operations.filter((op) => op.type === 'MOVE_CLIP' && op.clipId === CLIP2_ID);
+    const moveOps = tx!.operations.filter(
+      (op) => op.type === 'MOVE_CLIP' && op.clipId === CLIP2_ID,
+    );
     expect(moveOps.length).toBeGreaterThanOrEqual(1);
     expect(moveOps[0]!.type).toBe('MOVE_CLIP');
     if (moveOps[0]!.type === 'MOVE_CLIP') {
-      expect((moveOps[0].newTimelineStart as number)).toBe(250);
+      expect(moveOps[0].newTimelineStart as number).toBe(250);
     }
   });
 });

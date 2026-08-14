@@ -11,9 +11,9 @@
  *   on any clip re-renders every clip component in the timeline.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { createElement, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 import {
   createTimeline,
@@ -28,7 +28,7 @@ import {
   toClipId,
   toAssetId,
 } from '@timelinx/core';
-import type { ClipId, TrackId, Transaction } from '@timelinx/core';
+import type { Transaction } from '@timelinx/core';
 
 import { TimelineProvider, TimelineEngine } from '../index';
 import {
@@ -45,57 +45,57 @@ import {
 
 // ── Test state factory ──────────────────────────────────────────────────────
 
-const ASSET_ID  = toAssetId('asset-1');
-const TRACK_ID  = toTrackId('track-1');
+const ASSET_ID = toAssetId('asset-1');
+const TRACK_ID = toTrackId('track-1');
 const CLIP_A_ID = toClipId('clip-a');
 const CLIP_B_ID = toClipId('clip-b');
 
 function makeState() {
   const asset = createAsset({
-    id:                    'asset-1',
-    name:                  'Test Asset',
-    mediaType:             'video',
-    filePath:              '/media/test.mp4',
-    intrinsicDuration:     toFrame(600),
-    nativeFps:             30,
-    sourceTimecodeOffset:  toFrame(0),
-    status:                'online',
+    id: 'asset-1',
+    name: 'Test Asset',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(600),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
 
   const clipA = createClip({
-    id:             'clip-a',
-    assetId:        'asset-1',
-    trackId:        'track-1',
-    timelineStart:  toFrame(0),
-    timelineEnd:    toFrame(100),
-    mediaIn:        toFrame(0),
-    mediaOut:       toFrame(100),
+    id: 'clip-a',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(100),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(100),
   });
 
   const clipB = createClip({
-    id:             'clip-b',
-    assetId:        'asset-1',
-    trackId:        'track-1',
-    timelineStart:  toFrame(200),
-    timelineEnd:    toFrame(300),
-    mediaIn:        toFrame(0),
-    mediaOut:       toFrame(100),
+    id: 'clip-b',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(200),
+    timelineEnd: toFrame(300),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(100),
   });
 
   const track = createTrack({
-    id:    'track-1',
-    name:  'Video 1',
-    type:  'video',
+    id: 'track-1',
+    name: 'Video 1',
+    type: 'video',
     clips: [clipA, clipB],
   });
 
   const timeline = createTimeline({
-    id:             'tl-hooks-test',
-    name:           'Hooks Test Timeline',
-    fps:            frameRate(30),
-    duration:       toFrame(9000),
-    startTimecode:  toTimecode('00:00:00:00'),
-    tracks:         [track],
+    id: 'tl-hooks-test',
+    name: 'Hooks Test Timeline',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
 
   return createTimelineState({
@@ -120,7 +120,7 @@ function makeWrapper(engine: TimelineEngine) {
 
 describe('useEngine', () => {
   it('returns the engine instance from context', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useEngine(), { wrapper });
     expect(result.current).toBe(engine);
@@ -133,7 +133,7 @@ describe('useEngine', () => {
 
 describe('useTimeline', () => {
   it('returns the Timeline object from the snapshot', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTimeline(), { wrapper });
     expect(result.current.name).toBe('Hooks Test Timeline');
@@ -141,7 +141,7 @@ describe('useTimeline', () => {
   });
 
   it('re-renders when timeline name changes', async () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTimeline(), { wrapper });
     expect(result.current.name).toBe('Hooks Test Timeline');
@@ -156,17 +156,16 @@ describe('useTimeline', () => {
 
 describe('useTrackIds', () => {
   it('returns a readonly array of track ids', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTrackIds(), { wrapper });
     expect(result.current).toEqual([TRACK_ID]);
   });
 
   it('returns the SAME array reference between notifies (stable ref)', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTrackIds(), { wrapper });
-    const ref1 = result.current;
 
     // Dispatch something that does NOT change tracks
     act(() => {
@@ -186,7 +185,7 @@ describe('useTrackIds', () => {
 
 describe('useTrack', () => {
   it('returns the track matching the given id', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTrack(TRACK_ID), { wrapper });
     expect(result.current?.id).toBe(TRACK_ID);
@@ -194,7 +193,7 @@ describe('useTrack', () => {
   });
 
   it('returns null for an unknown track id', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useTrack(toTrackId('ghost')), { wrapper });
     expect(result.current).toBeNull();
@@ -203,7 +202,7 @@ describe('useTrack', () => {
 
 describe('useClip', () => {
   it('returns the clip matching the given id from committed state', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useClip(CLIP_A_ID), { wrapper });
     expect(result.current?.id).toBe(CLIP_A_ID);
@@ -211,7 +210,7 @@ describe('useClip', () => {
   });
 
   it('returns null for a non-existent clip id', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useClip(toClipId('ghost')), { wrapper });
     expect(result.current).toBeNull();
@@ -237,7 +236,7 @@ describe('useClip', () => {
   //   the identical reference, which is what React uses to gate the re-render.
 
   it('ISOLATION: clip B selector returns same reference when only clip A changes', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
 
     // Render two independent hooks — one per clip
@@ -250,11 +249,13 @@ describe('useClip', () => {
 
     // Change clip A's name — clip B is untouched
     act(() => {
-      engine.dispatch(makeTx('rename-clip-a', {
-        type:   'SET_CLIP_NAME',
-        clipId: CLIP_A_ID,
-        name:   'Renamed Clip A',
-      }));
+      engine.dispatch(
+        makeTx('rename-clip-a', {
+          type: 'SET_CLIP_NAME',
+          clipId: CLIP_A_ID,
+          name: 'Renamed Clip A',
+        }),
+      );
     });
 
     // Clip A must reflect the change
@@ -266,18 +267,20 @@ describe('useClip', () => {
   });
 
   it('ISOLATION: clip B renders when clip B itself changes', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
 
     const hookB = renderHook(() => useClip(CLIP_B_ID), { wrapper });
     const clipBBefore = hookB.result.current;
 
     act(() => {
-      engine.dispatch(makeTx('rename-clip-b', {
-        type:   'SET_CLIP_NAME',
-        clipId: CLIP_B_ID,
-        name:   'Renamed Clip B',
-      }));
+      engine.dispatch(
+        makeTx('rename-clip-b', {
+          type: 'SET_CLIP_NAME',
+          clipId: CLIP_B_ID,
+          name: 'Renamed Clip B',
+        }),
+      );
     });
 
     // References must differ — clip B was rebuilt with the new name
@@ -288,7 +291,7 @@ describe('useClip', () => {
 
 describe('useActiveTool', () => {
   it('returns id and cursor string', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useActiveTool(), { wrapper });
     expect(typeof result.current.id).toBe('string');
@@ -298,7 +301,7 @@ describe('useActiveTool', () => {
 
 describe('useCanUndo / useCanRedo', () => {
   it('canUndo is false initially, true after a dispatch', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useCanUndo(), { wrapper });
     expect(result.current).toBe(false);
@@ -311,7 +314,7 @@ describe('useCanUndo / useCanRedo', () => {
   });
 
   it('canRedo is false initially, true after an undo', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result: undoResult } = renderHook(() => useCanUndo(), { wrapper });
     const { result: redoResult } = renderHook(() => useCanRedo(), { wrapper });
@@ -321,7 +324,9 @@ describe('useCanUndo / useCanRedo', () => {
     });
     expect(redoResult.current).toBe(false);
 
-    act(() => { engine.undo(); });
+    act(() => {
+      engine.undo();
+    });
     expect(undoResult.current).toBe(false);
     expect(redoResult.current).toBe(true);
   });
@@ -329,7 +334,7 @@ describe('useCanUndo / useCanRedo', () => {
 
 describe('useProvisional', () => {
   it('returns null when not dragging', () => {
-    const engine  = new TimelineEngine({ initialState: makeState() });
+    const engine = new TimelineEngine({ initialState: makeState() });
     const wrapper = makeWrapper(engine);
     const { result } = renderHook(() => useProvisional(), { wrapper });
     expect(result.current).toBeNull();

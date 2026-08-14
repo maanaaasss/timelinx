@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
-import {
-  useEngine,
-  useCanUndoRedo,
-  useActiveTool,
-  useSelectedClipIds,
-} from '@timelinx/react';
-import type { TimelineFrame, ClipId, TrackId, TimelinePointerEvent, Modifiers } from '@timelinx/core';
+import { useEngine, useCanUndoRedo, useActiveTool, useSelectedClipIds } from '@timelinx/react';
+import type {
+  TimelineFrame,
+  ClipId,
+  TrackId,
+  TimelinePointerEvent,
+  Modifiers,
+} from '@timelinx/core';
 import { ZoomControls } from './ZoomControls';
 
 const TOOLS = [
@@ -50,10 +51,7 @@ export function Toolbar() {
 
   const handleUndo = useCallback(() => engine.undo(), [engine]);
   const handleRedo = useCallback(() => engine.redo(), [engine]);
-  const handleActivateTool = useCallback(
-    (toolId: string) => engine.activateTool(toolId),
-    [engine],
-  );
+  const handleActivateTool = useCallback((toolId: string) => engine.activateTool(toolId), [engine]);
 
   const handleSplit = useCallback(() => {
     if (selectedClipIds.size === 0) return;

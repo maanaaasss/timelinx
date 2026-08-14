@@ -27,10 +27,7 @@ export interface AssetBinProps {
   className?: string;
 }
 
-export const AssetBin = React.memo(function AssetBin({
-  onAssetDrop,
-  className,
-}: AssetBinProps) {
+export const AssetBin = React.memo(function AssetBin({ onAssetDrop, className }: AssetBinProps) {
   const { engine } = useTimelineContext();
   const mediaAssets = useMediaAssets();
   const [selectedAssetId, setSelectedAssetId] = useState<AssetId | null>(null);
@@ -50,113 +47,124 @@ export const AssetBin = React.memo(function AssetBin({
   const assets = Array.from(assetRegistry.values());
 
   const filteredAssets = searchQuery
-    ? assets.filter((asset) =>
-        asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        asset.mediaType.toLowerCase().includes(searchQuery.toLowerCase())
+    ? assets.filter(
+        (asset) =>
+          asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          asset.mediaType.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : assets;
 
-  const handleAssetClick = useCallback((asset: Asset) => {
-    setSelectedAssetId(asset.id);
+  const handleAssetClick = useCallback(
+    (asset: Asset) => {
+      setSelectedAssetId(asset.id);
 
-    const state = engine.getState();
-    const tracks = state.timeline.tracks;
-    const preferredType = asset.mediaType === 'audio' ? 'audio' : 'video';
-    const track = tracks.find((t) => t.type === preferredType) ?? tracks[0];
-    if (!track) return;
+      const state = engine.getState();
+      const tracks = state.timeline.tracks;
+      const preferredType = asset.mediaType === 'audio' ? 'audio' : 'video';
+      const track = tracks.find((t) => t.type === preferredType) ?? tracks[0];
+      if (!track) return;
 
-    const duration = asset.intrinsicDuration as number;
-    const frame = engine.getPlayheadFrame() as number;
-    const clipId = `clip-${crypto.randomUUID()}`;
-    const endFrame = frame + duration;
+      const duration = asset.intrinsicDuration as number;
+      const frame = engine.getPlayheadFrame() as number;
+      const clipId = `clip-${crypto.randomUUID()}`;
+      const endFrame = frame + duration;
 
-    const currentDuration = state.timeline.duration as number;
-    const newDuration = Math.max(currentDuration, endFrame);
+      const currentDuration = state.timeline.duration as number;
+      const newDuration = Math.max(currentDuration, endFrame);
 
-    engine.dispatch({
-      id: `add-asset-${clipId}`,
-      label: `Add ${asset.name} to timeline`,
-      timestamp: Date.now(),
-      operations: [
-        {
-          type: 'INSERT_CLIP',
-          trackId: track.id,
-          clip: createClip({
-            id: clipId,
-            assetId: asset.id as string,
+      engine.dispatch({
+        id: `add-asset-${clipId}`,
+        label: `Add ${asset.name} to timeline`,
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'INSERT_CLIP',
             trackId: track.id,
-            timelineStart: toFrame(frame),
-            timelineEnd: toFrame(endFrame),
-            mediaIn: toFrame(0),
-            mediaOut: toFrame(duration),
-          }),
-        },
-        ...(newDuration > currentDuration
-          ? [{ type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(newDuration) }]
-          : []),
-      ],
-    });
-  }, [engine]);
+            clip: createClip({
+              id: clipId,
+              assetId: asset.id as string,
+              trackId: track.id,
+              timelineStart: toFrame(frame),
+              timelineEnd: toFrame(endFrame),
+              mediaIn: toFrame(0),
+              mediaOut: toFrame(duration),
+            }),
+          },
+          ...(newDuration > currentDuration
+            ? [{ type: 'SET_TIMELINE_DURATION' as const, duration: toFrame(newDuration) }]
+            : []),
+        ],
+      });
+    },
+    [engine],
+  );
 
   const handleDragStart = useCallback((e: React.DragEvent, asset: Asset) => {
     e.dataTransfer.setData('application/x-timeline-asset', asset.id as string);
     e.dataTransfer.effectAllowed = 'copy';
   }, []);
 
-  const importFiles = useCallback(async (files: FileList | File[]) => {
-    setIsImporting(true);
-    setImportErrors([]);
-    const errors: Array<{ name: string; message: string }> = [];
+  const importFiles = useCallback(
+    async (files: FileList | File[]) => {
+      setIsImporting(true);
+      setImportErrors([]);
+      const errors: Array<{ name: string; message: string }> = [];
 
-    for (const file of Array.from(files)) {
-      const mediaType = detectMediaType(file);
-      if (mediaType === 'unsupported') {
-        errors.push({ name: file.name, message: `Unsupported file type: ${file.type || 'unknown'}` });
-        continue;
-      }
-
-      try {
-        const metadata = await extractMetadata(file);
-        const blobUrl = URL.createObjectURL(file);
-        const assetId = toAssetId(`asset-${crypto.randomUUID()}`);
-
-        const durationFrames = metadata.kind === 'image'
-          ? fps * 5  // Default 5 seconds for images
-          : Math.round(metadata.duration * fps);
-
-        const asset = createAsset({
-          id: assetId,
-          name: file.name,
-          mediaType: mediaType === 'image' ? 'video' : mediaType,
-          filePath: blobUrl,
-          intrinsicDuration: toFrame(Math.max(1, durationFrames)),
-          nativeFps: frameRate(fps),
-          sourceTimecodeOffset: toFrame(0),
-        });
-
-        const thumbnail = 'thumbnail' in metadata ? metadata.thumbnail : undefined;
-        mediaAssets.addImportedAsset(assetId, file, blobUrl, thumbnail);
-
-        const result = engine.dispatch({
-          id: `import-asset-${assetId}`,
-          label: `Import ${file.name}`,
-          timestamp: Date.now(),
-          operations: [{ type: 'REGISTER_ASSET', asset }],
-        });
-
-        if (!result.accepted) {
-          errors.push({ name: file.name, message: `Registration rejected: ${result.reason}` });
-          mediaAssets.removeImportedAsset(assetId);
+      for (const file of Array.from(files)) {
+        const mediaType = detectMediaType(file);
+        if (mediaType === 'unsupported') {
+          errors.push({
+            name: file.name,
+            message: `Unsupported file type: ${file.type || 'unknown'}`,
+          });
+          continue;
         }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        errors.push({ name: file.name, message });
-      }
-    }
 
-    setImportErrors(errors);
-    setIsImporting(false);
-  }, [engine, fps, mediaAssets]);
+        try {
+          const metadata = await extractMetadata(file);
+          const blobUrl = URL.createObjectURL(file);
+          const assetId = toAssetId(`asset-${crypto.randomUUID()}`);
+
+          const durationFrames =
+            metadata.kind === 'image'
+              ? fps * 5 // Default 5 seconds for images
+              : Math.round(metadata.duration * fps);
+
+          const asset = createAsset({
+            id: assetId,
+            name: file.name,
+            mediaType: mediaType === 'image' ? 'video' : mediaType,
+            filePath: blobUrl,
+            intrinsicDuration: toFrame(Math.max(1, durationFrames)),
+            nativeFps: frameRate(fps),
+            sourceTimecodeOffset: toFrame(0),
+          });
+
+          const thumbnail = 'thumbnail' in metadata ? metadata.thumbnail : undefined;
+          mediaAssets.addImportedAsset(assetId, file, blobUrl, thumbnail);
+
+          const result = engine.dispatch({
+            id: `import-asset-${assetId}`,
+            label: `Import ${file.name}`,
+            timestamp: Date.now(),
+            operations: [{ type: 'REGISTER_ASSET', asset }],
+          });
+
+          if (!result.accepted) {
+            errors.push({ name: file.name, message: `Registration rejected: ${result.reason}` });
+            mediaAssets.removeImportedAsset(assetId);
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unknown error';
+          errors.push({ name: file.name, message });
+        }
+      }
+
+      setImportErrors(errors);
+      setIsImporting(false);
+    },
+    [engine, fps, mediaAssets],
+  );
 
   const handleImport = useCallback(() => {
     fileInputRef.current?.click();
@@ -223,7 +231,12 @@ export const AssetBin = React.memo(function AssetBin({
       />
 
       <div className="bin-toolbar">
-        <button className="bin-upload-btn" onClick={handleImport} title="Import assets" disabled={isImporting}>
+        <button
+          className="bin-upload-btn"
+          onClick={handleImport}
+          title="Import assets"
+          disabled={isImporting}
+        >
           {React.createElement(Upload as any, { size: 14 })}
           <span>{isImporting ? 'Importing...' : 'Upload'}</span>
         </button>
@@ -276,7 +289,9 @@ export const AssetBin = React.memo(function AssetBin({
                 draggable
                 onDragStart={(e) => handleDragStart(e, asset)}
               >
-                <div className={`bin-thumb${!thumbnail ? ` ${getPlaceholderClass(asset.mediaType, i)}` : ''}`}>
+                <div
+                  className={`bin-thumb${!thumbnail ? ` ${getPlaceholderClass(asset.mediaType, i)}` : ''}`}
+                >
                   {thumbnail && (
                     <img
                       className="bin-thumb-img"
@@ -286,7 +301,10 @@ export const AssetBin = React.memo(function AssetBin({
                     />
                   )}
                   <div className="bin-thumb-overlay">
-                    {formatDuration(asset.intrinsicDuration as number, (asset.nativeFps as number) || 30)}
+                    {formatDuration(
+                      asset.intrinsicDuration as number,
+                      (asset.nativeFps as number) || 30,
+                    )}
                   </div>
                 </div>
                 <div className="bin-card-info">

@@ -138,7 +138,7 @@ export class WebCodecsDecoderAdapter {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         // Different colors for different frames
-        const hue = (request.mediaFrame as number * 2) % 360;
+        const hue = ((request.mediaFrame as number) * 2) % 360;
         ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
         ctx.fillRect(0, 0, 640, 480);
 
@@ -200,8 +200,6 @@ export class WebCodecsDecoderAdapter {
 /**
  * Create a WebCodecs decoder adapter with default configuration.
  */
-export function createWebCodecsDecoder(
-  config?: WebCodecsDecoderConfig,
-): WebCodecsDecoderAdapter {
+export function createWebCodecsDecoder(config?: WebCodecsDecoderConfig): WebCodecsDecoderAdapter {
   return new WebCodecsDecoderAdapter(config);
 }

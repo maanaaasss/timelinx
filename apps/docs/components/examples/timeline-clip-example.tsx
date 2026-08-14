@@ -16,7 +16,14 @@ const clip = createClip({
 export function TimelineClipExample() {
   return (
     <div style={{ padding: 24, background: 'var(--color-background, #1a1a1a)', borderRadius: 8 }}>
-      <div style={{ position: 'relative', height: 80, border: '1px solid var(--color-border, #333)', borderRadius: 4 }}>
+      <div
+        style={{
+          position: 'relative',
+          height: 80,
+          border: '1px solid var(--color-border, #333)',
+          borderRadius: 4,
+        }}
+      >
         <TimelineClip
           clip={clip}
           trackId="v1"

@@ -23,15 +23,11 @@ import type {
   TimelineKeyEvent,
   ProvisionalState,
 } from './types';
-import {
-  toToolId,
-  type ToolId,
-  type SnapPointType,
-} from './types';
+import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
-import type { TrackId }      from '../types/track';
+import type { TrackId } from '../types/track';
 import type { TimelineFrame } from '../types/frame';
-import type { Transaction }   from '../types/operations';
+import type { Transaction } from '../types/operations';
 import type { CaptionId, Caption } from '../types/caption';
 import { findClipById } from '../systems/queries';
 
@@ -40,7 +36,8 @@ import { findClipById } from '../systems/queries';
 // ---------------------------------------------------------------------------
 
 /** Production default: crypto.randomUUID() */
-let generateId: () => string = () => (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
+let generateId: () => string = () =>
+  globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
 
 /**
  * Override the ID generator in tests for deterministic IDs.
@@ -70,10 +67,7 @@ export function _setIdGenerator(fn: () => string): void {
  *
  * The caller is responsible for asserting checkInvariants on the resulting state.
  */
-function computeSlice(
-  clip:    Clip,
-  atFrame: TimelineFrame,
-): { left: Clip; right: Clip } | null {
+function computeSlice(clip: Clip, atFrame: TimelineFrame): { left: Clip; right: Clip } | null {
   // Guard: atFrame must be strictly inside the clip
   if (atFrame <= clip.timelineStart || atFrame >= clip.timelineEnd) {
     return null;
@@ -84,16 +78,16 @@ function computeSlice(
 
   const left: Clip = {
     ...clip,
-    id:          generateId() as ClipId,
+    id: generateId() as ClipId,
     timelineEnd: atFrame,
-    mediaOut:    splitMediaPoint,
+    mediaOut: splitMediaPoint,
   };
 
   const right: Clip = {
     ...clip,
-    id:            generateId() as ClipId,
+    id: generateId() as ClipId,
     timelineStart: atFrame,
-    mediaIn:       splitMediaPoint,
+    mediaIn: splitMediaPoint,
   };
 
   // left.mediaOut === right.mediaIn === splitMediaPoint  ✓
@@ -105,28 +99,30 @@ function computeSlice(
 // ---------------------------------------------------------------------------
 
 let _txSeq = 0;
-function txId(): string { return `razor-tx-${++_txSeq}`; }
+function txId(): string {
+  return `razor-tx-${++_txSeq}`;
+}
 
 // ---------------------------------------------------------------------------
 // RazorTool
 // ---------------------------------------------------------------------------
 
 export class RazorTool implements ITool {
-  readonly id:          ToolId = toToolId('razor');
-  readonly shortcutKey: string = 'b';   // 'b' for blade — standard NLE shortcut
+  readonly id: ToolId = toToolId('razor');
+  readonly shortcutKey: string = 'b'; // 'b' for blade — standard NLE shortcut
 
   // ── Instance variables ────────────────────────────────────────────────────
   // Two vars only. The slice happens at pointerUp, not pointerDown.
   // We store the snapped frame at down-time so we don't re-snap at up-time.
 
   /** Snapped slice frame captured at onPointerDown. */
-  private pendingFrame:  TimelineFrame | null = null;
+  private pendingFrame: TimelineFrame | null = null;
 
   /** ClipId hit at onPointerDown. null if clicking empty space or for shift+all. */
-  private pendingClipId: ClipId        | null = null;
+  private pendingClipId: ClipId | null = null;
 
   /** CaptionId hit at onPointerDown. */
-  private pendingCaptionId: CaptionId  | null = null;
+  private pendingCaptionId: CaptionId | null = null;
 
   /** TrackId of the caption hit at onPointerDown. */
   private pendingCaptionTrackId: TrackId | null = null;
@@ -134,7 +130,7 @@ export class RazorTool implements ITool {
   // ── ITool: getCursor ──────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
-    return 'crosshair';   // always — no state-dependent cursor changes
+    return 'crosshair'; // always — no state-dependent cursor changes
   }
 
   // ── ITool: getSnapCandidateTypes ─────────────────────────────────────────
@@ -143,13 +139,15 @@ export class RazorTool implements ITool {
     return ['ClipStart', 'ClipEnd', 'Playhead', 'Marker'];
   }
 
-  supportsCaptions(): boolean { return true; }
+  supportsCaptions(): boolean {
+    return true;
+  }
 
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
     const exclusion = event.clipId !== null ? [event.clipId] : [];
-    this.pendingFrame  = ctx.snap(event.frame, exclusion);
+    this.pendingFrame = ctx.snap(event.frame, exclusion);
     this.pendingClipId = event.clipId;
     this.pendingCaptionId = event.captionId;
     this.pendingCaptionTrackId = event.trackId;
@@ -167,13 +165,13 @@ export class RazorTool implements ITool {
 
   onPointerUp(event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // Capture instance state before resetting (pattern from SelectionTool)
-    const atFrame     = this.pendingFrame;
-    const clipId      = this.pendingClipId;
-    const captionId   = this.pendingCaptionId;
+    const atFrame = this.pendingFrame;
+    const clipId = this.pendingClipId;
+    const captionId = this.pendingCaptionId;
     const captionTrackId = this.pendingCaptionTrackId;
 
     // Reset immediately — onPointerUp must never leave stale state
-    this.pendingFrame  = null;
+    this.pendingFrame = null;
     this.pendingClipId = null;
     this.pendingCaptionId = null;
     this.pendingCaptionTrackId = null;
@@ -231,12 +229,12 @@ export class RazorTool implements ITool {
     if (!sliced) return null;
 
     return {
-      id:        txId(),
-      label:     'Razor',
+      id: txId(),
+      label: 'Razor',
       timestamp: Date.now(),
       operations: [
         { type: 'DELETE_CLIP', clipId: clip.id },
-        { type: 'INSERT_CLIP', clip: sliced.left,  trackId: clip.trackId },
+        { type: 'INSERT_CLIP', clip: sliced.left, trackId: clip.trackId },
         { type: 'INSERT_CLIP', clip: sliced.right, trackId: clip.trackId },
       ],
     };
@@ -256,7 +254,7 @@ export class RazorTool implements ITool {
    * Every instance variable must appear here.
    */
   onCancel(): void {
-    this.pendingFrame  = null;
+    this.pendingFrame = null;
     this.pendingClipId = null;
   }
 
@@ -267,10 +265,7 @@ export class RazorTool implements ITool {
    * Groups operations per-clip: DELETE then INSERT left then INSERT right.
    * Tracks where no clip spans `atFrame` contribute zero operations.
    */
-  private _sliceAllTracks(
-    atFrame: TimelineFrame,
-    ctx:     ToolContext,
-  ): Transaction | null {
+  private _sliceAllTracks(atFrame: TimelineFrame, ctx: ToolContext): Transaction | null {
     type Op =
       | { type: 'DELETE_CLIP'; clipId: ClipId }
       | { type: 'INSERT_CLIP'; clip: Clip; trackId: TrackId };
@@ -281,23 +276,23 @@ export class RazorTool implements ITool {
       for (const clip of track.clips) {
         // Only slice clips that strictly contain atFrame
         const sliced = computeSlice(clip, atFrame);
-        if (!sliced) continue;   // atFrame outside this clip's bounds — skip
+        if (!sliced) continue; // atFrame outside this clip's bounds — skip
 
         operations.push(
           { type: 'DELETE_CLIP', clipId: clip.id },
-          { type: 'INSERT_CLIP', clip: sliced.left,  trackId: track.id },
+          { type: 'INSERT_CLIP', clip: sliced.left, trackId: track.id },
           { type: 'INSERT_CLIP', clip: sliced.right, trackId: track.id },
         );
       }
     }
 
-    if (operations.length === 0) return null;   // nothing was sliced
+    if (operations.length === 0) return null; // nothing was sliced
 
-    const clipCount = operations.length / 3;    // always a multiple of 3
+    const clipCount = operations.length / 3; // always a multiple of 3
 
     return {
-      id:        txId(),
-      label:     `Razor — All Tracks (${clipCount} clip${clipCount === 1 ? '' : 's'})`,
+      id: txId(),
+      label: `Razor — All Tracks (${clipCount} clip${clipCount === 1 ? '' : 's'})`,
       timestamp: Date.now(),
       operations,
     };

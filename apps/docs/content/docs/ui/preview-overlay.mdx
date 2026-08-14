@@ -20,7 +20,7 @@ function Preview() {
 }
 ```
 
-> `PreviewOverlay` is automatically rendered inside `CompositorPreview`  - you don't need to add it manually unless building a custom layout.
+> `PreviewOverlay` is automatically rendered inside `CompositorPreview` - you don't need to add it manually unless building a custom layout.
 
 ## Coordinate System
 
@@ -59,13 +59,13 @@ When a single clip is selected, a bordered box appears:
               ○ (rotation handle)
 ```
 
-| Handle | Position | Cursor |
-|--------|----------|--------|
-| NW, SE | Corners | `nwse-resize` |
-| NE, SW | Corners | `nesw-resize` |
-| N, S | Edge midpoints | `ns-resize` |
-| E, W | Edge midpoints | `ew-resize` |
-| Rotation | Above top-center | `crosshair` |
+| Handle   | Position         | Cursor        |
+| -------- | ---------------- | ------------- |
+| NW, SE   | Corners          | `nwse-resize` |
+| NE, SW   | Corners          | `nesw-resize` |
+| N, S     | Edge midpoints   | `ns-resize`   |
+| E, W     | Edge midpoints   | `ew-resize`   |
+| Rotation | Above top-center | `crosshair`   |
 
 All handles are 8×8px with `var(--selection)` background. The rotation handle has a 1px stem and 10px circular knob.
 
@@ -91,7 +91,7 @@ Dragging a selected clip moves it on the preview canvas:
 3. **Pointer up** → dispatch `SET_CLIP_TRANSFORM` once with final values
 4. **Escape** → cancel drag, revert to original position
 
-The drag uses provisional state  - no engine dispatch during drag, only on commit.
+The drag uses provisional state - no engine dispatch during drag, only on commit.
 
 ## Snap Indicators
 
@@ -99,14 +99,14 @@ During drag, alignment guides appear when the dragged clip's edges align with ot
 
 ### Edges Compared
 
-| Dragged Edge | Compared Against |
-|--------------|------------------|
-| Left | Left, right, center-X of other clips |
-| Right | Left, right, center-X of other clips |
-| Center-X | Left, right, center-X of other clips |
-| Top | Top, bottom, center-Y of other clips |
-| Bottom | Top, bottom, center-Y of other clips |
-| Center-Y | Top, bottom, center-Y of other clips |
+| Dragged Edge | Compared Against                     |
+| ------------ | ------------------------------------ |
+| Left         | Left, right, center-X of other clips |
+| Right        | Left, right, center-X of other clips |
+| Center-X     | Left, right, center-X of other clips |
+| Top          | Top, bottom, center-Y of other clips |
+| Bottom       | Top, bottom, center-Y of other clips |
+| Center-Y     | Top, bottom, center-Y of other clips |
 
 ### Snap Threshold
 
@@ -137,24 +137,24 @@ During drag, alignment guides appear when the dragged clip's edges align with ot
 
 ## CSS Classes
 
-| Class | Description |
-|-------|-------------|
-| `.preview-overlay` | Root container (`position: absolute; inset: 0; pointer-events: none`) |
-| `.selection-box` | Selection border with rotation transform |
-| `.selection-box.is-dragging` | Active during drag (`cursor: grabbing`) |
-| `.selection-handle` | 8×8px resize handle at corners/edges |
-| `.rotation-handle` | Stem + knob above top-center |
-| `.rotation-handle-stem` | 1px line connecting to selection box |
-| `.rotation-handle-knob` | 10px circular grab target |
-| `.snap-line` | Alignment guide during drag |
-| `.snap-line--horizontal` | Horizontal snap line (full width) |
-| `.snap-line--vertical` | Vertical snap line (full height) |
+| Class                        | Description                                                           |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `.preview-overlay`           | Root container (`position: absolute; inset: 0; pointer-events: none`) |
+| `.selection-box`             | Selection border with rotation transform                              |
+| `.selection-box.is-dragging` | Active during drag (`cursor: grabbing`)                               |
+| `.selection-handle`          | 8×8px resize handle at corners/edges                                  |
+| `.rotation-handle`           | Stem + knob above top-center                                          |
+| `.rotation-handle-stem`      | 1px line connecting to selection box                                  |
+| `.rotation-handle-knob`      | 10px circular grab target                                             |
+| `.snap-line`                 | Alignment guide during drag                                           |
+| `.snap-line--horizontal`     | Horizontal snap line (full width)                                     |
+| `.snap-line--vertical`       | Vertical snap line (full height)                                      |
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | `string` |  - | Additional CSS class |
+| Prop        | Type     | Default | Description          |
+| ----------- | -------- | ------- | -------------------- |
+| `className` | `string` | -       | Additional CSS class |
 
 ## Architecture
 
@@ -170,4 +170,4 @@ CompositorPreview
         └── vertical snap lines
 ```
 
-The overlay reads clip positions from the engine via `useAllTracks()` and selection state via `useSelectedClipIds()`. It does not write to the canvas  - it's a pure DOM layer.
+The overlay reads clip positions from the engine via `useAllTracks()` and selection state via `useSelectedClipIds()`. It does not write to the canvas - it's a pure DOM layer.

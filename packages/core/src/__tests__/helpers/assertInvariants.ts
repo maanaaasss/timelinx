@@ -27,12 +27,9 @@ export function assertInvariants(state: TimelineState): void {
  * Useful when you deliberately construct an invalid state and want to confirm
  * the checker catches it.
  */
-export function assertInvariantViolations(
-  state: TimelineState,
-  expectedTypes: string[],
-): void {
+export function assertInvariantViolations(state: TimelineState, expectedTypes: string[]): void {
   const violations = checkInvariants(state);
-  const actualTypes = violations.map(v => v.type);
+  const actualTypes = violations.map((v) => v.type);
   for (const t of expectedTypes) {
     expect(actualTypes).toContain(t);
   }

@@ -28,7 +28,9 @@ function makeFile(name: string, type: string, content = 'x'): File {
 }
 
 // Captures the next media element created via document.createElement
-function captureNextElement<T extends HTMLElement>(tagName: string): {
+function captureNextElement<T extends HTMLElement>(
+  tagName: string,
+): {
   getElement: () => T | null;
   restore: () => void;
 } {
@@ -317,9 +319,7 @@ describe('withTimeout idempotency (via extractAudioMetadata)', () => {
     await new Promise((r) => setTimeout(r, 10));
 
     // revokeObjectURL should have been called exactly once (on timeout)
-    const revokeCalls = revokeObjectURLSpy.mock.calls.filter(
-      ([url]) => url === 'blob:late-url',
-    );
+    const revokeCalls = revokeObjectURLSpy.mock.calls.filter(([url]) => url === 'blob:late-url');
     expect(revokeCalls.length).toBe(1);
   });
 });

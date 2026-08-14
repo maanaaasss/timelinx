@@ -25,10 +25,7 @@ export function TimelineView() {
   const [ppf, setPpf] = useState(DEFAULT_PPF);
 
   const getPixelsPerFrame = useCallback(() => ppf, [ppf]);
-  const getScrollLeft = useCallback(
-    () => containerRef.current?.scrollLeft ?? 0,
-    [],
-  );
+  const getScrollLeft = useCallback(() => containerRef.current?.scrollLeft ?? 0, []);
 
   // Bug 6 fix: Apply cursor directly to DOM via ref, not React state.
   // This avoids re-rendering TimelineView (and all children) on every cursor change.
@@ -59,8 +56,14 @@ export function TimelineView() {
       const sl = el.scrollLeft;
       // Clamp scroll to prevent overscroll stretch at boundaries
       const maxScroll = el.scrollWidth - el.clientWidth;
-      if (sl < 0) { el.scrollLeft = 0; return; }
-      if (sl > maxScroll) { el.scrollLeft = maxScroll; return; }
+      if (sl < 0) {
+        el.scrollLeft = 0;
+        return;
+      }
+      if (sl > maxScroll) {
+        el.scrollLeft = maxScroll;
+        return;
+      }
       ruler.dispatchEvent(new CustomEvent('ruler-scroll', { detail: { scrollLeft: sl } }));
     };
     el.addEventListener('scroll', onScroll, { passive: true });
@@ -110,17 +113,9 @@ export function TimelineView() {
         style={{ touchAction: 'none' }}
         tabIndex={0}
       >
-        <div
-          className="timeline-tracks-inner"
-          style={{ width: timelineWidth }}
-        >
+        <div className="timeline-tracks-inner" style={{ width: timelineWidth }}>
           {trackIds.map((id) => (
-            <TrackView
-              key={id}
-              trackId={id}
-              ppf={ppf}
-              selectedClipIds={selectedClipIds}
-            />
+            <TrackView key={id} trackId={id} ppf={ppf} selectedClipIds={selectedClipIds} />
           ))}
           <Playhead frame={playheadFrame} ppf={ppf} />
         </div>

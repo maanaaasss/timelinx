@@ -34,14 +34,10 @@ export const TimelineContext = createContext<TimelineEngine | null>(null);
 
 export interface TimelineProviderProps {
   /** The Phase 1 timeline engine instance */
-  engine:   TimelineEngine;
+  engine: TimelineEngine;
   children: ReactNode;
 }
 
 export function TimelineProvider({ engine, children }: TimelineProviderProps) {
-  return (
-    <TimelineContext.Provider value={engine}>
-      {children}
-    </TimelineContext.Provider>
-  );
+  return <TimelineContext.Provider value={engine}>{children}</TimelineContext.Provider>;
 }

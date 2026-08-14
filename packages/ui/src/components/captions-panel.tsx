@@ -11,7 +11,13 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { useEngine, useAllTracks, useFps, usePlayheadFrame, useTrackCaptions } from '@timelinx/react';
+import {
+  useEngine,
+  useAllTracks,
+  useFps,
+  usePlayheadFrame,
+  useTrackCaptions,
+} from '@timelinx/react';
 import { toCaptionId, defaultCaptionStyle } from '@timelinx/core';
 import { useTimelineContext } from '../context/timeline-context';
 import type { CaptionId, TrackId, Caption, TimelineFrame } from '@timelinx/core';
@@ -21,9 +27,7 @@ export interface CaptionsPanelProps {
 }
 
 /** @deprecated Use TextPanel with INSERT_GENERATOR instead. */
-export const CaptionsPanel = React.memo(function CaptionsPanel({
-  className,
-}: CaptionsPanelProps) {
+export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: CaptionsPanelProps) {
   const { engine } = useTimelineContext();
   const tracks = useAllTracks(engine);
   const fps = useFps(engine);
@@ -33,7 +37,7 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
   const [selectedCaptionId, setSelectedCaptionId] = useState<string | null>(null);
   const [editText, setEditText] = useState<string | null>(null);
 
-  const activeTrackId = selectedTrackId ?? (tracks[0]?.id ?? null);
+  const activeTrackId = selectedTrackId ?? tracks[0]?.id ?? null;
   const captionsFromHook = useTrackCaptions(engine, activeTrackId ?? '');
 
   const captions: { caption: Caption; trackId: string }[] = [];
@@ -66,35 +70,42 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
       id: `add-caption-${Date.now()}`,
       label: 'Add caption',
       timestamp: Date.now(),
-      operations: [{
-        type: 'ADD_CAPTION',
-        trackId: activeTrackId as TrackId,
-        caption: {
-          id: toCaptionId(`cap-${Date.now()}`) as CaptionId,
-          text: 'New caption',
-          startFrame: startFrame as TimelineFrame,
-          endFrame: endFrame as TimelineFrame,
-          language: 'en-US',
-          style: defaultCaptionStyle,
-          burnIn: false,
+      operations: [
+        {
+          type: 'ADD_CAPTION',
+          trackId: activeTrackId as TrackId,
+          caption: {
+            id: toCaptionId(`cap-${Date.now()}`) as CaptionId,
+            text: 'New caption',
+            startFrame: startFrame as TimelineFrame,
+            endFrame: endFrame as TimelineFrame,
+            language: 'en-US',
+            style: defaultCaptionStyle,
+            burnIn: false,
+          },
         },
-      }],
+      ],
     });
   }, [engine, activeTrackId, playheadFrame, fps, captionsFromHook]);
 
-  const handleDeleteCaption = useCallback((captionId: string, trackId: string) => {
-    engine.dispatch({
-      id: `delete-caption-${Date.now()}`,
-      label: 'Delete caption',
-      timestamp: Date.now(),
-      operations: [{
-        type: 'DELETE_CAPTION',
-        captionId: captionId as CaptionId,
-        trackId: trackId as TrackId,
-      }],
-    });
-    if (selectedCaptionId === captionId) setSelectedCaptionId(null);
-  }, [engine, selectedCaptionId]);
+  const handleDeleteCaption = useCallback(
+    (captionId: string, trackId: string) => {
+      engine.dispatch({
+        id: `delete-caption-${Date.now()}`,
+        label: 'Delete caption',
+        timestamp: Date.now(),
+        operations: [
+          {
+            type: 'DELETE_CAPTION',
+            captionId: captionId as CaptionId,
+            trackId: trackId as TrackId,
+          },
+        ],
+      });
+      if (selectedCaptionId === captionId) setSelectedCaptionId(null);
+    },
+    [engine, selectedCaptionId],
+  );
 
   const handleSaveText = useCallback(() => {
     if (!selectedCaption || editText === null) return;
@@ -102,12 +113,14 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
       id: `edit-caption-${Date.now()}`,
       label: 'Edit caption text',
       timestamp: Date.now(),
-      operations: [{
-        type: 'EDIT_CAPTION',
-        captionId: selectedCaption.caption.id as CaptionId,
-        trackId: selectedCaption.trackId as TrackId,
-        text: editText,
-      }],
+      operations: [
+        {
+          type: 'EDIT_CAPTION',
+          captionId: selectedCaption.caption.id as CaptionId,
+          trackId: selectedCaption.trackId as TrackId,
+          text: editText,
+        },
+      ],
     });
     setEditText(null);
   }, [engine, selectedCaption, editText]);
@@ -124,18 +137,14 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
     <div className={`inspector-panel${className ? ` ${className}` : ''}`}>
       <div className="panel-header">
         <h3 className="panel-title">Captions</h3>
-        <button
-          className="panel-action-btn"
-          disabled={!activeTrackId}
-          onClick={handleAddCaption}
-        >
+        <button className="panel-action-btn" disabled={!activeTrackId} onClick={handleAddCaption}>
           + Add
         </button>
       </div>
       <div className="panel-content">
         <div className="deprecated-notice">
-          <strong>Deprecated:</strong> Use TextPanel with INSERT_GENERATOR instead.
-          Captions are now ordinary Clips via the text-clip pivot.
+          <strong>Deprecated:</strong> Use TextPanel with INSERT_GENERATOR instead. Captions are now
+          ordinary Clips via the text-clip pivot.
         </div>
 
         <div className="field-group">
@@ -150,7 +159,9 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
             }}
           >
             {tracks.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
@@ -167,18 +178,25 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
                 <li
                   key={caption.id}
                   className={`caption-item${selectedCaptionId === caption.id ? ' selected' : ''}`}
-                  onClick={() => { setSelectedCaptionId(caption.id); setEditText(caption.text); }}
+                  onClick={() => {
+                    setSelectedCaptionId(caption.id);
+                    setEditText(caption.text);
+                  }}
                 >
                   <div className="caption-info">
                     <span className="caption-timecode">
-                      {formatFrame(caption.startFrame as number)} → {formatFrame(caption.endFrame as number)}
+                      {formatFrame(caption.startFrame as number)} →{' '}
+                      {formatFrame(caption.endFrame as number)}
                     </span>
                     <span className="caption-text">{caption.text}</span>
                   </div>
                   <button
                     className="caption-delete-btn"
                     title="Delete caption"
-                    onClick={(e) => { e.stopPropagation(); handleDeleteCaption(caption.id, trackId); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCaption(caption.id, trackId);
+                    }}
                   >
                     ×
                   </button>
@@ -200,7 +218,10 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({
                 </div>
                 <div className="caption-meta">
                   <span>{selectedCaption.caption.language}</span>
-                  <span>{formatFrame(selectedCaption.caption.startFrame as number)} → {formatFrame(selectedCaption.caption.endFrame as number)}</span>
+                  <span>
+                    {formatFrame(selectedCaption.caption.startFrame as number)} →{' '}
+                    {formatFrame(selectedCaption.caption.endFrame as number)}
+                  </span>
                 </div>
               </div>
             )}

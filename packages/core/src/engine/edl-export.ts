@@ -62,11 +62,7 @@ function frameToTimecodeDropFrame29_97(frame: number): string {
  * Convert frame count to timecode string.
  * dropFrame true: only 29.97fps uses real drop-frame; others fall back to non-drop.
  */
-export function frameToTimecode(
-  frame: number,
-  fps: number,
-  dropFrame: boolean,
-): string {
+export function frameToTimecode(frame: number, fps: number, dropFrame: boolean): string {
   if (!dropFrame || fps !== 29.97) {
     return frameToTimecodeNonDrop(frame, fps);
   }
@@ -89,7 +85,10 @@ export function reelName(asset: Asset | undefined): string {
     const path = fa.filePath;
     const base = path.split('/').pop() ?? path;
     const noExt = base.includes('.') ? base.slice(0, base.lastIndexOf('.')) : base;
-    raw = noExt.toUpperCase().replace(/[^A-Z0-9_-]/g, '_').slice(0, 8);
+    raw = noExt
+      .toUpperCase()
+      .replace(/[^A-Z0-9_-]/g, '_')
+      .slice(0, 8);
   }
   return raw.padEnd(8).slice(0, 8);
 }
@@ -110,8 +109,11 @@ function transitionCode(clip: Clip): 'C' | 'D' {
 
 function clipDisplayName(asset: Asset | undefined, clipName: string | null): string {
   if (!asset) return clipName ?? 'unknown';
-  if (asset.kind === 'file') return (asset as FileAsset).filePath.split('/').pop() ?? (asset as FileAsset).filePath;
-  return (asset as GeneratorAsset).generatorDef?.type ?? (asset as GeneratorAsset).name ?? 'generator';
+  if (asset.kind === 'file')
+    return (asset as FileAsset).filePath.split('/').pop() ?? (asset as FileAsset).filePath;
+  return (
+    (asset as GeneratorAsset).generatorDef?.type ?? (asset as GeneratorAsset).name ?? 'generator'
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -126,10 +128,7 @@ function clipDurationFrames(clip: Clip): number {
  * Export a single video track to CMX3600 EDL string.
  * trackIndex selects which video track (default 0).
  */
-export function exportToEDL(
-  state: TimelineState,
-  options?: EDLExportOptions,
-): string {
+export function exportToEDL(state: TimelineState, options?: EDLExportOptions): string {
   const title = options?.title ?? state.timeline.name ?? 'Untitled';
   const dropFrame = options?.dropFrame ?? false;
   const trackIndex = options?.trackIndex ?? 0;

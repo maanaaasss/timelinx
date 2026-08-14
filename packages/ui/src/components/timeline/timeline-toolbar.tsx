@@ -21,8 +21,8 @@ export interface TimelineToolbarV2Props {
 
 const tools: { id: ToolId; icon: typeof MousePointer2; label: string }[] = [
   { id: 'select', icon: MousePointer2, label: 'Select (V)' },
-  { id: 'razor',  icon: Scissors,      label: 'Razor / Blade (B)' },
-  { id: 'hand',   icon: Hand,          label: 'Hand (H)' },
+  { id: 'razor', icon: Scissors, label: 'Razor / Blade (B)' },
+  { id: 'hand', icon: Hand, label: 'Hand (H)' },
 ];
 
 export function TimelineToolbarV2({
@@ -56,9 +56,7 @@ export function TimelineToolbarV2({
       <div className="tl-toolbar-separator" />
 
       {/* Timecode */}
-      <div className="tl-toolbar-timecode">
-        {frameToTimecode(currentTime, fps)}
-      </div>
+      <div className="tl-toolbar-timecode">{frameToTimecode(currentTime, fps)}</div>
 
       {/* Zoom */}
       <div className="tl-toolbar-zoom">

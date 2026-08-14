@@ -6,7 +6,6 @@
  */
 
 import type { AssetId } from './asset';
-import type { ClipId } from './clip';
 import type { TimelineFrame } from './frame';
 import type { ThumbnailRequest, ThumbnailResult } from './pipeline';
 
@@ -38,8 +37,7 @@ export type WaveformResult = {
 };
 
 export type WaveformWorkerMessage =
-  | { type: 'request'; payload: WaveformRequest }
-  | { type: 'cancel'; requestId: string };
+  { type: 'request'; payload: WaveformRequest } | { type: 'cancel'; requestId: string };
 
 export type WaveformWorkerResponse =
   | { type: 'result'; payload: WaveformResult }

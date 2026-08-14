@@ -40,11 +40,7 @@ export type Bin = {
   readonly color?: string;
 };
 
-export function createBin(
-  id: BinId,
-  label: string,
-  parentId: BinId | null = null,
-): Bin {
+export function createBin(id: BinId, label: string, parentId: BinId | null = null): Bin {
   return { id, label, parentId, items: [] };
 }
 

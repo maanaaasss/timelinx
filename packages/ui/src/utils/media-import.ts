@@ -80,8 +80,14 @@ function withTimeout<T>(
       reject(new Error(`Timeout reading ${label}`));
     }, ms);
     promise.then(
-      (val) => { clearTimeout(timer); resolve(val); },
-      (err) => { clearTimeout(timer); reject(err); },
+      (val) => {
+        clearTimeout(timer);
+        resolve(val);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
     );
   });
 }
@@ -139,27 +145,31 @@ export function extractVideoMetadata(file: File): Promise<VideoMetadata> {
 
       const seekTime = duration * 0.1;
 
-      video.addEventListener('seeked', () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const scale = Math.min(1, THUMBNAIL_MAX_WIDTH / width);
-          canvas.width = Math.round(width * scale);
-          canvas.height = Math.round(height * scale);
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
+      video.addEventListener(
+        'seeked',
+        () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const scale = Math.min(1, THUMBNAIL_MAX_WIDTH / width);
+            canvas.width = Math.round(width * scale);
+            canvas.height = Math.round(height * scale);
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              cleanup();
+              reject(new Error('Failed to create canvas context'));
+              return;
+            }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const thumbnail = canvas.toDataURL('image/jpeg', THUMBNAIL_QUALITY);
             cleanup();
-            reject(new Error('Failed to create canvas context'));
-            return;
+            resolve({ kind: 'video', duration, width, height, thumbnail });
+          } catch (err) {
+            cleanup();
+            reject(err instanceof Error ? err : new Error(String(err)));
           }
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const thumbnail = canvas.toDataURL('image/jpeg', THUMBNAIL_QUALITY);
-          cleanup();
-          resolve({ kind: 'video', duration, width, height, thumbnail });
-        } catch (err) {
-          cleanup();
-          reject(err instanceof Error ? err : new Error(String(err)));
-        }
-      }, { once: true });
+        },
+        { once: true },
+      );
 
       video.currentTime = seekTime;
     });
@@ -273,9 +283,12 @@ export function extractImageMetadata(file: File): Promise<ImageMetadata> {
 export async function extractMetadata(file: File): Promise<MediaMetadata> {
   const type = detectMediaType(file);
   switch (type) {
-    case 'video': return extractVideoMetadata(file);
-    case 'audio': return extractAudioMetadata(file);
-    case 'image': return extractImageMetadata(file);
+    case 'video':
+      return extractVideoMetadata(file);
+    case 'audio':
+      return extractAudioMetadata(file);
+    case 'image':
+      return extractImageMetadata(file);
     default:
       throw new Error(`Unsupported file type: ${file.type || 'unknown'} (${file.name})`);
   }

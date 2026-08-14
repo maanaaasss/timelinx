@@ -26,6 +26,7 @@ You're getting `@timelinx/react@1.0.0-beta.2` ready to publish from a clean stat
 ## Output
 
 Report plainly:
+
 - PR number, merge status, CI result
 - Confirmation `main` is up to date locally with a clean working tree
 - The exact command to run next (should just be `cd packages/react && pnpm publish --tag beta`, run manually)

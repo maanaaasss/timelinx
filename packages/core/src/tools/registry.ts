@@ -28,7 +28,7 @@ import { toToolId } from './types';
 // ---------------------------------------------------------------------------
 
 export type ToolRegistry = {
-  readonly tools:        ReadonlyMap<ToolId, ITool>;
+  readonly tools: ReadonlyMap<ToolId, ITool>;
   readonly activeToolId: ToolId;
 };
 
@@ -41,10 +41,7 @@ export type ToolRegistry = {
  *
  * @throws if defaultId is not present in the tools array
  */
-export function createRegistry(
-  tools:     readonly ITool[],
-  defaultId: ToolId,
-): ToolRegistry {
+export function createRegistry(tools: readonly ITool[], defaultId: ToolId): ToolRegistry {
   const map = new Map<ToolId, ITool>();
   for (const tool of tools) {
     map.set(tool.id, tool);
@@ -52,7 +49,7 @@ export function createRegistry(
   if (!map.has(defaultId)) {
     throw new Error(
       `createRegistry: defaultId "${defaultId}" not found in tools. ` +
-      `Available: [${[...map.keys()].join(', ')}]`,
+        `Available: [${[...map.keys()].join(', ')}]`,
     );
   }
   return { tools: map, activeToolId: defaultId };
@@ -68,10 +65,7 @@ export function createRegistry(
  *
  * @throws if id is not registered
  */
-export function activateTool(
-  registry: ToolRegistry,
-  id:       ToolId,
-): ToolRegistry {
+export function activateTool(registry: ToolRegistry, id: ToolId): ToolRegistry {
   // Step 1 — notify outgoing tool (idempotent, always safe to call)
   getActiveTool(registry).onCancel();
 
@@ -79,7 +73,7 @@ export function activateTool(
   if (!registry.tools.has(id)) {
     throw new Error(
       `activateTool: unknown toolId "${id}". ` +
-      `Registered: [${[...registry.tools.keys()].join(', ')}]`,
+        `Registered: [${[...registry.tools.keys()].join(', ')}]`,
     );
   }
 
@@ -97,7 +91,7 @@ export function getActiveTool(registry: ToolRegistry): ITool {
     // This should never happen if createRegistry and activateTool are used correctly.
     throw new Error(
       `getActiveTool: activeToolId "${registry.activeToolId}" is not registered. ` +
-      `Registry is corrupt.`,
+        `Registry is corrupt.`,
     );
   }
   return tool;
@@ -108,10 +102,7 @@ export function getActiveTool(registry: ToolRegistry): ITool {
  * If a tool with the same id already exists, it is replaced.
  * activeToolId is unchanged.
  */
-export function registerTool(
-  registry: ToolRegistry,
-  tool:     ITool,
-): ToolRegistry {
+export function registerTool(registry: ToolRegistry, tool: ITool): ToolRegistry {
   const next = new Map(registry.tools);
   next.set(tool.id, tool);
   return { ...registry, tools: next };
@@ -133,7 +124,7 @@ export function registerTool(
  * Real tools will clear instance variables there.
  */
 export const NoOpTool: ITool = {
-  id:          toToolId('noop'),
+  id: toToolId('noop'),
   shortcutKey: '',
 
   getCursor(_ctx: ToolContext): string {

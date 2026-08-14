@@ -19,18 +19,14 @@ export function StatusBar() {
   const phSeconds = Math.floor(playheadSeconds % 60);
   const phFrames = playheadFrame % fps;
 
-  const totalClips = timeline.tracks.reduce(
-    (sum, track) => sum + track.clips.length,
-    0,
-  );
+  const totalClips = timeline.tracks.reduce((sum, track) => sum + track.clips.length, 0);
 
   return (
     <div className="status-bar">
       <div className="status-item">
         <span className="status-label">Position:</span>
         <span className="status-value">
-          {String(phMinutes).padStart(2, '0')}:
-          {String(phSeconds).padStart(2, '0')}:
+          {String(phMinutes).padStart(2, '0')}:{String(phSeconds).padStart(2, '0')}:
           {String(phFrames).padStart(2, '0')}
         </span>
       </div>

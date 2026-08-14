@@ -23,7 +23,15 @@ import type {
   ProvisionalState,
   OperationPrimitive,
 } from '@timelinx/core';
-import { toFrame, createTrack, createClip, toAssetId, createAsset, frameRate, toTrackId } from '@timelinx/core';
+import {
+  toFrame,
+  createTrack,
+  createClip,
+  toAssetId,
+  createAsset,
+  frameRate,
+  toTrackId,
+} from '@timelinx/core';
 import { TimelineProvider, useTimelineContext, TimelineCtx } from '../context/timeline-context';
 import { TimelineRuler } from './timeline-ruler';
 import { TimelineTrack } from './timeline-track';
@@ -190,9 +198,7 @@ export function TimelineEditor({
 
   return (
     <TimelineProvider engine={engine} initialPpf={initialPpf} onPpfChange={onPpfChange}>
-      <MediaAssetsProvider>
-        {content}
-      </MediaAssetsProvider>
+      <MediaAssetsProvider>{content}</MediaAssetsProvider>
     </TimelineProvider>
   );
 }
@@ -265,7 +271,9 @@ function EditorInner({
   const trackScrollRef = useRef<HTMLDivElement>(null);
   const labelColumnRef = useRef<HTMLDivElement>(null);
   const handDragRef = useRef<{ startX: number; startScroll: number } | null>(null);
-  const resizeDragRef = useRef<{ trackId: string; startY: number; startHeight: number } | null>(null);
+  const resizeDragRef = useRef<{ trackId: string; startY: number; startHeight: number } | null>(
+    null,
+  );
 
   const [trackHeights, setTrackHeights] = useState<Record<string, number>>({});
   const [dropTarget, setDropTarget] = useState<{ trackId: string; frame: number } | null>(null);
@@ -393,7 +401,10 @@ function EditorInner({
     const onMove = (e: PointerEvent) => {
       if (resizeDragRef.current) {
         const dy = e.clientY - resizeDragRef.current.startY;
-        const newH = Math.max(MIN_TRACK_HEIGHT, Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy));
+        const newH = Math.max(
+          MIN_TRACK_HEIGHT,
+          Math.min(MAX_TRACK_HEIGHT, resizeDragRef.current.startHeight + dy),
+        );
         setTrackHeights((prev) => ({ ...prev, [resizeDragRef.current!.trackId]: newH }));
       }
       if (timelineResizeRef.current) {
@@ -579,7 +590,9 @@ function EditorInner({
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;
         const lastFrame = Math.max(0, durationFramesRef.current - 1);
-        engine.seekTo(toFrame(Math.min(lastFrame, Math.max(0, (frameRef.current as number) + step))));
+        engine.seekTo(
+          toFrame(Math.min(lastFrame, Math.max(0, (frameRef.current as number) + step))),
+        );
         return;
       }
 
@@ -645,47 +658,56 @@ function EditorInner({
     [setScrollLeft, vpWidth, durationFrames, ppfRef],
   );
 
-  const getDropTarget = useCallback((e: React.DragEvent) => {
-    const area = trackAreaRef.current;
-    if (!area) return null;
-    let el = e.target as HTMLElement | null;
-    let trackId: string | null = null;
-    while (el && el !== area) {
-      if (el.dataset.trackId) {
-        trackId = el.dataset.trackId;
-        break;
+  const getDropTarget = useCallback(
+    (e: React.DragEvent) => {
+      const area = trackAreaRef.current;
+      if (!area) return null;
+      let el = e.target as HTMLElement | null;
+      let trackId: string | null = null;
+      while (el && el !== area) {
+        if (el.dataset.trackId) {
+          trackId = el.dataset.trackId;
+          break;
+        }
+        el = el.parentElement;
       }
-      el = el.parentElement;
-    }
-    if (!trackId) {
-      if (trackIds.length > 0) {
-        trackId = trackIds[0] as string;
-      } else {
-        return null;
+      if (!trackId) {
+        if (trackIds.length > 0) {
+          trackId = trackIds[0] as string;
+        } else {
+          return null;
+        }
       }
-    }
-    const rect = area.getBoundingClientRect();
-    return {
-      trackId,
-      frame: Math.max(0, Math.round((e.clientX - rect.left) / ppfRef.current)),
-    };
-  }, [ppfRef, trackIds]);
+      const rect = area.getBoundingClientRect();
+      return {
+        trackId,
+        frame: Math.max(0, Math.round((e.clientX - rect.left) / ppfRef.current)),
+      };
+    },
+    [ppfRef, trackIds],
+  );
 
-  const onDragOver = useCallback((e: React.DragEvent) => {
-    if (!onAssetDrop) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setDropTarget(getDropTarget(e));
-  }, [getDropTarget, onAssetDrop]);
+  const onDragOver = useCallback(
+    (e: React.DragEvent) => {
+      if (!onAssetDrop) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      setDropTarget(getDropTarget(e));
+    },
+    [getDropTarget, onAssetDrop],
+  );
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    if (!onAssetDrop) return;
-    e.preventDefault();
-    const target = getDropTarget(e);
-    const assetId = e.dataTransfer.getData('application/x-timeline-asset');
-    setDropTarget(null);
-    if (target && assetId) onAssetDrop({ assetId, ...target });
-  }, [getDropTarget, onAssetDrop]);
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      if (!onAssetDrop) return;
+      e.preventDefault();
+      const target = getDropTarget(e);
+      const assetId = e.dataTransfer.getData('application/x-timeline-asset');
+      setDropTarget(null);
+      if (target && assetId) onAssetDrop({ assetId, ...target });
+    },
+    [getDropTarget, onAssetDrop],
+  );
 
   const timelineWidth = Math.max(durationFrames * ppf, vpWidth);
   const firstAudioIdx = trackIds.findIndex((tid) => trackTypesMap.get(tid) === 'audio');
@@ -707,7 +729,17 @@ function EditorInner({
       {/* Main Content Area */}
       <main className="timeline-main">
         {/* Top Navigation Bar */}
-        {showTopNav && <TopNav projectName={projectName} onExport={() => { if (import.meta.env.DEV) console.log('[EXPORT-DEBUG] TopNav onExport click handler fired'); handleExportOpen(); onExport?.(); }} />}
+        {showTopNav && (
+          <TopNav
+            projectName={projectName}
+            onExport={() => {
+              if (import.meta.env.DEV)
+                console.log('[EXPORT-DEBUG] TopNav onExport click handler fired');
+              handleExportOpen();
+              onExport?.();
+            }}
+          />
+        )}
 
         {/* Workspace Split: Media Browser + Preview */}
         <div className="timeline-workspace-split">
@@ -721,10 +753,16 @@ function EditorInner({
           {/* Video Preview + Transport Controls */}
           <div className="timeline-preview-area">
             <div className="preview-panel">
-              <div className="preview-frame" style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}>
+              <div
+                className="preview-frame"
+                style={{ aspectRatio: '21/9', maxWidth: '800px', width: '100%' }}
+              >
                 <CompositorPreview />
                 <div className="preview-safe-area" />
-                <div className="preview-timecode" style={{ position: 'absolute', bottom: 8, left: 10 }}>
+                <div
+                  className="preview-timecode"
+                  style={{ position: 'absolute', bottom: 8, left: 10 }}
+                >
                   {frameToTimecode(frame as number, fps)}
                 </div>
               </div>
@@ -791,74 +829,63 @@ function EditorInner({
 
             {/* Right: Tracks (scrollable, ruler sticky inside) */}
             <div className="timeline-scroll-area">
-              <div
-                className="timeline-track-scroll"
-                ref={trackScrollRef}
-                onScroll={onScroll}
-              >
-              <TimelineRuler totalWidth={timelineWidth} />
-              <div
-                ref={trackAreaRef}
-                className="timeline-track-canvas"
-                style={{
-                  width: Math.max(timelineWidth, vpWidth),
-                  minHeight: totalTrackHeight,
-                  cursor:
-                    toolId === 'hand'
-                      ? handDragRef.current
-                        ? 'grabbing'
-                        : 'grab'
-                      : cursor,
-                }}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                onPointerLeave={onPointerLeave}
-                onDragOver={onDragOver}
-                onDragLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget(null);
-                }}
-                onDrop={onDrop}
-              >
-                {trackIds.map((tid, i) => {
-                  const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
-                  return (
-                    <React.Fragment key={tid}>
-                      {isSep && <div className="timeline-track-separator" />}
-                      <ClipRow
-                        trackId={tid}
-                        ppf={ppf}
-                        provisional={provisional}
-                        selection={selection}
-                        toolId={toolId}
-                        height={getTrackHeight(tid)}
-                        fps={fps}
-                        startFrame={virtualWindow.startFrame as number}
-                        endFrame={virtualWindow.endFrame as number}
-                        trackType={trackTypesMap.get(tid)}
-                        thumbnails={thumbnails}
-                      />
-                    </React.Fragment>
-                  );
-                })}
+              <div className="timeline-track-scroll" ref={trackScrollRef} onScroll={onScroll}>
+                <TimelineRuler totalWidth={timelineWidth} />
+                <div
+                  ref={trackAreaRef}
+                  className="timeline-track-canvas"
+                  style={{
+                    width: Math.max(timelineWidth, vpWidth),
+                    minHeight: totalTrackHeight,
+                    cursor:
+                      toolId === 'hand' ? (handDragRef.current ? 'grabbing' : 'grab') : cursor,
+                  }}
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerLeave={onPointerLeave}
+                  onDragOver={onDragOver}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                      setDropTarget(null);
+                  }}
+                  onDrop={onDrop}
+                >
+                  {trackIds.map((tid, i) => {
+                    const isSep = firstAudioIdx > 0 && i === firstAudioIdx;
+                    return (
+                      <React.Fragment key={tid}>
+                        {isSep && <div className="timeline-track-separator" />}
+                        <ClipRow
+                          trackId={tid}
+                          ppf={ppf}
+                          provisional={provisional}
+                          selection={selection}
+                          toolId={toolId}
+                          height={getTrackHeight(tid)}
+                          fps={fps}
+                          startFrame={virtualWindow.startFrame as number}
+                          endFrame={virtualWindow.endFrame as number}
+                          trackType={trackTypesMap.get(tid)}
+                          thumbnails={thumbnails}
+                        />
+                      </React.Fragment>
+                    );
+                  })}
 
-                <SnapIndicator
-                  frames={snapFrames}
-                  ppf={ppf}
-                  totalHeight={totalTrackHeight}
-                />
+                  <SnapIndicator frames={snapFrames} ppf={ppf} totalHeight={totalTrackHeight} />
 
-                {dropTarget && (
-                  <DropZone
-                    frame={dropTarget.frame}
-                    ppf={ppf}
-                    totalHeight={totalTrackHeight}
-                    fps={fps}
-                  />
-                )}
+                  {dropTarget && (
+                    <DropZone
+                      frame={dropTarget.frame}
+                      ppf={ppf}
+                      totalHeight={totalTrackHeight}
+                      fps={fps}
+                    />
+                  )}
 
-                <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />
-              </div>
+                  <TimelinePlayhead totalHeight={totalTrackHeight} topOffset={0} />
+                </div>
               </div>
             </div>
           </div>

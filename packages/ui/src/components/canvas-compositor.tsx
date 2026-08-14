@@ -241,7 +241,10 @@ function resolveAssetSrc(
   return fileAsset.filePath || null;
 }
 
-function isImageSource(asset: FileAsset, mediaAssets: CompositorRenderOptions['mediaAssets']): boolean {
+function isImageSource(
+  asset: FileAsset,
+  mediaAssets: CompositorRenderOptions['mediaAssets'],
+): boolean {
   const file = mediaAssets.getFile(asset.id as string);
   if (file?.type.startsWith('image/')) return true;
   return /\.(avif|bmp|gif|jpe?g|png|svg|webp)(?:[?#].*)?$/i.test(asset.filePath);
@@ -347,16 +350,23 @@ export function renderCompositorFrame(
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   // Resolve all visible layers at this frame
-  const resolved = resolveFrame(
-    state,
-    toFrame(frame),
-    'full',
-    { width: canvasW, height: canvasH },
-  );
+  const resolved = resolveFrame(state, toFrame(frame), 'full', { width: canvasW, height: canvasH });
 
   // Draw layers bottom-to-top (trackIndex order — already sorted by resolveFrame)
   for (const layer of resolved.layers) {
-    renderLayer(ctx, layer, state, mediaAssets, pool, lastSeekRef, canvasW, canvasH, fps, frame, _debugFrameCount);
+    renderLayer(
+      ctx,
+      layer,
+      state,
+      mediaAssets,
+      pool,
+      lastSeekRef,
+      canvasW,
+      canvasH,
+      fps,
+      frame,
+      _debugFrameCount,
+    );
   }
 }
 
@@ -403,16 +413,25 @@ function renderLayer(
   // Diagnostic: log transform values for first few frames
   if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
     const t = layer.transform;
-    console.log('[COMPOSITOR-DEBUG] clip:', layer.clipId, 'transform:', {
-      positionX: t.positionX.value,
-      positionY: t.positionY.value,
-      scaleX: t.scaleX.value,
-      scaleY: t.scaleY.value,
-      rotation: t.rotation.value,
-      anchorX: t.anchorX.value,
-      anchorY: t.anchorY.value,
-      opacity: t.opacity.value,
-    }, 'canvas:', canvasW, '×', canvasH);
+    console.log(
+      '[COMPOSITOR-DEBUG] clip:',
+      layer.clipId,
+      'transform:',
+      {
+        positionX: t.positionX.value,
+        positionY: t.positionY.value,
+        scaleX: t.scaleX.value,
+        scaleY: t.scaleY.value,
+        rotation: t.rotation.value,
+        anchorX: t.anchorX.value,
+        anchorY: t.anchorY.value,
+        opacity: t.opacity.value,
+      },
+      'canvas:',
+      canvasW,
+      '×',
+      canvasH,
+    );
   }
 
   if (asset.kind === 'generator') {
@@ -429,7 +448,19 @@ function renderLayer(
     if (isImageSource(fileAsset, mediaAssets)) {
       renderImage(ctx, pool, clip.id as string, src, canvasW, canvasH, _debugFrameCount);
     } else if (fileAsset.mediaType === 'video') {
-      renderVideo(ctx, clip, pool, clip.id as string, src, canvasW, canvasH, fps, currentFrame, lastSeekRef, _debugFrameCount);
+      renderVideo(
+        ctx,
+        clip,
+        pool,
+        clip.id as string,
+        src,
+        canvasW,
+        canvasH,
+        fps,
+        currentFrame,
+        lastSeekRef,
+        _debugFrameCount,
+      );
     } else if (fileAsset.mediaType === 'audio') {
       // Audio clips have no visual representation — skip
     }
@@ -463,7 +494,20 @@ function renderVideo(
   }
 
   if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
-    console.log('[EXPORT-DEBUG]   renderVideo clip:', clipId, 'targetTime:', targetTime.toFixed(3), 'readyState:', video.readyState, 'videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight, 'src:', src?.substring(0, 80));
+    console.log(
+      '[EXPORT-DEBUG]   renderVideo clip:',
+      clipId,
+      'targetTime:',
+      targetTime.toFixed(3),
+      'readyState:',
+      video.readyState,
+      'videoWidth:',
+      video.videoWidth,
+      'videoHeight:',
+      video.videoHeight,
+      'src:',
+      src?.substring(0, 80),
+    );
   }
 
   // Draw the video frame (may be stale if seek hasn't completed — acceptable for real-time)
@@ -508,7 +552,8 @@ function renderImage(
     console.log('[COMPOSITOR-DEBUG] renderImage clip:', clipId, {
       naturalWidth: img.naturalWidth,
       naturalHeight: img.naturalHeight,
-      canvasW, canvasH,
+      canvasW,
+      canvasH,
       scale: scale.toFixed(4),
       drawImageArgs: { dx: dx.toFixed(1), dy: dy.toFixed(1), dw: dw.toFixed(1), dh: dh.toFixed(1) },
     });
@@ -525,7 +570,7 @@ function renderGenerator(
 ): void {
   const gen = asset.generatorDef;
   if (gen.type === 'text') {
-    const text = (gen.params as Record<string, unknown>).text as string ?? '';
+    const text = ((gen.params as Record<string, unknown>).text as string) ?? '';
     if (!text) return;
 
     const fontSize = Math.max(24, Math.min(72, canvasH * 0.06));
@@ -693,8 +738,8 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     }
 
     return () => ro.disconnect();
-  // CANVAS_W / CANVAS_H are constants — no need to list as deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // CANVAS_W / CANVAS_H are constants — no need to list as deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update canvas backing store size when displaySize or DPR changes.
@@ -778,12 +823,12 @@ export const CompositorPreview = React.memo(function CompositorPreview({
     : { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' };
 
   return (
-    <div ref={containerRef} className={`media-preview${className ? ` ${className}` : ''}`} style={{ position: 'relative' }}>
-      <canvas
-        ref={canvasRef}
-        className="media-preview-canvas"
-        style={canvasStyle}
-      />
+    <div
+      ref={containerRef}
+      className={`media-preview${className ? ` ${className}` : ''}`}
+      style={{ position: 'relative' }}
+    >
+      <canvas ref={canvasRef} className="media-preview-canvas" style={canvasStyle} />
       <PreviewOverlay />
     </div>
   );

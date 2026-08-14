@@ -12,9 +12,9 @@ import { TimelineEngine } from '../engine/timeline-engine';
 import { nodeClock, createTestClock } from '../engine/clock';
 
 import { createTimelineState } from '../types/state';
-import { createTimeline }      from '../types/timeline';
+import { createTimeline } from '../types/timeline';
 import { createTrack, toTrackId } from '../types/track';
-import { createClip, toClipId }   from '../types/clip';
+import { createClip, toClipId } from '../types/clip';
 import { createAsset, toAssetId } from '../types/asset';
 import { toFrame, toTimecode, frameRate } from '../types/frame';
 import type { TrackId } from '../types/track';
@@ -27,29 +27,43 @@ const ASSET_1 = toAssetId('asset-1');
 
 function asset() {
   return createAsset({
-    id: 'asset-1', name: 'Test', mediaType: 'video',
+    id: 'asset-1',
+    name: 'Test',
+    mediaType: 'video',
     filePath: '/media/test.mp4',
     intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
 }
 
 function makeClip(id: string, start: number, end: number, trackId: TrackId = TRACK_1) {
   return createClip({
-    id, assetId: 'asset-1', trackId,
-    timelineStart: toFrame(start), timelineEnd: toFrame(end),
-    mediaIn: toFrame(0), mediaOut: toFrame(end - start),
+    id,
+    assetId: 'asset-1',
+    trackId,
+    timelineStart: toFrame(start),
+    timelineEnd: toFrame(end),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(end - start),
   });
 }
 
 function makeState() {
   const track = createTrack({
-    id: TRACK_1, name: 'V1', type: 'video',
+    id: TRACK_1,
+    name: 'V1',
+    type: 'video',
     clips: [makeClip('c1', 0, 100), makeClip('c2', 100, 200), makeClip('c3', 200, 300)],
   });
   const tl = createTimeline({
-    id: 'tl', name: 'Test', fps: frameRate(30),
-    duration: toFrame(9000), startTimecode: toTimecode('00:00:00:00'), tracks: [track],
+    id: 'tl',
+    name: 'Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
   });
   return createTimelineState({ timeline: tl, assetRegistry: new Map([[ASSET_1, asset()]]) });
 }
@@ -88,7 +102,9 @@ describe('clock', () => {
     it('tick advances time and fires callbacks', () => {
       const { clock, tick } = createTestClock();
       let fired = false;
-      clock.requestFrame(() => { fired = true; });
+      clock.requestFrame(() => {
+        fired = true;
+      });
       tick(16);
       expect(fired).toBe(true);
       expect(clock.now()).toBe(16);
@@ -97,7 +113,9 @@ describe('clock', () => {
     it('cancelFrame prevents callback from firing', () => {
       const { clock, tick } = createTestClock();
       let fired = false;
-      const id = clock.requestFrame(() => { fired = true; });
+      const id = clock.requestFrame(() => {
+        fired = true;
+      });
       clock.cancelFrame(id);
       tick(16);
       expect(fired).toBe(false);
@@ -126,7 +144,9 @@ describe('TimelineEngine', () => {
     it('notifies listeners on state change', () => {
       const engine = new TimelineEngine(makeState());
       let called = false;
-      engine.subscribe(() => { called = true; });
+      engine.subscribe(() => {
+        called = true;
+      });
       engine.setTimelineName('Changed');
       expect(called).toBe(true);
     });
@@ -134,7 +154,9 @@ describe('TimelineEngine', () => {
     it('unsubscribe stops notifications', () => {
       const engine = new TimelineEngine(makeState());
       let count = 0;
-      const unsub = engine.subscribe(() => { count++; });
+      const unsub = engine.subscribe(() => {
+        count++;
+      });
       engine.setTimelineName('A');
       unsub();
       engine.setTimelineName('B');
@@ -146,9 +168,14 @@ describe('TimelineEngine', () => {
     it('registerAsset and getAsset', () => {
       const engine = new TimelineEngine(makeState());
       const newAsset = createAsset({
-        id: 'asset-2', name: 'B', mediaType: 'video',
-        filePath: '/b.mp4', intrinsicDuration: toFrame(1000),
-        nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+        id: 'asset-2',
+        name: 'B',
+        mediaType: 'video',
+        filePath: '/b.mp4',
+        intrinsicDuration: toFrame(1000),
+        nativeFps: 30,
+        sourceTimecodeOffset: toFrame(0),
+        status: 'online',
       });
       const result = engine.registerAsset(newAsset);
       expect(result.accepted).toBe(true);

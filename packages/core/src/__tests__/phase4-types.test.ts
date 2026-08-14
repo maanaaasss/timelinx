@@ -5,10 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { LINEAR_EASING, HOLD_EASING } from '../types/easing';
-import {
-  toKeyframeId,
-  type Keyframe,
-} from '../types/keyframe';
+import { toKeyframeId, type Keyframe } from '../types/keyframe';
 import { createEffect, toEffectId } from '../types/effect';
 import { DEFAULT_CLIP_TRANSFORM } from '../types/clip-transform';
 import { DEFAULT_AUDIO_PROPERTIES } from '../types/audio-properties';
@@ -120,10 +117,7 @@ describe('Phase 4 — TrackGroup', () => {
 
 describe('Phase 4 — LinkGroup', () => {
   it('createLinkGroup stores clipIds', () => {
-    const g = createLinkGroup(toLinkGroupId('link-1'), [
-      toClipId('c1'),
-      toClipId('c2'),
-    ]);
+    const g = createLinkGroup(toLinkGroupId('link-1'), [toClipId('c1'), toClipId('c2')]);
     expect(g.clipIds).toHaveLength(2);
     expect(g.clipIds[0]).toBe('c1');
     expect(g.clipIds[1]).toBe('c2');

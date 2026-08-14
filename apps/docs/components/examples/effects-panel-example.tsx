@@ -70,7 +70,14 @@ export function EffectsPanelExample() {
   const engine = useMemo(() => createEngineWithSelection(), []);
 
   return (
-    <div style={{ height: 400, border: '1px solid var(--color-border, #333)', borderRadius: 8, overflow: 'hidden' }}>
+    <div
+      style={{
+        height: 400,
+        border: '1px solid var(--color-border, #333)',
+        borderRadius: 8,
+        overflow: 'hidden',
+      }}
+    >
       <ReactTimelineProvider engine={engine}>
         <UITimelineProvider engine={engine} onPpfChange={() => {}}>
           <EffectsPanel />

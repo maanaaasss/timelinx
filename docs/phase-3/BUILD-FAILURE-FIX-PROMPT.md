@@ -3,6 +3,7 @@ The last verification pass found `pnpm build` failing in `packages/core` with: `
 ## Step 1 — Diagnose the actual cause
 
 This error pattern (`declaration output would overwrite input file`) almost always means one of:
+
 - `tsconfig.json` has `declaration`/`declarationMap` enabled and its `outDir` overlaps with `rootDir` or with where tsup is also trying to emit `.d.ts` files, so TypeScript's own emit collides with tsup's DTS generation step.
 - A source file literally named `internal.d.ts` exists somewhere it shouldn't.
 
@@ -21,10 +22,11 @@ Fix the actual configuration conflict (e.g., disable `declaration`/`declarationM
 ## Step 4 — Re-verify the tarball is still clean, from the freshly-built dist
 
 Now that `dist/` is freshly and successfully built (not stale), re-run:
+
 1. `cd packages/core && npm pack --dry-run` — paste full actual output.
 2. `cd packages/react && npm pack --dry-run` — paste full actual output.
 
-Confirm the file lists and sizes are consistent with what was reported before (or note and explain any differences — a fresh build might legitimately produce slightly different chunk hashes/sizes, that's fine, just confirm the *contents* are still just `dist/`, `package.json`, `README.md`, `LICENSE`).
+Confirm the file lists and sizes are consistent with what was reported before (or note and explain any differences — a fresh build might legitimately produce slightly different chunk hashes/sizes, that's fine, just confirm the _contents_ are still just `dist/`, `package.json`, `README.md`, `LICENSE`).
 
 ## Step 5 — Re-run the full test suite against the fresh build
 
@@ -35,7 +37,9 @@ Confirm the file lists and sizes are consistent with what was reported before (o
 Since GitHub Actions CI previously reported a successful "Build & Test" run, but a local build just failed — figure out why CI passed if this is genuinely broken. Possibilities: CI's environment differs (e.g., a clean checkout doesn't have the same locally-cached `dist/` state and behaves differently), or the failure is specific to something in the local dev environment (leftover files, node_modules state) rather than the repo itself. Determine which, and state clearly whether the failure is a real repo-level bug or a local-environment artifact — these have very different implications for whether CI can be trusted for the actual publish.
 
 ## Process rule (unchanged)
+
 Real command output only. If Step 2's fix doesn't fully resolve it on the first attempt, say so and keep iterating — don't report success until `pnpm build` genuinely exits 0 from a clean `dist/` deletion.
 
 ## Output
+
 Append a new section to `docs/phase-3/PUBLISH-SAFETY-VERIFICATION.md`: "Build Failure Root Cause & Fix", including the diagnosis, the fix applied, and the fresh clean-build evidence from Steps 3-6. Update the final verdict (§7) only if all of this actually checks out — otherwise state plainly what's still blocking.

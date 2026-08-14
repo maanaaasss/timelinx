@@ -9,18 +9,38 @@
 
 import { describe, it, expect } from 'vitest';
 
-import { addClip, removeClip, moveClip, resizeClip, trimClip, updateClip, moveClipToTrack } from '../operations/clip-operations';
-import { registerAsset, getAsset, hasAsset, getAllAssets, unregisterAsset } from '../systems/asset-registry';
-import { beginTransaction, applyOperation, commitTransaction, rollbackTransaction, getOperationCount } from '../engine/transactions';
+import {
+  addClip,
+  removeClip,
+  moveClip,
+  resizeClip,
+  trimClip,
+  updateClip,
+  moveClipToTrack,
+} from '../operations/clip-operations';
+import {
+  registerAsset,
+  getAsset,
+  hasAsset,
+  getAllAssets,
+  unregisterAsset,
+} from '../systems/asset-registry';
+import {
+  beginTransaction,
+  applyOperation,
+  commitTransaction,
+  rollbackTransaction,
+  getOperationCount,
+} from '../engine/transactions';
 
 import { createTimelineState } from '../types/state';
-import { createTimeline }      from '../types/timeline';
+import { createTimeline } from '../types/timeline';
 import { createTrack, toTrackId } from '../types/track';
-import { createClip, toClipId }   from '../types/clip';
+import { createClip, toClipId } from '../types/clip';
 import { createAsset, toAssetId } from '../types/asset';
 import { toFrame, toTimecode, frameRate } from '../types/frame';
 import type { TimelineState } from '../types/state';
-import type { TrackId }       from '../types/track';
+import type { TrackId } from '../types/track';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,25 +50,37 @@ const ASSET_1 = toAssetId('asset-1');
 
 function asset() {
   return createAsset({
-    id: 'asset-1', name: 'Test', mediaType: 'video',
+    id: 'asset-1',
+    name: 'Test',
+    mediaType: 'video',
     filePath: '/media/test.mp4',
     intrinsicDuration: toFrame(9000),
-    nativeFps: 30, sourceTimecodeOffset: toFrame(0), status: 'online',
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
   });
 }
 
 function makeClip(id: string, start: number, end: number, trackId: TrackId = TRACK_1) {
   return createClip({
-    id, assetId: 'asset-1', trackId,
-    timelineStart: toFrame(start), timelineEnd: toFrame(end),
-    mediaIn: toFrame(0), mediaOut: toFrame(end - start),
+    id,
+    assetId: 'asset-1',
+    trackId,
+    timelineStart: toFrame(start),
+    timelineEnd: toFrame(end),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(end - start),
   });
 }
 
 function state(tracks: ReturnType<typeof createTrack>[]): TimelineState {
   const tl = createTimeline({
-    id: 'tl', name: 'Test', fps: frameRate(30),
-    duration: toFrame(9000), startTimecode: toTimecode('00:00:00:00'), tracks,
+    id: 'tl',
+    name: 'Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks,
   });
   return createTimelineState({ timeline: tl, assetRegistry: new Map([[ASSET_1, asset()]]) });
 }
@@ -73,7 +105,9 @@ describe('clip operations', () => {
 
   describe('removeClip', () => {
     it('removes clip from track', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] }),
+      ]);
       const result = removeClip(s, 'a');
       expect(result.timeline.tracks[0]!.clips).toHaveLength(0);
     });
@@ -87,7 +121,9 @@ describe('clip operations', () => {
 
   describe('moveClip', () => {
     it('moves clip to new position', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] }),
+      ]);
       const result = moveClip(s, 'a', toFrame(500));
       const moved = result.timeline.tracks[0]!.clips[0]!;
       expect(moved.timelineStart).toBe(toFrame(500));
@@ -102,7 +138,9 @@ describe('clip operations', () => {
 
   describe('resizeClip', () => {
     it('resizes clip from left edge', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] }),
+      ]);
       const result = resizeClip(s, 'a', toFrame(50), toFrame(200));
       const clip = result.timeline.tracks[0]!.clips[0]!;
       expect(clip.timelineStart).toBe(toFrame(50));
@@ -110,7 +148,9 @@ describe('clip operations', () => {
     });
 
     it('resizes clip from right edge', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] }),
+      ]);
       const result = resizeClip(s, 'a', toFrame(100), toFrame(300));
       const clip = result.timeline.tracks[0]!.clips[0]!;
       expect(clip.timelineEnd).toBe(toFrame(300));
@@ -125,7 +165,9 @@ describe('clip operations', () => {
 
   describe('trimClip', () => {
     it('trims clip media bounds', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] }),
+      ]);
       const result = trimClip(s, 'a', toFrame(50), toFrame(150));
       const clip = result.timeline.tracks[0]!.clips[0]!;
       expect(clip.mediaIn).toBe(toFrame(50));
@@ -135,7 +177,9 @@ describe('clip operations', () => {
 
   describe('updateClip', () => {
     it('updates clip properties', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 100, 200)] }),
+      ]);
       const result = updateClip(s, 'a', { opacity: 0.5 });
       const clip = result.timeline.tracks[0]!.clips[0]!;
       expect(clip.opacity).toBe(0.5);
@@ -166,12 +210,16 @@ describe('clip operations', () => {
     });
 
     it('returns unchanged for missing target track', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] }),
+      ]);
       expect(moveClipToTrack(s, 'a', toTrackId('bad'))).toBe(s);
     });
 
     it('returns unchanged when already on target track', () => {
-      const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] })]);
+      const s = state([
+        createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] }),
+      ]);
       expect(moveClipToTrack(s, 'a', TRACK_1)).toBe(s);
     });
   });
@@ -230,7 +278,9 @@ describe('asset registry', () => {
 // ── Transactions ─────────────────────────────────────────────────────────────
 
 describe('transactions', () => {
-  const baseState = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] })]);
+  const baseState = state([
+    createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [makeClip('a', 0, 100)] }),
+  ]);
 
   describe('beginTransaction', () => {
     it('creates transaction context', () => {
@@ -245,7 +295,7 @@ describe('transactions', () => {
   describe('applyOperation', () => {
     it('applies operation to state', () => {
       let tx = beginTransaction(baseState);
-      tx = applyOperation(tx, s => removeClip(s, 'a'));
+      tx = applyOperation(tx, (s) => removeClip(s, 'a'));
       expect(tx.operations).toHaveLength(1);
       expect(tx.currentState.timeline.tracks[0]!.clips).toHaveLength(0);
     });
@@ -254,7 +304,7 @@ describe('transactions', () => {
   describe('commitTransaction', () => {
     it('returns final state', () => {
       let tx = beginTransaction(baseState);
-      tx = applyOperation(tx, s => removeClip(s, 'a'));
+      tx = applyOperation(tx, (s) => removeClip(s, 'a'));
       const result = commitTransaction(tx);
       expect(result.timeline.tracks[0]!.clips).toHaveLength(0);
     });
@@ -263,7 +313,7 @@ describe('transactions', () => {
   describe('rollbackTransaction', () => {
     it('returns initial state', () => {
       let tx = beginTransaction(baseState);
-      tx = applyOperation(tx, s => removeClip(s, 'a'));
+      tx = applyOperation(tx, (s) => removeClip(s, 'a'));
       const result = rollbackTransaction(tx);
       expect(result).toBe(baseState);
     });
@@ -273,8 +323,8 @@ describe('transactions', () => {
     it('returns operation count', () => {
       let tx = beginTransaction(baseState);
       expect(getOperationCount(tx)).toBe(0);
-      tx = applyOperation(tx, s => s);
-      tx = applyOperation(tx, s => s);
+      tx = applyOperation(tx, (s) => s);
+      tx = applyOperation(tx, (s) => s);
       expect(getOperationCount(tx)).toBe(2);
     });
   });

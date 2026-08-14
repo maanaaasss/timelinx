@@ -7,13 +7,13 @@ description: Component map, editor surfaces, panels, and styling guidance for @t
 
 ## Component Map
 
-| Area | Components |
-|------|------------|
-| Editor shell | `TimelineEditor`, `TopNav`, `Sidebar`, `StatusBar`, `CommandPalette`, `KeyboardShortcutsOverlay`. |
-| Timeline canvas | `TimelineToolbar`, `TimelineRuler`, `TrackList`, `TimelineTrack`, `TimelineClip`, `TimelinePlayhead`, `SnapIndicator`, `ZoomControls`. |
-| Media and preview | `AssetBin`, `DropZone`, `MediaPreview`, `CompositorPreview`, `TransportControls`. |
-| Inspection panels | `InspectorPanel`, `EffectsPanel`, `KeyframesPanel`, `TransitionsPanel`, `CaptionsPanel`, `MarkersPanel`, `TextPanel`, `ExportDialog`. |
-| Composition helpers | `TabbedPanel`, `CollapsibleSection`, icons, design tokens, presets, and shared time/geometry utilities. |
+| Area                | Components                                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor shell        | `TimelineEditor`, `TopNav`, `Sidebar`, `StatusBar`, `CommandPalette`, `KeyboardShortcutsOverlay`.                                      |
+| Timeline canvas     | `TimelineToolbar`, `TimelineRuler`, `TrackList`, `TimelineTrack`, `TimelineClip`, `TimelinePlayhead`, `SnapIndicator`, `ZoomControls`. |
+| Media and preview   | `AssetBin`, `DropZone`, `MediaPreview`, `CompositorPreview`, `TransportControls`.                                                      |
+| Inspection panels   | `InspectorPanel`, `EffectsPanel`, `KeyframesPanel`, `TransitionsPanel`, `CaptionsPanel`, `MarkersPanel`, `TextPanel`, `ExportDialog`.  |
+| Composition helpers | `TabbedPanel`, `CollapsibleSection`, icons, design tokens, presets, and shared time/geometry utilities.                                |
 
 ## How To Use It
 
@@ -42,29 +42,29 @@ Import the design system once:
 
 ## Composition Patterns
 
-| Pattern | Use when |
-|---------|----------|
-| Full editor | Use `TimelineEditor` when you want the main editing surface composed for you: toolbar, ruler, tracks, clips, playhead, and transport-oriented layout. |
-| Custom shell | Assemble `TopNav`, `Sidebar`, `TrackList`, `TimelineRuler`, `TimelineTrack`, `TimelineClip`, and panels when your product has its own app frame. |
-| Focused panels | Use `InspectorPanel`, `EffectsPanel`, `KeyframesPanel`, `TransitionsPanel`, `CaptionsPanel`, `MarkersPanel`, and `ExportDialog` next to your own preview or media browser. |
-| Interactive timeline | Components connect to the engine context for selection, tool changes, provisional state, snapping, zoom, scroll, and playhead rendering. |
+| Pattern              | Use when                                                                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full editor          | Use `TimelineEditor` when you want the main editing surface composed for you: toolbar, ruler, tracks, clips, playhead, and transport-oriented layout.                      |
+| Custom shell         | Assemble `TopNav`, `Sidebar`, `TrackList`, `TimelineRuler`, `TimelineTrack`, `TimelineClip`, and panels when your product has its own app frame.                           |
+| Focused panels       | Use `InspectorPanel`, `EffectsPanel`, `KeyframesPanel`, `TransitionsPanel`, `CaptionsPanel`, `MarkersPanel`, and `ExportDialog` next to your own preview or media browser. |
+| Interactive timeline | Components connect to the engine context for selection, tool changes, provisional state, snapping, zoom, scroll, and playhead rendering.                                   |
 
 ## Component Gallery
 
-- [TimelineEditor](/docs/ui/timeline-editor)  - full editor surface.
-- [TimelineToolbar](/docs/ui/timeline-toolbar)  - editing tools and command buttons.
-- [TimelineRuler](/docs/ui/timeline-ruler)  - frame/timecode ruler.
-- [TimelineTrack](/docs/ui/timeline-track)  - track lane rendering.
-- [TimelineClip](/docs/ui/timeline-clip)  - clip rendering and selection state.
-- [TimelinePlayhead](/docs/ui/timeline-playhead)  - playhead line and handle.
-- [TrackList](/docs/ui/track-list)  - track labels and controls.
-- [ZoomControls](/docs/ui/zoom-controls)  - pixels-per-frame controls.
-- [AssetBin](/docs/ui/asset-bin) and [DropZone](/docs/ui/drop-zone)  - media import surfaces.
-- [MediaPreview](/docs/ui/media-preview) and [CompositorPreview](/docs/ui/compositor-preview)  - media and composite preview.
-- [TransportControls](/docs/ui/transport-controls)  - playback controls.
-- [InspectorPanel](/docs/ui/inspector-panel), [EffectsPanel](/docs/ui/effects-panel), [KeyframesPanel](/docs/ui/keyframes-panel), and [TransitionsPanel](/docs/ui/transitions-panel)  - clip editing panels.
-- [CaptionsPanel](/docs/ui/captions-panel), [TextPanel](/docs/ui/text-panel), and [MarkersPanel](/docs/ui/markers-panel)  - editorial metadata panels.
-- [CommandPalette](/docs/ui/command-palette), [KeyboardShortcutsOverlay](/docs/ui/keyboard-shortcuts-overlay), [StatusBar](/docs/ui/status-bar), [TabbedPanel](/docs/ui/tabbed-panel), and [CollapsibleSection](/docs/ui/collapsible-section)  - supporting UI primitives.
+- [TimelineEditor](/docs/ui/timeline-editor) - full editor surface.
+- [TimelineToolbar](/docs/ui/timeline-toolbar) - editing tools and command buttons.
+- [TimelineRuler](/docs/ui/timeline-ruler) - frame/timecode ruler.
+- [TimelineTrack](/docs/ui/timeline-track) - track lane rendering.
+- [TimelineClip](/docs/ui/timeline-clip) - clip rendering and selection state.
+- [TimelinePlayhead](/docs/ui/timeline-playhead) - playhead line and handle.
+- [TrackList](/docs/ui/track-list) - track labels and controls.
+- [ZoomControls](/docs/ui/zoom-controls) - pixels-per-frame controls.
+- [AssetBin](/docs/ui/asset-bin) and [DropZone](/docs/ui/drop-zone) - media import surfaces.
+- [MediaPreview](/docs/ui/media-preview) and [CompositorPreview](/docs/ui/compositor-preview) - media and composite preview.
+- [TransportControls](/docs/ui/transport-controls) - playback controls.
+- [InspectorPanel](/docs/ui/inspector-panel), [EffectsPanel](/docs/ui/effects-panel), [KeyframesPanel](/docs/ui/keyframes-panel), and [TransitionsPanel](/docs/ui/transitions-panel) - clip editing panels.
+- [CaptionsPanel](/docs/ui/captions-panel), [TextPanel](/docs/ui/text-panel), and [MarkersPanel](/docs/ui/markers-panel) - editorial metadata panels.
+- [CommandPalette](/docs/ui/command-palette), [KeyboardShortcutsOverlay](/docs/ui/keyboard-shortcuts-overlay), [StatusBar](/docs/ui/status-bar), [TabbedPanel](/docs/ui/tabbed-panel), and [CollapsibleSection](/docs/ui/collapsible-section) - supporting UI primitives.
 
 ## Styling Notes
 
