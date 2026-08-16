@@ -71,10 +71,11 @@ timeline/
 ├── docs/
 │   ├── ARCHITECTURE.md   # Full architecture doc with ASCII diagrams
 │   └── CODEBASE.md       # This file
+├── archive/
+│   └── timeline-prototype/ # Archived — CSS migrated to @timelinx/ui
 ├── apps/
 │   ├── docs/             # Documentation site (fumadocs)
-│   ├── editor/           # Main editor app (excluded from workspace)
-│   └── timeline-prototype/ # Prototype app
+│   └── editor/           # Main editor app (excluded from workspace)
 └── packages/
     ├── core/                 # 89 source files, ~14K lines — the engine
     ├── react/                # 11 source files, ~1.5K lines — React bindings
