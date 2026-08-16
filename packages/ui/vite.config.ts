@@ -9,7 +9,7 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', '@timelinx/core', '@timelinx/react'],
       output: {
         globals: {
