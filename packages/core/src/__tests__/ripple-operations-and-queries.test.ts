@@ -89,7 +89,9 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = rippleDelete(s, 'a');
-      const tracks = result.timeline.tracks;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const tracks = result.state.timeline.tracks;
       const clips = tracks[0]!.clips;
       expect(clips).toHaveLength(2);
       expect(clips[0]!.id).toBe('b');
@@ -98,9 +100,13 @@ describe('ripple operations', () => {
       expect(clips[1]!.timelineStart).toBe(toFrame(100));
     });
 
-    it('throws on missing clip', () => {
+    it('returns rejection on missing clip', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => rippleDelete(s, 'nonexistent')).toThrow('Clip not found');
+      const result = rippleDelete(s, 'nonexistent');
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('CLIP_NOT_FOUND');
+      expect(result.message).toContain('nonexistent');
     });
   });
 
@@ -115,17 +121,22 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = rippleTrim(s, 'a', toFrame(150));
-      const clips = result.timeline.tracks[0]!.clips;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const clips = result.state.timeline.tracks[0]!.clips;
       expect(clips[0]!.timelineEnd).toBe(toFrame(150));
       expect(clips[1]!.timelineStart).toBe(toFrame(150));
     });
 
-    it('throws on missing clip', () => {
+    it('returns rejection on missing clip', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => rippleTrim(s, 'nonexistent', toFrame(50))).toThrow('Clip not found');
+      const result = rippleTrim(s, 'nonexistent', toFrame(50));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('CLIP_NOT_FOUND');
     });
 
-    it('throws when newEnd <= clip start', () => {
+    it('returns rejection when newEnd <= clip start', () => {
       const s = state([
         createTrack({
           id: TRACK_1,
@@ -134,7 +145,11 @@ describe('ripple operations', () => {
           clips: [clip('a', 100, 200)],
         }),
       ]);
-      expect(() => rippleTrim(s, 'a', toFrame(50))).toThrow('New end must be after clip start');
+      const result = rippleTrim(s, 'a', toFrame(50));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('OUT_OF_BOUNDS');
+      expect(result.message).toContain('New end must be after clip start');
     });
   });
 
@@ -150,7 +165,9 @@ describe('ripple operations', () => {
       ]);
       const newClip = clip('new', 0, 50);
       const result = insertEdit(s, TRACK_1, newClip, toFrame(150));
-      const clips = result.timeline.tracks[0]!.clips;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const clips = result.state.timeline.tracks[0]!.clips;
       expect(clips).toHaveLength(3);
       const inserted = clips.find((c) => c.id === 'new')!;
       expect(inserted.timelineStart).toBe(toFrame(150));
@@ -159,11 +176,12 @@ describe('ripple operations', () => {
       expect(shifted.timelineStart).toBe(toFrame(250));
     });
 
-    it('throws on missing track', () => {
+    it('returns rejection on missing track', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => insertEdit(s, toTrackId('bad'), clip('x', 0, 50), toFrame(0))).toThrow(
-        'Track not found',
-      );
+      const result = insertEdit(s, toTrackId('bad'), clip('x', 0, 50), toFrame(0));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('TRACK_NOT_FOUND');
     });
   });
 
@@ -178,7 +196,9 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = rippleMove(s, 'b', toFrame(100));
-      const clips = result.timeline.tracks[0]!.clips;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const clips = result.state.timeline.tracks[0]!.clips;
       const moved = clips.find((c) => c.id === 'b')!;
       expect(moved.timelineStart).toBe(toFrame(100));
     });
@@ -193,7 +213,9 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = rippleMove(s, 'a', toFrame(250));
-      const clips = result.timeline.tracks[0]!.clips;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const clips = result.state.timeline.tracks[0]!.clips;
       const moved = clips.find((c) => c.id === 'a')!;
       expect(moved.timelineStart).toBe(toFrame(150));
     });
@@ -208,15 +230,20 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = rippleMove(s, 'a', toFrame(0));
-      expect(result).toBe(s);
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      expect(result.state).toBe(s);
     });
 
-    it('throws on missing clip', () => {
+    it('returns rejection on missing clip', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => rippleMove(s, 'bad', toFrame(0))).toThrow('Clip not found');
+      const result = rippleMove(s, 'bad', toFrame(0));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('CLIP_NOT_FOUND');
     });
 
-    it('throws on negative start', () => {
+    it('returns rejection on negative start', () => {
       const s = state([
         createTrack({
           id: TRACK_1,
@@ -225,10 +252,14 @@ describe('ripple operations', () => {
           clips: [clip('a', 100, 200)],
         }),
       ]);
-      expect(() => rippleMove(s, 'a', toFrame(-10))).toThrow('before timeline start');
+      const result = rippleMove(s, 'a', toFrame(-10));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('OUT_OF_BOUNDS');
+      expect(result.message).toContain('before timeline start');
     });
 
-    it('throws when moving beyond timeline duration', () => {
+    it('returns rejection when moving beyond timeline duration', () => {
       const s = state([
         createTrack({
           id: TRACK_1,
@@ -237,7 +268,11 @@ describe('ripple operations', () => {
           clips: [clip('a', 0, 100)],
         }),
       ]);
-      expect(() => rippleMove(s, 'a', toFrame(10000))).toThrow('beyond timeline duration');
+      const result = rippleMove(s, 'a', toFrame(10000));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('OUT_OF_BOUNDS');
+      expect(result.message).toContain('beyond timeline duration');
     });
   });
 
@@ -252,7 +287,9 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = insertMove(s, 'a', toFrame(250));
-      const clips = result.timeline.tracks[0]!.clips;
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      const clips = result.state.timeline.tracks[0]!.clips;
       const moved = clips.find((c) => c.id === 'a')!;
       expect(moved.timelineStart).toBe(toFrame(250));
     });
@@ -267,15 +304,20 @@ describe('ripple operations', () => {
         }),
       ]);
       const result = insertMove(s, 'a', toFrame(0));
-      expect(result).toBe(s);
+      expect(result.accepted).toBe(true);
+      if (!result.accepted) return;
+      expect(result.state).toBe(s);
     });
 
-    it('throws on missing clip', () => {
+    it('returns rejection on missing clip', () => {
       const s = state([createTrack({ id: TRACK_1, name: 'V1', type: 'video', clips: [] })]);
-      expect(() => insertMove(s, 'bad', toFrame(0))).toThrow('Clip not found');
+      const result = insertMove(s, 'bad', toFrame(0));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('CLIP_NOT_FOUND');
     });
 
-    it('throws on negative start', () => {
+    it('returns rejection on negative start', () => {
       const s = state([
         createTrack({
           id: TRACK_1,
@@ -284,10 +326,14 @@ describe('ripple operations', () => {
           clips: [clip('a', 100, 200)],
         }),
       ]);
-      expect(() => insertMove(s, 'a', toFrame(-10))).toThrow('before timeline start');
+      const result = insertMove(s, 'a', toFrame(-10));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('OUT_OF_BOUNDS');
+      expect(result.message).toContain('before timeline start');
     });
 
-    it('throws when moving beyond timeline duration', () => {
+    it('returns rejection when moving beyond timeline duration', () => {
       const s = state([
         createTrack({
           id: TRACK_1,
@@ -296,7 +342,11 @@ describe('ripple operations', () => {
           clips: [clip('a', 0, 100)],
         }),
       ]);
-      expect(() => insertMove(s, 'a', toFrame(10000))).toThrow('beyond timeline duration');
+      const result = insertMove(s, 'a', toFrame(10000));
+      expect(result.accepted).toBe(false);
+      if (result.accepted) return;
+      expect(result.reason).toBe('OUT_OF_BOUNDS');
+      expect(result.message).toContain('beyond timeline duration');
     });
   });
 });

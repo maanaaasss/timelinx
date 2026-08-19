@@ -629,12 +629,23 @@ export class TimelineEngine {
     accepted: boolean;
     errors?: { code: string; message: string }[];
   } {
-    const result = legacyDispatch(this.history, (state) => RippleOps.rippleDelete(state, clipId));
-    if (result.accepted && result.history) {
-      this.history = result.history;
-      this.notify();
+    const currentState = getCurrentState(this.history);
+    const result = RippleOps.rippleDelete(currentState, clipId);
+    if (!result.accepted) {
+      return { accepted: false, errors: [{ code: result.reason, message: result.message }] };
     }
-    return result;
+    const violations = checkInvariants(result.state);
+    if (violations.length > 0) {
+      return {
+        accepted: false,
+        errors: [
+          { code: 'INVARIANT_VIOLATED', message: violations.map((v) => v.message).join('; ') },
+        ],
+      };
+    }
+    this.history = pushHistory(this.history, result.state);
+    this.notify();
+    return { accepted: true };
   }
 
   /**
@@ -648,14 +659,23 @@ export class TimelineEngine {
     clipId: string,
     newEnd: TimelineFrame,
   ): { accepted: boolean; errors?: { code: string; message: string }[] } {
-    const result = legacyDispatch(this.history, (state) =>
-      RippleOps.rippleTrim(state, clipId, newEnd),
-    );
-    if (result.accepted && result.history) {
-      this.history = result.history;
-      this.notify();
+    const currentState = getCurrentState(this.history);
+    const result = RippleOps.rippleTrim(currentState, clipId, newEnd);
+    if (!result.accepted) {
+      return { accepted: false, errors: [{ code: result.reason, message: result.message }] };
     }
-    return result;
+    const violations = checkInvariants(result.state);
+    if (violations.length > 0) {
+      return {
+        accepted: false,
+        errors: [
+          { code: 'INVARIANT_VIOLATED', message: violations.map((v) => v.message).join('; ') },
+        ],
+      };
+    }
+    this.history = pushHistory(this.history, result.state);
+    this.notify();
+    return { accepted: true };
   }
 
   /**
@@ -671,14 +691,23 @@ export class TimelineEngine {
     clip: Clip,
     atFrame: TimelineFrame,
   ): { accepted: boolean; errors?: { code: string; message: string }[] } {
-    const result = legacyDispatch(this.history, (state) =>
-      RippleOps.insertEdit(state, trackId, clip, atFrame),
-    );
-    if (result.accepted && result.history) {
-      this.history = result.history;
-      this.notify();
+    const currentState = getCurrentState(this.history);
+    const result = RippleOps.insertEdit(currentState, trackId, clip, atFrame);
+    if (!result.accepted) {
+      return { accepted: false, errors: [{ code: result.reason, message: result.message }] };
     }
-    return result;
+    const violations = checkInvariants(result.state);
+    if (violations.length > 0) {
+      return {
+        accepted: false,
+        errors: [
+          { code: 'INVARIANT_VIOLATED', message: violations.map((v) => v.message).join('; ') },
+        ],
+      };
+    }
+    this.history = pushHistory(this.history, result.state);
+    this.notify();
+    return { accepted: true };
   }
 
   /**
@@ -697,16 +726,23 @@ export class TimelineEngine {
     clipId: string,
     newStart: TimelineFrame,
   ): { accepted: boolean; errors?: { code: string; message: string }[] } {
-    const result = legacyDispatch(this.history, (state) =>
-      RippleOps.rippleMove(state, clipId, newStart),
-    );
-    if (result.accepted && result.history) {
-      this.history = result.history;
-      this.notify();
-    } else if (!result.accepted && result.errors?.[0]?.code === 'OPERATION_ERROR') {
-      throw new Error(result.errors[0].message);
+    const currentState = getCurrentState(this.history);
+    const result = RippleOps.rippleMove(currentState, clipId, newStart);
+    if (!result.accepted) {
+      return { accepted: false, errors: [{ code: result.reason, message: result.message }] };
     }
-    return result;
+    const violations = checkInvariants(result.state);
+    if (violations.length > 0) {
+      return {
+        accepted: false,
+        errors: [
+          { code: 'INVARIANT_VIOLATED', message: violations.map((v) => v.message).join('; ') },
+        ],
+      };
+    }
+    this.history = pushHistory(this.history, result.state);
+    this.notify();
+    return { accepted: true };
   }
 
   /**
@@ -725,16 +761,23 @@ export class TimelineEngine {
     clipId: string,
     newStart: TimelineFrame,
   ): { accepted: boolean; errors?: { code: string; message: string }[] } {
-    const result = legacyDispatch(this.history, (state) =>
-      RippleOps.insertMove(state, clipId, newStart),
-    );
-    if (result.accepted && result.history) {
-      this.history = result.history;
-      this.notify();
-    } else if (!result.accepted && result.errors?.[0]?.code === 'OPERATION_ERROR') {
-      throw new Error(result.errors[0].message);
+    const currentState = getCurrentState(this.history);
+    const result = RippleOps.insertMove(currentState, clipId, newStart);
+    if (!result.accepted) {
+      return { accepted: false, errors: [{ code: result.reason, message: result.message }] };
     }
-    return result;
+    const violations = checkInvariants(result.state);
+    if (violations.length > 0) {
+      return {
+        accepted: false,
+        errors: [
+          { code: 'INVARIANT_VIOLATED', message: violations.map((v) => v.message).join('; ') },
+        ],
+      };
+    }
+    this.history = pushHistory(this.history, result.state);
+    this.notify();
+    return { accepted: true };
   }
 
   // Phase 2: Marker and WorkArea operations are gated to Phase 2.

@@ -97,6 +97,7 @@ export { setTimelineDuration, setTimelineName } from './operations/timeline-oper
 
 // Ripple Operations
 export { rippleDelete, rippleTrim, insertEdit, rippleMove, insertMove } from './operations/ripple';
+export type { RippleResult } from './operations/ripple';
 
 // ========================================
 // INTERNAL UTILITIES
