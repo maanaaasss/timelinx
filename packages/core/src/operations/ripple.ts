@@ -9,6 +9,7 @@
  * - Only affect clips on the same track
  * - Preserve Phase 1 collision rules
  * - Pure functions - no mutations
+ * - Return RippleResult (never throw) — consistent with dispatcher contract
  */
 
 import { TimelineState } from '../types/state';
@@ -20,21 +21,32 @@ import { removeClip, moveClip, resizeClip, addClip } from './clip-operations';
 import { beginTransaction, applyOperation, commitTransaction } from '../engine/transactions';
 
 /**
+ * Result type for ripple operations — consistent with DispatchResult pattern.
+ * Never throws; returns { accepted: false } on validation failure.
+ */
+export type RippleResult =
+  { accepted: true; state: TimelineState } | { accepted: false; reason: string; message: string };
+
+/**
  * Ripple delete - delete clip and shift all subsequent clips left
  *
  * @param state - Timeline state
  * @param clipId - Clip ID to delete
- * @returns New state with clip deleted and subsequent clips shifted
+ * @returns RippleResult with new state or rejection
  */
-export function rippleDelete(state: TimelineState, clipId: string): TimelineState {
+export function rippleDelete(state: TimelineState, clipId: string): RippleResult {
   const clip = findClipById(state, clipId);
   if (!clip) {
-    throw new Error(`Clip not found: ${clipId}`);
+    return { accepted: false, reason: 'CLIP_NOT_FOUND', message: `Clip not found: ${clipId}` };
   }
 
   const track = findTrackById(state, clip.trackId);
   if (!track) {
-    throw new Error(`Track not found: ${clip.trackId}`);
+    return {
+      accepted: false,
+      reason: 'TRACK_NOT_FOUND',
+      message: `Track not found: ${clip.trackId}`,
+    };
   }
 
   // Calculate gap created by deletion
@@ -56,7 +68,7 @@ export function rippleDelete(state: TimelineState, clipId: string): TimelineStat
     tx = applyOperation(tx, (s) => moveClip(s, clipToShift.id, newStart));
   }
 
-  return commitTransaction(tx);
+  return { accepted: true, state: commitTransaction(tx) };
 }
 
 /**
@@ -65,21 +77,29 @@ export function rippleDelete(state: TimelineState, clipId: string): TimelineStat
  * @param state - Timeline state
  * @param clipId - Clip ID to trim
  * @param newEnd - New end frame for the clip
- * @returns New state with clip trimmed and subsequent clips shifted
+ * @returns RippleResult with new state or rejection
  */
-export function rippleTrim(state: TimelineState, clipId: string, newEnd: Frame): TimelineState {
+export function rippleTrim(state: TimelineState, clipId: string, newEnd: Frame): RippleResult {
   const clip = findClipById(state, clipId);
   if (!clip) {
-    throw new Error(`Clip not found: ${clipId}`);
+    return { accepted: false, reason: 'CLIP_NOT_FOUND', message: `Clip not found: ${clipId}` };
   }
 
   const track = findTrackById(state, clip.trackId);
   if (!track) {
-    throw new Error(`Track not found: ${clip.trackId}`);
+    return {
+      accepted: false,
+      reason: 'TRACK_NOT_FOUND',
+      message: `Track not found: ${clip.trackId}`,
+    };
   }
 
   if (newEnd <= clip.timelineStart) {
-    throw new Error('New end must be after clip start');
+    return {
+      accepted: false,
+      reason: 'OUT_OF_BOUNDS',
+      message: 'New end must be after clip start',
+    };
   }
 
   // Calculate delta (positive = extended, negative = trimmed)
@@ -102,7 +122,7 @@ export function rippleTrim(state: TimelineState, clipId: string, newEnd: Frame):
     tx = applyOperation(tx, (s) => moveClip(s, clipToShift.id, newStart));
   }
 
-  return commitTransaction(tx);
+  return { accepted: true, state: commitTransaction(tx) };
 }
 
 /**
@@ -112,17 +132,21 @@ export function rippleTrim(state: TimelineState, clipId: string, newEnd: Frame):
  * @param trackId - Track ID to insert into
  * @param clip - Clip to insert
  * @param atFrame - Frame to insert at
- * @returns New state with clip inserted and subsequent clips shifted
+ * @returns RippleResult with new state or rejection
  */
 export function insertEdit(
   state: TimelineState,
   trackId: string,
   clip: Clip,
   atFrame: Frame,
-): TimelineState {
+): RippleResult {
   const track = findTrackById(state, trackId);
   if (!track) {
-    throw new Error(`Track not found: ${trackId}`);
+    return {
+      accepted: false,
+      reason: 'TRACK_NOT_FOUND',
+      message: `Track not found: ${trackId}`,
+    };
   }
 
   const clipDuration = getClipDuration(clip);
@@ -149,7 +173,7 @@ export function insertEdit(
   // Add the new clip
   tx = applyOperation(tx, (s) => addClip(s, trackId, adjustedClip));
 
-  return commitTransaction(tx);
+  return { accepted: true, state: commitTransaction(tx) };
 }
 
 /**
@@ -170,17 +194,21 @@ export function insertEdit(
  * @param state - Timeline state
  * @param clipId - Clip ID to move
  * @param newStart - New start frame for the clip
- * @returns New state with clip moved and surrounding clips adjusted
+ * @returns RippleResult with new state or rejection
  */
-export function rippleMove(state: TimelineState, clipId: string, newStart: Frame): TimelineState {
+export function rippleMove(state: TimelineState, clipId: string, newStart: Frame): RippleResult {
   const clip = findClipById(state, clipId);
   if (!clip) {
-    throw new Error(`Clip not found: ${clipId}`);
+    return { accepted: false, reason: 'CLIP_NOT_FOUND', message: `Clip not found: ${clipId}` };
   }
 
   const track = findTrackById(state, clip.trackId);
   if (!track) {
-    throw new Error(`Track not found: ${clip.trackId}`);
+    return {
+      accepted: false,
+      reason: 'TRACK_NOT_FOUND',
+      message: `Track not found: ${clip.trackId}`,
+    };
   }
 
   const clipDuration = getClipDuration(clip);
@@ -188,20 +216,26 @@ export function rippleMove(state: TimelineState, clipId: string, newStart: Frame
 
   // Validate bounds
   if (newStart < 0) {
-    throw new Error('Cannot move clip before timeline start (frame 0)');
+    return {
+      accepted: false,
+      reason: 'OUT_OF_BOUNDS',
+      message: 'Cannot move clip before timeline start (frame 0)',
+    };
   }
 
   if (newEnd > state.timeline.duration) {
-    throw new Error(
-      `Cannot move clip beyond timeline duration (${state.timeline.duration} frames)`,
-    );
+    return {
+      accepted: false,
+      reason: 'OUT_OF_BOUNDS',
+      message: `Cannot move clip beyond timeline duration (${state.timeline.duration} frames)`,
+    };
   }
 
   const originalStart = clip.timelineStart;
   const originalEnd = clip.timelineEnd;
 
   if (newStart === originalStart) {
-    return state; // No-op
+    return { accepted: true, state }; // No-op
   }
 
   // Start transaction
@@ -261,7 +295,7 @@ export function rippleMove(state: TimelineState, clipId: string, newStart: Frame
     tx = applyOperation(tx, (st) => moveClip(st, clipId, newStart));
   }
 
-  return commitTransaction(tx);
+  return { accepted: true, state: commitTransaction(tx) };
 }
 
 /**
@@ -279,22 +313,26 @@ export function rippleMove(state: TimelineState, clipId: string, newStart: Frame
  * @param state - Timeline state
  * @param clipId - Clip ID to move
  * @param newStart - New start frame for the clip
- * @returns New state with clip moved and destination clips shifted
+ * @returns RippleResult with new state or rejection
  *
  * @example
  * // Timeline before: [A][B*][C]__[D]
  * // Insert move B to position after D
  * // Timeline after: [A]__[C][D][B*]  (gap remains at A)
  */
-export function insertMove(state: TimelineState, clipId: string, newStart: Frame): TimelineState {
+export function insertMove(state: TimelineState, clipId: string, newStart: Frame): RippleResult {
   const clip = findClipById(state, clipId);
   if (!clip) {
-    throw new Error(`Clip not found: ${clipId}`);
+    return { accepted: false, reason: 'CLIP_NOT_FOUND', message: `Clip not found: ${clipId}` };
   }
 
   const track = findTrackById(state, clip.trackId);
   if (!track) {
-    throw new Error(`Track not found: ${clip.trackId}`);
+    return {
+      accepted: false,
+      reason: 'TRACK_NOT_FOUND',
+      message: `Track not found: ${clip.trackId}`,
+    };
   }
 
   // Validate new position is within timeline bounds
@@ -302,18 +340,24 @@ export function insertMove(state: TimelineState, clipId: string, newStart: Frame
   const newEnd = (newStart + clipDuration) as Frame;
 
   if (newStart < 0) {
-    throw new Error('Cannot move clip before timeline start (frame 0)');
+    return {
+      accepted: false,
+      reason: 'OUT_OF_BOUNDS',
+      message: 'Cannot move clip before timeline start (frame 0)',
+    };
   }
 
   if (newEnd > state.timeline.duration) {
-    throw new Error(
-      `Cannot move clip beyond timeline duration (${state.timeline.duration} frames)`,
-    );
+    return {
+      accepted: false,
+      reason: 'OUT_OF_BOUNDS',
+      message: `Cannot move clip beyond timeline duration (${state.timeline.duration} frames)`,
+    };
   }
 
   // If moving to the same position, no-op
   if (newStart === clip.timelineStart) {
-    return state;
+    return { accepted: true, state };
   }
 
   // Use transaction for atomicity
@@ -331,5 +375,5 @@ export function insertMove(state: TimelineState, clipId: string, newStart: Frame
   // Move the clip to its new position
   tx = applyOperation(tx, (s) => moveClip(s, clipId, newStart));
 
-  return commitTransaction(tx);
+  return { accepted: true, state: commitTransaction(tx) };
 }
