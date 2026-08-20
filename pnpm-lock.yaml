@@ -152,8 +152,8 @@ importers:
   packages/react:
     dependencies:
       '@timelinx/core':
-        specifier: '>=1.0.0-beta.3'
-        version: 1.0.0-beta.3
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@eslint/js':
         specifier: ^9.28.0
@@ -2099,9 +2099,6 @@ packages:
         optional: true
       '@types/react-dom':
         optional: true
-
-  '@timelinx/core@1.0.0-beta.3':
-    resolution: {integrity: sha512-x1TfehHh4HcWKlkjwwgxMoWWkny1WAHkevdSdDDdwN5ciGHejoDY8DQ2kokHQWaQzh9yyIEus4oc8ZRQDV/hDw==}
 
   '@ts-morph/common@0.29.0':
     resolution: {integrity: sha512-35oUmphHbJvQ/+UTwFNme/t2p3FoKiGJ5auTjjpNTop2dyREspirjMy82PLSC1pnDJ8ah1GU98hwpVt64YXQsg==}
@@ -6522,8 +6519,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
       '@types/react-dom': 19.2.4(@types/react@19.2.18)
-
-  '@timelinx/core@1.0.0-beta.3': {}
 
   '@ts-morph/common@0.29.0':
     dependencies:
