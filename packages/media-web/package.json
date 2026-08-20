@@ -32,7 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@timelinx/core": ">=1.0.0-beta.3"
+    "@timelinx/core": ">=1.0.0-beta.4"
   },
   "devDependencies": {
     "@timelinx/core": "workspace:*",

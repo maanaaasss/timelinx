@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.0.0-beta.4
+
+### Minor Changes
+
+- [#126](https://github.com/maanaaasss/timelinx/pull/126) [`012d92f`](https://github.com/maanaaasss/timelinx/commit/012d92f26c9179d26193af6c832fa6cb9d4c4834) Thanks [@maanaaasss](https://github.com/maanaaasss)! - `TimelineEngine.rippleMove()` and `TimelineEngine.insertMove()` no longer **throw** on failure — they return `{ accepted: false, errors: [...] }` instead.
+
+  **Migration:** Code that catches exceptions from these methods must switch to checking the result:
+
+  ```ts
+  // Before (now broken — catch never fires)
+  try {
+    engine.rippleMove(clipId, newStart);
+  } catch (e) {
+    handleError(e);
+  }
+
+  // After
+  const result = engine.rippleMove(clipId, newStart);
+  if (!result.accepted) {
+    handleError(result.errors);
+  }
+  ```
+
+  `rippleDelete()`, `rippleTrim()`, and `insertEdit()` were already non-throwing — no change needed for those.
+
+  Also adds:
+
+  - Prototype pollution guard in `deserializeTimeline()` — strips `__proto__`/`constructor`/`prototype` keys from untrusted JSON
+  - 50MB payload size limit in `deserializeTimeline()` to prevent OOM
+
 ## 1.0.0-beta.3
 
 ### Minor Changes
