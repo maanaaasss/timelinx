@@ -1,4 +1,12 @@
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+
+// Mock the CapabilityPreflight component so jsdom (which lacks Canvas2D,
+// MediaRecorder, etc.) doesn't block the editor from rendering in unit tests.
+// The capability detection itself has dedicated tests in capabilities.test.ts.
+vi.mock('../components/CapabilityPreflight', () => ({
+  CapabilityPreflight: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 class ResizeObserverMock {
   callback: ResizeObserverCallback;

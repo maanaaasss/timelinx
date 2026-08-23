@@ -2,7 +2,7 @@
 
 > **Purpose.** This is the operating plan for turning the current Timelinx repository into a dependable first public editor release. It is intentionally opinionated: a solo developer should use it to decide what to build next, what to defer, and when a release is safe. It is also written to be the durable context supplied to an implementation model at the start of each task.
 >
-> **Last assessed:** 2026-08-23, against commit `69f7ad1` (`feat/editor-release-gate`). Re-assess the “current-state facts” after significant architecture changes.
+> **Last assessed:** 2026-08-23, against commit `7da842b` (`feat/editor-release-gate`). P0 re-verified independently at this commit; `69f7ad1` was the original P0 landing, followed by `1aaa533` (docs) and `7da842b` (tsconfig source-path cleanup). Re-assess the “current-state facts” after significant architecture changes.
 
 ## 1. Executive decision
 
@@ -430,6 +430,9 @@ Add entries; do not rewrite history. This is important context for future model 
 | 2026-08-23 | Editor app must become an independent CI release gate         | It is excluded from workspace CI and currently lacks an executable standalone test install          | Project owner | Never; keep as a permanent gate           |
 | 2026-08-23 | Do not promise unsupported effects/transitions/MP4 in v1      | State-level support alone does not prove preview/export parity                                      | Project owner | Each feature has end-to-end certification |
 | 2026-08-23 | P0 complete: editor is independently installable and CI-gated | Standalone lockfile, root scripts, dedicated CI job, Playwright smoke test all verified             | Project owner | N/A; gate is permanent                    |
+| 2026-08-23 | P0 independently re-verified; proceed to P1                   | Static audit confirmed all P0 deliverables at `7da842b`; lint + typecheck pass, 87 unit cases present. Unit/build/e2e not runnable in review sandbox (macOS bindings vs Linux) — rely on CI for execution proof | Project owner | If CI ever shows the editor gate red      |
+| 2026-08-23 | §5.1 Canonical composition: editor-owned `EditorWorkspace` from V2 components | Followed the plan's recommendation over reusing deprecated `TimelineEditor`; shell composes V2 `TimelineLayout` + explicitly chosen UI components (AssetBin, CompositorPreview, TopNav) | Project owner | If V2 timeline components change materially |
+| 2026-08-23 | P1 shell + lifecycle implemented (pending browser E2E)        | `EditorSession` owns engine create/replace/dispose, dirty tracking, blob-URL revocation; `MediaAssetsProvider` mounted once; capability preflight + error boundary added. tsc/eslint green; core logic 16/16 under Node. Playwright acceptance flow still to be authored/run in CI | Project owner | When P1 acceptance E2E lands and passes |
 
 ## Appendix A: useful commands
 
