@@ -336,20 +336,48 @@ function transitionsEqual(a: readonly TransitionEntry[], b: readonly TransitionE
   return true;
 }
 
+/**
+ * Optimized transition collection: caches the previous result and avoids
+ * allocating a new array when transitions haven't changed. The cache key
+ * is the snapshot itself (Object.is), so we only rebuild when the engine
+ * notifies a state change that actually affects transitions.
+ */
+const transitionCache = new WeakMap<EngineSnapshot, readonly TransitionEntry[]>();
+
 export function useAllTransitions(engine: TimelineEngine): readonly TransitionEntry[] {
   const prevRef = useRef<readonly TransitionEntry[]>(EMPTY_TRANSITIONS);
   return useSyncExternalStore(
     engine.subscribe,
     () => {
-      const next = collectTransitions(engine.getSnapshot());
-      if (transitionsEqual(prevRef.current, next)) return prevRef.current;
+      const snap = engine.getSnapshot();
+      const cached = transitionCache.get(snap);
+      if (cached) {
+        prevRef.current = cached;
+        return cached;
+      }
+      const next = collectTransitions(snap);
+      if (transitionsEqual(prevRef.current, next)) {
+        transitionCache.set(snap, prevRef.current);
+        return prevRef.current;
+      }
       prevRef.current = next;
+      transitionCache.set(snap, next);
       return next;
     },
     () => {
-      const next = collectTransitions(engine.getSnapshot());
-      if (transitionsEqual(prevRef.current, next)) return prevRef.current;
+      const snap = engine.getSnapshot();
+      const cached = transitionCache.get(snap);
+      if (cached) {
+        prevRef.current = cached;
+        return cached;
+      }
+      const next = collectTransitions(snap);
+      if (transitionsEqual(prevRef.current, next)) {
+        transitionCache.set(snap, prevRef.current);
+        return prevRef.current;
+      }
       prevRef.current = next;
+      transitionCache.set(snap, next);
       return next;
     },
   );

@@ -630,3 +630,79 @@ describe('Phase R Step 1 — Playback integration', () => {
     expect(typeof (engine.playbackEngine as any)?.getState).toBe('function');
   });
 });
+
+// ── Error handling consistency (onError called in all tool paths) ──────────
+
+describe('Error handling — onError called consistently', () => {
+  it('24. onError called when caption gesture tool throws onPointerDown', () => {
+    const onError = vi.fn();
+    const throwingTool = makeTool('throwing', {
+      supportsCaptions: () => true,
+      onPointerDown: () => {
+        throw new Error('caption tool error');
+      },
+    });
+    const engine = new TimelineEngine({
+      initialState: makeState(),
+      tools: [NoOpTool, throwingTool],
+      defaultToolId: 'throwing',
+      onError,
+    });
+    const captionEvent: TimelinePointerEvent = {
+      ...makePointerEvent(),
+      captionId: 'cap-1' as any,
+    };
+    engine.handlePointerDown(captionEvent, noModifiers);
+    expect(onError).toHaveBeenCalledOnce();
+    expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
+    expect(onError.mock.calls[0]![1]).toBe('onPointerDown');
+  });
+
+  it('25. onError called when selectionTool throws during caption fallback', () => {
+    const onError = vi.fn();
+    const throwingSelection = makeTool('selection', {
+      onPointerDown: () => {
+        throw new Error('selection caption error');
+      },
+    });
+    const engine = new TimelineEngine({
+      initialState: makeState(),
+      tools: [NoOpTool, throwingSelection],
+      defaultToolId: 'noop',
+      onError,
+    });
+    const captionEvent: TimelinePointerEvent = {
+      ...makePointerEvent(),
+      captionId: 'cap-1' as any,
+    };
+    engine.handlePointerDown(captionEvent, noModifiers);
+    expect(onError).toHaveBeenCalledOnce();
+    expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
+    expect(onError.mock.calls[0]![1]).toBe('onPointerDown');
+  });
+
+  it('26. onError callback error logs original error context', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const brokenOnError = () => {
+      throw new Error('onError itself broke');
+    };
+    const throwingTool = makeTool('throwing', {
+      onPointerDown: () => {
+        throw new Error('tool threw');
+      },
+    });
+    const engine = new TimelineEngine({
+      initialState: makeState(),
+      tools: [NoOpTool, throwingTool],
+      defaultToolId: 'throwing',
+      onError: brokenOnError,
+    });
+    engine.handlePointerDown(makePointerEvent(), noModifiers);
+    expect(consoleSpy).toHaveBeenCalled();
+    const logArgs = consoleSpy.mock.calls[0]!;
+    expect(logArgs[0]).toContain('onError callback threw');
+    expect(logArgs[1]).toBeInstanceOf(Error);
+    expect((logArgs[1] as Error).message).toBe('onError itself broke');
+    consoleSpy.mockRestore();
+  });
+});
