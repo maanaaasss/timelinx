@@ -15,28 +15,7 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@timelinx/core": ["../../packages/core/src/public-api.ts"],
-      "@timelinx/react": ["../../packages/react/src/index.ts"],
-      "@timelinx/ui": ["../../packages/ui/src/index.ts"],
-      "@timelinx/ui/styles/tokens.css": ["../../packages/ui/src/tokens.css"],
-      "@timelinx/ui/styles/tokens": ["../../packages/ui/src/tokens.css"],
-      "@timelinx/ui/styles/presets/dark-pro.css": ["../../packages/ui/src/presets/dark-pro.css"],
-      "@timelinx/ui/styles/presets/dark-pro": ["../../packages/ui/src/presets/dark-pro.css"],
-      "@timelinx/ui/styles/presets/light.css": ["../../packages/ui/src/presets/light.css"],
-      "@timelinx/ui/styles/presets/light": ["../../packages/ui/src/presets/light.css"],
-      "@timelinx/ui/styles/presets/high-contrast.css": [
-        "../../packages/ui/src/presets/high-contrast.css"
-      ],
-      "@timelinx/ui/styles/presets/high-contrast": [
-        "../../packages/ui/src/presets/high-contrast.css"
-      ],
-      "@timelinx/ui/styles/structure.css": ["../../packages/ui/src/styles/structure.css"],
-      "@timelinx/ui/styles/structure": ["../../packages/ui/src/styles/structure.css"],
-      "@timelinx/ui/*": ["../../packages/ui/src/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
