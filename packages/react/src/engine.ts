@@ -204,8 +204,10 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'dispatch');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during dispatch', callbackErr, {
+          originalError: err,
+        });
       }
       return {
         accepted: false,
@@ -323,8 +325,18 @@ export class TimelineEngine {
         this._captionGestureTool = activeTool;
         try {
           activeTool.onPointerDown(event, ctx);
-        } catch {
-          /* ignore */
+        } catch (err) {
+          try {
+            this.options.onError?.(err, 'onPointerDown');
+          } catch (callbackErr) {
+            console.error(
+              '[TimelineEngine] onError callback threw during onPointerDown',
+              callbackErr,
+              {
+                originalError: err,
+              },
+            );
+          }
         }
       } else {
         const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
@@ -332,16 +344,21 @@ export class TimelineEngine {
         if (selectionTool) {
           try {
             selectionTool.onPointerDown(event, ctx);
-          } catch {
-            /* ignore */
+          } catch (err) {
+            try {
+              this.options.onError?.(err, 'onPointerDown');
+            } catch (callbackErr) {
+              console.error(
+                '[TimelineEngine] onError callback threw during onPointerDown',
+                callbackErr,
+                {
+                  originalError: err,
+                },
+              );
+            }
           }
         }
       }
-      console.log('[CAP-D] down:', {
-        active: activeTool.id,
-        gesture: this._captionGestureTool?.id ?? null,
-        captionId: event.captionId,
-      });
     } else {
       this._captionGestureTool = null;
       try {
@@ -349,8 +366,14 @@ export class TimelineEngine {
       } catch (err) {
         try {
           this.options.onError?.(err, 'onPointerDown');
-        } catch (_) {
-          console.error('onError callback threw', _);
+        } catch (callbackErr) {
+          console.error(
+            '[TimelineEngine] onError callback threw during onPointerDown',
+            callbackErr,
+            {
+              originalError: err,
+            },
+          );
         }
       }
     }
@@ -368,8 +391,10 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'onPointerMove');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onPointerMove', callbackErr, {
+          originalError: err,
+        });
       }
     }
 
@@ -411,16 +436,13 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'onPointerUp');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onPointerUp', callbackErr, {
+          originalError: err,
+        });
       }
     }
     this._captionGestureTool = null;
-    console.log('[CAP-D] up:', {
-      toolId: tool.id,
-      captionId: event.captionId,
-      tx: tx?.label ?? null,
-    });
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -438,8 +460,10 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'onCancel');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onCancel', callbackErr, {
+          originalError: err,
+        });
       }
     }
     this._captionGestureTool = null;
@@ -470,8 +494,10 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'onKeyDown');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onKeyDown', callbackErr, {
+          originalError: err,
+        });
       }
     }
     if (tx !== null) {
@@ -488,8 +514,10 @@ export class TimelineEngine {
     } catch (err) {
       try {
         this.options.onError?.(err, 'onKeyUp');
-      } catch (_) {
-        console.error('onError callback threw', _);
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onKeyUp', callbackErr, {
+          originalError: err,
+        });
       }
     }
   }
