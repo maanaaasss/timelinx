@@ -186,4 +186,22 @@ describe('usePlayheadEvent', () => {
     act(() => engine.seekTo(toFrame(20)));
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('14. re-subscribes when handler reference changes (handler in deps)', () => {
+    const engine = makeEngine();
+    const handler1 = vi.fn();
+    const handler2 = vi.fn();
+    const { rerender } = renderHook(({ handler }) => usePlayheadEvent(engine, 'seek', handler), {
+      initialProps: { handler: handler1 },
+    });
+    act(() => engine.seekTo(toFrame(10)));
+    expect(handler1).toHaveBeenCalledTimes(1);
+    expect(handler2).not.toHaveBeenCalled();
+
+    // Change handler reference — should re-subscribe
+    rerender({ handler: handler2 });
+    act(() => engine.seekTo(toFrame(20)));
+    expect(handler2).toHaveBeenCalledTimes(1);
+    expect(handler1).toHaveBeenCalledTimes(1); // old handler not called again
+  });
 });
