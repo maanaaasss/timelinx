@@ -5,38 +5,39 @@ import App from '../App';
 describe('Editor App', () => {
   it('renders without crashing', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.timeline-editor')).not.toBeNull();
+    expect(container.querySelector('.tl-layout')).not.toBeNull();
   });
 
   it('renders the timeline editor shell', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('[role="application"]')).not.toBeNull();
+    expect(container.querySelector('.tl-layout')).toHaveAttribute('tabindex', '0');
   });
 
-  it('renders sidebar buttons', () => {
+  it('renders the editor tracks', () => {
     render(<App />);
-    expect(screen.getByText('Media')).toBeInTheDocument();
-    expect(screen.getByText('Video')).toBeInTheDocument();
-    expect(screen.getByText('Audio')).toBeInTheDocument();
+    expect(screen.getByText('V1 — Main')).toBeInTheDocument();
+    expect(screen.getByText('A1 — Music')).toBeInTheDocument();
   });
 
-  it('renders the top nav project name', () => {
+  it('renders the production panel controls', () => {
     render(<App />);
-    expect(screen.getByText('Video Popular Vlog_Duplicate')).toBeInTheDocument();
+    expect(screen.getAllByText('Inspector').length).toBeGreaterThan(0);
+    expect(screen.getByText('Effects')).toBeInTheDocument();
+    expect(screen.getByText('Text')).toBeInTheDocument();
   });
 
-  it('renders transport controls', () => {
+  it('renders the status bar', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.transport-controls')).not.toBeNull();
+    expect(container.querySelector('.tl-status-bar')).not.toBeNull();
   });
 
   it('renders the timeline toolbar', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.tl-toolbar')).not.toBeNull();
+    expect(container.querySelector('.tl-toolbar-v2')).not.toBeNull();
   });
 
   it('renders the timeline ruler', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.timeline-ruler')).not.toBeNull();
+    expect(container.querySelector('.tl-ruler-canvas')).not.toBeNull();
   });
 });

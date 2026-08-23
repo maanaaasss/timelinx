@@ -58,14 +58,47 @@ jobs:
 
   ci-status:
     name: Build & Test
-    needs: validate
+    needs: [validate, editor]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Verify matrix status
         run: |
-          if [ "${{ needs.validate.result }}" != "success" ]; then
-            echo "ERROR: Matrix validation failed"
+          if [ "${{ needs.validate.result }}" != "success" ] || [ "${{ needs.editor.result }}" != "success" ]; then
+            echo "ERROR: Validation failed"
             exit 1
           fi
           echo "All matrix checks passed successfully!"
+
+  editor:
+    name: Editor
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: apps/editor/pnpm-lock.yaml
+
+      - name: Install editor dependencies
+        run: pnpm run editor:install
+
+      - name: Verify editor
+        run: pnpm run editor:verify
+
+      - name: Install Chromium
+        run: pnpm --dir apps/editor --ignore-workspace exec playwright install --with-deps chromium
+
+      - name: Run editor browser smoke test
+        run: pnpm run editor:e2e

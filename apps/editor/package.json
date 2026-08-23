@@ -9,23 +9,25 @@
     "preview": "vite preview",
     "test": "vitest run --dir .",
     "test:watch": "vitest --dir .",
+    "test:e2e": "playwright test",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@timelinx/core": "^1.0.0-beta.3",
-    "@timelinx/react": "^1.0.0-beta.5",
+    "@timelinx/core": "^1.0.0-beta.4",
+    "@timelinx/react": "^1.0.0-beta.6",
     "@timelinx/ui": "^1.0.0-beta.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.3.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.5.4",
     "globals": "^17.11.0",
