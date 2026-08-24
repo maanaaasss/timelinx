@@ -8,23 +8,31 @@
      (each imports tokens.css internally, then overrides)
    ============================================================ */
 
-/* ── Editor shell ── */
+/* ── Editor shell ─────────────────────────────────────────────
+   The shell is a room, not a frame. It paints --bg-canvas and
+   holds panels apart by --panel-gap; the canvas showing through
+   those gaps is what separates regions, which is why almost
+   nothing here draws a border. Inside the timeline the rule
+   inverts — see the TIMELINE section. */
 .timeline-editor {
   display: flex;
+  gap: var(--panel-gap);
   width: 100%;
   height: 100%;
   min-height: 280px;
+  padding: var(--panel-gap);
   overflow: hidden;
-  background: var(--bg-app);
+  background: var(--bg-canvas);
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
   outline: none;
   position: relative;
 }
 
 .timeline-editor:focus-visible {
-  box-shadow: inset 0 0 0 1px var(--border-focus);
+  box-shadow: inset 0 0 0 2px var(--border-focus);
 }
 
 .timeline-editor * {
@@ -38,6 +46,7 @@
 .timeline-main {
   display: flex;
   flex-direction: column;
+  gap: var(--panel-gap);
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -45,12 +54,13 @@
 
 /* ── Media browser ── */
 .timeline-media-browser {
-  width: 320px;
+  width: 300px;
   flex-shrink: 0;
-  border-right: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  background: var(--bg-app);
+  background: var(--bg-panel);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--ring-surface), var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -60,38 +70,68 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   background: var(--bg-panel);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--ring-surface), var(--shadow-sm);
+  overflow: hidden;
 }
 
-/* ── Timeline area ── */
+/* ── Timeline area ──
+   Same card as its neighbours on the outside; a different world
+   on the inside. */
 .timeline-area {
   display: flex;
   flex-direction: column;
   height: 320px;
   flex-shrink: 0;
-  border-top: 1px solid var(--border-default);
-  background: var(--bg-app);
+  background: var(--bg-panel);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--ring-surface), var(--shadow-sm);
+  overflow: hidden;
   position: relative;
   overscroll-behavior: none;
 }
 
+/* Sits in the gap between the preview card and the timeline
+   card, so the gutter itself becomes the grab target. It stays
+   invisible until you reach for it. */
 .timeline-resize-handle {
   position: absolute;
-  top: -3px;
+  top: calc(-1 * var(--panel-gap));
   left: 0;
   right: 0;
-  height: 6px;
+  height: var(--panel-gap);
   cursor: row-resize;
   z-index: 30;
-  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.timeline-resize-handle:hover,
-.timeline-resize-handle:active {
+.timeline-resize-handle::after {
+  content: '';
+  position: absolute;
+  inset: 2px 50%;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+  opacity: 0;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    inset var(--duration-base) var(--ease-out);
+}
+
+.timeline-resize-handle:hover::after,
+.timeline-resize-handle:active::after {
+  inset: 2px calc(50% - 24px);
+  opacity: 1;
+}
+
+.timeline-resize-handle:active::after {
   background: var(--accent);
 }
 
-/* ── Toolbar ── */
+/* ── Toolbar ──
+   The seam between the calm chrome and the instrument. It keeps
+   a real hairline for exactly that reason: below this line,
+   density and precision take over. */
 .tl-toolbar {
   display: flex;
   align-items: center;
@@ -100,21 +140,22 @@
   padding: 0 var(--space-3);
   flex-shrink: 0;
   background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .tl-tool-group {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   background: var(--bg-subtle);
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-md);
+  box-shadow: var(--ring-surface);
 }
 
 .tl-sep {
   width: 1px;
-  height: 20px;
+  height: 18px;
   background: var(--border-subtle);
   flex-shrink: 0;
 }
@@ -128,8 +169,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -159,23 +200,27 @@
 .tool-btn:disabled {
   color: var(--text-disabled);
   cursor: not-allowed;
-  opacity: 0.4;
 }
 
+/* Timecode, so it is set in mono with tabular figures. It used
+   the display face before v3, which let the readout jitter by a
+   pixel every frame — the one thing a position readout must
+   never do. */
 .toolbar-position {
   display: inline-flex;
   align-items: center;
-  height: 28px;
+  height: 26px;
   padding: 0 var(--space-3);
-  color: var(--text-secondary);
+  color: var(--tl-timecode-color);
   background: var(--bg-subtle);
   border-radius: var(--radius-sm);
-  font-family: var(--font-display);
+  box-shadow: var(--ring-surface);
+  font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  min-width: 200px;
+  letter-spacing: var(--tracking-normal);
+  min-width: 176px;
 }
 
 /* ── Zoom controls ── */
@@ -276,7 +321,11 @@
   color: var(--text-secondary);
 }
 
-/* ── Workspace split ── */
+/* ── Workspace split ──────────────────────────────────────────
+   Everything from here down is the instrument. The calm rules
+   invert: separation comes from hairline rules at full token
+   strength, not from gaps, because a lane boundary has to be
+   exactly where the pixel says it is. */
 .timeline-workspace-split {
   display: flex;
   min-height: 0;
@@ -285,6 +334,9 @@
   position: relative;
 }
 
+/* The header gutter sits one step back from the lanes, so the
+   lanes read as the working surface and the names read as an
+   index down its edge. */
 .timeline-label-column {
   display: flex;
   flex-direction: column;
@@ -293,7 +345,7 @@
   overflow: hidden;
   overscroll-behavior: none;
   background: var(--bg-panel);
-  border-right: 1px solid var(--border-faint);
+  border-right: 1px solid var(--border-default);
 }
 
 .timeline-label-header {
@@ -303,7 +355,7 @@
   padding: 0 var(--space-3);
   flex-shrink: 0;
   background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .timeline-scroll-area {
@@ -312,7 +364,7 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  background: var(--bg-canvas);
+  background: var(--bg-app);
   /* overflow: clip (not hidden) so position:sticky on .timeline-ruler works —
      sticky positioning is blocked when any ancestor has overflow: hidden */
   overflow: clip;
@@ -332,7 +384,7 @@
   z-index: 25;
   height: var(--ruler-height);
   background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-subtle);
   user-select: none;
   flex-shrink: 0;
 }
@@ -346,7 +398,7 @@
 .tl-track {
   display: flex;
   position: relative;
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--tl-separator);
   flex-shrink: 0;
 }
 
@@ -359,18 +411,19 @@
   padding: 0 var(--space-2) 0 var(--space-3);
   flex-shrink: 0;
   background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-faint);
   position: relative;
 }
 
+/* Full-height, flush against the edge — a tab on a file, not a
+   floating pill. It runs the whole lane so the eye can follow
+   one track across a scroll without reading its name. */
 .tl-track-header::before {
   content: '';
   position: absolute;
-  top: 8px;
-  bottom: 8px;
+  top: 0;
+  bottom: 0;
   left: 0;
-  width: 3px;
-  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  width: var(--clip-chip-width);
 }
 
 .tl-track--video .tl-track-header::before {
@@ -443,13 +496,17 @@
   color: var(--track-music);
 }
 
+/* Condensed, because this column is 168px wide and a normal-width
+   face truncates names a condensed one fits. */
 .tl-track-label {
   min-width: 0;
   flex: 1;
   overflow: hidden;
   color: var(--text-secondary);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
+  font-family: var(--font-condensed);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-normal);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -507,24 +564,34 @@
   background: var(--accent-subtle);
 }
 
+/* The lane bed is the sunken surface — one step behind the header
+   gutter — so a clip sitting on it reads as an object placed on a
+   bench rather than a tile in a grid. */
 .tl-track-body {
   position: relative;
   flex: 1;
   height: 100%;
   min-width: 0;
   overflow: hidden;
-  background: var(--bg-surface);
+  background: var(--bg-app);
 }
 
+/* Zebra striping was removed in v3. Alternating lane fills are
+   decoration: the hairline separator already says where a lane
+   ends, and a second signal for the same fact only adds noise to
+   a surface that already carries six track colours. The selector
+   is kept so a consumer overriding it still lands somewhere. */
 .tl-track:nth-child(even) .tl-track-body {
-  background: var(--bg-surface-soft, var(--bg-surface));
+  background: var(--bg-app);
 }
 
-/* ── Track separator (video/audio divide) ── */
+/* ── Track separator (the video / audio divide) ──
+   Not cosmetic. Above the line is picture, below it is sound, and
+   an editor navigates by that boundary — so it gets the strongest
+   rule in the timeline and no padding to soften it. */
 .timeline-track-separator {
   height: 1px;
-  background: var(--border-subtle);
-  margin: 2px 0;
+  background: var(--border-strong);
   flex-shrink: 0;
 }
 
@@ -579,71 +646,72 @@
   z-index: 10;
 }
 
-/* Yellow selection border — mimics NLE trim selection */
+/* Selection is drawn as an inset outline rather than a swapped
+   border, so it does not fight the per-type border-color and no
+   longer needs !important to win. One ring, no glow: the
+   timeline is flat, and a halo on a 56px row spills into its
+   neighbours. */
 .tl-clip-wrap.selected .tl-clip {
-  border-color: var(--selection) !important;
-  border-width: 2px !important;
-  box-shadow:
-    0 0 0 1px var(--selection-ring),
-    0 0 12px var(--selection-glow),
-    var(--shadow-sm);
+  outline: 2px solid var(--selection);
+  outline-offset: -2px;
+  box-shadow: 0 0 0 1px var(--selection-ring);
 }
 
 .tl-clip {
   position: relative;
   display: flex;
   align-items: center;
-  min-width: 16px;
-  padding: 0 var(--space-2);
-  gap: 6px;
+  min-width: 12px;
+  padding: var(--clip-padding);
+  gap: var(--space-1);
   overflow: hidden;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-radius: var(--clip-radius) var(--clip-radius) 0 0;
   flex-shrink: 0;
   transition:
     box-shadow var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out);
 }
 
-/* Video: keep minimal/dark — thumbnails will fill this area later */
+/* Every clip is a deep body with a saturated edge chip on its
+   head. The chip is the identifying mark — it survives when the
+   clip is trimmed down to a few pixels and the label is gone. */
+
+/* Video keeps a neutral body: the filmstrip fills it, and a hue
+   behind a thumbnail lies about the footage. */
 .tl-clip--video {
-  background: var(--track-video-bg);
+  background: var(--track-video-solid);
   border: 1px solid var(--track-video-border);
-  border-left: 3px solid var(--track-video);
+  border-left: var(--clip-chip-width) solid var(--track-video);
 }
 
-/* Audio: solid color */
 .tl-clip--audio {
   background: var(--track-audio-solid);
-  border: 1px solid var(--track-audio-border-solid);
-  border-left: 3px solid var(--track-audio);
+  border: 1px solid var(--track-audio-border);
+  border-left: var(--clip-chip-width) solid var(--track-audio-border-solid);
 }
 
-/* Subtitle / caption: solid color */
 .tl-clip--subtitle {
   background: var(--track-subtitle-solid);
-  border: 1px solid var(--track-subtitle-border-solid);
-  border-left: 3px solid var(--track-subtitle);
+  border: 1px solid var(--track-subtitle-border);
+  border-left: var(--clip-chip-width) solid var(--track-subtitle-border-solid);
 }
 
-/* Image: solid color */
 .tl-clip--image {
   background: var(--track-image-solid);
-  border: 1px solid var(--track-image-border-solid);
-  border-left: 3px solid var(--track-image);
+  border: 1px solid var(--track-image-border);
+  border-left: var(--clip-chip-width) solid var(--track-image-border-solid);
 }
 
-/* Effect: solid color */
 .tl-clip--effect {
   background: var(--track-effect-solid);
-  border: 1px solid var(--track-effect-border-solid);
-  border-left: 3px solid var(--track-effect);
+  border: 1px solid var(--track-effect-border);
+  border-left: var(--clip-chip-width) solid var(--track-effect-border-solid);
 }
 
-/* Music: solid color */
 .tl-clip--music {
   background: var(--track-music-solid);
-  border: 1px solid var(--track-music-border-solid);
-  border-left: 3px solid var(--track-music);
+  border: 1px solid var(--track-music-border);
+  border-left: var(--clip-chip-width) solid var(--track-music-border-solid);
 }
 
 /* Clip inner elements need z-index above thumbnails */
@@ -655,7 +723,7 @@
 }
 
 .tl-clip:hover {
-  box-shadow: var(--shadow-sm);
+  border-color: var(--border-strong);
 }
 
 /* ── Clip filmstrip thumbnails ── */
@@ -667,25 +735,13 @@
   z-index: 0;
 }
 
+/* Placeholder shown until a real frame decodes. Theme-neutral
+   on purpose: it stands in for picture, so it must not tint. */
 .clip-thumb-frame {
   flex: 1;
   min-width: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      rgba(255, 255, 255, 0.01) 40%,
-      rgba(0, 0, 0, 0.05) 60%,
-      rgba(255, 255, 255, 0.02) 100%
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 8px,
-      rgba(255, 255, 255, 0.02) 8px,
-      rgba(255, 255, 255, 0.02) 9px
-    );
+  border-right: 1px solid var(--border-faint);
+  background: var(--bg-sunken);
 }
 
 .clip-thumb-frame:last-child {
@@ -693,29 +749,34 @@
 }
 
 /* ── Clip waveform (audio) ── */
+/* Synthetic waveform stand-in. Drawn in the audio track hue so
+   an audio clip reads as audio even before real peaks arrive —
+   it was hardcoded indigo before v3, which matched nothing. */
 .clip-waveform {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
+  --wf-peak: color-mix(in srgb, var(--track-audio) 62%, transparent);
+  --wf-body: color-mix(in srgb, var(--track-audio) 32%, transparent);
   background-image: repeating-linear-gradient(
     90deg,
     transparent 0px,
     transparent 2px,
-    rgba(59, 130, 246, 0.25) 2px,
-    rgba(59, 130, 246, 0.25) 3px,
+    var(--wf-body) 2px,
+    var(--wf-body) 3px,
     transparent 3px,
     transparent 5px,
-    rgba(59, 130, 246, 0.45) 5px,
-    rgba(59, 130, 246, 0.45) 6px,
+    var(--wf-peak) 5px,
+    var(--wf-peak) 6px,
     transparent 6px,
     transparent 9px,
-    rgba(59, 130, 246, 0.25) 9px,
-    rgba(59, 130, 246, 0.25) 10px,
+    var(--wf-body) 9px,
+    var(--wf-body) 10px,
     transparent 10px,
     transparent 13px,
-    rgba(59, 130, 246, 0.45) 13px,
-    rgba(59, 130, 246, 0.45) 14px,
+    var(--wf-peak) 13px,
+    var(--wf-peak) 14px,
     transparent 14px,
     transparent 16px
   );
@@ -797,9 +858,10 @@
   z-index: 10;
 }
 
-.asset-bin {
-  position: relative;
-}
+/* NOTE: the single .asset-bin rule lives in the Asset Bin section
+   below. Before v3 this class was declared three times in this
+   file and the last one silently won, which is why the radius and
+   shadow declared here never rendered. */
 
 /* ── Asset bin error messages (Phase 10) ── */
 .bin-errors {
@@ -928,38 +990,41 @@
   color: var(--selection-on-fill);
 }
 
-/* ── Playhead ── */
+/* ── Playhead ──
+   The only saturated thing in the room. --signal is reserved for
+   this and the record state, which is what lets a glance find the
+   playhead without hunting. It stays 1px wide: a 2px line reads
+   as a UI element, a 1px line reads as a position. */
 .tl-playhead {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 1px;
   background: var(--playhead-color);
+  box-shadow: var(--playhead-shadow);
   pointer-events: none;
   z-index: 20;
   will-change: transform;
 }
 
+/* A downward marker rather than a bead — it points at the frame
+   it is parked on, which a circle cannot do. */
 .tl-playhead-handle {
   position: absolute;
-  top: -8px;
+  top: 0;
   left: 50%;
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 9px;
   transform: translateX(-50%);
   background: var(--playhead-color);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xs);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tl-playhead-handle-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, 0.4);
+  display: none;
 }
 
 /* NOTE: .tl-playhead--playing .tl-playhead was removed — the selector
@@ -977,11 +1042,10 @@
   height: 100%;
   pointer-events: none;
   z-index: 18;
-  background: var(--tl-snap-color, var(--accent));
-  border-radius: var(--radius-full);
+  background: var(--tl-snap-color);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 18px var(--tl-snap-glow, rgba(229, 168, 32, 0.3));
+    0 0 0 1px var(--scrim),
+    0 0 8px var(--tl-snap-glow);
 }
 
 /* ── Drop zone ── */
@@ -993,10 +1057,10 @@
   height: 100%;
   pointer-events: none;
   z-index: 30;
-  background: var(--tl-snap-color, var(--accent));
+  background: var(--tl-snap-color);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.55),
-    0 0 18px var(--tl-snap-glow, rgba(229, 168, 32, 0.35));
+    0 0 0 1px var(--scrim),
+    0 0 8px var(--tl-snap-glow);
 }
 
 .drop-zone-label {
@@ -1005,7 +1069,7 @@
   left: var(--space-2);
   padding: 2px var(--space-1);
   border-radius: var(--radius-xs);
-  background: var(--tl-snap-color, var(--accent));
+  background: var(--tl-snap-color);
   color: var(--text-inverse);
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1032,26 +1096,28 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-panel);
+  background: transparent;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xs);
 }
 
+/* Calm surface: the panel title is separated by space, not a rule. */
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-3);
+  height: var(--topbar-height);
+  padding: 0 var(--panel-pad);
   background: transparent;
-  border-bottom: 1px solid var(--border-faint);
+  flex-shrink: 0;
 }
 
 .panel-title {
   margin: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
 }
 
 .panel-action-btn {
@@ -1063,38 +1129,42 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
 }
 
 .panel-action-btn:hover {
-  background: var(--bg-hover);
+  background: var(--state-hover);
   color: var(--text-primary);
 }
 
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-2);
+  padding: 0 var(--panel-pad) var(--panel-pad);
 }
 
 .panel-tabs {
   display: flex;
+  padding: 0 var(--space-2);
   /* The bottom border acts as the active-tab indicator baseline.
      Tabs use margin-bottom: -1px so the active indicator sits flush
      on this border rather than creating a 3px double-border gap. */
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .panel-tab {
   flex: 1;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-2);
   border: none;
   background: transparent;
   color: var(--text-tertiary);
   font-size: var(--text-xs);
   font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-wide);
   cursor: pointer;
   /* Negative margin pulls the 2px active indicator down to overlap the
      container's 1px border, so the active tab appears flush (no gap) */
@@ -1102,13 +1172,11 @@
   border-bottom: 2px solid transparent;
   transition:
     color var(--duration-fast) var(--ease-out),
-    background var(--duration-fast) var(--ease-out),
     border-color var(--duration-fast) var(--ease-out);
 }
 
 .panel-tab:hover {
   color: var(--text-secondary);
-  background: var(--bg-hover);
 }
 
 .panel-tab.active {
@@ -1120,15 +1188,16 @@
    Top Navigation Bar
    ============================================================ */
 
+/* The nav sits on the canvas above the cards, so it draws no
+   border and no fill — the gap below it is the separation. */
 .top-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: var(--topbar-height);
-  padding: 0 var(--space-6);
-  border-bottom: 1px solid var(--border-default);
+  padding: 0 var(--space-4);
   flex-shrink: 0;
-  background: var(--bg-panel);
+  background: transparent;
 }
 
 .top-nav-left,
@@ -1144,7 +1213,9 @@
 }
 .top-nav-center {
   color: var(--text-primary);
-  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 .top-nav-right {
   color: var(--text-secondary);
@@ -1171,22 +1242,33 @@
   background: var(--bg-hover);
 }
 
+/* The one filled button in the product. Export is where a session
+   ends, and it is the only action worth spending a solid fill on. */
 .top-nav-export-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--border-subtle);
+  height: 28px;
+  padding: 0 var(--space-4);
+  border: none;
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-primary);
+  background: var(--accent);
+  color: var(--accent-on-fill);
   font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .top-nav-export-btn:hover {
-  background: var(--bg-hover);
+  background: var(--accent-hover);
+}
+
+.top-nav-export-btn:active {
+  transform: scale(var(--scale-press));
+  background: var(--accent-active);
 }
 
 /* ============================================================
@@ -1197,10 +1279,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 var(--space-6);
-  border-top: 1px solid var(--border-default);
-  background: var(--bg-app);
+  height: 52px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
   flex-shrink: 0;
 }
 
@@ -1210,18 +1292,20 @@
   gap: var(--space-1);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
   cursor: pointer;
 }
 
 .transport-position-current {
   color: var(--text-primary);
+  font-weight: var(--weight-medium);
 }
 
 .transport-buttons {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-4);
   color: var(--text-primary);
 }
 
@@ -1229,30 +1313,51 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: inherit;
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
     color var(--duration-fast) var(--ease-out),
-    background var(--duration-fast) var(--ease-out);
+    background var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .transport-btn:hover {
-  color: var(--accent);
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
+.transport-btn:active {
+  transform: scale(var(--scale-press));
+}
+
+/* Play is the only control that gets a spring. Transport is the
+   one mechanical thing in the interface, and a little overshoot
+   here reads as a key being pressed rather than as animation. */
 .transport-btn--play {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--bg-raised);
+  box-shadow: var(--ring-surface);
   color: var(--text-primary);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out),
+    transform var(--duration-base) var(--ease-spring);
 }
 
 .transport-btn--play:hover {
   color: var(--accent);
+  background: var(--bg-raised);
+}
+
+.transport-btn--play:active {
+  transform: scale(0.92);
 }
 
 .transport-right {
@@ -1288,14 +1393,15 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   width: var(--sidebar-width);
-  padding: var(--space-2) 0;
-  gap: var(--space-1);
+  padding: var(--panel-pad-tight);
+  gap: 2px;
   overflow-y: auto;
   flex-shrink: 0;
   background: var(--bg-panel);
-  border-right: 1px solid var(--border-default);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--ring-surface), var(--shadow-sm);
   scrollbar-width: none;
 }
 
@@ -1358,7 +1464,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  background: var(--bg-panel);
+  background: var(--bg-canvas);
   border-bottom: 1px solid var(--border-faint);
   flex-shrink: 0;
   position: relative;
@@ -1366,46 +1472,47 @@
   padding: var(--space-6);
 }
 
+/* The viewer backing is black in every theme, because black is
+   what a frame letterboxes against. A tinted or gradient
+   backing would misrepresent the picture sitting on it — the
+   pre-v3 navy gradient did exactly that. */
 .preview-frame {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: var(--radius-md);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #0a1628 0%, #162544 50%, #1a3a5c 100%),
-    radial-gradient(circle at 20% 60%, rgba(255, 200, 100, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 70% 40%, rgba(100, 180, 255, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 40% 80%, rgba(255, 150, 50, 0.1) 0%, transparent 30%);
+  background: #000000;
 }
 
 .preview-label {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--text-tertiary);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: var(--tracking-caps);
 }
 
+/* Overlays that sit ON the picture stay white-on-scrim in every
+   theme: they are read against footage, not against chrome. */
 .preview-timecode {
   position: absolute;
-  bottom: 8px;
-  left: 10px;
-  font-size: 11px;
+  bottom: var(--space-2);
+  left: var(--space-3);
+  font-size: var(--text-xs);
   font-family: var(--font-mono);
   font-weight: var(--weight-medium);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .preview-safe-area {
   position: absolute;
   inset: 12px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-xs);
   pointer-events: none;
 }
 
@@ -1513,8 +1620,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2);
-  background: rgba(var(--bg-surface-rgb, 35, 38, 47), 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--bg-surface-rgb), 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(8px);
   z-index: 10;
@@ -1535,13 +1642,16 @@
   position: relative;
 }
 
+/* A level meter reads green below clipping — that is the meaning
+   of the colour, so it comes from the semantic token, not a
+   hand-picked lime. */
 .preview-volume-fill {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   border-radius: var(--radius-full);
-  background: #a3e635;
+  background: var(--color-success);
 }
 
 .preview-volume-icon {
@@ -1552,29 +1662,33 @@
    Asset Bin — Thumbnail grid with toolbar
    ============================================================ */
 
+/* The one .asset-bin rule. The bin is transparent because its
+   container (.timeline-media-browser) already paints the card. */
 .asset-bin {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-app);
+  background: transparent;
   overflow: hidden;
 }
 
+/* Calm surface: the header is separated by space, not a line. */
 .bin-header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0 var(--space-3);
-  border-bottom: 1px solid var(--border-faint);
+  height: var(--topbar-height);
+  padding: 0 var(--panel-pad);
   flex-shrink: 0;
 }
 
 .bin-header-title {
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-caps);
 }
 
 .bin-search {
@@ -1582,15 +1696,18 @@
      width: 100% + margin would cause the element to overflow its container */
   width: auto;
   align-self: stretch;
-  padding: var(--space-1) var(--space-2);
-  margin: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  margin: 0 var(--panel-pad) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: var(--bg-input);
+  box-shadow: var(--ring-surface);
   color: var(--text-primary);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-family: var(--font-sans);
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
 }
 
 .bin-search::placeholder {
@@ -1598,6 +1715,7 @@
 }
 .bin-search:focus {
   outline: none;
+  background: var(--bg-input-focus);
   border-color: var(--accent);
   box-shadow: var(--ring-focus);
 }
@@ -1606,9 +1724,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-3);
-  /* Replaced rgba(var(--border-default-rgb,...)) — that var is not defined */
-  border-bottom: 1px solid var(--border-faint);
+  gap: var(--space-2);
+  padding: 0 var(--panel-pad) var(--space-3);
   flex-shrink: 0;
 }
 
@@ -1616,23 +1733,27 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--border-subtle);
+  padding: var(--space-2) var(--space-3);
+  border: none;
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: var(--bg-raised);
+  box-shadow: var(--ring-surface), var(--shadow-xs);
   color: var(--text-primary);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
   transition:
     background var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .bin-upload-btn:hover {
   background: var(--bg-hover);
-  border-color: var(--border-default);
+  box-shadow: var(--ring-raised), var(--shadow-sm);
+}
+.bin-upload-btn:active {
+  background: var(--bg-active);
+  box-shadow: var(--ring-surface);
 }
 
 .bin-controls {
@@ -1641,15 +1762,20 @@
   gap: var(--space-1);
 }
 
+/* Icon-only view/sort toggles. Ghost buttons: on a calm surface a
+   row of outlined boxes reads louder than the content it sorts. */
 .bin-control-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
+  min-width: 26px;
+  height: 26px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
   font-size: var(--text-xs);
   cursor: pointer;
   transition:
@@ -1658,40 +1784,47 @@
 }
 
 .bin-control-btn:hover {
-  background: var(--bg-hover);
+  background: var(--state-hover);
   color: var(--text-primary);
+}
+.bin-control-btn[aria-pressed='true'],
+.bin-control-btn.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
 }
 
 .bin-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: 0 var(--panel-pad) var(--panel-pad);
   overflow-y: auto;
   flex: 1;
   align-content: start;
 }
 
+/* The thumbnail is the card. No outline: a grid of bordered boxes
+   fights the pictures inside them. Hover and selection are the
+   only states that draw anything. */
 .bin-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
   padding: var(--space-1);
-  border-radius: var(--radius-md);
-  /* Replaced rgba(var(--bg-surface-rgb,...)) — those vars are never defined */
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  border: none;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
 .bin-card:hover {
-  border-color: var(--border-default);
+  background: var(--state-hover);
 }
 .bin-card.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent-subtle);
+  background: var(--accent-subtle);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
 }
 
 .bin-thumb {
@@ -1703,110 +1836,114 @@
   font-size: 20px;
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  box-shadow: var(--ring-surface);
 }
 
+/* Duration badge, drawn on a scrim over the thumbnail. It was
+   using --text-inverse, which is near-black on the dark theme
+   and therefore invisible on its own scrim. On-media text is
+   white in every theme. */
 .bin-thumb-overlay {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
-  padding: 2px 6px;
+  bottom: var(--space-1);
+  right: var(--space-1);
+  padding: 1px 5px;
   border-radius: var(--radius-xs);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.62);
   font-size: var(--text-2xs);
   font-family: var(--font-mono);
-  /* #ffffff — replaced with theme-aware token */
-  color: var(--text-inverse);
+  color: rgba(255, 255, 255, 0.94);
 }
 
+/* Filename and duration read as a caption under the picture, so
+   they align left with it rather than centring on their own axis.
+   The name is the thing being scanned, so it gets secondary text;
+   the duration is a number, so it gets mono. */
 .bin-card-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
   padding: 0 var(--space-1);
+  min-width: 0;
 }
 .bin-card-name {
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs);
   font-weight: var(--weight-medium);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-align: center;
+  text-align: left;
+  min-width: 0;
+}
+.bin-card:hover .bin-card-name,
+.bin-card.selected .bin-card-name {
+  color: var(--text-primary);
 }
 .bin-card-meta {
   font-size: var(--text-2xs);
   color: var(--text-tertiary);
   font-family: var(--font-mono);
+  flex-shrink: 0;
 }
 
-/* ── Bin gradient placeholders ── */
-.bin-thumb--interview {
-  background:
-    linear-gradient(135deg, #2d1b4e 0%, #1a1033 40%, #3d2066 70%, #1a1033 100%),
-    radial-gradient(ellipse at 50% 30%, rgba(218, 165, 140, 0.3) 0%, transparent 60%);
-}
+/* ── Bin thumbnail placeholders ──────────────────────────────
+   Shown only until a real thumbnail decodes.
 
-.bin-thumb--cityscape {
-  background:
-    linear-gradient(180deg, #0a1628 0%, #162544 50%, #1a3a5c 100%),
-    radial-gradient(circle at 20% 60%, rgba(255, 200, 100, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 70% 40%, rgba(100, 180, 255, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 40% 80%, rgba(255, 150, 50, 0.1) 0%, transparent 30%);
-}
+   Before v3 these were named after one demo reel's shots
+   (--interview, --cityscape, --hands) and painted invented
+   scenery — a design system inventing picture is a lie about
+   the media, and those names mean nothing in anyone else's
+   project. Placeholders are now typed by MEDIA TYPE and drawn
+   in that type's track hue, so the class carries information
+   the user can act on. The subject-named classes are kept as
+   aliases of the neutral placeholder so existing markup keeps
+   working; treat them as deprecated. */
 
-.bin-thumb--hands {
-  background:
-    linear-gradient(135deg, #3d2b1f 0%, #2a1d13 40%, #4a3525 70%, #1a1008 100%),
-    radial-gradient(ellipse at 40% 50%, rgba(210, 160, 100, 0.2) 0%, transparent 50%);
-}
-
+.bin-thumb--placeholder,
+.bin-thumb--video,
+.bin-thumb--image,
+.bin-thumb--interview,
+.bin-thumb--cityscape,
+.bin-thumb--hands,
 .bin-thumb--graphic {
-  background: conic-gradient(
-    from 45deg at 50% 50%,
-    #1a2a3a,
-    #3b82f6,
-    #a855f7,
-    #ec4899,
-    #f59e0b,
-    #10b981,
-    #60a5fa,
-    #1a2a3a
-  );
-  filter: saturate(0.6) brightness(0.5);
+  background: var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-faint);
 }
 
-.bin-thumb--audio {
+/* Audio has no frame to show, so a level pattern is honest
+   about what the asset is rather than decorative. */
+.bin-thumb--audio,
+.bin-thumb--voiceover {
   background:
-    linear-gradient(180deg, #0a1a0a 0%, #0f2a0f 50%, #0a1a0a 100%),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--track-audio) 8%, transparent) 50%,
+      transparent 100%
+    ),
     repeating-linear-gradient(
       90deg,
       transparent 0px,
       transparent 3px,
-      rgba(34, 197, 94, 0.3) 3px,
-      rgba(34, 197, 94, 0.3) 5px,
+      color-mix(in srgb, var(--track-audio) 40%, transparent) 3px,
+      color-mix(in srgb, var(--track-audio) 40%, transparent) 5px,
       transparent 5px,
       transparent 8px,
-      rgba(34, 197, 94, 0.15) 8px,
-      rgba(34, 197, 94, 0.15) 9px,
+      color-mix(in srgb, var(--track-audio) 20%, transparent) 8px,
+      color-mix(in srgb, var(--track-audio) 20%, transparent) 9px,
       transparent 9px,
       transparent 14px
-    );
+    ),
+    var(--bg-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-faint);
 }
 
 .bin-thumb--voiceover {
-  background:
-    linear-gradient(180deg, #1a1508 0%, #2a1f0d 50%, #1a1508 100%),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 4px,
-      rgba(234, 179, 8, 0.25) 4px,
-      rgba(234, 179, 8, 0.25) 6px,
-      transparent 6px,
-      transparent 10px,
-      rgba(234, 179, 8, 0.12) 10px,
-      rgba(234, 179, 8, 0.12) 11px,
-      transparent 11px,
-      transparent 16px
-    );
+  --track-audio: var(--track-subtitle);
 }
 
 /* ── Empty state ── */
@@ -1849,37 +1986,49 @@
 }
 
 .field-pair .field-label {
-  font-size: 10px;
-  letter-spacing: 0.3px;
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
 }
 
 .field-label {
   font-size: var(--text-xs);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-weight: var(--weight-medium);
 }
 
+/* Inspector fields are borderless boxes on a calm surface: the fill
+   plus a hairline ring says "editable" without outlining every row.
+   Mono because nearly every value here is a number. */
 .field-input,
 .field-select,
 .field-textarea {
   width: 100%;
   padding: var(--space-2) var(--space-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: var(--bg-input);
+  box-shadow: var(--ring-surface);
   color: var(--text-primary);
   font-size: var(--text-sm);
   font-family: var(--font-mono);
   transition:
     border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.field-input:hover,
+.field-select:hover,
+.field-textarea:hover {
+  box-shadow: var(--ring-raised);
 }
 
 .field-input:focus,
 .field-select:focus,
 .field-textarea:focus {
   outline: none;
+  background: var(--bg-input-focus);
   border-color: var(--accent);
   box-shadow: var(--ring-focus);
 }
@@ -1896,9 +2045,10 @@
   align-items: center;
   gap: var(--space-1);
   height: 28px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: var(--bg-input);
+  box-shadow: var(--ring-surface);
   transition:
     border-color var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
@@ -2507,7 +2657,7 @@
   border: 2px solid var(--bg-canvas);
   border-radius: 2px;
   transform: rotate(45deg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xs);
   transition:
     background var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
@@ -2515,7 +2665,7 @@
 
 .tl-keyframe:hover .tl-keyframe-diamond {
   background: var(--accent-hover, var(--accent));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 .tl-keyframe.is-selected .tl-keyframe-diamond {
@@ -2527,7 +2677,7 @@
 }
 
 .tl-keyframe.is-dragging .tl-keyframe-diamond {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 /* ── Keyframe Context Menu ── */
@@ -2537,7 +2687,7 @@
   background: var(--bg-panel);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   min-width: 140px;
   padding: var(--space-1) 0;
 }
@@ -2617,8 +2767,8 @@
     45deg,
     transparent,
     transparent 4px,
-    var(--accent-muted, rgba(99, 102, 241, 0.2)) 4px,
-    var(--accent-muted, rgba(99, 102, 241, 0.2)) 8px
+    var(--accent-muted) 4px,
+    var(--accent-muted) 8px
   );
   pointer-events: none;
   z-index: 1;
@@ -2722,10 +2872,10 @@
 
 .section-header-title {
   flex: 1;
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: var(--tracking-caps);
   text-align: left;
 }
 
@@ -2756,16 +2906,16 @@
    Status Bar
    ============================================================ */
 
+/* Sits on the canvas below the cards, like the nav above them. */
 .status-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  height: 28px;
-  padding: 0 var(--space-3);
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-faint);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  gap: var(--space-5);
+  height: 26px;
+  padding: 0 var(--space-4);
+  background: transparent;
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -2780,11 +2930,16 @@
 .status-label {
   color: var(--text-tertiary);
   font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
 }
 
+/* Every status value is a number or a code, so all of them are
+   mono with tabular figures — the row must not reflow as values
+   tick. It was set in the display face before v3. */
 .status-value {
-  color: var(--text-primary);
-  font-family: var(--font-display);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
   font-weight: var(--weight-medium);
   font-variant-numeric: tabular-nums;
 }
@@ -2793,13 +2948,16 @@
    Tabbed Panel (Right Panel)
    ============================================================ */
 
+/* A card like the other panels: separated by the shell gap and
+   its own elevation, not by a dividing line. */
 .right-panel {
   display: flex;
   flex-direction: column;
   width: 280px;
   height: 100%;
   background: var(--bg-panel);
-  border-left: 1px solid var(--border-faint);
+  border-radius: var(--panel-radius);
+  box-shadow: var(--ring-surface), var(--shadow-sm);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -2819,7 +2977,6 @@
   flex-direction: column;
   height: 100%;
   background: var(--bg-panel);
-  border-left: 1px solid var(--border-faint);
   overflow: hidden;
 }
 
@@ -2837,6 +2994,9 @@
    Text Panel
    ============================================================ */
 
+/* Tinted-accent button: the second-loudest control in the product,
+   behind the one filled accent button in the top nav. Fills on
+   hover so the commit reads as a change of state, not a tint. */
 .text-panel-btn {
   display: inline-flex;
   align-items: center;
@@ -2845,17 +3005,21 @@
   width: 100%;
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--accent-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--accent-subtle);
   color: var(--accent);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
 }
 
 .text-panel-btn:hover:not(:disabled) {
   background: var(--accent);
+  border-color: var(--accent);
   color: var(--accent-on-fill);
 }
 
@@ -2864,26 +3028,16 @@
   cursor: not-allowed;
 }
 
+/* NOTE: chrome (border, radius, fill, ring, focus) comes from the
+   shared .field-input/.field-select/.field-textarea rule earlier in
+   this file. These blocks used to restate it and silently won on
+   source order, which reverted the calm treatment. They now carry
+   only what is genuinely different: prose fields read in the sans
+   face, not the mono one used for numeric fields. */
 .field-textarea {
-  width: 100%;
-  padding: var(--space-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: var(--text-sm);
   resize: vertical;
   min-height: 56px;
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.field-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--ring-focus);
 }
 
 .field-textarea::placeholder {
@@ -2891,23 +3045,8 @@
 }
 
 .field-select {
-  width: 100%;
-  padding: var(--space-2) var(--space-2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-input);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
   font-family: var(--font-sans);
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.field-select:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--ring-focus);
+  cursor: pointer;
 }
 
 /* ── Track selector ── */
@@ -2987,19 +3126,19 @@
 .overlay-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: var(--scrim);
   backdrop-filter: blur(6px);
 }
 
 .overlay-content {
   position: relative;
   width: 90%;
-  max-width: 560px;
+  max-width: 620px;
   max-height: 80vh;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-overlay);
+  background: var(--bg-surface);
+  border: none;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--ring-surface), var(--shadow-overlay);
   overflow: hidden;
 }
 
@@ -3007,8 +3146,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-faint);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .overlay-title {
@@ -3018,23 +3157,28 @@
   color: var(--text-primary);
 }
 
+/* Ghost close button — a boxed × next to a title reads as a second
+   piece of chrome competing with it. */
 .overlay-close-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 26px;
   height: 26px;
-  border: 1px solid var(--border-subtle);
+  border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   cursor: pointer;
   font-size: 16px;
-  transition: all var(--duration-fast) var(--ease-out);
+  line-height: 1;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
 }
 
 .overlay-close-btn:hover {
-  background: var(--bg-hover);
+  background: var(--state-hover);
   color: var(--text-primary);
 }
 
@@ -3055,11 +3199,11 @@
 
 .category-title {
   margin: 0;
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: var(--tracking-caps);
 }
 
 .shortcut-list {
@@ -3109,42 +3253,45 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 16vh;
-  background: rgba(0, 0, 0, 0.55);
+  background: var(--scrim);
   backdrop-filter: blur(6px);
 }
 
+/* The one place the system allows a large radius and a heavy
+   shadow: the palette floats above everything, and elevation is
+   what says so. No border — the shadow and the ring do that job. */
 .palette-content {
   position: relative;
   width: 90%;
-  max-width: 480px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-overlay);
+  max-width: 560px;
+  background: var(--bg-surface);
+  border: none;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--ring-surface), var(--shadow-overlay);
   overflow: hidden;
 }
 
+/* The whole strip is the field, so the input itself is chromeless
+   and the container's hairline is the only separator. */
 .palette-input-container {
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-faint);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .palette-input {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-subtle);
+  padding: var(--space-2) var(--space-2);
+  border: none;
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: transparent;
   color: var(--text-primary);
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-family: var(--font-sans);
-  transition: border-color var(--duration-fast) var(--ease-out);
 }
 
 .palette-input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-subtle);
+  box-shadow: none;
 }
 
 .palette-input::placeholder {
@@ -3217,7 +3364,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3413,7 +3560,7 @@
    Migrated from timeline-prototype. All classes use .tl- prefix.
    ============================================================ */
 
-/* ── Timeline Layout ── */
+/* ── Timeline Layout ─────────────────────────────────── */
 
 .tl-layout {
   display: flex;
@@ -3422,17 +3569,21 @@
   background: var(--bg-panel);
   overflow: hidden;
   outline: none;
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
 }
 
 .tl-layout:focus-visible {
   box-shadow: inset 0 0 0 2px var(--accent-subtle);
 }
 
+/* ── Ruler ────────────────────────────────────────────── */
+
 .tl-ruler-wrapper {
   position: relative;
   height: var(--ruler-height);
   min-height: var(--ruler-height);
-  background: var(--bg-panel);
+  background: var(--bg-surface-soft);
   border-bottom: 1px solid var(--border-subtle);
   overflow: hidden;
   margin-left: var(--track-header-width);
@@ -3444,40 +3595,76 @@
   overflow: hidden;
 }
 
+/* ── Ruler Playhead ──────────────────────────────────── */
+
+.tl-ruler-playhead-wrapper {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  cursor: ew-resize;
+  z-index: 10;
+  padding: 0 3px;
+}
+
+.tl-ruler-playhead {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--playhead-color);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+}
+
+/* ── Status Bar ──────────────────────────────────────── */
+
 .tl-status-bar {
-  height: 24px;
-  min-height: 24px;
-  background: var(--bg-surface);
+  height: 20px;
+  min-height: 20px;
+  background: var(--bg-surface-soft);
   border-top: 1px solid var(--border-faint);
   display: flex;
   align-items: center;
   padding: 0 var(--space-3);
-  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
   color: var(--text-tertiary);
-  gap: var(--space-4);
+  gap: var(--space-1);
+  user-select: none;
 }
 
-/* ── Toolbar ── */
+.tl-status-item {
+  white-space: nowrap;
+}
+
+.tl-status-item + .tl-status-item::before {
+  content: '·';
+  margin-right: var(--space-1);
+  color: var(--text-disabled);
+}
+
+/* ══ Toolbar ═════════════════════════════════════════════ */
 
 .tl-toolbar-v2 {
   height: var(--toolbar-height);
   min-height: var(--toolbar-height);
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-faint);
+  background: var(--bg-surface-soft);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-3);
-  gap: var(--space-3);
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
 }
 
 .tl-toolbar-tools {
   display: flex;
-  gap: 2px;
+  gap: 1px;
 }
 
 .tl-toolbar-btn {
-  width: var(--space-7);
-  height: var(--space-7);
+  width: var(--tl-toolbar-btn-size);
+  height: var(--tl-toolbar-btn-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3485,7 +3672,7 @@
   background: transparent;
   color: var(--text-tertiary);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   will-change: transform;
   transition:
     color var(--transition-fast),
@@ -3500,7 +3687,7 @@
 }
 
 .tl-toolbar-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 
 .tl-toolbar-btn:focus-visible {
@@ -3509,35 +3696,57 @@
 }
 
 .tl-toolbar-btn.is-active {
-  /* selection-on-fill is theme-aware: near-black in dark mode, white in
-     light mode — #fff would be invisible on the light panel background */
   color: var(--selection-on-fill);
   background: var(--selection);
   border-color: var(--selection);
 }
 
+/* ── Toolbar: Timecode ── */
+
 .tl-toolbar-timecode {
   flex: 1;
   text-align: center;
   font-family: var(--font-mono);
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.05em;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+  letter-spacing: 0.04em;
   user-select: none;
 }
+
+/* ── Toolbar: Zoom ── */
 
 .tl-toolbar-zoom {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 2px;
 }
 
-/* ── Zoom Slider ── */
+/* ── Toolbar: Separator ── */
+
+.tl-toolbar-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--border-subtle);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ── Toolbar: Add-track label ── */
+
+.tl-toolbar-add-label {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  margin-left: 1px;
+  line-height: 1;
+}
+
+/* ══ Zoom Slider ═════════════════════════════════════════ */
 
 .tl-zoom-slider {
-  width: 100px;
+  width: 80px;
   display: flex;
   align-items: center;
 }
@@ -3546,7 +3755,7 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: var(--space-1);
+  height: 3px;
   border-radius: var(--radius-xs);
   background: linear-gradient(
     to right,
@@ -3562,8 +3771,8 @@
 .tl-zoom-slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: var(--radius-full);
   background: var(--text-primary);
   border: none;
@@ -3578,8 +3787,8 @@
 }
 
 .tl-zoom-slider-input::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: var(--radius-full);
   background: var(--text-primary);
   border: none;
@@ -3594,12 +3803,12 @@
 }
 
 .tl-zoom-slider-input::-moz-range-track {
-  height: var(--space-1);
+  height: 3px;
   border-radius: var(--radius-xs);
   background: var(--bg-input);
 }
 
-/* ── Tracks ── */
+/* ══ Track Area ══════════════════════════════════════════ */
 
 .tl-track-area {
   flex: 1;
@@ -3607,62 +3816,146 @@
   position: relative;
 }
 
+/* ══ Track Row ═══════════════════════════════════════════ */
+
 .tl-track-row {
   display: flex;
   height: var(--track-height);
   min-width: max-content;
 }
 
-/* V2 track header — scoped to .tl-track-row to avoid collision with V1 .tl-track-header (line 336) */
+/* Track-type variant heights */
+.tl-track-row[data-track-type='audio'] {
+  height: var(--track-height-audio);
+}
+
+/* ══ Track Header ════════════════════════════════════════
+   Scoped to .tl-track-row to avoid collision with V1. */
+
 .tl-track-row > .tl-track-header {
-  height: var(--track-height);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-2);
+  width: var(--track-header-width);
+  flex-shrink: 0;
+  padding: 0 var(--space-1) 0 0;
   background: var(--bg-surface-soft);
   border-right: 1px solid var(--border-subtle);
   border-bottom: 1px solid var(--border-faint);
   gap: var(--space-1);
   user-select: none;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  overflow: hidden;
 }
 
+/* Track-type color chip — left edge */
+.tl-track-row > .tl-track-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--clip-chip-width);
+  background: var(--track-video);
+  flex-shrink: 0;
+}
+
+.tl-track-row[data-track-type='video'] > .tl-track-header::before {
+  background: var(--track-video);
+}
+
+.tl-track-row[data-track-type='audio'] > .tl-track-header::before {
+  background: var(--track-audio);
+}
+
+.tl-track-row[data-track-type='subtitle'] > .tl-track-header::before {
+  background: var(--track-subtitle);
+}
+
+.tl-track-row[data-track-type='title'] > .tl-track-header::before {
+  background: var(--track-subtitle);
+}
+
+/* ── Track Header: Grip ── */
+
 .tl-track-header-drag {
-  color: var(--text-tertiary);
+  color: var(--text-disabled);
   cursor: grab;
   flex-shrink: 0;
-  opacity: 0.5;
+  opacity: 0;
+  margin-left: calc(var(--clip-chip-width) + 2px);
   transition: opacity var(--transition-fast);
 }
 
-.tl-track-header-drag:hover {
-  opacity: 0.8;
+.tl-track-row:hover .tl-track-header-drag {
+  opacity: 0.5;
 }
+
+.tl-track-header-drag:hover {
+  opacity: 0.8 !important;
+}
+
+/* ── Track Header: Type Icon ── */
+
+.tl-track-header-type-icon {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.tl-track-row[data-track-type='video'] .tl-track-header-type-icon {
+  color: var(--track-video);
+}
+
+.tl-track-row[data-track-type='audio'] .tl-track-header-type-icon {
+  color: var(--track-audio);
+}
+
+.tl-track-row[data-track-type='subtitle'] .tl-track-header-type-icon,
+.tl-track-row[data-track-type='title'] .tl-track-header-type-icon {
+  color: var(--track-subtitle);
+}
+
+/* ── Track Header: Name ── */
 
 .tl-track-header-name {
   flex: 1;
+  font-family: var(--font-condensed);
   font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: var(--weight-medium);
+  min-width: 0;
 }
+
+/* ── Track Header: Actions ── */
 
 .tl-track-header-actions {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tl-track-row:hover .tl-track-header-actions,
+.tl-track-row:focus-within .tl-track-header-actions,
+/* Keep visible if any button is active (muted, locked, etc.) */
+.tl-track-header-actions:has(.is-active) {
+  opacity: 1;
 }
 
 .tl-track-header-btn {
-  width: var(--space-5);
-  height: var(--space-5);
+  width: var(--tl-header-btn-size);
+  height: var(--tl-header-btn-size);
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: transparent;
-  color: var(--text-tertiary);
+  color: var(--text-disabled);
   cursor: pointer;
   border-radius: var(--radius-xs);
   will-change: transform;
@@ -3678,7 +3971,7 @@
 }
 
 .tl-track-header-btn:active {
-  transform: scale(0.92);
+  transform: scale(0.90);
 }
 
 .tl-track-header-btn:focus-visible {
@@ -3690,14 +3983,27 @@
   color: var(--selection);
 }
 
+/* ══ Track Body ══════════════════════════════════════════ */
+
 .tl-track-body {
   flex: 1;
   position: relative;
-  height: var(--track-height);
-  border-bottom: 1px solid var(--border-faint);
+  height: 100%;
+  border-bottom: 1px solid var(--tl-separator);
   overflow: hidden;
   cursor: default;
 }
+
+/* Tool-specific cursors via data-attribute */
+.tl-track-body[data-tool='razor'] {
+  cursor: crosshair;
+}
+
+.tl-track-body[data-tool='hand'] {
+  cursor: grab;
+}
+
+/* ── Track Body: Grid ── */
 
 .tl-track-body-grid {
   position: absolute;
@@ -3705,13 +4011,18 @@
   pointer-events: none;
 }
 
-/* ── Empty Track ── */
+/* ── Zebra stripe ── */
+.tl-track-row:nth-child(even) > .tl-track-body {
+  background: var(--bg-sunken);
+}
+
+/* ══ Empty Track ═════════════════════════════════════════ */
 
 .tl-empty-track {
   position: absolute;
-  inset: var(--space-2);
+  inset: var(--clip-inset);
   border: 1px dashed var(--border-default);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3719,32 +4030,28 @@
 }
 
 .tl-empty-track span {
-  font-size: var(--text-xs);
+  font-size: var(--text-2xs);
+  font-family: var(--font-condensed);
   color: var(--text-disabled);
   user-select: none;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
 }
 
-/* ── Clips ── */
+/* ══ Clips ═══════════════════════════════════════════════ */
 
 @keyframes tl-selection-flash {
-  0% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 .tl-v2-clip {
   position: absolute;
-  top: var(--space-1);
-  height: calc(var(--track-height) - 8px);
-  border-radius: var(--radius-sm);
+  top: var(--clip-inset);
+  height: calc(100% - calc(var(--clip-inset) * 2));
+  border-radius: var(--clip-radius);
   border: 1px solid var(--border-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
   cursor: grab;
   user-select: none;
@@ -3754,6 +4061,45 @@
     border-color var(--transition-fast),
     box-shadow var(--transition-fast),
     transform 40ms;
+}
+
+/* Track-type chip on left edge of clip */
+.tl-v2-clip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--clip-chip-width);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Clip type colors via data-attribute */
+.tl-v2-clip[data-clip-type='video'] {
+  background: var(--track-video-bg);
+}
+.tl-v2-clip[data-clip-type='video']::before {
+  background: var(--track-video-solid);
+}
+
+.tl-v2-clip[data-clip-type='audio'] {
+  background: var(--track-audio-bg);
+}
+.tl-v2-clip[data-clip-type='audio']::before {
+  background: var(--track-audio-solid);
+}
+
+.tl-v2-clip[data-clip-type='text'] {
+  background: var(--track-subtitle-bg);
+}
+.tl-v2-clip[data-clip-type='text']::before {
+  background: var(--track-subtitle-solid);
+}
+
+/* Fallback background when no data-clip-type */
+.tl-v2-clip:not([data-clip-type]) {
+  background: var(--bg-raised);
 }
 
 .tl-v2-clip:hover {
@@ -3766,21 +4112,20 @@
 }
 
 .tl-v2-clip:active:not(.is-dragging) {
-  transform: scale(0.99);
+  transform: scale(0.995);
 }
 
 .tl-v2-clip.is-selected {
   z-index: 2;
   border-color: var(--tl-clip-selected-border);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 0 0 1px var(--tl-clip-selected-border),
     var(--tl-playhead-shadow);
-  animation: tl-selection-flash 200ms ease;
+  animation: tl-selection-flash 180ms ease;
 }
 
 .tl-v2-clip.is-dragging {
-  opacity: 0.85;
+  opacity: 0.82;
   box-shadow: var(--tl-clip-drag-shadow);
   cursor: grabbing;
   z-index: 5;
@@ -3790,9 +4135,10 @@
 .tl-v2-clip.is-dragging.is-selected {
   box-shadow:
     var(--tl-clip-drag-shadow),
-    0 0 0 1px var(--tl-clip-selected-border),
-    var(--tl-playhead-shadow);
+    0 0 0 1px var(--tl-clip-selected-border);
 }
+
+/* ── Clip: Move Zone ── */
 
 .tl-v2-clip-move-zone {
   position: absolute;
@@ -3804,24 +4150,30 @@
   cursor: grabbing;
 }
 
+/* ── Clip: Label ── */
+
 .tl-v2-clip-label {
   position: relative;
   z-index: 1;
-  font-size: var(--text-xs);
+  font-family: var(--font-condensed);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
   color: var(--text-secondary);
-  padding: var(--space-1) 6px;
+  padding: 2px calc(var(--clip-chip-width) + 6px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
   pointer-events: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: var(--leading-tight);
 }
+
+/* ── Clip: Trim Handles ── */
 
 .tl-v2-clip-trim-handle {
   position: absolute;
   top: 0;
-  width: 6px;
+  width: var(--tl-trim-handle-width);
   height: 100%;
   background: transparent;
   cursor: col-resize;
@@ -3829,7 +4181,7 @@
   transition: background var(--transition-fast);
 }
 
-.tl-v2-clip-trim-handle:hover {
+.tl-v2-clip:hover .tl-v2-clip-trim-handle {
   background: var(--tl-trim-handle-bg);
 }
 
@@ -3840,14 +4192,29 @@
 .tl-v2-clip-trim-handle--left {
   left: 0;
   cursor: w-resize;
+  border-radius: var(--clip-radius) 0 0 var(--clip-radius);
 }
 
 .tl-v2-clip-trim-handle--right {
   right: 0;
   cursor: e-resize;
+  border-radius: 0 var(--clip-radius) var(--clip-radius) 0;
 }
 
-/* ── Snap Guide ── */
+/* ── Clip: Razor Indicator ── */
+
+.tl-v2-clip-razor-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: white;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ══ Snap Guide ══════════════════════════════════════════ */
 
 .tl-snap-guide {
   position: absolute;
@@ -3855,44 +4222,36 @@
   bottom: 0;
   width: 1px;
   background: var(--tl-snap-color);
-  opacity: 0.3;
+  opacity: 0.35;
   pointer-events: none;
   z-index: 8;
 }
 
-/* ── Ruler Playhead ── */
-
-.tl-ruler-playhead-wrapper {
-  position: absolute;
-  bottom: 0;
-  transform: translateX(-50%);
-  pointer-events: auto;
-  cursor: ew-resize;
-  z-index: 10;
-  padding: 0 var(--space-1);
-}
-
-.tl-ruler-playhead {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 8px solid var(--playhead-color);
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
-  pointer-events: none;
-}
-
-/* ── Playhead ── */
+/* ══ Playhead ════════════════════════════════════════════ */
 
 .tl-v2-playhead {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 1.5px;
   background: var(--playhead-color);
   pointer-events: none;
   z-index: 10;
   transition: left var(--transition-fast);
+}
+
+/* Top cap — small inverted triangle */
+.tl-v2-playhead::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--playhead-color);
 }
 
 .tl-v2-playhead.is-dragging {
@@ -3915,27 +4274,62 @@
   box-shadow: var(--tl-ring-accent);
 }
 
-/* ── Context Menu ── */
+/* ══ Transition Handle ═══════════════════════════════════ */
+
+.tl-transition-handle {
+  position: absolute;
+  top: var(--clip-inset);
+  height: calc(100% - calc(var(--clip-inset) * 2));
+  cursor: ew-resize;
+  z-index: 3;
+  border-radius: var(--radius-xs);
+  background: var(--accent-subtle);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.tl-transition-handle:hover {
+  opacity: 1;
+  background: var(--accent-muted);
+}
+
+.tl-transition-handle.is-dragging {
+  opacity: 1;
+  background: var(--accent-border);
+}
+
+.tl-transition-visual {
+  position: absolute;
+  top: var(--clip-inset);
+  height: calc(100% - calc(var(--clip-inset) * 2));
+  background: var(--accent-subtle);
+  border: 1px dashed var(--accent-border);
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ══ Context Menu ════════════════════════════════════════ */
 
 .tl-context-menu {
   background: var(--bg-panel);
   border: 1px solid var(--border-default);
-  border-radius: 6px;
-  padding: 4px 0;
+  border-radius: var(--radius-md);
+  padding: 3px 0;
   min-width: 140px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .tl-context-menu-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
-  padding: 6px 12px;
+  padding: 4px var(--space-3);
   border: none;
   background: none;
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   cursor: pointer;
   text-align: left;
 }
@@ -3944,17 +4338,17 @@
   background: var(--bg-hover);
 }
 
-/* ── Rename Inputs ── */
+/* ══ Rename Inputs ═══════════════════════════════════════ */
 
 .tl-v2-clip-rename-input,
 .tl-track-header-rename-input {
   background: var(--bg-input, var(--bg-app));
   border: 1px solid var(--border-focus);
-  border-radius: 3px;
+  border-radius: 2px;
   color: var(--text-primary);
   font: inherit;
-  font-size: var(--text-sm);
-  padding: 1px 4px;
+  font-size: var(--text-2xs);
+  padding: 1px 3px;
   outline: none;
   min-width: 0;
   flex: 1;
@@ -3962,7 +4356,7 @@
 
 .tl-v2-clip-rename-input {
   position: absolute;
-  left: 4px;
+  left: calc(var(--clip-chip-width) + 2px);
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
@@ -3971,19 +4365,10 @@
 
 .tl-track-header-rename-input {
   flex: 1;
-  min-width: 40px;
+  min-width: 36px;
 }
 
-/* ── Toolbar Separator ── */
-
-.tl-toolbar-separator {
-  width: 1px;
-  height: 20px;
-  background: var(--border-faint);
-  margin: 0 4px;
-}
-
-/* ── Toggle Row ── */
+/* ══ Toggle Row ══════════════════════════════════════════ */
 
 .toggle-row {
   display: flex;
@@ -3999,13 +4384,13 @@
 }
 
 .toggle-row-checkbox {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   accent-color: var(--accent);
   cursor: pointer;
 }
 
-/* ── Color Dot ── */
+/* ══ Color Dot ═══════════════════════════════════════════ */
 
 .color-dot {
   position: relative;
@@ -4015,8 +4400,8 @@
 }
 
 .color-dot-swatch {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   cursor: pointer;
@@ -4037,14 +4422,14 @@
   clip: rect(0, 0, 0, 0);
 }
 
-/* ── Track Header Resize Handle ── */
+/* ══ Track Header Resize Handle ══════════════════════════ */
 
 .tl-track-header-resize {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 3px;
   cursor: ns-resize;
   background: transparent;
   transition: background var(--duration-fast) var(--ease-out);
@@ -4053,10 +4438,10 @@
 .tl-track-header-resize::after {
   content: '';
   position: absolute;
-  bottom: 1px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 24px;
+  width: 20px;
   height: 1px;
   background: var(--border-subtle);
   opacity: 0;
@@ -4074,3 +4459,4 @@
 .tl-track-header-resize:active {
   background: var(--accent-border);
 }
+

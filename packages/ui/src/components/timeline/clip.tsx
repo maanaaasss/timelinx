@@ -19,17 +19,14 @@ export interface ClipProps {
   nextClip?: ClipType | null;
 }
 
-const clipBgVar: Record<string, string> = {
-  video: 'var(--track-video-bg)',
-  audio: 'var(--track-audio-bg)',
-  text: 'var(--track-subtitle-bg)',
-};
+// Clip background is now CSS-driven via data-clip-type attribute.
 
 type DragMode = 'move' | 'trim-left' | 'trim-right' | 'transition';
 
 const SNAP_THRESHOLD_PX = 4;
 const MIN_DURATION_PX = 6;
 const TRANSITION_HANDLE_WIDTH = 4;
+const TRIM_HANDLE_WIDTH = 4;
 
 function clampToNeighbors(
   state: TimelineState,
@@ -516,11 +513,8 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
       <div
         ref={clipRef}
         className={cn('tl-v2-clip', isSelected && 'is-selected', isDragging && 'is-dragging')}
-        style={{
-          left,
-          width,
-          background: clipBgVar[clipType] ?? 'var(--bg-raised)',
-        }}
+        data-clip-type={clipType}
+        style={{ left, width }}
         tabIndex={isSelected ? 0 : -1}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -531,19 +525,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         onPointerLeave={isRazorMode ? handleRazorPointerLeave : undefined}
       >
         {isRazorMode && razorLineX !== null && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: razorLineX,
-              width: 1,
-              background: 'white',
-              opacity: 0.8,
-              pointerEvents: 'none',
-              zIndex: 5,
-            }}
-          />
+          <div className="tl-v2-clip-razor-line" style={{ left: razorLineX }} />
         )}
         <div
           className="tl-v2-clip-move-zone"

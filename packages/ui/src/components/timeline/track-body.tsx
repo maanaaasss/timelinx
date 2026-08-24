@@ -24,13 +24,6 @@ function getClipType(clip: ClipType, tracks: readonly Track[]): 'video' | 'audio
   return 'video';
 }
 
-const toolCursors: Record<string, string> = {
-  razor: 'crosshair',
-  hand: 'grab',
-  selection: 'default',
-  select: 'default',
-};
-
 export function TrackBody({
   clips,
   ppf,
@@ -45,7 +38,6 @@ export function TrackBody({
   const gridIntervalPx = ppf * fps;
 
   const activeToolId = useActiveToolId(engine);
-  const cursor = toolCursors[activeToolId] ?? 'default';
 
   // Sort clips by timelineStart so we can find the next clip for each clip
   // (needed for the transition drag handle in Clip.tsx).
@@ -71,12 +63,8 @@ export function TrackBody({
     <div
       ref={bodyRef}
       className="tl-track-body"
-      style={
-        {
-          width: totalWidth,
-          cursor,
-        } as React.CSSProperties
-      }
+      data-tool={activeToolId}
+      style={{ width: totalWidth } as React.CSSProperties}
       onClick={handleClick}
     >
       <div

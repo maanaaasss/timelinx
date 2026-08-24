@@ -1,142 +1,229 @@
 /* ============================================================
-   @timelinx/ui — Design Tokens v2.1
+   @timelinx/ui — Design Tokens v3 · "Grading Suite"
    BASE (light / neutral) defaults.
 
-   These tokens define the light theme. They are the fallback
-   when no preset is loaded. Load a preset on top to override:
+   ── Design thesis ─────────────────────────────────────────
+   A colour-grading suite is painted neutral grey on purpose:
+   so the picture is the only coloured thing in the room. This
+   UI follows that rule. Surfaces are near-chroma-free and
+   calm; the footage and the playhead are the only saturated
+   things on screen.
 
-     @import '@timelinx/ui/styles/presets/dark-pro';   ← dark (default app theme)
-     @import '@timelinx/ui/styles/presets/light';      ← light
+   Two densities live here on purpose:
+     · Surfaces (panels, bin, inspector) are calm — roomy
+       padding, soft elevation, separated by gaps rather than
+       lines.
+     · The timeline is an instrument — tight rows, hairline
+       rules, tabular timecode, no decoration.
+
+   Track hues quote SMPTE colour bars, the vernacular of the
+   craft. Video is deliberately NEUTRAL: video clips show
+   filmstrip thumbnails, and a hue behind them would skew the
+   very colours the editor is judging.
+
+   Presets override colour only. Typography, spacing, radius,
+   motion and timeline geometry are theme-invariant and are
+   defined here:
+
+     @import '@timelinx/ui/styles/presets/dark-pro';   ← default app theme
+     @import '@timelinx/ui/styles/presets/light';
      @import '@timelinx/ui/styles/presets/high-contrast';
-
-   Typography and structural tokens (spacing, radius, timing,
-   track geometry) are defined here and are NOT overridden by
-   presets — they are theme-invariant.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap')
 layer(fonts);
 
 :root {
   color-scheme: light;
 
-  /* ── Surfaces (light/neutral base) ── */
-  --bg-canvas: #f4f4f5;
-  --bg-app: #fafafa;
-  --bg-panel: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-surface-raised: #ffffff;
-  --bg-surface-soft: #f9f9fa;
-  --bg-subtle: #f4f4f5;
-  --bg-raised: #ffffff;
-  --bg-hover: rgba(0, 0, 0, 0.04);
-  --bg-active: rgba(0, 0, 0, 0.06);
-  --bg-overlay: rgba(0, 0, 0, 0.08);
-  --bg-input: #f4f4f5;
-  --bg-input-focus: #ffffff;
-  --bg-sunken: rgba(0, 0, 0, 0.06); /* inset / recessed areas */
+  /* ══ Ramps ══════════════════════════════════════════════
+     Raw scales. Semantic tokens below are the API; reach for
+     a ramp step directly only when no semantic token fits. */
 
-  /* ── Borders ── */
-  --border-faint: rgba(0, 0, 0, 0.05);
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-default: rgba(0, 0, 0, 0.12);
-  --border-strong: rgba(0, 0, 0, 0.18);
-  --border-focus: var(--accent-400);
+  /* Neutral — very slightly cool, near-zero chroma so it
+     never tints the picture it surrounds. */
+  --n-0: #ffffff;
+  --n-25: #fbfbfc;
+  --n-50: #f6f7f9;
+  --n-100: #eef0f3;
+  --n-150: #e5e8ec;
+  --n-200: #d7dbe0;
+  --n-300: #b9bfc7;
+  --n-400: #8d959e;
+  --n-500: #6a737c;
+  --n-600: #4c555d;
+  --n-700: #353d44;
+  --n-800: #232930;
+  --n-850: #191e23;
+  --n-900: #12161a;
+  --n-950: #0b0e11;
 
-  /* ── Text ── */
-  --text-primary: #18181b;
-  --text-secondary: #71717a;
-  --text-tertiary: #a1a1aa;
-  --text-disabled: #d4d4d8;
-  --text-inverse: #fafafa;
-  --text-mono: #52525b;
+  /* Accent — the trace colour of a waveform scope. Cool, cyan
+     leaning, deliberately not the warm clay every other tool
+     reaches for. Used for interaction only, never decoration. */
+  --a-50: #eaf6fa;
+  --a-100: #c4e7f1;
+  --a-200: #8fd2e4;
+  --a-300: #5cbcd5;
+  --a-400: #38a9c9;
+  --a-500: #2b89a5;
+  --a-600: #216c83;
 
-  /* ── Accent — warm amber LED (shared across all themes) ── */
-  --accent-50: #fdf3e8;
-  --accent-100: #fad9a8;
-  --accent-200: #f5b94c;
-  --accent-300: #ee9d1e;
-  --accent-400: #e07a2f;
-  --accent-500: #c4641a;
-  --accent-600: #a34e0e;
+  /* SMPTE colour-bar hues, muted one stop for screen use. */
+  --bar-yellow: #d9b23a;
+  --bar-green: #35b15b;
+  --bar-magenta: #c25bb0;
+  --bar-blue: #4a78d0;
+  --bar-violet: #8a6fd1;
+  --bar-red: #ce3b32;
 
-  --accent: var(--accent-400);
-  --accent-hover: var(--accent-300);
-  --accent-active: var(--accent-500);
-  --accent-subtle: rgba(224, 122, 47, 0.08);
-  --accent-border: rgba(224, 122, 47, 0.25);
-  --accent-glow: rgba(224, 122, 47, 0.12);
+  /* Signal — reserved. The playhead and the record state, and
+     nothing else, so a glance always finds the playhead. */
+  --signal: #ff4e3d;
+  --signal-dim: rgba(255, 78, 61, 0.28);
+
+  /* ══ Surfaces ══════════════════════════════════════════ */
+  --bg-canvas: #e9ebee; /* behind panels; the gaps show this */
+  --bg-app: var(--n-50);
+  --bg-panel: var(--n-0);
+  --bg-surface: var(--n-0);
+  --bg-surface-raised: var(--n-0);
+  --bg-surface-soft: var(--n-25);
+  --bg-subtle: var(--n-50);
+  --bg-raised: var(--n-0);
+  --bg-hover: rgba(18, 22, 26, 0.04);
+  --bg-active: rgba(18, 22, 26, 0.07);
+  --bg-overlay: rgba(18, 22, 26, 0.09);
+  --bg-input: var(--n-50);
+  --bg-input-focus: var(--n-0);
+  --bg-sunken: rgba(18, 22, 26, 0.05);
+
+  /* rgb triplets for rgba() composition (were referenced but
+     never defined before v3). */
+  --bg-surface-rgb: 255, 255, 255;
+  --border-default-rgb: 18, 22, 26;
+
+  /* ══ Borders ═══════════════════════════════════════════
+     Calm surfaces lean on gaps and elevation, not outlines,
+     so these stay light. The timeline uses them at full
+     strength as hairline rules. */
+  --border-faint: rgba(18, 22, 26, 0.05);
+  --border-subtle: rgba(18, 22, 26, 0.09);
+  --border-default: rgba(18, 22, 26, 0.13);
+  --border-strong: rgba(18, 22, 26, 0.2);
+  --border-focus: var(--a-400);
+
+  /* ══ Text ══════════════════════════════════════════════ */
+  --text-primary: var(--n-900);
+  --text-secondary: var(--n-500);
+  --text-tertiary: var(--n-400);
+  --text-disabled: var(--n-300);
+  --text-inverse: var(--n-25);
+  --text-mono: var(--n-600);
+
+  /* ══ Accent (semantic) ═════════════════════════════════ */
+  --accent-50: var(--a-50);
+  --accent-100: var(--a-100);
+  --accent-200: var(--a-200);
+  --accent-300: var(--a-300);
+  --accent-400: var(--a-400);
+  --accent-500: var(--a-500);
+  --accent-600: var(--a-600);
+
+  --accent: var(--a-500);
+  --accent-hover: var(--a-400);
+  --accent-active: var(--a-600);
+  --accent-subtle: rgba(56, 169, 201, 0.1);
+  --accent-muted: rgba(56, 169, 201, 0.22);
+  --accent-border: rgba(56, 169, 201, 0.3);
+  --accent-glow: rgba(56, 169, 201, 0.16);
   --accent-on-fill: #ffffff;
 
-  /* ── Selection — electric cyan (distinct from accent) ── */
-  --selection: #0099cc;
-  --selection-ring: rgba(0, 153, 204, 0.3);
-  --selection-glow: rgba(0, 153, 204, 0.15);
-  --selection-handle: #0099cc;
+  /* ══ Selection ═════════════════════════════════════════
+     Selection is the same hue as interaction, one stop
+     brighter plus a ring — a third hue would only add noise
+     to a screen that already carries six track colours. */
+  --selection: var(--a-400);
+  --selection-ring: rgba(56, 169, 201, 0.34);
+  --selection-glow: rgba(56, 169, 201, 0.18);
+  --selection-handle: var(--a-400);
   --selection-on-fill: #ffffff;
 
-  /* ── Semantic ── */
-  --color-danger: #dc2626;
-  --color-danger-subtle: rgba(220, 38, 38, 0.06);
-  --color-success: #16a34a;
-  --color-success-subtle: rgba(22, 163, 74, 0.06);
-  --color-warning: #d97706;
-  --color-warning-subtle: rgba(217, 119, 6, 0.06);
+  /* ══ Semantic ══════════════════════════════════════════ */
+  --color-danger: var(--bar-red);
+  --color-danger-subtle: rgba(206, 59, 50, 0.08);
+  --color-success: #2e9450;
+  --color-success-subtle: rgba(46, 148, 80, 0.08);
+  --color-warning: #b8860f;
+  --color-warning-subtle: rgba(184, 134, 15, 0.08);
 
-  /* ── Track types (light-mode defaults) ── */
-  --track-video: #2563eb;
-  --track-video-dim: rgba(37, 99, 235, 0.7);
-  --track-video-bg: rgba(37, 99, 235, 0.06);
-  --track-video-border: rgba(37, 99, 235, 0.18);
-  --track-video-solid: #1d4ed8;
-  --track-video-border-solid: #1e40af;
+  /* ══ Track types ═══════════════════════════════════════
+     `-solid` / `-border-solid` paint the clip body; the plain
+     and `-bg` forms tint track lanes and headers.
 
-  --track-audio: #3b82f6;
-  --track-audio-dim: rgba(59, 130, 246, 0.7);
-  --track-audio-bg: rgba(59, 130, 246, 0.06);
-  --track-audio-border: rgba(59, 130, 246, 0.18);
-  --track-audio-solid: #2563eb;
-  --track-audio-border-solid: #1d4ed8;
+     VIDEO IS NEUTRAL BY DESIGN — a video clip renders a
+     filmstrip thumbnail, and a coloured body would skew the
+     colours being judged. It gets a steel edge instead. */
+  --track-video: var(--n-400);
+  --track-video-dim: rgba(141, 149, 158, 0.7);
+  --track-video-bg: rgba(141, 149, 158, 0.07);
+  --track-video-border: rgba(141, 149, 158, 0.24);
+  --track-video-solid: var(--n-500);
+  --track-video-border-solid: var(--n-600);
 
-  --track-subtitle: #d97706;
-  --track-subtitle-dim: rgba(217, 119, 6, 0.7);
-  --track-subtitle-bg: rgba(217, 119, 6, 0.06);
-  --track-subtitle-border: rgba(217, 119, 6, 0.18);
-  --track-subtitle-solid: #b45309;
-  --track-subtitle-border-solid: #92400e;
+  --track-audio: var(--bar-green);
+  --track-audio-dim: rgba(53, 177, 91, 0.7);
+  --track-audio-bg: rgba(53, 177, 91, 0.07);
+  --track-audio-border: rgba(53, 177, 91, 0.24);
+  --track-audio-solid: #2b9a4d;
+  --track-audio-border-solid: #1f7a3b;
 
-  --track-image: #db2777;
-  --track-image-bg: rgba(219, 39, 119, 0.06);
-  --track-image-border: rgba(219, 39, 119, 0.18);
-  --track-image-solid: #be185d;
-  --track-image-border-solid: #9d174d;
+  --track-subtitle: var(--bar-yellow);
+  --track-subtitle-dim: rgba(217, 178, 58, 0.7);
+  --track-subtitle-bg: rgba(217, 178, 58, 0.07);
+  --track-subtitle-border: rgba(217, 178, 58, 0.24);
+  --track-subtitle-solid: #b8912a;
+  --track-subtitle-border-solid: #96741f;
 
-  --track-effect: #059669;
-  --track-effect-dim: rgba(5, 150, 105, 0.7);
-  --track-effect-bg: rgba(5, 150, 105, 0.06);
-  --track-effect-border: rgba(5, 150, 105, 0.18);
-  --track-effect-solid: #047857;
-  --track-effect-border-solid: #065f46;
+  --track-image: var(--bar-magenta);
+  --track-image-bg: rgba(194, 91, 176, 0.07);
+  --track-image-border: rgba(194, 91, 176, 0.24);
+  --track-image-solid: #a8479a;
+  --track-image-border-solid: #883a7c;
 
-  --track-music: #9333ea;
-  --track-music-dim: rgba(147, 51, 234, 0.7);
-  --track-music-bg: rgba(147, 51, 234, 0.06);
-  --track-music-border: rgba(147, 51, 234, 0.18);
-  --track-music-solid: #7c3aed;
-  --track-music-border-solid: #6d28d9;
+  --track-effect: var(--bar-blue);
+  --track-effect-dim: rgba(74, 120, 208, 0.7);
+  --track-effect-bg: rgba(74, 120, 208, 0.07);
+  --track-effect-border: rgba(74, 120, 208, 0.24);
+  --track-effect-solid: #3c66b8;
+  --track-effect-border-solid: #2f5299;
 
-  /* ── Glow values ── */
-  --glow-video: rgba(37, 99, 235, 0.1);
-  --glow-audio: rgba(59, 130, 246, 0.1);
-  --glow-subtitle: rgba(217, 119, 6, 0.1);
-  --glow-image: rgba(219, 39, 119, 0.1);
-  --glow-effect: rgba(5, 150, 105, 0.1);
-  --glow-music: rgba(147, 51, 234, 0.1);
+  --track-music: var(--bar-violet);
+  --track-music-dim: rgba(138, 111, 209, 0.7);
+  --track-music-bg: rgba(138, 111, 209, 0.07);
+  --track-music-border: rgba(138, 111, 209, 0.24);
+  --track-music-solid: #755bbd;
+  --track-music-border-solid: #5e479b;
 
-  /* ── Typography ── */
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  /* Glows — kept faint; the timeline is flat by design. */
+  --glow-video: rgba(141, 149, 158, 0.1);
+  --glow-audio: rgba(53, 177, 91, 0.1);
+  --glow-subtitle: rgba(217, 178, 58, 0.1);
+  --glow-image: rgba(194, 91, 176, 0.1);
+  --glow-effect: rgba(74, 120, 208, 0.1);
+  --glow-music: rgba(138, 111, 209, 0.1);
+
+  /* ══ Typography (theme-invariant) ══════════════════════
+     IBM Plex: drawn for technical products, so it carries the
+     instrument register without costume. Condensed earns its
+     place on narrow track headers, where a normal-width face
+     truncates names that a condensed one fits. Mono carries
+     timecode, which is everywhere in an editor and must align
+     digit-for-digit. */
+  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 
   --text-2xs: 10px;
   --text-xs: 11px;
@@ -146,18 +233,24 @@ layer(fonts);
   --text-lg: 16px;
   --text-xl: 20px;
   --text-2xl: 24px;
-  --text-3xl: 32px;
+  --text-3xl: 30px;
+
+  /* Tracking: tighten as size grows, the way metal type does. */
+  --tracking-tight: -0.014em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.07em; /* eyebrows / small caps labels */
 
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
   --weight-bold: 700;
 
-  --leading-tight: 1.25;
+  --leading-tight: 1.2;
   --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
+  --leading-relaxed: 1.6;
 
-  /* ── Spacing (4px grid) ── */
+  /* ══ Spacing — 4px grid ════════════════════════════════ */
   --space-0: 0px;
   --space-1: 4px;
   --space-2: 8px;
@@ -171,81 +264,122 @@ layer(fonts);
   --space-12: 48px;
   --space-16: 64px;
 
-  /* ── Radius ── */
+  /* ══ Radius ════════════════════════════════════════════
+     Panels get a real, calm radius. Anything inside the
+     timeline stays near-square: a cut is a hard edge. */
   --radius-none: 0px;
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-xl: 10px;
+  --radius-2xl: 14px;
   --radius-full: 999px;
 
-  /* ── Shadows ── */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
-  --shadow-overlay: 0 16px 48px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06);
+  /* ══ Elevation ═════════════════════════════════════════
+     Two soft layers: a tight contact shadow plus a wide
+     ambient one. Calm surfaces use these instead of borders. */
+  --shadow-xs: 0 1px 1px rgba(11, 14, 17, 0.04);
+  --shadow-sm: 0 1px 2px rgba(11, 14, 17, 0.05), 0 2px 6px rgba(11, 14, 17, 0.04);
+  --shadow-md: 0 1px 2px rgba(11, 14, 17, 0.05), 0 6px 16px rgba(11, 14, 17, 0.07);
+  --shadow-lg: 0 2px 4px rgba(11, 14, 17, 0.06), 0 14px 34px rgba(11, 14, 17, 0.1);
+  --shadow-overlay: 0 4px 8px rgba(11, 14, 17, 0.08), 0 24px 64px rgba(11, 14, 17, 0.16);
 
-  /* ── Rings ── */
+  /* ══ Rings ═════════════════════════════════════════════ */
   --ring-surface: inset 0 0 0 1px var(--border-subtle);
   --ring-raised: inset 0 0 0 1px var(--border-default);
   --ring-accent: 0 0 0 2px var(--accent-subtle);
-  --ring-focus: 0 0 0 2px rgba(224, 122, 47, 0.25);
+  --ring-focus: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--accent-border);
 
-  /* ── Micro-interactions ── */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Scrim behind modals and overlays. A token, not a literal, so
+     the light theme can dim without going to near-black. */
+  --scrim: rgba(18, 22, 26, 0.42);
+
+  /* One-pixel top highlight that gives a control a lit top edge.
+     Was hardcoded white, which is invisible in light themes. */
+  --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  /* ══ Motion ════════════════════════════════════════════
+     Short and unshowy. The one exception is --ease-spring,
+     reserved for the transport, where a little overshoot
+     reads as mechanical rather than cute. */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --duration-fast: 120ms;
-  --duration-base: 180ms;
-  --duration-slow: 280ms;
-  --scale-press: 0.97;
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --duration-fast: 100ms;
+  --duration-base: 160ms;
+  --duration-slow: 260ms;
+  --scale-press: 0.98;
   --translate-hover-y: -1px;
 
-  /* ── Transition shorthands (canonical: duration-* + ease-*) ── */
-  --transition-fast: 80ms ease;
-  --transition-base: 150ms ease;
-  --transition-slow: 250ms ease;
+  --transition-fast: 100ms var(--ease-out);
+  --transition-base: 160ms var(--ease-out);
+  --transition-slow: 260ms var(--ease-out);
 
-  /* ── State overlays ── */
-  --state-hover: rgba(0, 0, 0, 0.04);
-  --state-active: rgba(0, 0, 0, 0.06);
-  --state-focus: rgba(0, 0, 0, 0.08);
+  /* ══ State overlays ════════════════════════════════════ */
+  --state-hover: rgba(18, 22, 26, 0.04);
+  --state-active: rgba(18, 22, 26, 0.07);
+  --state-focus: rgba(18, 22, 26, 0.09);
 
-  /* ── Scrollbar ── */
+  /* ══ Scrollbar ═════════════════════════════════════════ */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+  --scrollbar-thumb: rgba(18, 22, 26, 0.16);
+  --scrollbar-thumb-hover: rgba(18, 22, 26, 0.28);
 
-  /* ── Playhead ── */
-  --playhead-color: #e07a2f;
-  --playhead-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 1px 4px rgba(0, 0, 0, 0.15);
+  /* ══ Calm-surface geometry ═════════════════════════════
+     Panels are separated by gaps that let --bg-canvas show
+     through, which is what makes the chrome read as quiet
+     without drawing a line around everything. */
+  --panel-radius: var(--radius-xl);
+  --panel-gap: 8px;
+  --panel-pad: 14px;
+  --panel-pad-tight: 10px;
 
-  /* ── Timeline geometry (theme-invariant) ── */
-  --track-height: 80px;
-  --track-height-video: 80px;
-  --track-height-audio: 80px;
-  --track-header-width: 180px;
-  --ruler-height: 36px;
-  --toolbar-height: 44px;
-  --topbar-height: 48px;
-  --sidebar-width: 180px;
+  /* ══ Playhead — the one saturated thing in the room ════ */
+  --playhead-color: var(--signal);
+  --playhead-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
 
-  /* ── Timeline tokens ── */
-  --clip-radius: 2px;
-  --clip-padding: 0 10px;
-  --tl-separator: var(--border-faint);
-  --tl-snap-color: var(--selection);
-  --tl-snap-glow: rgba(0, 153, 204, 0.2);
+  /* ══ Timeline geometry (theme-invariant) ═══════════════
+     Dense, instrument-grade sizing. 48px video tracks fit
+     ~six lanes on a laptop; 32px toolbar and 24px ruler
+     steal almost nothing from the picture. These quote
+     Figma's property-panel density, not a chat-app's. */
+  --track-height: 48px;
+  --track-height-video: 48px;
+  --track-height-audio: 40px;
+  --track-header-width: 152px;
+  --ruler-height: 24px;
+  --toolbar-height: 32px;
+  --topbar-height: 44px;
+  --sidebar-width: 168px;
+
+  /* ── Track-header sub-metrics ────────────────────────── */
+  --tl-header-btn-size: 18px;
+  --tl-header-icon-size: 11px;
+  --tl-header-grip-size: 12px;
+
+  /* ── Toolbar sub-metrics ────────────────────────────── */
+  --tl-toolbar-btn-size: 24px;
+  --tl-toolbar-icon-size: 13px;
+
+  /* ══ Timeline detail ═══════════════════════════════════ */
+  --clip-radius: 3px;
+  --clip-padding: 0 6px;
+  --clip-chip-width: 3px; /* saturated track-hue edge on each clip */
+  --clip-inset: 2px;      /* vertical inset within track lane */
+  --tl-separator: var(--border-subtle);
+  --tl-snap-color: var(--accent-400);
+  --tl-snap-glow: rgba(56, 169, 201, 0.22);
   --tl-timecode-color: var(--text-secondary);
-  --tl-grid-line: rgba(0, 0, 0, 0.04);
+  --tl-grid-line: rgba(18, 22, 26, 0.04);
+  --tl-grid-line-major: rgba(18, 22, 26, 0.08);
   --tl-clip-selected-border: var(--selection);
-  --tl-clip-drag-shadow: var(--shadow-md);
-  --tl-trim-handle-bg: rgba(0, 0, 0, 0.3);
-  --tl-trim-handle-active-bg: rgba(0, 0, 0, 0.12);
-  --tl-playhead-shadow: 0 0 10px var(--selection-glow);
-  --tl-ring-accent: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
+  --tl-clip-drag-shadow: 0 1px 4px rgba(11, 14, 17, 0.22);
+  --tl-trim-handle-width: 4px;
+  --tl-trim-handle-bg: rgba(18, 22, 26, 0.3);
+  --tl-trim-handle-active-bg: rgba(18, 22, 26, 0.14);
+  --tl-playhead-shadow: none; /* the timeline is flat; the hue does the work */
+  --tl-ring-accent: 0 0 0 1px var(--bg-panel), 0 0 0 2px var(--selection);
 }
 
 /* ── Base resets ── */
@@ -256,22 +390,55 @@ textarea {
   font: inherit;
 }
 
+/* Timecode and any numeric readout must not jitter as digits
+   change, so tabular figures are on by default for mono. */
+[class*='timecode'],
+[class*='-mono'],
+code,
+kbd {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+
+/* ── Quality floor ── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Scrollbar ── */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
+  border: 3px solid transparent;
+  background-clip: content-box;
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

@@ -184,11 +184,11 @@ export function TimelineLayout({
       />
       {showStatusBar && (
         <div className="tl-status-bar">
-          <span>{fps} fps</span>
-          <span>{tracks.length} tracks</span>
-          <span>Frame: {currentFrame}</span>
-          <span>Zoom: {ppf.toFixed(1)}px/f</span>
-          <span>Selected: {selectedClipIds.size || 'none'}</span>
+          <span className="tl-status-item">{fps} fps</span>
+          <span className="tl-status-item">{tracks.length} tracks</span>
+          <span className="tl-status-item">Frame: {currentFrame}</span>
+          <span className="tl-status-item">Zoom: {ppf.toFixed(1)}px/f</span>
+          <span className="tl-status-item">Selected: {selectedClipIds.size || 'none'}</span>
         </div>
       )}
     </div>
