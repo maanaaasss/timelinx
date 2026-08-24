@@ -37,7 +37,11 @@ export function TrackRow({
   const resolvedHeight = height ?? track.height;
 
   return (
-    <div className="tl-track-row" style={{ height: resolvedHeight, minHeight: resolvedHeight }}>
+    <div
+      className="tl-track-row"
+      data-track-type={track.type}
+      style={{ '--row-height': `${resolvedHeight}px`, height: resolvedHeight, minHeight: resolvedHeight } as React.CSSProperties}
+    >
       <TrackHeader
         track={track}
         engine={engine}

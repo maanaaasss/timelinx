@@ -114,7 +114,7 @@ export function TimelineRulerV2({
     ctx.strokeStyle = majorTickColor;
     ctx.lineWidth = 1;
     ctx.fillStyle = labelColor;
-    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.font = '9px "IBM Plex Mono", ui-monospace, monospace';
     ctx.textBaseline = 'top';
 
     for (let f = firstMajor; f <= endFrame; f += majorIntervalFrames) {

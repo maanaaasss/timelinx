@@ -25,6 +25,10 @@ const tools: { id: ToolId; icon: typeof MousePointer2; label: string }[] = [
   { id: 'hand', icon: Hand, label: 'Hand (H)' },
 ];
 
+const TOOL_ICON_SIZE = 13;
+const ZOOM_ICON_SIZE = 12;
+const ADD_ICON_SIZE = 11;
+
 export function TimelineToolbarV2({
   activeTool,
   onToolChange,
@@ -48,7 +52,7 @@ export function TimelineToolbarV2({
             title={label}
             onClick={() => onToolChange(id)}
           >
-            <Icon size={15} />
+            <Icon size={TOOL_ICON_SIZE} />
           </button>
         ))}
       </div>
@@ -65,7 +69,7 @@ export function TimelineToolbarV2({
           title="Zoom out (–)"
           onClick={() => onZoomChange(Math.max(zoomMin, zoom / 1.5))}
         >
-          <ZoomOut size={14} />
+          <ZoomOut size={ZOOM_ICON_SIZE} />
         </button>
         <ZoomSlider
           value={zoom}
@@ -79,7 +83,7 @@ export function TimelineToolbarV2({
           title="Zoom in (+)"
           onClick={() => onZoomChange(Math.min(zoomMax, zoom * 1.5))}
         >
-          <ZoomIn size={14} />
+          <ZoomIn size={ZOOM_ICON_SIZE} />
         </button>
       </div>
 
@@ -93,16 +97,16 @@ export function TimelineToolbarV2({
               title="Add video track"
               onClick={() => onAddTrack('video')}
             >
-              <Plus size={13} />
-              <span style={{ fontSize: 10, marginLeft: 2 }}>V</span>
+              <Plus size={ADD_ICON_SIZE} />
+              <span className="tl-toolbar-add-label">V</span>
             </button>
             <button
               className="tl-toolbar-btn"
               title="Add audio track"
               onClick={() => onAddTrack('audio')}
             >
-              <Plus size={13} />
-              <span style={{ fontSize: 10, marginLeft: 2 }}>A</span>
+              <Plus size={ADD_ICON_SIZE} />
+              <span className="tl-toolbar-add-label">A</span>
             </button>
           </div>
         </>

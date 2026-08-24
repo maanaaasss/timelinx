@@ -29,10 +29,8 @@ const trackTypeIcon: Record<string, typeof Video> = {
   audio: Volume2,
 };
 
-const trackTypeColorVar: Record<string, string> = {
-  video: 'var(--track-video)',
-  audio: 'var(--track-audio)',
-};
+const HEADER_ICON_SIZE = 11;
+const HEADER_BTN_ICON_SIZE = 11;
 
 export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
   const TypeIcon = trackTypeIcon[track.type] ?? Video;
@@ -52,25 +50,9 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
   );
 
   return (
-    <div
-      className={cn('tl-track-header', isSelected && 'is-selected')}
-      style={{
-        width: 'var(--track-header-width)',
-        flexShrink: 0,
-        position: 'sticky',
-        left: 0,
-        zIndex: 2,
-      }}
-    >
-      <GripVertical size={14} className="tl-track-header-drag" />
-      <TypeIcon
-        size={13}
-        style={{
-          color: trackTypeColorVar[track.type] ?? 'var(--text-tertiary)',
-          flexShrink: 0,
-          opacity: 0.7,
-        }}
-      />
+    <div className={cn('tl-track-header', isSelected && 'is-selected')}>
+      <GripVertical size={12} className="tl-track-header-drag" />
+      <TypeIcon size={HEADER_ICON_SIZE} className="tl-track-header-type-icon" />
       <span className="tl-track-header-name" title={track.name}>
         {track.name}
       </span>
@@ -86,7 +68,7 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
             })
           }
         >
-          {track.muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+          {track.muted ? <VolumeX size={HEADER_BTN_ICON_SIZE} /> : <Volume2 size={HEADER_BTN_ICON_SIZE} />}
         </button>
         <button
           className={cn('tl-track-header-btn', track.solo && 'is-active')}
@@ -99,7 +81,7 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
             })
           }
         >
-          <Headphones size={12} />
+          <Headphones size={HEADER_BTN_ICON_SIZE} />
         </button>
         <button
           className={cn('tl-track-header-btn', track.locked && 'is-active')}
@@ -112,7 +94,7 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
             })
           }
         >
-          {track.locked ? <Lock size={12} /> : <Unlock size={12} />}
+          {track.locked ? <Lock size={HEADER_BTN_ICON_SIZE} /> : <Unlock size={HEADER_BTN_ICON_SIZE} />}
         </button>
         <button
           className={cn('tl-track-header-btn', (track.opacity ?? 1) === 0 && 'is-active')}
@@ -125,7 +107,7 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
             })
           }
         >
-          {(track.opacity ?? 1) === 0 ? <EyeOff size={12} /> : <Eye size={12} />}
+          {(track.opacity ?? 1) === 0 ? <EyeOff size={HEADER_BTN_ICON_SIZE} /> : <Eye size={HEADER_BTN_ICON_SIZE} />}
         </button>
       </div>
     </div>
