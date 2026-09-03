@@ -225,3 +225,10 @@ export type { ZoomSliderProps } from './components/timeline/zoom-slider';
 // ── Timeline V2 Hooks ────────────────────────────────────────────────────
 export { useTimelineKeyboard } from './hooks/use-timeline-keyboard';
 export type { UseTimelineKeyboardOptions } from './hooks/use-timeline-keyboard';
+
+// ── Timeline V3 Components (CapCut-style) ────────────────
+export { TimelineToolbarV3 } from './components/timeline/timeline-toolbar-v3';
+export type { TimelineToolbarV3Props, PageDefinition } from './components/timeline/timeline-toolbar-v3';
+
+export { TimelineEmptyState } from './components/timeline/timeline-empty-state';
+export type { TimelineEmptyStateProps } from './components/timeline/timeline-empty-state';

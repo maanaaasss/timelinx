@@ -4460,3 +4460,359 @@
   background: var(--accent-border);
 }
 
+/* ══════════════════════════════════════════════════════════
+   Timeline V3 — CapCut-style Toolbar
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Toolbar V3 ─────────────────────────────────────────── */
+
+.tl-toolbar-v3 {
+  height: var(--tl-toolbar-v3-height, 36px);
+  min-height: var(--tl-toolbar-v3-height, 36px);
+  background: var(--bg-surface-soft);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  gap: var(--space-2);
+  user-select: none;
+}
+
+/* ── Toolbar V3: Action Buttons (left) ── */
+
+.tl-toolbar-v3-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.tl-toolbar-v3-btn {
+  width: var(--tl-toolbar-btn-size);
+  height: var(--tl-toolbar-btn-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    transform 40ms;
+}
+
+.tl-toolbar-v3-btn:hover {
+  color: var(--text-primary);
+  background: var(--state-hover);
+}
+
+.tl-toolbar-v3-btn:active {
+  transform: scale(0.94);
+}
+
+.tl-toolbar-v3-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+.tl-toolbar-v3-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Toolbar V3: Page Selector ── */
+
+.tl-toolbar-v3-page-wrapper {
+  position: relative;
+  margin-left: var(--space-2);
+}
+
+.tl-toolbar-v3-page-select {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-height);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.tl-toolbar-v3-page-select:hover {
+  background: var(--state-hover);
+  border-color: var(--border-strong);
+}
+
+.tl-toolbar-v3-page-select.is-open {
+  background: var(--state-active);
+  border-color: var(--border-strong);
+}
+
+.tl-toolbar-v3-page-chevron {
+  opacity: 0.6;
+  transition: transform var(--transition-fast);
+}
+
+.tl-toolbar-v3-page-select.is-open .tl-toolbar-v3-page-chevron {
+  transform: rotate(180deg);
+}
+
+.tl-toolbar-v3-page-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 120px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: 3px 0;
+  z-index: 100;
+}
+
+.tl-toolbar-v3-page-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px var(--space-3);
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.tl-toolbar-v3-page-menu-item:hover {
+  background: var(--bg-hover);
+}
+
+.tl-toolbar-v3-page-menu-item.is-active {
+  color: var(--accent);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Toolbar V3: Transport (center) ── */
+
+.tl-toolbar-v3-transport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.tl-toolbar-v3-timecode {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:
+    'tnum' 1,
+    'zero' 1;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.tl-toolbar-v3-timecode-current {
+  color: var(--text-primary);
+  font-weight: var(--weight-medium);
+}
+
+.tl-toolbar-v3-timecode-sep {
+  color: var(--text-disabled);
+  margin: 0 1px;
+}
+
+.tl-toolbar-v3-timecode-duration {
+  color: var(--text-tertiary);
+}
+
+.tl-toolbar-v3-transport-btns {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tl-toolbar-v3-transport-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.tl-toolbar-v3-transport-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tl-toolbar-v3-transport-btn:hover {
+  color: var(--text-primary);
+  background: var(--state-hover);
+}
+
+.tl-toolbar-v3-transport-btn:active {
+  transform: scale(var(--scale-press));
+}
+
+/* Play button — larger, distinct shape */
+.tl-toolbar-v3-play-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.tl-toolbar-v3-play-btn:hover {
+  background: var(--bg-hover);
+}
+
+.tl-toolbar-v3-play-btn:active {
+  transform: scale(0.92);
+}
+
+.tl-toolbar-v3-play-btn.is-playing {
+  color: var(--accent);
+}
+
+/* ── Toolbar V3: Zoom (right) ── */
+
+.tl-toolbar-v3-zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tl-toolbar-v3-fit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control-height);
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    transform 40ms;
+}
+
+.tl-toolbar-v3-fit-btn:hover {
+  color: var(--text-primary);
+  background: var(--state-hover);
+}
+
+.tl-toolbar-v3-fit-btn:active {
+  transform: scale(0.94);
+}
+
+.tl-toolbar-v3-fit-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+/* ══ Empty State V3 ═════════════════════════════════════════ */
+
+.tl-empty-state-v3 {
+  position: absolute;
+  inset: var(--clip-inset);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.tl-empty-state-v3.is-clickable {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.tl-empty-state-v3.is-clickable:hover {
+  border-color: var(--text-tertiary);
+}
+
+.tl-empty-state-v3.is-clickable:focus-visible {
+  outline: none;
+  box-shadow: var(--tl-ring-accent);
+}
+
+.tl-empty-state-v3-icon {
+  color: var(--text-disabled);
+  flex-shrink: 0;
+}
+
+.tl-empty-state-v3-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  user-select: none;
+  letter-spacing: var(--tracking-normal);
+}
+
+/* ══ Clip Thumbnail ══════════════════════════════════════════ */
+
+.tl-v2-clip-thumbnail {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* When a thumbnail is present, make the clip border subtler and
+   override the solid background so the image shows through. */
+.tl-v2-clip:has(.tl-v2-clip-thumbnail) {
+  background: transparent;
+}
+
+/* ══ Clip Label Chip ═════════════════════════════════════════
+   When a clip has a thumbnail, the label sits on a semi-transparent
+   dark chip in the top-left corner, so it remains legible. */
+
+.tl-v2-clip-label-chip {
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 2px 6px 2px calc(var(--clip-chip-width) + 6px);
+  border-radius: var(--radius-xs);
+  color: rgba(255, 255, 255, 0.92);
+  display: inline-block;
+  max-width: calc(100% - 8px);
+  margin-top: 2px;
+  margin-left: 0;
+}
+
