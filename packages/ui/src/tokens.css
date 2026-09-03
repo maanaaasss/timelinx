@@ -361,6 +361,7 @@ layer(fonts);
   /* ── Toolbar sub-metrics ────────────────────────────── */
   --tl-toolbar-btn-size: 24px;
   --tl-toolbar-icon-size: 13px;
+  --tl-toolbar-v3-height: 36px; /* V3 toolbar — slightly taller than V2's 32px */
 
   /* ══ Timeline detail ═══════════════════════════════════ */
   --clip-radius: 3px;
