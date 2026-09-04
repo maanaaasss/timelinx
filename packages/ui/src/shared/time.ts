@@ -21,6 +21,19 @@ export function frameToTimecode(frame: number, fps: number): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
 }
 
+export function formatMSS(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(safeSeconds / 60);
+  const s = safeSeconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+export function frameToMSS(frame: number, fps: number): string {
+  const safeFps = fps > 0 ? fps : 30;
+  const totalSeconds = Math.floor(Math.max(0, frame) / safeFps);
+  return formatMSS(totalSeconds);
+}
+
 export function getFriendlyTrackLabel(
   trackId: string,
   type: string,

@@ -142,9 +142,9 @@
   --ring-accent: 0 0 0 2px var(--accent-subtle);
   --ring-focus: 0 0 0 2px rgba(224, 122, 47, 0.3);
 
-  /* ── Playhead — amber LED with glow ── */
-  --playhead-color: var(--accent-400);
-  --playhead-shadow: 0 0 8px rgba(224, 122, 47, 0.4);
+  /* ── Playhead — prominent solid white ── */
+  --playhead-color: #ffffff;
+  --playhead-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 
   /* ── Timeline dark overrides ── */
   --tl-snap-color: var(--selection);

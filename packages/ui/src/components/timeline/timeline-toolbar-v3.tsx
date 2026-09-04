@@ -12,7 +12,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { cn } from '../../shared/cn';
-import { frameToTimecode } from '../../shared/time';
+import { frameToTimecode, frameToMSS } from '../../shared/time';
 
 /* ── Types ───────────────────────────────────────────────── */
 
@@ -26,6 +26,7 @@ export interface TimelineToolbarV3Props {
   currentTime: number;
   duration: number;
   fps: FrameRate;
+  timeFormat?: 'mss' | 'timecode';
 
   /* Transport */
   isPlaying?: boolean;
@@ -63,6 +64,7 @@ export function TimelineToolbarV3({
   currentTime,
   duration,
   fps,
+  timeFormat = 'mss',
   isPlaying = false,
   onPlayPause,
   onSkipBack,
@@ -83,8 +85,14 @@ export function TimelineToolbarV3({
   const pageMenuRef = useRef<HTMLDivElement>(null);
 
   const activePageObj = pages?.find((p) => p.id === activePage);
-  const currentTimecode = frameToTimecode(currentTime, fps);
-  const durationTimecode = frameToTimecode(duration, fps);
+  const currentTimecode =
+    timeFormat === 'timecode'
+      ? frameToTimecode(currentTime, fps)
+      : frameToMSS(currentTime, fps);
+  const durationTimecode =
+    timeFormat === 'timecode'
+      ? frameToTimecode(duration, fps)
+      : frameToMSS(duration, fps);
 
   // Compute zoom percentage (relative to the range midpoint as 100%)
   const zoomPct = Math.round(((zoom - zoomMin) / (zoomMax - zoomMin)) * 100) || 1;
