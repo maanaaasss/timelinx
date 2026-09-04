@@ -155,7 +155,7 @@ export {
 } from './components/icons';
 
 // ── Shared utilities ───────────────────────────────────────────────────────
-export { frameToPx, pxToFrame, frameToTimecode, rulerTickInterval } from './shared/time';
+export { frameToPx, pxToFrame, frameToTimecode, formatMSS, frameToMSS, rulerTickInterval } from './shared/time';
 
 export { useTimelineRefs } from './shared/use-refs';
 export { clamp } from './shared/geometry';
@@ -229,6 +229,12 @@ export type { UseTimelineKeyboardOptions } from './hooks/use-timeline-keyboard';
 // ── Timeline V3 Components (CapCut-style) ────────────────
 export { TimelineToolbarV3 } from './components/timeline/timeline-toolbar-v3';
 export type { TimelineToolbarV3Props, PageDefinition } from './components/timeline/timeline-toolbar-v3';
+
+export { TimelineRulerV3 } from './components/timeline/timeline-ruler-v3';
+export type { TimelineRulerV3Props } from './components/timeline/timeline-ruler-v3';
+
+export { RulerPlayheadV3 } from './components/timeline/ruler-playhead-v3';
+export type { RulerPlayheadV3Props } from './components/timeline/ruler-playhead-v3';
 
 export { TimelineEmptyState } from './components/timeline/timeline-empty-state';
 export type { TimelineEmptyStateProps } from './components/timeline/timeline-empty-state';

@@ -12,3 +12,10 @@ if (!URL.createObjectURL) {
 if (!URL.revokeObjectURL) {
   URL.revokeObjectURL = () => {};
 }
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

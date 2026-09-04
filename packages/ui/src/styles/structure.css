@@ -3608,12 +3608,11 @@
 }
 
 .tl-ruler-playhead {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid var(--playhead-color);
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+  width: 12px;
+  height: 14px;
+  background: var(--playhead-color, #ffffff);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
   pointer-events: none;
 }
 
@@ -4234,24 +4233,25 @@
   top: 0;
   bottom: 0;
   width: 1.5px;
-  background: var(--playhead-color);
+  background: var(--playhead-color, #ffffff);
+  box-shadow: var(--playhead-shadow, 0 0 6px rgba(255, 255, 255, 0.4));
   pointer-events: none;
   z-index: 10;
   transition: left var(--transition-fast);
 }
 
-/* Top cap — small inverted triangle */
+/* Top cap — geometric flat-topped tab */
 .tl-v2-playhead::before {
   content: '';
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid var(--playhead-color);
+  width: 12px;
+  height: 14px;
+  background: var(--playhead-color, #ffffff);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 50% 100%, 0 60%);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
 }
 
 .tl-v2-playhead.is-dragging {
@@ -4539,7 +4539,7 @@
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-primary);
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
@@ -4547,6 +4547,10 @@
   transition:
     border-color var(--transition-fast),
     background var(--transition-fast);
+}
+
+.tl-toolbar-v3-page-label {
+  color: #ffffff;
 }
 
 .tl-toolbar-v3-page-select:hover {
@@ -4626,17 +4630,17 @@
 }
 
 .tl-toolbar-v3-timecode-current {
-  color: var(--text-primary);
+  color: #ffffff;
   font-weight: var(--weight-medium);
 }
 
 .tl-toolbar-v3-timecode-sep {
-  color: var(--text-disabled);
+  color: rgba(255, 255, 255, 0.4);
   margin: 0 1px;
 }
 
 .tl-toolbar-v3-timecode-duration {
-  color: var(--text-tertiary);
+  color: #ffffff;
 }
 
 .tl-toolbar-v3-transport-btns {
@@ -4713,7 +4717,7 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--text-secondary);
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
@@ -4768,14 +4772,14 @@
 }
 
 .tl-empty-state-v3-icon {
-  color: var(--text-disabled);
+  color: #8a8a9e;
   flex-shrink: 0;
 }
 
 .tl-empty-state-v3-label {
   font-family: var(--font-sans);
   font-size: var(--text-sm);
-  color: var(--text-tertiary);
+  color: #8a8a9e;
   user-select: none;
   letter-spacing: var(--tracking-normal);
 }
@@ -4814,5 +4818,70 @@
   max-width: calc(100% - 8px);
   margin-top: 2px;
   margin-left: 0;
+}
+
+/* ══ Timeline Ruler V3 ══════════════════════════════════════ */
+
+.tl-ruler-v3-track {
+  position: relative;
+  width: 100%;
+  background: var(--bg-surface-soft, #16161c);
+  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+  user-select: none;
+  cursor: ew-resize;
+}
+
+.tl-ruler-v3-canvas {
+  display: block;
+}
+
+/* ── Ruler V3 Playhead ── */
+
+.tl-ruler-v3-playhead-wrapper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+  transition: left var(--transition-fast, 50ms ease-out);
+}
+
+.tl-ruler-v3-playhead-wrapper.is-dragging {
+  transition: none;
+}
+
+.tl-ruler-v3-playhead-handle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 16px;
+  cursor: ew-resize;
+  pointer-events: auto;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tl-ruler-v3-playhead-svg {
+  display: block;
+}
+
+.tl-ruler-v3-playhead-line {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1.5px;
+  height: 1000px;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  z-index: 21;
 }
 

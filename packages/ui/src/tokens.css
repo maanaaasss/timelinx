@@ -30,7 +30,7 @@
      @import '@timelinx/ui/styles/presets/high-contrast';
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap')
 layer(fonts);
 
 :root {
@@ -220,8 +220,8 @@ layer(fonts);
      truncates names that a condensed one fits. Mono carries
      timecode, which is everywhere in an editor and must align
      digit-for-digit. */
-  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', 'Roboto', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', 'Roboto', 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 
@@ -335,9 +335,9 @@ layer(fonts);
   --panel-pad: 14px;
   --panel-pad-tight: 10px;
 
-  /* ══ Playhead — the one saturated thing in the room ════ */
-  --playhead-color: var(--signal);
-  --playhead-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  /* ══ Playhead — prominent solid white ════ */
+  --playhead-color: #ffffff;
+  --playhead-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 
   /* ══ Timeline geometry (theme-invariant) ═══════════════
      Dense, instrument-grade sizing. 48px video tracks fit
