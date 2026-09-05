@@ -7,6 +7,8 @@ export interface UseTimelineKeyboardOptions {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onToolChange?: (toolId: string) => void;
+  onPlayPause?: () => void;
+  onCut?: () => void;
 }
 
 export function useTimelineKeyboard({
@@ -15,6 +17,8 @@ export function useTimelineKeyboard({
   onZoomIn,
   onZoomOut,
   onToolChange,
+  onPlayPause,
+  onCut,
 }: UseTimelineKeyboardOptions) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -50,6 +54,13 @@ export function useTimelineKeyboard({
           }
           break;
 
+        case 'KeyC':
+          if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+            e.preventDefault();
+            onCut?.();
+          }
+          break;
+
         // ── Undo / Redo ───────────────────────────────────────────────────
         case 'KeyZ':
           if (e.metaKey || e.ctrlKey) {
@@ -65,7 +76,7 @@ export function useTimelineKeyboard({
         // ── Playhead navigation ───────────────────────────────────────────
         case 'Space':
           e.preventDefault();
-          // Toggle play/pause when playback engine is available
+          onPlayPause?.();
           break;
 
         case 'ArrowLeft':
@@ -114,7 +125,7 @@ export function useTimelineKeyboard({
           break;
       }
     },
-    [containerRef, engine, onZoomIn, onZoomOut, onToolChange],
+    [containerRef, engine, onZoomIn, onZoomOut, onToolChange, onPlayPause, onCut],
   );
 
   useEffect(() => {

@@ -4746,7 +4746,7 @@
 
 .tl-empty-state-v3 {
   position: absolute;
-  inset: var(--clip-inset);
+  inset: var(--clip-inset, 12px);
   border: 1px dashed var(--border-default);
   border-radius: var(--radius-xs);
   display: flex;
@@ -4884,4 +4884,28 @@
   pointer-events: none;
   z-index: 21;
 }
+
+/* ══ Timeline Layout V3 ═════════════════════════════════════ */
+
+.tl-layout--v3 {
+  background: var(--bg-panel, #0e0e12);
+}
+
+.tl-layout--v3 .tl-track-area--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: var(--bg-surface-soft, #121217);
+  position: relative;
+}
+
+.tl-layout--v3 .tl-track-area {
+  background: var(--bg-surface-soft, #121217);
+}
+
+.tl-layout--v3 .tl-v2-playhead::before {
+  display: none;
+}
+
 

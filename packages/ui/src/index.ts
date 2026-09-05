@@ -122,9 +122,9 @@ export {
 
 export type { TimelineContextValue, TimelineProviderProps } from './context/timeline-context';
 
-export { MediaAssetsProvider, useMediaAssets } from './context/media-assets-context';
+export { MediaAssetsProvider, useMediaAssets, useOptionalMediaAssets } from './context/media-assets-context';
 
-export type { MediaAssetsContextValue } from './context/media-assets-context';
+export type { MediaAssetsContextValue, MediaAssetsProviderProps } from './context/media-assets-context';
 
 // ── Icons (for custom toolbars) ────────────────────────────────────────────
 export {
@@ -186,8 +186,8 @@ export type { ExportState, ExportStatus, UseExportReturn } from './hooks/use-exp
 export { useProvisionalValue, useProvisionalTransform } from './hooks/use-provisional-value';
 
 // ── Timeline V2 Components (migrated from prototype) ─────────────────────
-export { TimelineLayout } from './components/timeline/timeline-layout';
-export type { TimelineLayoutProps } from './components/timeline/timeline-layout';
+export { TimelineLayout, TimelineLayoutV3 } from './components/timeline/timeline-layout';
+export type { TimelineLayoutProps, TimelineLayoutV3Props } from './components/timeline/timeline-layout';
 
 export { TimelineToolbarV2 } from './components/timeline/timeline-toolbar';
 export type { TimelineToolbarV2Props, ToolId } from './components/timeline/timeline-toolbar';
