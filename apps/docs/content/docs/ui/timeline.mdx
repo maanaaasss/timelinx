@@ -1,20 +1,33 @@
 ---
 title: Timeline
-description: Frame-accurate video timeline component with clips, playhead, and keyboard shortcuts
+description: Modern frame-accurate video timeline component with CapCut-style V3 layout, editing actions, transport, and thumbnails
 ---
+
+import { TimelineEditorExample } from '@/components/examples/timeline-editor-example.client';
+
+## Live Example
+
+<TimelineEditorExample />
+
+## Overview
+
+`TimelineLayout` provides an end-to-end, fully functional timeline editor surface with two variants:
+
+- **`v3` (Default / Modern)**: CapCut and Canva-inspired editing surface featuring:
+  - **Toolbar (`TimelineToolbarV3`)**: Quick Cut (Scissors / `C`), Delete (Trash / `Del`), composition/page selector dropdown, current/total timecode (`M:SS` or `SMPTE`), transport controls (Skip to start, Play/Pause, Skip to end), and zoom buttons (`-`, `+`, `Fit`).
+  - **Ruler (`TimelineRulerV3`)**: Standard `0:00`, `0:01`, `0:02` second marks with subtle half-second cadence dots and a white geometric flat-topped playhead (`RulerPlayheadV3`).
+  - **Clips (`Clip`)**: Full-bleed video thumbnail strip background with a floating translucent pill label chip for readability.
+  - **Empty State (`TimelineEmptyState`)**: Clean dashed upload dropzone displayed when no clips or tracks exist.
+- **`v2` (Classic NLE)**: Traditional multi-track layout with `TimelineToolbarV2` and tick-based `TimelineRulerV2`.
+
+You can also import `TimelineLayoutV3` directly as a typed shorthand.
 
 ## Usage
 
 ```tsx
-import { TimelineLayout, TimelineProvider } from '@timelinx/ui';
-import {
-  TimelineEngine,
-  createTimeline,
-  createTimelineState,
-  toFrame,
-  frameRate,
-} from '@timelinx/core';
-import { TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
+import { TimelineLayout, TimelineProvider, MediaAssetsProvider } from '@timelinx/ui';
+import { TimelineEngine } from '@timelinx/react';
+import { createTimeline, createTimelineState, toFrame, frameRate } from '@timelinx/core';
 
 function Editor() {
   const engine = useMemo(
@@ -33,68 +46,63 @@ function Editor() {
   );
 
   return (
-    <ReactTimelineProvider engine={engine}>
-      <TimelineProvider engine={engine}>
-        <TimelineLayout />
+    <MediaAssetsProvider value={{ getThumbnailUrl: (assetId) => `/thumbnails/${assetId}.jpg` }}>
+      <TimelineProvider engine={engine} initialPpf={10}>
+        <TimelineLayout
+          variant="v3"
+          pages={[
+            { id: 'page-1', name: 'Page 1' },
+            { id: 'page-2', name: 'Page 2' },
+          ]}
+          activePage="page-1"
+          onUpload={() => alert('Upload clicked')}
+        />
       </TimelineProvider>
-    </ReactTimelineProvider>
+    </MediaAssetsProvider>
   );
 }
 ```
 
 ## Props
 
-| Prop            | Type      | Default | Description                                        |
-| --------------- | --------- | ------- | -------------------------------------------------- |
-| `className`     | `string`  | —       | Additional CSS class                               |
-| `showToolbar`   | `boolean` | `true`  | Show toolbar with tool buttons, timecode, and zoom |
-| `showRuler`     | `boolean` | `true`  | Show time ruler with tick marks                    |
-| `showStatusBar` | `boolean` | `true`  | Show status bar with frame info                    |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `'v3' \| 'v2'` | `'v3'` | Timeline layout design variant |
+| `className` | `string` | — | Additional CSS class for the root element |
+| `showToolbar` | `boolean` | `true` | Show the top toolbar |
+| `showRuler` | `boolean` | `true` | Show the timeline ruler and playhead |
+| `showStatusBar` | `boolean` | `true` | Show the bottom status bar |
+| `pages` | `PageDefinition[]` | — | Pages/compositions for the V3 page selector |
+| `activePage` | `string` | — | Active page ID |
+| `onPageChange` | `(pageId: string) => void` | — | Callback fired when switching pages |
+| `timeFormat` | `'mss' \| 'timecode'` | `'mss'` | Timecode counter display format |
+| `onUpload` | `() => void` | — | Callback when clicking the empty state upload button |
+| `emptyStateLabel` | `string` | `'Upload Media'` | Text label inside the empty state |
+| `isPlaying` | `boolean` | — | Optional external override for playback state |
+| `onPlayPause` | `() => void` | — | Optional external play/pause handler |
 
 ## Keyboard Shortcuts
 
-| Key       | Action                                   |
-| --------- | ---------------------------------------- |
-| `Space`   | Play/Pause                               |
+| Key | Action |
+| --- | --- |
+| `Space` | Play / Pause playback |
+| `C` | Cut / Split clip under playhead |
+| `Delete` / `Backspace` | Remove selected clips |
+| `+` / `-` | Zoom in / Zoom out |
 | `←` / `→` | Nudge playhead ±1 frame (±10 with Shift) |
-| `↑` / `↓` | Nudge selected clip ±1 frame             |
-| `Delete`  | Remove selected clip                     |
-| `+` / `-` | Zoom in/out                              |
-
-## Features
-
-- **Click-to-seek**: Click empty track area to move playhead
-- **Click-to-select**: Click clip to select, Ctrl/Cmd+click for multi-select
-- **Drag-to-move**: Drag clip body to reposition on timeline
-- **Trim handles**: Drag left/right edges to adjust clip start/end
-- **Snap-to-frame**: Clips snap to frame boundaries during drag
-- **Playhead drag**: Drag the red playhead line or ruler triangle to scrub
-- **Zoom slider**: Adjust pixels-per-frame, double-click to reset
-- **Adaptive ruler**: Label density adjusts based on zoom level
-- **Empty tracks**: Show "Drop media here" placeholder
-
-## CSS
-
-Import timeline styles:
-
-```tsx
-import '@timelinx/ui/styles/structure';
-```
-
-Timeline uses the `.tl-` prefix for all classes. V2 components use `.tl-v2-` prefix for clip and playhead classes to avoid conflicts with existing components.
+| `↑` / `↓` | Nudge selected clip ±1 frame |
 
 ## Architecture
 
-`TimelineLayout` reads engine state from `TimelineContext` (provided by `TimelineProvider`). All child components access the engine via context — no prop drilling needed.
+`TimelineLayout` connects the engine, selection, transport loop, and provisional drag state through `TimelineProvider`:
 
 ```
-TimelineLayout
-├── TimelineToolbarV2 (tool buttons, timecode, zoom)
-├── TimelineRulerV2 (canvas-rendered ticks, playhead triangle)
-├── TimelineTrackAreaV2 (scrollable track rows)
-│   └── TrackRow × N
-│       ├── TrackHeader (sticky left, name, mute/solo/lock)
-│       └── TrackBody (grid lines, clips)
-│           └── Clip × N (draggable, trimmable)
-└── StatusBar
+TimelineLayout (variant="v3")
+├── TimelineToolbarV3 (Cut, Delete, Page Selector, Transport, Zoom)
+├── TimelineRulerV3 (Canvas 0:00 marks, half-sec dots, RulerPlayheadV3)
+└── TimelineTrackAreaV2 (Scrollable tracks)
+    ├── TrackRow × N
+    │   ├── TrackHeader (sticky left controls)
+    │   └── TrackBody (clips with thumbnail backgrounds + chips)
+    └── (or TimelineEmptyState when empty)
 ```

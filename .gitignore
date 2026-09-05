@@ -48,6 +48,8 @@ playwright-report/
 # Next.js
 .next/
 next-env.d.ts
+apps/docs/AGENTS.md
+apps/docs/CLAUDE.md
 
 # Agent config
 .agents/

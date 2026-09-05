@@ -4,6 +4,8 @@ import { cn } from '../../shared/cn';
 export interface TimelineEmptyStateProps {
   /** Called when the user clicks the upload area. */
   onUpload?: () => void;
+  /** Alias for onUpload */
+  onClick?: () => void;
   /** Label text. Defaults to "Upload Media". */
   label?: string;
   className?: string;
@@ -16,21 +18,23 @@ export interface TimelineEmptyStateProps {
  */
 export function TimelineEmptyState({
   onUpload,
+  onClick,
   label = 'Upload Media',
   className,
 }: TimelineEmptyStateProps) {
+  const handleClick = onUpload ?? onClick;
   return (
     <div
-      className={cn('tl-empty-state-v3', onUpload && 'is-clickable', className)}
-      onClick={onUpload}
-      role={onUpload ? 'button' : undefined}
-      tabIndex={onUpload ? 0 : undefined}
+      className={cn('tl-empty-state-v3', handleClick && 'is-clickable', className)}
+      onClick={handleClick}
+      role={handleClick ? 'button' : undefined}
+      tabIndex={handleClick ? 0 : undefined}
       onKeyDown={
-        onUpload
+        handleClick
           ? (e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onUpload();
+                handleClick();
               }
             }
           : undefined

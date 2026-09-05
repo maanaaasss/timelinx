@@ -2,6 +2,7 @@ import { useRef, useCallback, type MouseEvent } from 'react';
 import type { Track, Clip as ClipType } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
 import { useActiveToolId } from '@timelinx/react';
+import { useOptionalMediaAssets } from '../../context/media-assets-context';
 import { Clip } from './clip';
 
 export interface TrackBodyProps {
@@ -38,6 +39,7 @@ export function TrackBody({
   const gridIntervalPx = ppf * fps;
 
   const activeToolId = useActiveToolId(engine);
+  const mediaAssets = useOptionalMediaAssets();
 
   // Sort clips by timelineStart so we can find the next clip for each clip
   // (needed for the transition drag handle in Clip.tsx).
@@ -78,17 +80,24 @@ export function TrackBody({
           <span>Drop media here</span>
         </div>
       )}
-      {sortedClips.map((clip, i) => (
-        <Clip
-          key={clip.id}
-          clip={clip}
-          clipType={getClipType(clip, tracks)}
-          ppf={ppf}
-          engine={engine}
-          isSelected={selectedClipIds.has(clip.id)}
-          nextClip={sortedClips[i + 1] ?? null}
-        />
-      ))}
+      {sortedClips.map((clip, i) => {
+        const thumb =
+          (clip as any).thumbnailUrl ??
+          (clip.metadata as any)?.thumbnailUrl ??
+          (clip.assetId ? mediaAssets?.getThumbnail(clip.assetId) : undefined);
+        return (
+          <Clip
+            key={clip.id}
+            clip={clip}
+            clipType={getClipType(clip, tracks)}
+            ppf={ppf}
+            engine={engine}
+            isSelected={selectedClipIds.has(clip.id)}
+            nextClip={sortedClips[i + 1] ?? null}
+            thumbnailUrl={thumb}
+          />
+        );
+      })}
     </div>
   );
 }

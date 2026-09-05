@@ -132,6 +132,7 @@ export function TimelineToolbarV3({
         <button
           className="tl-toolbar-v3-btn"
           title="Cut (C)"
+          data-action="cut"
           onClick={onCut}
           disabled={!onCut}
         >
@@ -140,6 +141,7 @@ export function TimelineToolbarV3({
         <button
           className="tl-toolbar-v3-btn"
           title="Delete (Del)"
+          data-action="delete"
           onClick={onDelete}
           disabled={!onDelete}
         >
@@ -190,6 +192,7 @@ export function TimelineToolbarV3({
           <button
             className="tl-toolbar-v3-transport-btn"
             title="Skip to start"
+            data-action="skip-start"
             onClick={onSkipBack}
           >
             <SkipBack size={TRANSPORT_ICON_SIZE} />
@@ -197,6 +200,7 @@ export function TimelineToolbarV3({
           <button
             className={cn('tl-toolbar-v3-transport-btn tl-toolbar-v3-play-btn', isPlaying && 'is-playing')}
             title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+            data-action={isPlaying ? 'pause' : 'play'}
             onClick={onPlayPause}
           >
             {isPlaying ? <Pause size={TRANSPORT_ICON_SIZE} /> : <Play size={TRANSPORT_ICON_SIZE} />}
@@ -204,6 +208,7 @@ export function TimelineToolbarV3({
           <button
             className="tl-toolbar-v3-transport-btn"
             title="Skip to end"
+            data-action="skip-end"
             onClick={onSkipForward}
           >
             <SkipForward size={TRANSPORT_ICON_SIZE} />
@@ -216,6 +221,7 @@ export function TimelineToolbarV3({
         <button
           className="tl-toolbar-v3-btn"
           title="Zoom out (−)"
+          data-action="zoom-out"
           onClick={handleZoomOut}
         >
           <Minus size={ICON_SIZE} />
@@ -223,6 +229,7 @@ export function TimelineToolbarV3({
         <button
           className="tl-toolbar-v3-btn"
           title="Zoom in (+)"
+          data-action="zoom-in"
           onClick={handleZoomIn}
         >
           <Plus size={ICON_SIZE} />
@@ -230,6 +237,7 @@ export function TimelineToolbarV3({
         <button
           className="tl-toolbar-v3-fit-btn"
           title="Fit to view"
+          data-action="zoom-fit"
           onClick={onZoomFit}
         >
           Fit
