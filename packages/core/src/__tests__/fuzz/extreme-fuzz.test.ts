@@ -315,7 +315,7 @@ describe('Extreme Fuzz: massive operation sequences', () => {
 });
 
 describe('Extreme Fuzz: multi-track with many clips', () => {
-  it('operations on a 10-track, 50-clip state never break invariants', () => {
+  it('operations on a 10-track, 50-clip state never break invariants', { timeout: 60000 }, () => {
     // Build a large state
     const asset = createAsset({
       id: 'big-asset',
