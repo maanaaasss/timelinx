@@ -31,10 +31,34 @@ export interface MediaAssetsContextValue {
 
 const MediaAssetsCtx = createContext<MediaAssetsContextValue | null>(null);
 
-export function MediaAssetsProvider({ children }: { children: React.ReactNode }) {
+export interface MediaAssetsProviderProps {
+  children: React.ReactNode;
+  initialThumbnails?: Record<string, string> | ReadonlyMap<string, string>;
+}
+
+export function MediaAssetsProvider({ children, initialThumbnails }: MediaAssetsProviderProps) {
   const filesRef = useRef(new Map<string, File>());
   const blobUrlsRef = useRef(new Map<string, string>());
-  const thumbnailsRef = useRef(new Map<string, string>());
+  const thumbnailsRef = useRef(
+    new Map<string, string>(
+      initialThumbnails
+        ? initialThumbnails instanceof Map
+          ? initialThumbnails
+          : Object.entries(initialThumbnails)
+        : [],
+    ),
+  );
+
+  useEffect(() => {
+    if (!initialThumbnails) return;
+    const entries =
+      initialThumbnails instanceof Map
+        ? initialThumbnails.entries()
+        : Object.entries(initialThumbnails);
+    for (const [k, v] of entries) {
+      thumbnailsRef.current.set(k, v);
+    }
+  }, [initialThumbnails]);
 
   useEffect(() => {
     const blobUrls = blobUrlsRef.current;
@@ -116,4 +140,8 @@ export function useMediaAssets(): MediaAssetsContextValue {
     throw new Error('useMediaAssets must be used within a <MediaAssetsProvider>');
   }
   return ctx;
+}
+
+export function useOptionalMediaAssets(): MediaAssetsContextValue | null {
+  return useContext(MediaAssetsCtx);
 }

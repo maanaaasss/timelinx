@@ -122,9 +122,9 @@ export {
 
 export type { TimelineContextValue, TimelineProviderProps } from './context/timeline-context';
 
-export { MediaAssetsProvider, useMediaAssets } from './context/media-assets-context';
+export { MediaAssetsProvider, useMediaAssets, useOptionalMediaAssets } from './context/media-assets-context';
 
-export type { MediaAssetsContextValue } from './context/media-assets-context';
+export type { MediaAssetsContextValue, MediaAssetsProviderProps } from './context/media-assets-context';
 
 // ── Icons (for custom toolbars) ────────────────────────────────────────────
 export {
@@ -155,7 +155,7 @@ export {
 } from './components/icons';
 
 // ── Shared utilities ───────────────────────────────────────────────────────
-export { frameToPx, pxToFrame, frameToTimecode, rulerTickInterval } from './shared/time';
+export { frameToPx, pxToFrame, frameToTimecode, formatMSS, frameToMSS, rulerTickInterval } from './shared/time';
 
 export { useTimelineRefs } from './shared/use-refs';
 export { clamp } from './shared/geometry';
@@ -186,8 +186,8 @@ export type { ExportState, ExportStatus, UseExportReturn } from './hooks/use-exp
 export { useProvisionalValue, useProvisionalTransform } from './hooks/use-provisional-value';
 
 // ── Timeline V2 Components (migrated from prototype) ─────────────────────
-export { TimelineLayout } from './components/timeline/timeline-layout';
-export type { TimelineLayoutProps } from './components/timeline/timeline-layout';
+export { TimelineLayout, TimelineLayoutV3 } from './components/timeline/timeline-layout';
+export type { TimelineLayoutProps, TimelineLayoutV3Props } from './components/timeline/timeline-layout';
 
 export { TimelineToolbarV2 } from './components/timeline/timeline-toolbar';
 export type { TimelineToolbarV2Props, ToolId } from './components/timeline/timeline-toolbar';
@@ -225,3 +225,16 @@ export type { ZoomSliderProps } from './components/timeline/zoom-slider';
 // ── Timeline V2 Hooks ────────────────────────────────────────────────────
 export { useTimelineKeyboard } from './hooks/use-timeline-keyboard';
 export type { UseTimelineKeyboardOptions } from './hooks/use-timeline-keyboard';
+
+// ── Timeline V3 Components (CapCut-style) ────────────────
+export { TimelineToolbarV3 } from './components/timeline/timeline-toolbar-v3';
+export type { TimelineToolbarV3Props, PageDefinition } from './components/timeline/timeline-toolbar-v3';
+
+export { TimelineRulerV3 } from './components/timeline/timeline-ruler-v3';
+export type { TimelineRulerV3Props } from './components/timeline/timeline-ruler-v3';
+
+export { RulerPlayheadV3 } from './components/timeline/ruler-playhead-v3';
+export type { RulerPlayheadV3Props } from './components/timeline/ruler-playhead-v3';
+
+export { TimelineEmptyState } from './components/timeline/timeline-empty-state';
+export type { TimelineEmptyStateProps } from './components/timeline/timeline-empty-state';

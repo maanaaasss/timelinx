@@ -17,6 +17,8 @@ export interface ClipProps {
   engine: TimelineEngine;
   isSelected?: boolean;
   nextClip?: ClipType | null;
+  /** Optional thumbnail URL to render as clip background. */
+  thumbnailUrl?: string;
 }
 
 // Clip background is now CSS-driven via data-clip-type attribute.
@@ -84,7 +86,7 @@ function clampEdgeToNeighbor(
   }
 }
 
-export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: ClipProps) {
+export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbnailUrl }: ClipProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [draftDelta, setDraftDelta] = useState(0);
   const [draftTrimStart, setDraftTrimStart] = useState(0);
@@ -524,6 +526,13 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
         onPointerUp={isDragging ? handlePointerUp : undefined}
         onPointerLeave={isRazorMode ? handleRazorPointerLeave : undefined}
       >
+        {/* Thumbnail background */}
+        {thumbnailUrl && (
+          <div
+            className="tl-v2-clip-thumbnail"
+            style={{ backgroundImage: `url(${thumbnailUrl})` }}
+          />
+        )}
         {isRazorMode && razorLineX !== null && (
           <div className="tl-v2-clip-razor-line" style={{ left: razorLineX }} />
         )}
@@ -547,7 +556,9 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip }: Clip
             onPointerDown={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="tl-v2-clip-label">{clip.name ?? 'Untitled'}</span>
+          <span className={cn('tl-v2-clip-label', thumbnailUrl && 'tl-v2-clip-label-chip')}>
+            {clip.name ?? 'Untitled'}
+          </span>
         )}
         <div
           className="tl-v2-clip-trim-handle tl-v2-clip-trim-handle--left"

@@ -1,12 +1,15 @@
 ---
 title: TimelineRuler
-description: Time ruler displaying frame/time markings along the top of the timeline
+description: High-performance canvas time ruler with M:SS timestamps, half-second cadence dots, and geometric playhead
 ---
 
 import { AutoTypeTable } from 'fumadocs-typescript/ui';
 import { generator } from '@/lib/generator';
 
-`TimelineRuler` renders a time ruler with major and minor tick marks, showing frame numbers or timecode labels depending on the current zoom level.
+`@timelinx/ui` provides two time ruler components:
+
+- **`TimelineRulerV3` (Modern CapCut-style)**: Clean, high-readability canvas ruler rendering timestamps directly as `0:00`, `0:01`, `0:02`, etc., with subtle half-second cadence dots and a geometric flat-topped playhead (`RulerPlayheadV3`). Supports click-to-seek, scrubbing, and in/out point range highlights.
+- **`TimelineRulerV2` (Classic NLE)**: Traditional frame and timecode tick marks rendered on canvas with triangular playhead indicator.
 
 ## Live Example
 
@@ -14,30 +17,34 @@ import { TimelineRulerExample } from '@/components/examples/timeline-ruler-examp
 
 <TimelineRulerExample />
 
-## Usage
+## V3 Usage
 
 ```tsx
-import { TimelineRuler, TimelineProvider } from '@timelinx/ui';
+import { TimelineRulerV3 } from '@timelinx/ui';
 
-function App() {
-  return (
-    <TimelineProvider engine={engine}>
-      <div style={{ overflowX: 'auto', height: 48 }}>
-        <TimelineRuler totalWidth={2400} />
-      </div>
-    </TimelineProvider>
-  );
-}
+<TimelineRulerV3
+  fps={30}
+  ppf={ppf}
+  duration={duration}
+  currentTime={currentFrame}
+  scrollLeft={scrollLeft}
+  onSeek={(frame) => engine.seekTo(frame)}
+  inPoint={inPoint}
+  outPoint={outPoint}
+/>
 ```
 
-## Props
+## V3 Props
 
-<AutoTypeTable
-  generator={generator}
-  path="node_modules/@timelinx/ui/dist/index.d.ts"
-  type="TimelineRulerProps"
-/>
-
-## Context Requirement
-
-`TimelineRuler` must be inside a `TimelineProvider`. It reads `ppf` (pixels per frame), scroll position, viewport width, and timeline metadata from the engine context to render the correct tick marks and labels.
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `fps` | `FrameRate` | required | Timeline frame rate |
+| `ppf` | `number` | required | Pixels per frame |
+| `duration` | `number` | required | Timeline duration in frames |
+| `currentTime` | `number` | required | Current playhead position in frames |
+| `onSeek` | `(frame: number) => void` | required | Callback when seeking via click or scrub |
+| `scrollLeft` | `number` | `0` | Current horizontal scroll offset |
+| `height` | `number` | `26` | Ruler track height in pixels |
+| `minVisibleSeconds` | `number` | `7` | Minimum seconds visible even if timeline is empty/short |
+| `inPoint` | `number \| null` | — | In-point frame for range highlight |
+| `outPoint` | `number \| null` | — | Out-point frame for range highlight |

@@ -1,12 +1,15 @@
 ---
 title: TimelineToolbar
-description: Toolbar with editing tools, undo/redo, zoom controls, and position display
+description: Toolbar with editing actions, page selection, transport controls, and zoom
 ---
 
 import { AutoTypeTable } from 'fumadocs-typescript/ui';
 import { generator } from '@/lib/generator';
 
-`TimelineToolbar` renders the timeline toolbar with tool selection buttons (selection, razor, trim, slip, slide, hand), undo/redo, zoom controls, snap toggle, and a timecode position display.
+`@timelinx/ui` provides two toolbar variants:
+
+- **`TimelineToolbarV3` (Modern CapCut-style)**: High-efficiency toolbar featuring quick Cut (Scissors), Delete (Trash), multi-page/composition selector, timecode counter (`0:00 / 0:00`), centered transport controls (Skip Back, Play/Pause, Skip Forward), and zoom controls (`-`, `+`, `Fit`).
+- **`TimelineToolbarV2` (Classic NLE)**: Multi-tool selector (Selection, Razor, Slip, Slide, Hand), undo/redo, snap toggle, timecode display, and zoom scrubber.
 
 ## Live Example
 
@@ -14,28 +17,54 @@ import { TimelineToolbarExample } from '@/components/examples/timeline-toolbar-e
 
 <TimelineToolbarExample />
 
-## Usage
+## V3 Usage
 
 ```tsx
-import { TimelineToolbar, TimelineProvider } from '@timelinx/ui';
+import { TimelineToolbarV3 } from '@timelinx/ui';
 
-function App() {
-  return (
-    <TimelineProvider engine={engine}>
-      <TimelineToolbar />
-    </TimelineProvider>
-  );
-}
+<TimelineToolbarV3
+  currentTime={currentFrame}
+  duration={duration}
+  fps={30}
+  isPlaying={isPlaying}
+  onPlayPause={handlePlayPause}
+  onSkipBack={() => engine.seekTo(0)}
+  onSkipForward={() => engine.seekTo(duration)}
+  onCut={handleCut}
+  onDelete={handleDelete}
+  pages={[
+    { id: 'page-1', name: 'Page 1' },
+    { id: 'page-2', name: 'Page 2' },
+  ]}
+  activePage="page-1"
+  onPageChange={(pageId) => console.log('Switched to', pageId)}
+  zoom={ppf}
+  zoomMin={0.5}
+  zoomMax={20}
+  onZoomChange={(newZoom) => setPpf(newZoom)}
+  onZoomFit={handleZoomFit}
+/>
 ```
 
-## Props
+## V3 Props
 
-<AutoTypeTable
-  generator={generator}
-  path="node_modules/@timelinx/ui/dist/index.d.ts"
-  type="TimelineToolbarProps"
-/>
-
-## Context Requirement
-
-`TimelineToolbar` must be inside a `TimelineProvider`. It reads the active tool, playing state, history, playhead frame, timeline metadata (fps, duration), and zoom level (ppf) from the engine context.
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `currentTime` | `number` | required | Current playhead frame |
+| `duration` | `number` | required | Total timeline duration in frames |
+| `fps` | `FrameRate` | required | Timeline frame rate |
+| `timeFormat` | `'mss' \| 'timecode'` | `'mss'` | Display format for timecode counter |
+| `isPlaying` | `boolean` | `false` | Whether playback is actively running |
+| `onPlayPause` | `() => void` | — | Handler for Play/Pause toggle |
+| `onSkipBack` | `() => void` | — | Handler to skip to start |
+| `onSkipForward` | `() => void` | — | Handler to skip to end |
+| `onCut` | `() => void` | — | Handler to cut/split clip at playhead |
+| `onDelete` | `() => void` | — | Handler to delete selected clips |
+| `pages` | `PageDefinition[]` | — | List of pages/compositions |
+| `activePage` | `string` | — | Currently active page ID |
+| `onPageChange` | `(id: string) => void` | — | Callback when page is selected |
+| `zoom` | `number` | required | Current zoom level (ppf) |
+| `zoomMin` | `number` | required | Minimum zoom level |
+| `zoomMax` | `number` | required | Maximum zoom level |
+| `onZoomChange` | `(zoom: number) => void` | required | Callback when zoom is changed |
+| `onZoomFit` | `() => void` | — | Callback to fit timeline into viewport |
