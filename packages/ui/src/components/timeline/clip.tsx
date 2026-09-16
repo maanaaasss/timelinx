@@ -86,7 +86,15 @@ function clampEdgeToNeighbor(
   }
 }
 
-export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbnailUrl }: ClipProps) {
+export function Clip({
+  clip,
+  clipType,
+  ppf,
+  engine,
+  isSelected,
+  nextClip,
+  thumbnailUrl,
+}: ClipProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [draftDelta, setDraftDelta] = useState(0);
   const [draftTrimStart, setDraftTrimStart] = useState(0);
@@ -205,7 +213,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbn
   );
 
   const handlePointerMove = useCallback(
-    (e: ReactPointerEvent) => {
+    (e: PointerEvent | ReactPointerEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
 
@@ -256,7 +264,7 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbn
   );
 
   const handlePointerUp = useCallback(
-    (e: ReactPointerEvent) => {
+    (e: PointerEvent | ReactPointerEvent) => {
       const drag = dragRef.current;
       if (!drag) return;
 
@@ -359,6 +367,17 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbn
         }
       }
 
+      if (
+        'target' in e &&
+        e.target &&
+        'releasePointerCapture' in (e.target as any) &&
+        'pointerId' in e
+      ) {
+        try {
+          (e.target as any).releasePointerCapture((e as any).pointerId);
+        } catch {}
+      }
+
       dragRef.current = null;
       setIsDragging(false);
       setDraftDelta(0);
@@ -370,6 +389,28 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbn
     },
     [ppf, clip.id, engine, nextClip, existingTransition, transitionDraftDuration],
   );
+
+  useEffect(() => {
+    if (!isDragging && !isTransitionDragging) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      handlePointerMove(e);
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      handlePointerUp(e);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    };
+  }, [isDragging, isTransitionDragging, handlePointerMove, handlePointerUp]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -516,6 +557,8 @@ export function Clip({ clip, clipType, ppf, engine, isSelected, nextClip, thumbn
         ref={clipRef}
         className={cn('tl-v2-clip', isSelected && 'is-selected', isDragging && 'is-dragging')}
         data-clip-type={clipType}
+        data-clip-id={clip.id}
+        data-track-id={clip.trackId}
         style={{ left, width }}
         tabIndex={isSelected ? 0 : -1}
         onClick={handleClick}

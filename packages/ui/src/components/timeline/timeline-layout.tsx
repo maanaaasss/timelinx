@@ -215,10 +215,7 @@ export function TimelineLayout({
     if (targetClips.length === 0) {
       for (const track of currentTracks) {
         for (const clip of track.clips) {
-          if (
-            (clip.timelineStart as number) < frame &&
-            (clip.timelineEnd as number) > frame
-          ) {
+          if ((clip.timelineStart as number) < frame && (clip.timelineEnd as number) > frame) {
             targetClips.push(clip);
           }
         }
@@ -295,7 +292,14 @@ export function TimelineLayout({
         return next;
       });
     }
-  }, [externalOnPlayPause, playbackEngine, engineIsPlaying, currentFrame, timeline.duration, engine]);
+  }, [
+    externalOnPlayPause,
+    playbackEngine,
+    engineIsPlaying,
+    currentFrame,
+    timeline.duration,
+    engine,
+  ]);
 
   // High-precision playback loop when no PlaybackEngine is attached
   useEffect(() => {
@@ -424,10 +428,7 @@ export function TimelineLayout({
       {/* ── Track Area / Empty State ── */}
       {tracks.length === 0 ? (
         <div className="tl-track-area tl-track-area--empty">
-          <TimelineEmptyState
-            onUpload={handleDefaultUpload}
-            label={emptyStateLabel}
-          />
+          <TimelineEmptyState onUpload={handleDefaultUpload} label={emptyStateLabel} />
         </div>
       ) : (
         <TimelineTrackAreaV2

@@ -10,11 +10,7 @@
  */
 
 export type CapabilityId =
-  | 'canvas2d'
-  | 'captureStream'
-  | 'mediaRecorder'
-  | 'audioContext'
-  | 'webgl'; // informational only — Canvas2D compositor is the v1 renderer
+  'canvas2d' | 'captureStream' | 'mediaRecorder' | 'audioContext' | 'webgl'; // informational only — Canvas2D compositor is the v1 renderer
 
 export interface CapabilityResult {
   id: CapabilityId;
@@ -60,10 +56,7 @@ function hasCanvas2d(g: CapabilityGlobals): boolean {
 function hasCaptureStream(g: CapabilityGlobals): boolean {
   try {
     const canvas = g.document?.createElement('canvas') as HTMLCanvasElement | undefined;
-    return (
-      !!canvas &&
-      typeof (canvas as { captureStream?: unknown }).captureStream === 'function'
-    );
+    return !!canvas && typeof (canvas as { captureStream?: unknown }).captureStream === 'function';
   } catch {
     return false;
   }

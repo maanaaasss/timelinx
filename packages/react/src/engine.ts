@@ -632,7 +632,8 @@ export class TimelineEngine {
     if (this.playback) {
       this.playback.seekTo(frame);
     } else {
-      const maxFrame = (this.currentState.timeline.duration as number) - 1;
+      const dur = this.currentState.timeline.duration as number;
+      const maxFrame = dur > 0 ? dur - 1 : Infinity;
       this._playheadFrame = toFrame(Math.max(0, Math.min(frame as number, maxFrame)));
       this.rebuildSnapshot(EMPTY_STATE_CHANGE);
       this.notify();

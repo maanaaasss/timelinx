@@ -150,8 +150,9 @@
   --tl-snap-color: var(--selection);
   --tl-snap-glow: rgba(0, 194, 255, 0.2);
   --tl-grid-line: rgba(255, 255, 255, 0.04);
-  --tl-trim-handle-bg: rgba(255, 255, 255, 0.5);
-  --tl-trim-handle-active-bg: rgba(255, 255, 255, 0.15);
+  --tl-trim-handle-bg: rgba(255, 255, 255, 0.35);
+  --tl-trim-handle-hover-bg: var(--selection);
+  --tl-trim-handle-active-bg: var(--selection);
   --tl-playhead-shadow: 0 0 10px var(--selection-glow);
   --tl-ring-accent: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--selection);
 }

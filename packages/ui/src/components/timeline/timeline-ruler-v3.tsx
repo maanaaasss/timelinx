@@ -1,4 +1,10 @@
-import { useRef, useEffect, useCallback, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useRef,
+  useEffect,
+  useCallback,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import type { FrameRate } from '@timelinx/core';
 import { cn } from '../../shared/cn';
 import { formatMSS } from '../../shared/time';
@@ -60,6 +66,12 @@ export function TimelineRulerV3({
         return Math.max(0, Math.min(maxF, rawFrame));
       };
 
+      const target = e.currentTarget as HTMLElement;
+      const pointerId = e.pointerId;
+      try {
+        target.setPointerCapture(pointerId);
+      } catch {}
+
       onSeek(getFrame(e.clientX));
 
       const handlePointerMove = (moveEvent: PointerEvent) => {
@@ -67,12 +79,17 @@ export function TimelineRulerV3({
       };
 
       const handlePointerUp = () => {
-        document.removeEventListener('pointermove', handlePointerMove);
-        document.removeEventListener('pointerup', handlePointerUp);
+        try {
+          target.releasePointerCapture(pointerId);
+        } catch {}
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('pointercancel', handlePointerUp);
       };
 
-      document.addEventListener('pointermove', handlePointerMove);
-      document.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
     },
     [containerRef, scrollLeft, ppf, duration, totalFrames, onSeek],
   );
@@ -120,7 +137,8 @@ export function TimelineRulerV3({
       Math.ceil((scrollLeft + visibleWidth) / (ppf * safeFps)),
     );
 
-    ctx.font = '500 10px "Inter", "Roboto", -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif';
+    ctx.font =
+      '500 10px "Inter", "Roboto", -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif';
     ctx.textBaseline = 'middle';
 
     const textY = Math.round(h / 2);
@@ -142,14 +160,25 @@ export function TimelineRulerV3({
 
       // Draw subtle grey dot at half-second mark between each second
       const xDot = Math.round((s + 0.5) * safeFps * ppf - scrollLeft);
-      if (xDot >= 0 && xDot <= w && (s + 0.5) <= maxSec + 0.5) {
+      if (xDot >= 0 && xDot <= w && s + 0.5 <= maxSec + 0.5) {
         ctx.beginPath();
         ctx.arc(xDot, textY, 1.5, 0, Math.PI * 2);
         ctx.fillStyle = dotColor;
         ctx.fill();
       }
     }
-  }, [safeFps, ppf, scrollLeft, duration, height, minVisibleSeconds, totalWidth, inPoint, outPoint, containerRef]);
+  }, [
+    safeFps,
+    ppf,
+    scrollLeft,
+    duration,
+    height,
+    minVisibleSeconds,
+    totalWidth,
+    inPoint,
+    outPoint,
+    containerRef,
+  ]);
 
   const scheduleDraw = useCallback(() => {
     if (rafRef.current !== null) {

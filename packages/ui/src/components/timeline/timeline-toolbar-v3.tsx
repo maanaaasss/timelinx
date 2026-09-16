@@ -86,16 +86,9 @@ export function TimelineToolbarV3({
 
   const activePageObj = pages?.find((p) => p.id === activePage);
   const currentTimecode =
-    timeFormat === 'timecode'
-      ? frameToTimecode(currentTime, fps)
-      : frameToMSS(currentTime, fps);
+    timeFormat === 'timecode' ? frameToTimecode(currentTime, fps) : frameToMSS(currentTime, fps);
   const durationTimecode =
-    timeFormat === 'timecode'
-      ? frameToTimecode(duration, fps)
-      : frameToMSS(duration, fps);
-
-  // Compute zoom percentage (relative to the range midpoint as 100%)
-  const zoomPct = Math.round(((zoom - zoomMin) / (zoomMax - zoomMin)) * 100) || 1;
+    timeFormat === 'timecode' ? frameToTimecode(duration, fps) : frameToMSS(duration, fps);
 
   // Close page menu on outside click
   useEffect(() => {
@@ -155,9 +148,7 @@ export function TimelineToolbarV3({
               className={cn('tl-toolbar-v3-page-select', pageMenuOpen && 'is-open')}
               onClick={() => setPageMenuOpen((v) => !v)}
             >
-              <span className="tl-toolbar-v3-page-label">
-                {activePageObj?.name ?? 'Page 1'}
-              </span>
+              <span className="tl-toolbar-v3-page-label">{activePageObj?.name ?? 'Page 1'}</span>
               <ChevronDown size={12} className="tl-toolbar-v3-page-chevron" />
             </button>
             {pageMenuOpen && (
@@ -198,7 +189,10 @@ export function TimelineToolbarV3({
             <SkipBack size={TRANSPORT_ICON_SIZE} />
           </button>
           <button
-            className={cn('tl-toolbar-v3-transport-btn tl-toolbar-v3-play-btn', isPlaying && 'is-playing')}
+            className={cn(
+              'tl-toolbar-v3-transport-btn tl-toolbar-v3-play-btn',
+              isPlaying && 'is-playing',
+            )}
             title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
             data-action={isPlaying ? 'pause' : 'play'}
             onClick={onPlayPause}

@@ -44,19 +44,21 @@ export function TimelineTrackAreaV2({
 
   return (
     <div className="tl-track-area" ref={scrollRef} onScroll={handleScroll}>
-      <TrackList
-        tracks={tracks}
-        clips={clips}
-        ppf={ppf}
-        fps={fps}
-        totalWidth={totalWidth}
-        selectedClipIds={selectedClipIds}
-        engine={engine}
-        onSeek={onSeek}
-        heights={heights}
-        onHeightChange={onHeightChange}
-      />
-      <Playhead engine={engine} ppf={ppf} />
+      <div className="tl-track-list-wrapper">
+        <TrackList
+          tracks={tracks}
+          clips={clips}
+          ppf={ppf}
+          fps={fps}
+          totalWidth={totalWidth}
+          selectedClipIds={selectedClipIds}
+          engine={engine}
+          onSeek={onSeek}
+          heights={heights}
+          onHeightChange={onHeightChange}
+        />
+        <Playhead engine={engine} ppf={ppf} />
+      </div>
     </div>
   );
 }

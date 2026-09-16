@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "dist", "src/__tests__"],
+  "exclude": ["node_modules", "dist", "src/__tests__", "src/stories"],
   "compilerOptions": {
     "skipLibCheck": true
   }

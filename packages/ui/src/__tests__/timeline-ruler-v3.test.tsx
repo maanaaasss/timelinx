@@ -28,12 +28,7 @@ describe('RulerPlayheadV3', () => {
   it('renders geometric flat-topped tab handle and vertical line', () => {
     const onSeek = vi.fn();
     const { container } = render(
-      <RulerPlayheadV3
-        currentTime={30}
-        ppf={10}
-        duration={300}
-        onSeek={onSeek}
-      />,
+      <RulerPlayheadV3 currentTime={30} ppf={10} duration={300} onSeek={onSeek} />,
     );
 
     const wrapper = container.querySelector('.tl-ruler-v3-playhead-wrapper');
@@ -55,13 +50,7 @@ describe('TimelineRulerV3', () => {
   it('renders ruler track with canvas and playhead', () => {
     const onSeek = vi.fn();
     const { container } = render(
-      <TimelineRulerV3
-        fps={30}
-        ppf={10}
-        duration={210}
-        currentTime={0}
-        onSeek={onSeek}
-      />,
+      <TimelineRulerV3 fps={30} ppf={10} duration={210} currentTime={0} onSeek={onSeek} />,
     );
 
     const track = container.querySelector('.tl-ruler-v3-track');
@@ -77,13 +66,7 @@ describe('TimelineRulerV3', () => {
   it('triggers onSeek on track pointer down', () => {
     const onSeek = vi.fn();
     const { container } = render(
-      <TimelineRulerV3
-        fps={30}
-        ppf={10}
-        duration={210}
-        currentTime={0}
-        onSeek={onSeek}
-      />,
+      <TimelineRulerV3 fps={30} ppf={10} duration={210} currentTime={0} onSeek={onSeek} />,
     );
 
     const track = container.querySelector('.tl-ruler-v3-track');

@@ -31,56 +31,26 @@ import {
   toCaptionId,
   toKeyframeId,
   toGeneratorId,
-  toAssetId,
   LINEAR_EASING,
   SelectionTool,
   type TimelineFrame,
 } from '@timelinx/core';
 import React from 'react';
-import { useState, useCallback } from 'react';
-import { TimelineEditor } from '@timelinx/ui';
+import { useState } from 'react';
+import { TimelineLayout, TimelineProvider as UITimelineProvider } from '@timelinx/ui';
+import { TimelineProvider as ReactTimelineProvider } from '@timelinx/react';
 import '@timelinx/ui/styles/tokens';
 import '@timelinx/ui/styles/presets/dark-pro';
 import '@timelinx/ui/styles/structure';
 
 function DemoApp() {
   const [engine] = useState(() => createDemoEngine());
-  const handleAssetDrop = useCallback(
-    (drop: { assetId: string; trackId: string; frame: number }) => {
-      const state = engine.getState();
-      const asset = state.assetRegistry.get(toAssetId(drop.assetId));
-      if (!asset) return;
-      const duration = asset.intrinsicDuration as number;
-      const clipId = toClipId(`clip-drop-${Date.now()}`);
-      const clip = createClip({
-        id: clipId,
-        assetId: drop.assetId,
-        trackId: drop.trackId,
-        timelineStart: toFrame(drop.frame),
-        timelineEnd: toFrame(drop.frame + duration),
-        mediaIn: toFrame(0),
-        mediaOut: toFrame(duration),
-      });
-      engine.dispatch({
-        id: `drop-${clipId}`,
-        label: `Drop ${asset.name}`,
-        timestamp: Date.now(),
-        operations: [{ type: 'INSERT_CLIP', trackId: toTrackId(drop.trackId), clip }],
-      });
-    },
-    [engine],
-  );
   return (
-    <TimelineEditor
-      engine={engine}
-      showSidebar={true}
-      showTopNav={true}
-      showTransportControls={true}
-      showMediaBrowser={true}
-      showToolbar={true}
-      projectName="Demo"
-      onAssetDrop={handleAssetDrop}
-    />
+    <ReactTimelineProvider engine={engine}>
+      <UITimelineProvider engine={engine}>
+        <TimelineLayout showToolbar showRuler showStatusBar />
+      </UITimelineProvider>
+    </ReactTimelineProvider>
   );
 }
 
@@ -353,10 +323,10 @@ describe('Editor — Feature Verification', () => {
   describe('7. UI components', () => {
     it('renders toolbar with tool buttons', () => {
       const { container } = render(<App />);
-      const toolbar = container.querySelector('.tl-toolbar-v2');
+      const toolbar = container.querySelector('.tl-toolbar-v3');
       expect(toolbar).not.toBeNull();
-      const toolBtns = toolbar!.querySelectorAll('.tl-toolbar-btn');
-      expect(toolBtns.length).toBeGreaterThanOrEqual(5);
+      const toolBtns = toolbar!.querySelectorAll('.tl-toolbar-v3-btn');
+      expect(toolBtns.length).toBeGreaterThanOrEqual(2);
     });
 
     it('renders zoom controls', () => {
@@ -371,11 +341,6 @@ describe('Editor — Feature Verification', () => {
       expect(trackHeaders.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('renders right panel tabs', () => {
-      const { container } = render(<App />);
-      expect(container.querySelector('.right-panel')).not.toBeNull();
-    });
-
     it('renders status bar', () => {
       const { container } = render(<App />);
       expect(container.querySelector('.tl-status-bar')).not.toBeNull();
@@ -383,10 +348,10 @@ describe('Editor — Feature Verification', () => {
 
     it('renders split and delete buttons', () => {
       const { container } = render(<App />);
-      const toolbar = container.querySelector('.tl-toolbar-v2');
+      const toolbar = container.querySelector('.tl-toolbar-v3');
       expect(toolbar).not.toBeNull();
-      const razorBtn = toolbar!.querySelector('[title*="Razor"]');
-      expect(razorBtn).not.toBeNull();
+      const cutBtn = toolbar!.querySelector('[title*="Cut"]');
+      expect(cutBtn).not.toBeNull();
     });
   });
 
@@ -1224,7 +1189,7 @@ describe('Editor — Feature Verification', () => {
   describe('17. Text clips rendering on timeline', () => {
     it('renders text clips on the titles track', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(2);
     });
   });
@@ -1952,7 +1917,7 @@ describe('Editor — Feature Verification', () => {
   describe('26. Text clip interactivity — DOM structure verification', () => {
     it('text clip has data-clip-id for tool-router hit-testing', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
       expect(firstClip.dataset.clipId).toBeTruthy();
@@ -1960,65 +1925,65 @@ describe('Editor — Feature Verification', () => {
 
     it('text clip has data-track-id for tool-router hit-testing', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       for (const clip of s1Clips) {
         expect((clip as HTMLElement).dataset.trackId).toBe('s1');
       }
     });
 
-    it('text clip renders clip name inside .clip-info', () => {
+    it('text clip renders clip name inside label', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
-      const infoEl = firstClip.querySelector('.clip-info');
-      expect(infoEl).not.toBeNull();
-      expect(infoEl!.textContent).toContain('Welcome to TimelineX Editor');
+      const labelEl = firstClip.querySelector('.tl-v2-clip-label');
+      expect(labelEl).not.toBeNull();
+      expect(labelEl!.textContent).toContain('Welcome to TimelineX Editor');
     });
 
     it('text clip has inline transform style for positioning', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
-      // TimelineEditor uses absolute positioning via left/width on .tl-clip-wrap
       expect(firstClip.style.left).toBeTruthy();
       expect(firstClip.style.width).toBeTruthy();
     });
 
     it('text clip has width style set', () => {
       const { container } = render(<DemoApp />);
-      const s1Clips = container.querySelectorAll('[data-track-id="s1"] [data-clip-id]');
+      const s1Clips = container.querySelectorAll('[data-clip-id][data-track-id="s1"]');
       expect(s1Clips.length).toBeGreaterThanOrEqual(1);
       const firstClip = s1Clips[0] as HTMLElement;
       expect(firstClip.style.width).toBeTruthy();
     });
 
-    it('all caption blocks are inside .track-clips (same container as clips)', () => {
+    it('all caption blocks are inside track body containers', () => {
       const { container } = render(<DemoApp />);
       const captions = container.querySelectorAll('[data-caption-id]');
       for (const cap of captions) {
         const parent = cap.parentElement;
         expect(parent).not.toBeNull();
-        // TimelineEditor uses .tl-track-body instead of .track-clips
-        const inTrackBody =
-          parent!.classList.contains('tl-track-body') || parent!.closest('.tl-track-body') !== null;
+        const inTrackBody = parent!.closest('.tl-track-body') !== null;
         expect(inTrackBody).toBe(true);
       }
     });
 
-    it('caption blocks coexist with clip blocks in the same track container', () => {
+    it('text clips coexist with regular clips across track containers', () => {
       const { container } = render(<DemoApp />);
       const trackBodies = container.querySelectorAll('.tl-track-body');
-      let foundMixed = false;
+      let foundTextClips = false;
+      let foundVideoClips = false;
       for (const tb of trackBodies) {
-        const hasClips = tb.querySelectorAll('[data-clip-id]').length > 0;
-        const hasCaptions = tb.querySelectorAll('[data-caption-id]').length > 0;
-        if (hasClips || hasCaptions) {
-          foundMixed = true;
-        }
+        const textClips = tb.querySelectorAll(
+          '[data-clip-type="text"], [data-clip-type="video"][data-track-id="s1"]',
+        );
+        const videoClips = tb.querySelectorAll('[data-clip-type="video"][data-track-id="v1"]');
+        if (textClips.length > 0) foundTextClips = true;
+        if (videoClips.length > 0) foundVideoClips = true;
       }
-      expect(foundMixed).toBe(true);
+      expect(foundTextClips).toBe(true);
+      expect(foundVideoClips).toBe(true);
     });
   });
 });

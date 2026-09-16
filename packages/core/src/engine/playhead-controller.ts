@@ -75,7 +75,8 @@ export class PlayheadController {
   }
 
   seekTo(frame: TimelineFrame): void {
-    const n = Math.max(0, Math.min(this.state.durationFrames - 1, frame as number));
+    const maxFrame = this.state.durationFrames > 0 ? this.state.durationFrames - 1 : Infinity;
+    const n = Math.max(0, Math.min(maxFrame, frame as number));
     const clamped = toFrame(n);
     this.state = { ...this.state, currentFrame: clamped };
     this.emit('seek', clamped);
@@ -95,7 +96,7 @@ export class PlayheadController {
   setDuration(durationFrames: number): void {
     let currentFrame = this.state.currentFrame;
     const cur = currentFrame as number;
-    if (cur >= durationFrames) {
+    if (durationFrames > 0 && cur >= durationFrames) {
       currentFrame = toFrame(Math.max(0, durationFrames - 1));
     }
     this.state = {
@@ -176,7 +177,7 @@ export class PlayheadController {
       }
     }
 
-    if (newFrame >= this.state.durationFrames) {
+    if (this.state.durationFrames > 0 && newFrame >= this.state.durationFrames) {
       this.state = {
         ...this.state,
         currentFrame: toFrame(this.state.durationFrames - 1),
@@ -203,6 +204,7 @@ export class PlayheadController {
     }
 
     this.state = { ...this.state, currentFrame: toFrame(newFrame) };
+    this.emit('state', this.state.currentFrame);
     this.scheduleFrame();
   }
 

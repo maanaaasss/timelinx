@@ -1,4 +1,4 @@
-import { useRef, useCallback, type ChangeEvent } from 'react';
+import { useCallback, type ChangeEvent } from 'react';
 
 export interface ZoomSliderProps {
   value: number;
@@ -9,7 +9,6 @@ export interface ZoomSliderProps {
 }
 
 export function ZoomSlider({ value, min, max, defaultValue, onChange }: ZoomSliderProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
   const pct = ((value - min) / (max - min)) * 100;
 
   const handleChange = useCallback(
@@ -24,7 +23,7 @@ export function ZoomSlider({ value, min, max, defaultValue, onChange }: ZoomSlid
   }, [defaultValue, onChange]);
 
   return (
-    <div className="tl-zoom-slider" ref={trackRef}>
+    <div className="tl-zoom-slider">
       <input
         type="range"
         className="tl-zoom-slider-input"
