@@ -14,9 +14,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@timelinx/core": "workspace:*",
-    "@timelinx/react": "workspace:*",
-    "@timelinx/ui": "workspace:*",
+    "@timelinx/core": "^1.0.0-beta.4",
+    "@timelinx/react": "^1.0.0-beta.6",
+    "@timelinx/ui": "^1.0.0-beta.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

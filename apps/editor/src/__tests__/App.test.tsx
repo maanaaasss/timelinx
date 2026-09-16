@@ -19,6 +19,13 @@ describe('Editor App', () => {
     expect(screen.getByText('A1 — Music')).toBeInTheDocument();
   });
 
+  it('renders the production panel controls', () => {
+    render(<App />);
+    expect(screen.getAllByText('Inspector').length).toBeGreaterThan(0);
+    expect(screen.getByText('Effects')).toBeInTheDocument();
+    expect(screen.getByText('Text')).toBeInTheDocument();
+  });
+
   it('renders the status bar', () => {
     const { container } = render(<App />);
     expect(container.querySelector('.tl-status-bar')).not.toBeNull();
@@ -26,11 +33,11 @@ describe('Editor App', () => {
 
   it('renders the timeline toolbar', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.tl-toolbar-v3')).not.toBeNull();
+    expect(container.querySelector('.tl-toolbar-v2')).not.toBeNull();
   });
 
   it('renders the timeline ruler', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.tl-ruler-v3-canvas')).not.toBeNull();
+    expect(container.querySelector('.tl-ruler-canvas')).not.toBeNull();
   });
 });
