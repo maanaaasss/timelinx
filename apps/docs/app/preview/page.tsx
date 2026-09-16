@@ -1,11 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import {
-  TimelineToolbarV3,
-  TimelineRulerV3,
-  TimelineEmptyState,
-} from '@timelinx/ui';
+import { TimelineToolbarV3, TimelineRulerV3, TimelineEmptyState } from '@timelinx/ui';
 
 export default function PreviewPage() {
   const [currentTime, setCurrentTime] = useState(0);
@@ -73,8 +69,8 @@ export default function PreviewPage() {
           Timelinx UI V3 — Toolbar &amp; Timeruler
         </h1>
         <p style={{ fontSize: '13px', color: '#8a8a9e', margin: 0 }}>
-          High-contrast color hierarchy, standard M:SS time increments (0:00 to 0:07) with half-second dots,
-          and solid white playhead with geometric flat-topped tab handle.
+          High-contrast color hierarchy, standard M:SS time increments (0:00 to 0:07) with
+          half-second dots, and solid white playhead with geometric flat-topped tab handle.
         </p>
       </div>
 
@@ -160,9 +156,7 @@ export default function PreviewPage() {
           />
 
           {/* Empty State placeholder */}
-          <TimelineEmptyState
-            onClick={() => alert('Upload Media clicked')}
-          />
+          <TimelineEmptyState onClick={() => alert('Upload Media clicked')} />
         </div>
       </div>
 
@@ -208,8 +202,8 @@ export default function PreviewPage() {
             Secondary Markers &amp; Dots
           </div>
           <div style={{ fontSize: '12px', color: '#8a8a9e', lineHeight: 1.5 }}>
-            Full seconds (0:00 to 0:07) labeled in muted grey. A subtle grey dot sits exactly at each
-            half-second mark (0.5s, 1.5s, 2.5s, etc.) between numbers.
+            Full seconds (0:00 to 0:07) labeled in muted grey. A subtle grey dot sits exactly at
+            each half-second mark (0.5s, 1.5s, 2.5s, etc.) between numbers.
           </div>
         </div>
 
@@ -225,8 +219,8 @@ export default function PreviewPage() {
             Geometric Playhead Handle
           </div>
           <div style={{ fontSize: '12px', color: '#8a8a9e', lineHeight: 1.5 }}>
-            Topped with a geometric, flat-topped tab handle with straight vertical sides and pointed apex
-            aligning with the solid white vertical line.
+            Topped with a geometric, flat-topped tab handle with straight vertical sides and pointed
+            apex aligning with the solid white vertical line.
           </div>
         </div>
       </div>

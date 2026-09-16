@@ -131,9 +131,13 @@ export const Ruler = forwardRef<HTMLDivElement, RulerProps>(function Ruler(
     return () => window.removeEventListener('resize', handleResize);
   }, [draw]);
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
+  const isDraggingRef = useRef(false);
+
+  const seekFromPointer = useCallback(
+    (e: React.PointerEvent | React.MouseEvent) => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
       const x = e.clientX - rect.left + scrollLeftRef.current;
       const frame = Math.max(0, Math.round(x / ppf));
       onClick(frame);
@@ -141,9 +145,46 @@ export const Ruler = forwardRef<HTMLDivElement, RulerProps>(function Ruler(
     [ppf, onClick],
   );
 
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      isDraggingRef.current = true;
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      seekFromPointer(e);
+    },
+    [seekFromPointer],
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      seekFromPointer(e);
+    },
+    [seekFromPointer],
+  );
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      } catch {
+        // Pointer capture may have already been released
+      }
+    }
+  }, []);
+
   return (
-    <div ref={setRef} className="ruler" onClick={handleClick}>
-      <canvas ref={canvasRef} />
+    <div
+      ref={setRef}
+      className="ruler"
+      onClick={seekFromPointer}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      style={{ cursor: 'ew-resize', touchAction: 'none' }}
+    >
+      <canvas ref={canvasRef} style={{ pointerEvents: 'none' }} />
     </div>
   );
 });

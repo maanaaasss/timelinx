@@ -43,28 +43,28 @@ import { TimelineToolbarV3 } from '@timelinx/ui';
   zoomMax={20}
   onZoomChange={(newZoom) => setPpf(newZoom)}
   onZoomFit={handleZoomFit}
-/>
+/>;
 ```
 
 ## V3 Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `currentTime` | `number` | required | Current playhead frame |
-| `duration` | `number` | required | Total timeline duration in frames |
-| `fps` | `FrameRate` | required | Timeline frame rate |
-| `timeFormat` | `'mss' \| 'timecode'` | `'mss'` | Display format for timecode counter |
-| `isPlaying` | `boolean` | `false` | Whether playback is actively running |
-| `onPlayPause` | `() => void` | — | Handler for Play/Pause toggle |
-| `onSkipBack` | `() => void` | — | Handler to skip to start |
-| `onSkipForward` | `() => void` | — | Handler to skip to end |
-| `onCut` | `() => void` | — | Handler to cut/split clip at playhead |
-| `onDelete` | `() => void` | — | Handler to delete selected clips |
-| `pages` | `PageDefinition[]` | — | List of pages/compositions |
-| `activePage` | `string` | — | Currently active page ID |
-| `onPageChange` | `(id: string) => void` | — | Callback when page is selected |
-| `zoom` | `number` | required | Current zoom level (ppf) |
-| `zoomMin` | `number` | required | Minimum zoom level |
-| `zoomMax` | `number` | required | Maximum zoom level |
-| `onZoomChange` | `(zoom: number) => void` | required | Callback when zoom is changed |
-| `onZoomFit` | `() => void` | — | Callback to fit timeline into viewport |
+| Prop            | Type                     | Default  | Description                            |
+| --------------- | ------------------------ | -------- | -------------------------------------- |
+| `currentTime`   | `number`                 | required | Current playhead frame                 |
+| `duration`      | `number`                 | required | Total timeline duration in frames      |
+| `fps`           | `FrameRate`              | required | Timeline frame rate                    |
+| `timeFormat`    | `'mss' \| 'timecode'`    | `'mss'`  | Display format for timecode counter    |
+| `isPlaying`     | `boolean`                | `false`  | Whether playback is actively running   |
+| `onPlayPause`   | `() => void`             | —        | Handler for Play/Pause toggle          |
+| `onSkipBack`    | `() => void`             | —        | Handler to skip to start               |
+| `onSkipForward` | `() => void`             | —        | Handler to skip to end                 |
+| `onCut`         | `() => void`             | —        | Handler to cut/split clip at playhead  |
+| `onDelete`      | `() => void`             | —        | Handler to delete selected clips       |
+| `pages`         | `PageDefinition[]`       | —        | List of pages/compositions             |
+| `activePage`    | `string`                 | —        | Currently active page ID               |
+| `onPageChange`  | `(id: string) => void`   | —        | Callback when page is selected         |
+| `zoom`          | `number`                 | required | Current zoom level (ppf)               |
+| `zoomMin`       | `number`                 | required | Minimum zoom level                     |
+| `zoomMax`       | `number`                 | required | Maximum zoom level                     |
+| `onZoomChange`  | `(zoom: number) => void` | required | Callback when zoom is changed          |
+| `onZoomFit`     | `() => void`             | —        | Callback to fit timeline into viewport |

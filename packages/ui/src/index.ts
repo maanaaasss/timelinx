@@ -122,9 +122,16 @@ export {
 
 export type { TimelineContextValue, TimelineProviderProps } from './context/timeline-context';
 
-export { MediaAssetsProvider, useMediaAssets, useOptionalMediaAssets } from './context/media-assets-context';
+export {
+  MediaAssetsProvider,
+  useMediaAssets,
+  useOptionalMediaAssets,
+} from './context/media-assets-context';
 
-export type { MediaAssetsContextValue, MediaAssetsProviderProps } from './context/media-assets-context';
+export type {
+  MediaAssetsContextValue,
+  MediaAssetsProviderProps,
+} from './context/media-assets-context';
 
 // ── Icons (for custom toolbars) ────────────────────────────────────────────
 export {
@@ -155,7 +162,14 @@ export {
 } from './components/icons';
 
 // ── Shared utilities ───────────────────────────────────────────────────────
-export { frameToPx, pxToFrame, frameToTimecode, formatMSS, frameToMSS, rulerTickInterval } from './shared/time';
+export {
+  frameToPx,
+  pxToFrame,
+  frameToTimecode,
+  formatMSS,
+  frameToMSS,
+  rulerTickInterval,
+} from './shared/time';
 
 export { useTimelineRefs } from './shared/use-refs';
 export { clamp } from './shared/geometry';
@@ -187,7 +201,10 @@ export { useProvisionalValue, useProvisionalTransform } from './hooks/use-provis
 
 // ── Timeline V2 Components (migrated from prototype) ─────────────────────
 export { TimelineLayout, TimelineLayoutV3 } from './components/timeline/timeline-layout';
-export type { TimelineLayoutProps, TimelineLayoutV3Props } from './components/timeline/timeline-layout';
+export type {
+  TimelineLayoutProps,
+  TimelineLayoutV3Props,
+} from './components/timeline/timeline-layout';
 
 export { TimelineToolbarV2 } from './components/timeline/timeline-toolbar';
 export type { TimelineToolbarV2Props, ToolId } from './components/timeline/timeline-toolbar';
@@ -210,11 +227,14 @@ export type { TrackBodyProps } from './components/timeline/track-body';
 export { TrackList as TrackListV2 } from './components/timeline/track-list';
 export type { TrackListProps as TrackListV2Props } from './components/timeline/track-list';
 
-export { Clip as ClipV2 } from './components/timeline/clip';
-export type { ClipProps as ClipV2Props } from './components/timeline/clip';
+export { Clip, Clip as ClipV2 } from './components/timeline/clip';
+export type { ClipProps, ClipProps as ClipV2Props } from './components/timeline/clip';
 
-export { Playhead as PlayheadV2 } from './components/timeline/playhead';
-export type { PlayheadProps as PlayheadV2Props } from './components/timeline/playhead';
+export { Playhead, Playhead as PlayheadV2 } from './components/timeline/playhead';
+export type {
+  PlayheadProps,
+  PlayheadProps as PlayheadV2Props,
+} from './components/timeline/playhead';
 
 export { RulerPlayhead } from './components/timeline/ruler-playhead';
 export type { RulerPlayheadProps } from './components/timeline/ruler-playhead';
@@ -228,7 +248,10 @@ export type { UseTimelineKeyboardOptions } from './hooks/use-timeline-keyboard';
 
 // ── Timeline V3 Components (CapCut-style) ────────────────
 export { TimelineToolbarV3 } from './components/timeline/timeline-toolbar-v3';
-export type { TimelineToolbarV3Props, PageDefinition } from './components/timeline/timeline-toolbar-v3';
+export type {
+  TimelineToolbarV3Props,
+  PageDefinition,
+} from './components/timeline/timeline-toolbar-v3';
 
 export { TimelineRulerV3 } from './components/timeline/timeline-ruler-v3';
 export type { TimelineRulerV3Props } from './components/timeline/timeline-ruler-v3';

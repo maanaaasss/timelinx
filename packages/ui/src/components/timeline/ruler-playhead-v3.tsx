@@ -29,6 +29,11 @@ export function RulerPlayheadV3({
     (e: ReactPointerEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      const target = e.currentTarget as HTMLElement;
+      const pointerId = e.pointerId;
+      try {
+        target.setPointerCapture(pointerId);
+      } catch {}
       setIsDragging(true);
       onDragStart?.();
 
@@ -50,12 +55,17 @@ export function RulerPlayheadV3({
 
       const handlePointerUp = () => {
         setIsDragging(false);
-        document.removeEventListener('pointermove', handlePointerMove);
-        document.removeEventListener('pointerup', handlePointerUp);
+        try {
+          target.releasePointerCapture(pointerId);
+        } catch {}
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('pointercancel', handlePointerUp);
       };
 
-      document.addEventListener('pointermove', handlePointerMove);
-      document.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
     },
     [currentTime, ppf, duration, onDragStart, onSeek],
   );

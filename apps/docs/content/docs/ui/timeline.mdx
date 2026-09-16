@@ -65,32 +65,32 @@ function Editor() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `variant` | `'v3' \| 'v2'` | `'v3'` | Timeline layout design variant |
-| `className` | `string` | — | Additional CSS class for the root element |
-| `showToolbar` | `boolean` | `true` | Show the top toolbar |
-| `showRuler` | `boolean` | `true` | Show the timeline ruler and playhead |
-| `showStatusBar` | `boolean` | `true` | Show the bottom status bar |
-| `pages` | `PageDefinition[]` | — | Pages/compositions for the V3 page selector |
-| `activePage` | `string` | — | Active page ID |
-| `onPageChange` | `(pageId: string) => void` | — | Callback fired when switching pages |
-| `timeFormat` | `'mss' \| 'timecode'` | `'mss'` | Timecode counter display format |
-| `onUpload` | `() => void` | — | Callback when clicking the empty state upload button |
-| `emptyStateLabel` | `string` | `'Upload Media'` | Text label inside the empty state |
-| `isPlaying` | `boolean` | — | Optional external override for playback state |
-| `onPlayPause` | `() => void` | — | Optional external play/pause handler |
+| Prop              | Type                       | Default          | Description                                          |
+| ----------------- | -------------------------- | ---------------- | ---------------------------------------------------- |
+| `variant`         | `'v3' \| 'v2'`             | `'v3'`           | Timeline layout design variant                       |
+| `className`       | `string`                   | —                | Additional CSS class for the root element            |
+| `showToolbar`     | `boolean`                  | `true`           | Show the top toolbar                                 |
+| `showRuler`       | `boolean`                  | `true`           | Show the timeline ruler and playhead                 |
+| `showStatusBar`   | `boolean`                  | `true`           | Show the bottom status bar                           |
+| `pages`           | `PageDefinition[]`         | —                | Pages/compositions for the V3 page selector          |
+| `activePage`      | `string`                   | —                | Active page ID                                       |
+| `onPageChange`    | `(pageId: string) => void` | —                | Callback fired when switching pages                  |
+| `timeFormat`      | `'mss' \| 'timecode'`      | `'mss'`          | Timecode counter display format                      |
+| `onUpload`        | `() => void`               | —                | Callback when clicking the empty state upload button |
+| `emptyStateLabel` | `string`                   | `'Upload Media'` | Text label inside the empty state                    |
+| `isPlaying`       | `boolean`                  | —                | Optional external override for playback state        |
+| `onPlayPause`     | `() => void`               | —                | Optional external play/pause handler                 |
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-| --- | --- |
-| `Space` | Play / Pause playback |
-| `C` | Cut / Split clip under playhead |
-| `Delete` / `Backspace` | Remove selected clips |
-| `+` / `-` | Zoom in / Zoom out |
-| `←` / `→` | Nudge playhead ±1 frame (±10 with Shift) |
-| `↑` / `↓` | Nudge selected clip ±1 frame |
+| Key                    | Action                                   |
+| ---------------------- | ---------------------------------------- |
+| `Space`                | Play / Pause playback                    |
+| `C`                    | Cut / Split clip under playhead          |
+| `Delete` / `Backspace` | Remove selected clips                    |
+| `+` / `-`              | Zoom in / Zoom out                       |
+| `←` / `→`              | Nudge playhead ±1 frame (±10 with Shift) |
+| `↑` / `↓`              | Nudge selected clip ±1 frame             |
 
 ## Architecture
 

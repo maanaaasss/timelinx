@@ -90,6 +90,48 @@ export function TimelineView() {
     [engine],
   );
 
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    let lastTime = performance.now();
+    let rafId: number;
+    const dur = Number(timeline.duration) || 1;
+    const fps = Number(timeline.fps) || 30;
+
+    const loop = (now: number) => {
+      const deltaSec = (now - lastTime) / 1000;
+      lastTime = now;
+      const current = engine.getPlayheadFrame();
+      const nextFrame = current + deltaSec * fps;
+      if (nextFrame >= dur) {
+        engine.seekTo(dur as TimelineFrame);
+        setIsPlaying(false);
+        return;
+      }
+      engine.seekTo(Math.round(nextFrame) as TimelineFrame);
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafId);
+  }, [isPlaying, engine, timeline.duration, timeline.fps]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && (e.target as HTMLElement)?.tagName !== 'INPUT') {
+        e.preventDefault();
+        setIsPlaying((prev) => {
+          if (!prev && engine.getPlayheadFrame() >= Number(timeline.duration)) {
+            engine.seekTo(0 as TimelineFrame);
+          }
+          return !prev;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [engine, timeline.duration]);
+
   const timelineWidth = Number(timeline.duration) * ppf;
 
   return (
@@ -117,7 +159,7 @@ export function TimelineView() {
           {trackIds.map((id) => (
             <TrackView key={id} trackId={id} ppf={ppf} selectedClipIds={selectedClipIds} />
           ))}
-          <Playhead frame={playheadFrame} ppf={ppf} />
+          <Playhead frame={playheadFrame} ppf={ppf} onSeek={handleRulerClick} />
         </div>
       </div>
     </div>

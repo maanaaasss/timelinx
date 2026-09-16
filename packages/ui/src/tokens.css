@@ -221,7 +221,8 @@ layer(fonts);
      timecode, which is everywhere in an editor and must align
      digit-for-digit. */
   --font-display: 'Inter', 'Roboto', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Inter', 'Roboto', 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans:
+    'Inter', 'Roboto', 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
 
@@ -367,7 +368,7 @@ layer(fonts);
   --clip-radius: 3px;
   --clip-padding: 0 6px;
   --clip-chip-width: 3px; /* saturated track-hue edge on each clip */
-  --clip-inset: 2px;      /* vertical inset within track lane */
+  --clip-inset: 2px; /* vertical inset within track lane */
   --tl-separator: var(--border-subtle);
   --tl-snap-color: var(--accent-400);
   --tl-snap-glow: rgba(56, 169, 201, 0.22);
@@ -376,9 +377,10 @@ layer(fonts);
   --tl-grid-line-major: rgba(18, 22, 26, 0.08);
   --tl-clip-selected-border: var(--selection);
   --tl-clip-drag-shadow: 0 1px 4px rgba(11, 14, 17, 0.22);
-  --tl-trim-handle-width: 4px;
+  --tl-trim-handle-width: 6px;
   --tl-trim-handle-bg: rgba(18, 22, 26, 0.3);
-  --tl-trim-handle-active-bg: rgba(18, 22, 26, 0.14);
+  --tl-trim-handle-hover-bg: var(--accent-400);
+  --tl-trim-handle-active-bg: var(--accent-500);
   --tl-playhead-shadow: none; /* the timeline is flat; the hue does the work */
   --tl-ring-accent: 0 0 0 1px var(--bg-panel), 0 0 0 2px var(--selection);
 }
@@ -398,7 +400,9 @@ textarea {
 code,
 kbd {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1, 'zero' 1;
+  font-feature-settings:
+    'tnum' 1,
+    'zero' 1;
 }
 
 /* ── Quality floor ── */

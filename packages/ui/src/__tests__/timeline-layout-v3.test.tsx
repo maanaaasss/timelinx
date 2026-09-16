@@ -196,7 +196,9 @@ describe('TimelineLayout V3', () => {
     const skipEndBtn = container.querySelector('[data-action="skip-end"]') as HTMLButtonElement;
     expect(skipEndBtn).toBeInTheDocument();
     fireEvent.click(skipEndBtn);
-    expect(engine.getPlayheadFrame()).toBe(Math.max(0, (engine.getState().timeline.duration as number) - 1));
+    expect(engine.getPlayheadFrame()).toBe(
+      Math.max(0, (engine.getState().timeline.duration as number) - 1),
+    );
 
     // Play/Pause button
     const playBtn = container.querySelector('[data-action="play"]') as HTMLButtonElement;

@@ -31,20 +31,20 @@ import { TimelineRulerV3 } from '@timelinx/ui';
   onSeek={(frame) => engine.seekTo(frame)}
   inPoint={inPoint}
   outPoint={outPoint}
-/>
+/>;
 ```
 
 ## V3 Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `fps` | `FrameRate` | required | Timeline frame rate |
-| `ppf` | `number` | required | Pixels per frame |
-| `duration` | `number` | required | Timeline duration in frames |
-| `currentTime` | `number` | required | Current playhead position in frames |
-| `onSeek` | `(frame: number) => void` | required | Callback when seeking via click or scrub |
-| `scrollLeft` | `number` | `0` | Current horizontal scroll offset |
-| `height` | `number` | `26` | Ruler track height in pixels |
-| `minVisibleSeconds` | `number` | `7` | Minimum seconds visible even if timeline is empty/short |
-| `inPoint` | `number \| null` | — | In-point frame for range highlight |
-| `outPoint` | `number \| null` | — | Out-point frame for range highlight |
+| Prop                | Type                      | Default  | Description                                             |
+| ------------------- | ------------------------- | -------- | ------------------------------------------------------- |
+| `fps`               | `FrameRate`               | required | Timeline frame rate                                     |
+| `ppf`               | `number`                  | required | Pixels per frame                                        |
+| `duration`          | `number`                  | required | Timeline duration in frames                             |
+| `currentTime`       | `number`                  | required | Current playhead position in frames                     |
+| `onSeek`            | `(frame: number) => void` | required | Callback when seeking via click or scrub                |
+| `scrollLeft`        | `number`                  | `0`      | Current horizontal scroll offset                        |
+| `height`            | `number`                  | `26`     | Ruler track height in pixels                            |
+| `minVisibleSeconds` | `number`                  | `7`      | Minimum seconds visible even if timeline is empty/short |
+| `inPoint`           | `number \| null`          | —        | In-point frame for range highlight                      |
+| `outPoint`          | `number \| null`          | —        | Out-point frame for range highlight                     |
