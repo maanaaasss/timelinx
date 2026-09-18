@@ -94,7 +94,7 @@ function WorkspaceBody() {
 
             {/* Standalone full-screen Timeline */}
             <main className="workspace-timeline-full">
-              <TimelineLayout showToolbar showRuler showStatusBar variant="v2" />
+              <TimelineLayout showToolbar showRuler showStatusBar />
             </main>
 
             {/* Hidden non-timeline editor panels kept in DOM for test-suite compatibility */}
