@@ -12,7 +12,6 @@ export interface TrackRowProps {
   totalWidth: number;
   selectedClipIds: ReadonlySet<string>;
   engine: TimelineEngine;
-  onSeek: (frame: number) => void;
   /** Override height from local state (track-resize in progress).
    *  Falls back to track.height from engine state. */
   height?: number;
@@ -28,7 +27,6 @@ export function TrackRow({
   totalWidth,
   selectedClipIds,
   engine,
-  onSeek,
   height,
   onHeightChange,
 }: TrackRowProps) {
@@ -51,6 +49,7 @@ export function TrackRow({
       <TrackHeader
         track={track}
         engine={engine}
+        isSelected={clips.some((clip) => selectedClipIds.has(clip.id))}
         height={resolvedHeight}
         onHeightChange={onHeightChange}
       />
@@ -63,7 +62,6 @@ export function TrackRow({
         totalWidth={totalWidth}
         selectedClipIds={selectedClipIds}
         engine={engine}
-        onSeek={onSeek}
       />
     </div>
   );

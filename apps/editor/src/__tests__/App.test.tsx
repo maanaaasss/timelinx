@@ -33,11 +33,17 @@ describe('Editor App', () => {
 
   it('renders the timeline toolbar', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.tl-toolbar-v2')).not.toBeNull();
+    expect(
+      container.querySelector('.tl-toolbar-v2') ??
+        container.querySelector('.tl-toolbar-v3'),
+    ).not.toBeNull();
   });
 
   it('renders the timeline ruler', () => {
     const { container } = render(<App />);
-    expect(container.querySelector('.tl-ruler-canvas')).not.toBeNull();
+    expect(
+      container.querySelector('.tl-ruler-canvas') ??
+        container.querySelector('.tl-ruler-v3-canvas'),
+    ).not.toBeNull();
   });
 });

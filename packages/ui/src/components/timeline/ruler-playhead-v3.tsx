@@ -10,6 +10,7 @@ export interface RulerPlayheadV3Props {
   onSeek?: (frame: number) => void;
   showLine?: boolean;
   className?: string;
+  wrapperRef?: React.Ref<HTMLDivElement>;
 }
 
 export function RulerPlayheadV3({
@@ -21,6 +22,7 @@ export function RulerPlayheadV3({
   onSeek,
   showLine = true,
   className,
+  wrapperRef,
 }: RulerPlayheadV3Props) {
   const [isDragging, setIsDragging] = useState(false);
   const left = currentTime * ppf - scrollLeft;
@@ -72,6 +74,7 @@ export function RulerPlayheadV3({
 
   return (
     <div
+      ref={wrapperRef}
       className={cn('tl-ruler-v3-playhead-wrapper', isDragging && 'is-dragging', className)}
       style={{ left }}
       role="slider"

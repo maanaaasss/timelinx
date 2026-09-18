@@ -58,6 +58,10 @@ export class EditorSession<E extends SessionEngine = SessionEngine> {
   private dirty = false;
   private disposed = false;
 
+  get isDisposed(): boolean {
+    return this.disposed;
+  }
+
   /** Increments each time the engine is replaced; used as a React remount key. */
   private generationCount = 0;
 

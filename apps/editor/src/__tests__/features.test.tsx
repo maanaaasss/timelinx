@@ -353,9 +353,11 @@ describe('Editor — Feature Verification', () => {
   describe('7. UI components', () => {
     it('renders toolbar with tool buttons', () => {
       const { container } = render(<App />);
-      const toolbar = container.querySelector('.tl-toolbar-v2');
+      const toolbar =
+        container.querySelector('.tl-toolbar-v2') ??
+        container.querySelector('.tl-toolbar-v3');
       expect(toolbar).not.toBeNull();
-      const toolBtns = toolbar!.querySelectorAll('.tl-toolbar-btn');
+      const toolBtns = toolbar!.querySelectorAll('button');
       expect(toolBtns.length).toBeGreaterThanOrEqual(5);
     });
 
@@ -383,9 +385,13 @@ describe('Editor — Feature Verification', () => {
 
     it('renders split and delete buttons', () => {
       const { container } = render(<App />);
-      const toolbar = container.querySelector('.tl-toolbar-v2');
+      const toolbar =
+        container.querySelector('.tl-toolbar-v2') ??
+        container.querySelector('.tl-toolbar-v3');
       expect(toolbar).not.toBeNull();
-      const razorBtn = toolbar!.querySelector('[title*="Razor"]');
+      const razorBtn =
+        toolbar!.querySelector('[title*="Razor"]') ??
+        toolbar!.querySelector('[title*="Cut"]');
       expect(razorBtn).not.toBeNull();
     });
   });

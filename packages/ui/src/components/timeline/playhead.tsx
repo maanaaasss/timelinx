@@ -17,15 +17,17 @@ function getHeaderWidth(): number {
 export interface PlayheadProps {
   engine: TimelineEngine;
   ppf: number;
+  interactive?: boolean;
 }
 
-export function Playhead({ engine, ppf }: PlayheadProps) {
+export function Playhead({ engine, ppf, interactive = false }: PlayheadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const currentTime = usePlayheadFrame(engine);
   const left = `calc(${currentTime * ppf}px + var(--track-header-width, ${HEADER_WIDTH_FALLBACK}px))`;
 
   const handlePointerDown = useCallback(
     (e: ReactPointerEvent) => {
+      if (!interactive) return;
       e.preventDefault();
       const target = e.currentTarget as HTMLElement;
       const pointerId = e.pointerId;
@@ -62,12 +64,17 @@ export function Playhead({ engine, ppf }: PlayheadProps) {
       window.addEventListener('pointerup', handleUp);
       window.addEventListener('pointercancel', handleUp);
     },
-    [engine, ppf],
+    [engine, ppf, interactive],
   );
 
   return (
-    <div className={cn('tl-v2-playhead', isDragging && 'is-dragging')} style={{ left }}>
-      <div className="tl-v2-playhead-hit" tabIndex={-1} onPointerDown={handlePointerDown} />
+    <div
+      className={cn('tl-v2-playhead', isDragging && 'is-dragging', interactive && 'is-interactive')}
+      style={{ left }}
+    >
+      {interactive && (
+        <div className="tl-v2-playhead-hit" tabIndex={-1} onPointerDown={handlePointerDown} />
+      )}
     </div>
   );
 }

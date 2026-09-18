@@ -3568,6 +3568,7 @@
   height: 100%;
   background: var(--bg-panel);
   overflow: hidden;
+  overscroll-behavior: none;
   outline: none;
   font-size: var(--text-xs);
   line-height: var(--leading-tight);
@@ -3814,12 +3815,14 @@
 .tl-track-area {
   flex: 1;
   overflow: auto;
+  overscroll-behavior: none;
   position: relative;
 }
 
 .tl-track-list-wrapper {
   position: relative;
   min-width: max-content;
+  overscroll-behavior: none;
 }
 
 /* ══ Track Row ═══════════════════════════════════════════ */
@@ -3828,6 +3831,7 @@
   display: flex;
   min-height: var(--track-height, 48px);
   min-width: max-content;
+  overscroll-behavior: none;
   transition: background var(--transition-fast);
   contain: layout paint;
 }
@@ -3853,16 +3857,16 @@
   user-select: none;
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: 10;
   overflow: hidden;
   transition:
     background var(--transition-fast),
     border-color var(--transition-fast);
 }
 
-/* Selected track header — accent left edge */
+/* Selected track header — accent left edge with solid opaque background */
 .tl-track-row > .tl-track-header.is-selected {
-  background: var(--accent-subtle);
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
   border-right-color: var(--accent-border);
 }
 
@@ -4033,11 +4037,14 @@
 /* ══ Track Body ══════════════════════════════════════════ */
 
 .tl-track-body {
-  flex: 1;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  flex-grow: 0;
   position: relative;
   height: 100%;
   border-bottom: 1px solid var(--tl-separator);
   overflow: hidden;
+  overscroll-behavior: none;
   cursor: default;
   transition: background var(--transition-fast);
 }
@@ -4329,6 +4336,15 @@
 
 .tl-v2-playhead.is-dragging {
   transition: none;
+}
+
+.tl-v2-playhead:not(.is-interactive) {
+  pointer-events: none;
+}
+
+.tl-v2-playhead:not(.is-interactive) .tl-v2-playhead-hit {
+  display: none;
+  pointer-events: none;
 }
 
 .tl-v2-playhead-hit {
@@ -4903,11 +4919,12 @@
 
 .tl-ruler-v3-track {
   position: relative;
-  width: 100%;
+  width: calc(100% - var(--track-header-width));
   margin-left: var(--track-header-width);
   background: var(--bg-surface-soft, #16161c);
   border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   overflow: hidden;
+  overscroll-behavior: none;
   user-select: none;
   cursor: ew-resize;
 }
