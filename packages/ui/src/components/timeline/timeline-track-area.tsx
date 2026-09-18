@@ -36,7 +36,20 @@ export function TimelineTrackAreaV2({
 
   const handleScroll = useCallback(
     (e: UIEvent<HTMLDivElement>) => {
-      onScrollHorizontal(e.currentTarget.scrollLeft);
+      const el = e.currentTarget;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      const sl = el.scrollLeft;
+      if (sl < 0) {
+        el.scrollLeft = 0;
+        onScrollHorizontal(0);
+        return;
+      }
+      if (sl > maxScroll) {
+        el.scrollLeft = maxScroll;
+        onScrollHorizontal(maxScroll);
+        return;
+      }
+      onScrollHorizontal(sl);
     },
     [onScrollHorizontal],
   );

@@ -114,13 +114,18 @@ export function TimelineLayout({
   );
 
   const handleTrackScroll = useCallback((scrollLeft: number) => {
-    syncScrollRef.current?.(scrollLeft);
-    setRulerScrollLeft(scrollLeft);
+    const clamped = Math.max(0, scrollLeft);
+    syncScrollRef.current?.(clamped);
+    setRulerScrollLeft(clamped);
   }, []);
 
   const handleRulerWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     if (trackAreaScrollRef.current) {
-      trackAreaScrollRef.current.scrollLeft += e.deltaX || e.deltaY;
+      const el = trackAreaScrollRef.current;
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      const delta = e.deltaX || e.deltaY;
+      const next = Math.max(0, Math.min(maxScroll, el.scrollLeft + delta));
+      el.scrollLeft = next;
     }
   }, []);
 

@@ -7,6 +7,7 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  overscroll-behavior: none;
   background: #1c1f26;
   color: #e8eaed;
 }
@@ -164,6 +165,7 @@
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  overscroll-behavior: none;
   background: #12141a;
 }
 
@@ -174,6 +176,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overscroll-behavior: none;
 }
 
 .timeline-demo-bar {
