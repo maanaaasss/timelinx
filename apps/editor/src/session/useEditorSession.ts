@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import { useMediaAssets } from '@timelinx/ui';
 import { EditorSession } from './EditorSession';
 import { createEditorEngine } from '../createEditorEngine';
+import { createDemoEngine } from '../createDemoEngine';
 
 export interface EditorSessionApi {
   /** The current engine instance (changes reference on project replacement). */
@@ -30,6 +31,7 @@ export interface EditorSessionApi {
  * URLs through `removeImportedAsset` when a project is replaced or the app
  * unmounts. The session is created exactly once and disposed on unmount.
  */
+
 export function useEditorSession(): EditorSessionApi {
   const mediaAssets = useMediaAssets();
 
@@ -39,22 +41,15 @@ export function useEditorSession(): EditorSessionApi {
   mediaAssetsRef.current = mediaAssets;
 
   const sessionRef = useRef<EditorSession<TimelineEngine> | null>(null);
-  if (sessionRef.current === null) {
+  if (sessionRef.current === null || sessionRef.current.isDisposed) {
     sessionRef.current = new EditorSession<TimelineEngine>({
-      createEngine: createEditorEngine,
+      createEngine: createDemoEngine,
       revokeAsset: (assetId) => {
         mediaAssetsRef.current.removeImportedAsset(assetId);
       },
     });
   }
   const session = sessionRef.current;
-
-  useEffect(() => {
-    return () => {
-      session.dispose();
-      sessionRef.current = null;
-    };
-  }, [session]);
 
   // Re-render on dirty / generation changes. The snapshot is a value-comparable
   // string so useSyncExternalStore's Object.is check is stable.
@@ -66,31 +61,51 @@ export function useEditorSession(): EditorSessionApi {
 
   const replaceEngine = useCallback(
     (factory?: () => TimelineEngine) => {
-      return session.replaceEngine(factory);
+      const s = sessionRef.current;
+      if (!s || s.isDisposed) {
+        sessionRef.current = new EditorSession<TimelineEngine>({
+          createEngine: factory ?? createDemoEngine,
+          revokeAsset: (assetId) => {
+            mediaAssetsRef.current.removeImportedAsset(assetId);
+          },
+        });
+        return sessionRef.current.getEngine();
+      }
+      return s.replaceEngine(factory);
     },
-    [session],
+    [],
   );
 
   const newProject = useCallback(() => {
-    session.replaceEngine();
-  }, [session]);
+    const s = sessionRef.current;
+    if (!s || s.isDisposed) {
+      sessionRef.current = new EditorSession<TimelineEngine>({
+        createEngine: createEditorEngine,
+        revokeAsset: (assetId) => {
+          mediaAssetsRef.current.removeImportedAsset(assetId);
+        },
+      });
+      return;
+    }
+    s.replaceEngine(createEditorEngine);
+  }, []);
 
   const markSaved = useCallback(() => {
-    session.markSaved();
-  }, [session]);
+    sessionRef.current?.markSaved();
+  }, []);
 
   const registerImportedAsset = useCallback(
     (assetId: string) => {
-      session.registerImportedAsset(assetId);
+      sessionRef.current?.registerImportedAsset(assetId);
     },
-    [session],
+    [],
   );
 
   const releaseImportedAsset = useCallback(
     (assetId: string) => {
-      session.releaseImportedAsset(assetId);
+      sessionRef.current?.releaseImportedAsset(assetId);
     },
-    [session],
+    [],
   );
 
   return {

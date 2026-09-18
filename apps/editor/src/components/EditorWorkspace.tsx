@@ -34,7 +34,7 @@ function WorkspaceBody() {
   const session = useEditorSession();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmNew, setConfirmNew] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
   const pushToast = useCallback((message: string) => {
     const id = Date.now() + Math.random();
