@@ -11,6 +11,8 @@ export interface EditorSessionApi {
   isDirty: boolean;
   /** Remount key that changes whenever the engine is replaced. */
   generation: number;
+  /** Replace the current project with a fresh engine or custom factory. */
+  replaceEngine: (factory?: () => TimelineEngine) => TimelineEngine;
   /** Replace the current project with a fresh blank engine. */
   newProject: () => void;
   /** Record the current state as the clean baseline (call after a save). */
@@ -62,6 +64,13 @@ export function useEditorSession(): EditorSessionApi {
     () => '0:0',
   );
 
+  const replaceEngine = useCallback(
+    (factory?: () => TimelineEngine) => {
+      return session.replaceEngine(factory);
+    },
+    [session],
+  );
+
   const newProject = useCallback(() => {
     session.replaceEngine();
   }, [session]);
@@ -88,6 +97,7 @@ export function useEditorSession(): EditorSessionApi {
     engine: session.getEngine(),
     isDirty: session.isDirty(),
     generation: session.getGeneration(),
+    replaceEngine,
     newProject,
     markSaved,
     registerImportedAsset,

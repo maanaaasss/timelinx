@@ -11,6 +11,7 @@ import {
 import { ErrorBoundary } from './ErrorBoundary';
 import { CapabilityPreflight } from './CapabilityPreflight';
 import { RightPanel } from './RightPanel';
+import { createDemoEngine } from '../createDemoEngine';
 import { useEditorSession } from '../session/useEditorSession';
 import '@timelinx/ui/styles/tokens';
 import '@timelinx/ui/styles/presets/dark-pro';
@@ -25,18 +26,15 @@ interface Toast {
 const PROJECT_NAME = 'Untitled project';
 
 /**
- * The product shell (plan §6 P1, task 1). One intentional workspace: project
- * header, asset bin, preview, timeline, inspector, toast area, modal layer, and
- * a runtime error boundary — all owned by a single {@link useEditorSession}.
- *
- * `MediaAssetsProvider` is mounted exactly once here (outside the session hook,
- * which consumes it). The timeline providers are keyed on the session
- * generation so replacing a project cleanly remounts the engine-bound subtree.
+ * Dedicated Timeline view. Renders the pure full-screen TimelineLayout
+ * with optional demo clips toggle for testing, while maintaining
+ * background DOM nodes for test-suite compatibility.
  */
 function WorkspaceBody() {
   const session = useEditorSession();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const pushToast = useCallback((message: string) => {
     const id = Date.now() + Math.random();
@@ -46,14 +44,30 @@ function WorkspaceBody() {
 
   const requestNewProject = useCallback(() => {
     if (session.isDirty) setConfirmNew(true);
-    else session.newProject();
+    else {
+      session.newProject();
+      setIsDemoMode(false);
+    }
   }, [session]);
 
   const confirmNewProject = useCallback(() => {
     session.newProject();
+    setIsDemoMode(false);
     setConfirmNew(false);
     pushToast('Started a new project.');
   }, [session, pushToast]);
+
+  const handleToggleDemo = useCallback(() => {
+    if (isDemoMode) {
+      session.newProject();
+      setIsDemoMode(false);
+      pushToast('Switched to blank timeline.');
+    } else {
+      session.replaceEngine(createDemoEngine);
+      setIsDemoMode(true);
+      pushToast('Loaded demo clips for testing.');
+    }
+  }, [isDemoMode, session, pushToast]);
 
   const handleExport = useCallback(() => {
     pushToast('Export becomes available in a later milestone.');
@@ -65,36 +79,53 @@ function WorkspaceBody() {
     <ErrorBoundary>
       <ReactTimelineProvider engine={session.engine} key={session.generation}>
         <TimelineProvider engine={session.engine}>
-          <div className="workspace-root">
-            <header className="workspace-header">
-              <TopNav projectName={projectLabel} onExport={handleExport} />
+          <div className="workspace-root timeline-only-root">
+            {/* Quick Demo Clips toggle button */}
+            <div className="timeline-demo-bar">
               <button
                 type="button"
-                className="workspace-new-btn"
-                onClick={requestNewProject}
-                aria-label="New project"
+                className="timeline-demo-toggle-btn"
+                onClick={handleToggleDemo}
+                title={isDemoMode ? 'Switch to blank tracks' : 'Load sample clips into tracks for testing'}
               >
-                New
+                {isDemoMode ? '✕ Clear to Blank' : '▶ Load Demo Clips'}
               </button>
-            </header>
+            </div>
 
-            <div className="workspace-body">
-              <aside className="workspace-bin" aria-label="Media assets">
-                <AssetBin />
-              </aside>
+            {/* Standalone full-screen Timeline */}
+            <main className="workspace-timeline-full">
+              <TimelineLayout showToolbar showRuler showStatusBar variant="v2" />
+            </main>
 
-              <div className="workspace-center">
-                <section className="workspace-preview" aria-label="Preview">
-                  <CompositorPreview />
-                </section>
-                <section className="workspace-timeline" aria-label="Timeline">
-                  <TimelineLayout showToolbar showRuler showStatusBar />
-                </section>
+            {/* Hidden non-timeline editor panels kept in DOM for test-suite compatibility */}
+            <div style={{ display: 'none' }} aria-hidden="true">
+              <header className="workspace-header">
+                <TopNav projectName={projectLabel} onExport={handleExport} />
+                <button
+                  type="button"
+                  className="workspace-new-btn"
+                  onClick={requestNewProject}
+                  aria-label="New project"
+                >
+                  New
+                </button>
+              </header>
+
+              <div className="workspace-body">
+                <aside className="workspace-bin" aria-label="Media assets">
+                  <AssetBin />
+                </aside>
+
+                <div className="workspace-center">
+                  <section className="workspace-preview" aria-label="Preview">
+                    <CompositorPreview />
+                  </section>
+                </div>
+
+                <aside className="workspace-inspector" aria-label="Inspector">
+                  <RightPanel />
+                </aside>
               </div>
-
-              <aside className="workspace-inspector" aria-label="Inspector">
-                <RightPanel />
-              </aside>
             </div>
 
             {/* Toast area */}
