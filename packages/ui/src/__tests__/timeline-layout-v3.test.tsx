@@ -176,6 +176,59 @@ describe('TimelineLayout V3', () => {
     expect(clips).toHaveLength(0);
   });
 
+  it('seeks from the ruler, not from a track lane or track playhead', () => {
+    const { engine } = createPopulatedEngine();
+    engine.seekTo(toFrame(100));
+
+    const { container } = render(
+      <TimelineProvider engine={engine} initialPpf={10}>
+        <TimelineLayoutV3 />
+      </TimelineProvider>,
+    );
+
+    // Clicking track lane should NOT seek
+    fireEvent.click(container.querySelector('.tl-track-body')!);
+    expect(engine.getPlayheadFrame()).toBe(100);
+
+    // Clicking track playhead line should NOT seek
+    const trackPlayhead = container.querySelector('.tl-v2-playhead')!;
+    expect(trackPlayhead).toBeInTheDocument();
+    fireEvent.pointerDown(trackPlayhead, { clientX: 50 });
+    expect(engine.getPlayheadFrame()).toBe(100);
+
+    // Clicking ruler track DOES seek
+    fireEvent.pointerDown(container.querySelector('.tl-ruler-v3-track')!, { clientX: 0 });
+    expect(engine.getPlayheadFrame()).toBe(0);
+  });
+
+  it('renders only one playhead line and no duplicate line from the ruler in layout', () => {
+    const { engine } = createPopulatedEngine();
+
+    const { container } = render(
+      <TimelineProvider engine={engine} initialPpf={10}>
+        <TimelineLayoutV3 />
+      </TimelineProvider>,
+    );
+
+    // Track playhead line exists
+    expect(container.querySelector('.tl-v2-playhead')).toBeInTheDocument();
+    // Ruler playhead line should NOT exist in layout (only ruler handle)
+    expect(container.querySelector('.tl-ruler-v3-playhead-line')).not.toBeInTheDocument();
+  });
+
+  it('marks the selected clip’s track header as selected', () => {
+    const { engine } = createPopulatedEngine();
+    engine.setSelectedClipIds(new Set(['clip-1']));
+
+    const { container } = render(
+      <TimelineProvider engine={engine} initialPpf={10}>
+        <TimelineLayoutV3 />
+      </TimelineProvider>,
+    );
+
+    expect(container.querySelector('.tl-track-header')).toHaveClass('is-selected');
+  });
+
   it('handles transport: play/pause, skip to start, and skip to end', () => {
     const { engine } = createPopulatedEngine();
     engine.seekTo(toFrame(100));

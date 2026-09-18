@@ -11,7 +11,6 @@ export interface TrackListProps {
   totalWidth: number;
   selectedClipIds: ReadonlySet<string>;
   engine: TimelineEngine;
-  onSeek: (frame: number) => void;
   heights?: Record<string, number>;
   onHeightChange?: (trackId: string, height: number) => void;
 }
@@ -24,7 +23,6 @@ export function TrackList({
   totalWidth,
   selectedClipIds,
   engine,
-  onSeek,
   heights,
   onHeightChange,
 }: TrackListProps) {
@@ -57,7 +55,6 @@ export function TrackList({
           totalWidth={totalWidth}
           selectedClipIds={selectedClipIds}
           engine={engine}
-          onSeek={onSeek}
           height={heights?.[track.id]}
           onHeightChange={onHeightChange}
         />

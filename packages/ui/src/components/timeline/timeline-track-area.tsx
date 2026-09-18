@@ -12,10 +12,10 @@ export interface TimelineTrackAreaV2Props {
   duration: number;
   selectedClipIds: ReadonlySet<string>;
   engine: TimelineEngine;
-  onSeek: (frame: number) => void;
   onScrollHorizontal: (scrollLeft: number) => void;
   heights?: Record<string, number>;
   onHeightChange?: (trackId: string, height: number) => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function TimelineTrackAreaV2({
@@ -26,12 +26,13 @@ export function TimelineTrackAreaV2({
   duration,
   selectedClipIds,
   engine,
-  onSeek,
   onScrollHorizontal,
   heights,
   onHeightChange,
+  scrollContainerRef,
 }: TimelineTrackAreaV2Props) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const scrollRef = scrollContainerRef ?? internalRef;
 
   const handleScroll = useCallback(
     (e: UIEvent<HTMLDivElement>) => {
@@ -53,11 +54,10 @@ export function TimelineTrackAreaV2({
           totalWidth={totalWidth}
           selectedClipIds={selectedClipIds}
           engine={engine}
-          onSeek={onSeek}
           heights={heights}
           onHeightChange={onHeightChange}
         />
-        <Playhead engine={engine} ppf={ppf} />
+        <Playhead engine={engine} ppf={ppf} interactive={false} />
       </div>
     </div>
   );

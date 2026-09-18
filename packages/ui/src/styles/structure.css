@@ -3853,16 +3853,16 @@
   user-select: none;
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: 10;
   overflow: hidden;
   transition:
     background var(--transition-fast),
     border-color var(--transition-fast);
 }
 
-/* Selected track header — accent left edge */
+/* Selected track header — accent left edge with solid opaque background */
 .tl-track-row > .tl-track-header.is-selected {
-  background: var(--accent-subtle);
+  background: color-mix(in srgb, var(--accent-primary) 10%, var(--bg-surface-soft));
   border-right-color: var(--accent-border);
 }
 
@@ -4329,6 +4329,15 @@
 
 .tl-v2-playhead.is-dragging {
   transition: none;
+}
+
+.tl-v2-playhead:not(.is-interactive) {
+  pointer-events: none;
+}
+
+.tl-v2-playhead:not(.is-interactive) .tl-v2-playhead-hit {
+  display: none;
+  pointer-events: none;
 }
 
 .tl-v2-playhead-hit {
@@ -4903,7 +4912,7 @@
 
 .tl-ruler-v3-track {
   position: relative;
-  width: 100%;
+  width: calc(100% - var(--track-header-width));
   margin-left: var(--track-header-width);
   background: var(--bg-surface-soft, #16161c);
   border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));

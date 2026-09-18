@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { Track } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
 import { cn } from '../../shared/cn';
@@ -18,11 +18,12 @@ export interface TrackHeaderProps {
   track: Track;
   engine: TimelineEngine;
   isSelected?: boolean;
-  /** Current resolved height — passed through from TrackRow for context. */
   height?: number;
-  /** Called by resize gesture; propagates up to TimelineLayout → engine. */
   onHeightChange?: (trackId: string, height: number) => void;
 }
+
+const MIN_TRACK_HEIGHT = 32;
+const MAX_TRACK_HEIGHT = 300;
 
 const trackTypeIcon: Record<string, typeof Video> = {
   video: Video,
@@ -32,11 +33,10 @@ const trackTypeIcon: Record<string, typeof Video> = {
 const HEADER_ICON_SIZE = 11;
 const HEADER_BTN_ICON_SIZE = 11;
 
-export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
+export function TrackHeader({ track, engine, isSelected, height, onHeightChange }: TrackHeaderProps) {
   const TypeIcon = trackTypeIcon[track.type] ?? Video;
+  const resizeRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
-  // Memoized so button onClick handlers don't get new function references
-  // every render when unrelated state changes.
   const dispatch = useCallback(
     (label: string, op: any) => {
       engine.dispatch({
@@ -48,6 +48,31 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
     },
     [engine],
   );
+
+  const handleResizePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!onHeightChange) return;
+      e.preventDefault();
+      e.stopPropagation();
+      resizeRef.current = { startY: e.clientY, startHeight: height ?? track.height };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    },
+    [onHeightChange, height, track.height],
+  );
+
+  const handleResizePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!resizeRef.current || !onHeightChange) return;
+      const delta = e.clientY - resizeRef.current.startY;
+      const next = Math.min(MAX_TRACK_HEIGHT, Math.max(MIN_TRACK_HEIGHT, resizeRef.current.startHeight + delta));
+      onHeightChange(track.id, next);
+    },
+    [onHeightChange, track.id],
+  );
+
+  const handleResizePointerUp = useCallback(() => {
+    resizeRef.current = null;
+  }, []);
 
   return (
     <div className={cn('tl-track-header', isSelected && 'is-selected')}>
@@ -122,6 +147,14 @@ export function TrackHeader({ track, engine, isSelected }: TrackHeaderProps) {
           )}
         </button>
       </div>
+      {onHeightChange && (
+        <div
+          className="tl-track-header-resize"
+          onPointerDown={handleResizePointerDown}
+          onPointerMove={handleResizePointerMove}
+          onPointerUp={handleResizePointerUp}
+        />
+      )}
     </div>
   );
 }

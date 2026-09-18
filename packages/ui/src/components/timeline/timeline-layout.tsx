@@ -99,9 +99,11 @@ export function TimelineLayout({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const rulerContainerRef = useRef<HTMLDivElement>(null);
+  const trackAreaScrollRef = useRef<HTMLDivElement>(null);
+  const syncScrollRef = useRef<((scrollLeft: number) => void) | null>(null);
 
   const tracks = timeline.tracks;
-  const allClips = tracks.flatMap((t: any) => t.clips);
+  const allClips = tracks.flatMap((t) => t.clips);
 
   const handleToolChange = useCallback(
     (tool: ToolId) => {
@@ -112,7 +114,14 @@ export function TimelineLayout({
   );
 
   const handleTrackScroll = useCallback((scrollLeft: number) => {
+    syncScrollRef.current?.(scrollLeft);
     setRulerScrollLeft(scrollLeft);
+  }, []);
+
+  const handleRulerWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    if (trackAreaScrollRef.current) {
+      trackAreaScrollRef.current.scrollLeft += e.deltaX || e.deltaY;
+    }
   }, []);
 
   const handleSeek = useCallback(
@@ -182,10 +191,12 @@ export function TimelineLayout({
         timestamp: Date.now(),
         operations: [{ type: 'SET_TRACK_HEIGHT', trackId: toTrackId(trackId), height }],
       });
-      setTrackHeights((prev) => {
-        const next = { ...prev };
-        delete next[trackId];
-        return next;
+      queueMicrotask(() => {
+        setTrackHeights((prev) => {
+          const next = { ...prev };
+          delete next[trackId];
+          return next;
+        });
       });
     },
     [engine],
@@ -408,6 +419,8 @@ export function TimelineLayout({
             containerRef={rulerContainerRef}
             inPoint={timeline.inPoint}
             outPoint={timeline.outPoint}
+            syncScrollRef={syncScrollRef}
+            onWheel={handleRulerWheel}
           />
         ) : (
           <div className="tl-ruler-wrapper">
@@ -439,10 +452,10 @@ export function TimelineLayout({
           duration={timeline.duration}
           selectedClipIds={selectedClipIds}
           engine={engine}
-          onSeek={handleSeek}
           onScrollHorizontal={handleTrackScroll}
           heights={trackHeights}
           onHeightChange={handleHeightChange}
+          scrollContainerRef={trackAreaScrollRef}
         />
       )}
 

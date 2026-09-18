@@ -1,4 +1,4 @@
-import { useRef, useCallback, type MouseEvent } from 'react';
+import { useRef } from 'react';
 import type { Track, Clip as ClipType } from '@timelinx/core';
 import type { TimelineEngine } from '@timelinx/react';
 import { useActiveToolId } from '@timelinx/react';
@@ -14,7 +14,6 @@ export interface TrackBodyProps {
   totalWidth: number;
   selectedClipIds: ReadonlySet<string>;
   engine: TimelineEngine;
-  onSeek: (frame: number) => void;
 }
 
 function getClipType(clip: ClipType, tracks: readonly Track[]): 'video' | 'audio' | 'text' {
@@ -33,7 +32,6 @@ export function TrackBody({
   totalWidth,
   selectedClipIds,
   engine,
-  onSeek,
 }: TrackBodyProps) {
   const bodyRef = useRef<HTMLDivElement>(null);
   const gridIntervalPx = ppf * fps;
@@ -47,18 +45,6 @@ export function TrackBody({
     (a, b) => (a.timelineStart as number) - (b.timelineStart as number),
   );
 
-  const handleClick = useCallback(
-    (e: MouseEvent) => {
-      const el = bodyRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left + el.scrollLeft;
-      const frame = Math.max(0, Math.round(x / ppf));
-      onSeek(frame);
-    },
-    [ppf, onSeek],
-  );
-
   const isEmpty = clips.length === 0;
 
   return (
@@ -67,7 +53,6 @@ export function TrackBody({
       className="tl-track-body"
       data-tool={activeToolId}
       style={{ width: totalWidth } as React.CSSProperties}
-      onClick={handleClick}
     >
       <div
         className="tl-track-body-grid"

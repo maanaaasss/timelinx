@@ -54,6 +54,41 @@ export function TimelineRulerV2({
     document.addEventListener('pointerup', handleUp);
   }, [containerRef, scrollLeft, ppf, duration, onSeek]);
 
+  const handleRulerPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if ((e.target as HTMLElement).closest('.tl-ruler-playhead-wrapper')) return;
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const getFrame = (clientX: number) => {
+        const x = clientX - rect.left + scrollLeft;
+        return Math.max(0, Math.min(duration, Math.round(x / ppf)));
+      };
+      const target = e.currentTarget as HTMLElement;
+      const pointerId = e.pointerId;
+      try {
+        target.setPointerCapture(pointerId);
+      } catch {}
+      onSeek(getFrame(e.clientX));
+
+      const handlePointerMove = (ev: PointerEvent) => {
+        onSeek(getFrame(ev.clientX));
+      };
+      const handlePointerUp = () => {
+        try {
+          target.releasePointerCapture(pointerId);
+        } catch {}
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+        window.removeEventListener('pointercancel', handlePointerUp);
+      };
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
+    },
+    [containerRef, scrollLeft, duration, ppf, onSeek],
+  );
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -161,7 +196,7 @@ export function TimelineRulerV2({
   };
 
   return (
-    <div ref={containerRef} className="tl-ruler-canvas">
+    <div ref={containerRef} className="tl-ruler-canvas" onPointerDown={handleRulerPointerDown}>
       <div style={wrapperStyle}>
         <canvas
           ref={canvasRef}
