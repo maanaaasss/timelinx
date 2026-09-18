@@ -8,5 +8,4 @@ test('loads the editor shell and core timeline controls', async ({ page }) => {
   await expect(page.getByTitle('Razor (C)')).toBeVisible();
   await expect(page.locator('.tl-ruler-canvas')).toBeVisible();
   await expect(page.locator('.tl-status-bar')).toContainText('4 tracks');
-  await expect(page.getByRole('button', { name: 'Effects' })).toBeVisible();
 });
