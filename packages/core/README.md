@@ -2,6 +2,8 @@
 
 Headless TypeScript engine for professional NLE timeline editing. Framework-agnostic, fully tested, zero dependencies.
 
+See the [High-Level Design (HLD) Document](../../docs/ARCHITECTURE.md) for the complete architectural specification and system topology.
+
 ## Install
 
 ```bash
