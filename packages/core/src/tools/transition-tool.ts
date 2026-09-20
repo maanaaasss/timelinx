@@ -79,7 +79,7 @@ export class TransitionTool implements ITool {
   }
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
-    return ['ClipStart', 'ClipEnd', 'Marker', 'BeatGrid'];
+    return ['ClipStart', 'ClipEnd', 'Marker'];
   }
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {

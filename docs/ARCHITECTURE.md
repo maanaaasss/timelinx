@@ -59,10 +59,11 @@ The core package contains **zero DOM dependencies, zero React imports, and zero 
  │              │                                        │                │
  │              ▼                                        ▼                │
  │   ┌───────────────────────┐              ┌─────────────────────────┐   │
- │   │   History & Checkpts  │              │  Interchange & Media    │   │
- │   │  • Pure History API   │              │  • OTIO, EDL, AAF, FCP  │   │
- │   │  • HistoryStack       │              │  • SRT/VTT Subtitles    │   │
- │   │  • Op Compressor      │              │  • Playhead / Pipeline  │   │
+ │   │   History & Checkpts  │              │  Serialization & Media  │   │
+ │   │  • Pure History API   │              │  • Native JSON Serial.  │   │
+ │   │  • HistoryStack       │              │  • Schema Migrator v1/v2│   │
+ │   │  • Op Compressor      │              │  • SRT/VTT Subtitles    │   │
+ │   │                       │              │  • Playhead / Pipeline  │   │
  │   └───────────────────────┘              └─────────────────────────┘   │
  └────────────────────────────────────────────────────────────────────────┘
 ```
@@ -86,7 +87,7 @@ The core package contains **zero DOM dependencies, zero React imports, and zero 
 ```
 @timelinx/core
 ├── .                    (Root: public-api.ts) -> Types, Dispatcher, Invariants, History, Tools
-├── /serialization       (serialization.ts)    -> OTIO, CMX 3600 EDL, AAF, FCPXML, JSON
+├── /serialization       (serialization.ts)    -> Native JSON serializer, version migration, asset remapping
 ├── /media               (media.ts)            -> SRT/VTT parser, Marker search, Thumbnail queue, Worker types
 └── /internal            (internal.ts)         -> Low-level shims, test doubles, internals
 ```
@@ -132,7 +133,7 @@ graph TD
         subgraph PipelineSubsystem["Media & Pipeline Contracts"]
             PLAYHEAD["PlayheadController & Clock"]
             PIPETYPE["Pipeline Interfaces"]
-            INTERCHANGE["OTIO / EDL / AAF / FCPXML"]
+            INTERCHANGE["Native JSON & Migrations"]
         end
     end
 
@@ -192,7 +193,6 @@ TimelineState
 │   │   ├── clips: Clip[] (ALWAYS sorted ascending by timelineStart)
 │   │   └── captions: Caption[] (sorted ascending by startFrame)
 │   ├── markers: Marker[] (point or range markers)
-│   ├── beatGrid: BeatGrid | null (bpm, timeSignature, offset)
 │   ├── inPoint: TimelineFrame | null
 │   ├── outPoint: TimelineFrame | null
 │   ├── trackGroups: TrackGroup[]
@@ -359,8 +359,6 @@ Operations are discriminated unions adhering to `OperationPrimitive`:
 | | `DELETE_MARKER` | `markerId: MarkerId` | Deletes marker |
 | **In/Out** | `SET_IN_POINT` | `frame: TimelineFrame \| null` | Sets editorial mark-in boundary |
 | | `SET_OUT_POINT` | `frame: TimelineFrame \| null` | Sets editorial mark-out boundary |
-| **Beat Grid**| `ADD_BEAT_GRID` | `beatGrid: BeatGrid` | Attaches BPM and musical meter grid |
-| | `REMOVE_BEAT_GRID`| _none_ | Clears beat grid |
 | **Captions** | `ADD_CAPTION` | `caption: Caption, trackId` | Adds timed subtitle/caption segment |
 | | `EDIT_CAPTION` | `captionId, trackId, text?, style?` | Modifies caption text or visual styling |
 | | `DELETE_CAPTION` | `captionId, trackId` | Removes caption segment |
@@ -644,7 +642,6 @@ type SnapPoint = {
 | **ClipStart** | **80** | In-point head of any clip across any track |
 | **ClipEnd** | **80** | Out-point tail of any clip across any track |
 | **Playhead** | **70** | Current active playback playhead position |
-| **BeatGrid** | **50** | Musical tempo beat and bar markers |
 
 ### 9.2 Binary Search Nearest Resolution
 
@@ -718,20 +715,20 @@ type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
 
 ---
 
-## 11. Interchange & Serialization Architecture
+## 11. Serialization & Persistence Architecture
 
-`@timelinx/core` provides comprehensive import and export capabilities for industry interchange standards:
+`@timelinx/core` provides high-performance, deterministic native JSON serialization and schema version migrations:
 
 ```
                             ┌───────────────────┐
                             │   TimelineState   │
                             └─────────┬─────────┘
                                       │
-          ┌──────────────┬────────────┼────────────┬──────────────┐
-          ▼              ▼            ▼            ▼              ▼
-     Native JSON        OTIO         EDL          AAF           FCPXML
-     Serializer      OpenTimeline  CMX 3600    Avid Media      Apple FCP
-     (v2 Schema)     Format v1.0   Broadcast   Composer        XML v1.10
+           ┌──────────────────────────┴──────────────────────────┐
+           ▼                                                     ▼
+      Native JSON                                         SRT / WebVTT
+      Serializer & Migrations                             Subtitle Parsers
+      (v1 → v2 Forward Migration)                         (media.ts)
 ```
 
 ### 11.1 Native JSON & Schema Migrations (`migrator.ts`)
@@ -742,20 +739,11 @@ type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
   $$\text{v1} \xrightarrow{\text{migrateV1ToV2}} \text{v2} \xrightarrow{\text{validate}} \text{TimelineState}$$
   Future schema downgrades are detected and rejected to prevent silent data corruption.
 
-### 11.2 OpenTimelineIO (OTIO) Interchange
+### 11.2 Subtitle Parsers (`media.ts`)
 
-Full bidirectional support for Pixar's OpenTimelineIO standard:
-- `exportToOTIO(state)`: Serializes tracks, clips, gap items, markers, and media references to standard OTIO JSON schema.
-- `importFromOTIO(doc)`: Ingests external OTIO sequences, mapping OTIO rational time bases and tracks into `TimelineState`.
+- Pure regex-based parsers for SubRip (`.srt`) and WebVTT (`.vtt`) subtitles, converting cue markers into `ADD_CAPTION` primitives with zero external runtime dependencies.
 
-### 11.3 Broadcast & NLE Formats
-
-- **CMX 3600 EDL (`exportToEDL`)**: Standard broadcast edit decision lists with source reel mapping and drop-frame timecodes.
-- **AAF Export (`exportToAAF`)**: Generates XML-based Advanced Authoring Format representations for ingest into Avid Media Composer and Pro Tools.
-- **FCPXML 1.10 (`exportToFCPXML`)**: Exports modern Final Cut Pro XML sequence definitions including asset formats, spine tracks, and audio channel assignments.
-- **Subtitle Parsers (`media.ts`)**: Pure regex-based parsers for SubRip (`.srt`) and WebVTT (`.vtt`) subtitles, converting cue markers into `ADD_CAPTION` primitives.
-
-### 11.4 Asset Relinking & Offline Detection
+### 11.3 Asset Relinking & Offline Detection
 
 - `remapAssetPaths(state, callback)`: Batch updates file paths when assets are moved to new storage volumes.
 - `findOfflineAssets(state)`: Scans the project and returns a list of assets whose status is `'offline'` or `'missing'`.

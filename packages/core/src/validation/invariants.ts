@@ -104,8 +104,6 @@ export function checkInvariants(state: TimelineState): InvariantViolation[] {
   checkMarkerBounds(state, violations);
   // —— Phase 3: In/Out points —————————————————————————————————────────—————
   checkInOutPoints(state, violations);
-  // —— Phase 3: Beat grid ——————————————————————————————————————————————————
-  checkBeatGrid(state, violations);
   // —— Phase 4 Step 3: Link groups, Track groups —————————————————────────——
   checkLinkGroups(state, violations);
   checkTrackGroups(state, violations);
@@ -463,29 +461,6 @@ function checkInOutPoints(state: TimelineState, violations: InvariantViolation[]
       type: 'IN_OUT_INVALID',
       entityId: 'timeline',
       message: `In point (${inPt}) must be < out point (${outPt}).`,
-    });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Phase 3: Beat grid
-// ---------------------------------------------------------------------------
-
-function checkBeatGrid(state: TimelineState, violations: InvariantViolation[]): void {
-  const bg = state.timeline.beatGrid;
-  if (bg === null) return;
-  if (Number.isNaN(bg.bpm) || bg.bpm <= 0) {
-    violations.push({
-      type: 'BEAT_GRID_INVALID',
-      entityId: 'timeline',
-      message: `Beat grid bpm (${bg.bpm}) must be > 0.`,
-    });
-  }
-  if (bg.timeSignature[0] <= 0 || bg.timeSignature[1] <= 0) {
-    violations.push({
-      type: 'BEAT_GRID_INVALID',
-      entityId: 'timeline',
-      message: `Beat grid timeSignature must be positive.`,
     });
   }
 }

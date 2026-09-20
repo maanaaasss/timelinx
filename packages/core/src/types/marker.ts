@@ -48,12 +48,3 @@ export type Marker =
       readonly clipId?: ClipId;
     };
 
-// ---------------------------------------------------------------------------
-// BeatGrid — timeline-level, generates snap points
-// ---------------------------------------------------------------------------
-
-export type BeatGrid = {
-  readonly bpm: number;
-  readonly timeSignature: readonly [number, number];
-  readonly offset: TimelineFrame;
-};

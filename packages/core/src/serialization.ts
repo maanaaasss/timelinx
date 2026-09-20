@@ -1,13 +1,11 @@
 /**
- * @timelinx/core — Serialization & Export
+ * @timelinx/core — Serialization & Storage
  *
- * Sub-path export for timeline serialization and interchange formats.
+ * Sub-path export for timeline serialization, deserialization, and asset path remapping.
  *
  * @example
  * ```ts
  * import { serializeTimeline, deserializeTimeline } from '@timelinx/core/serialization';
- * import { exportToOTIO } from '@timelinx/core/serialization';
- * import { exportToEDL } from '@timelinx/core/serialization';
  * ```
  */
 
@@ -20,21 +18,3 @@ export {
   findOfflineAssets,
 } from './engine/serializer';
 export type { AssetRemapCallback, OfflineAsset } from './engine/serializer';
-
-// ── OTIO Interchange ───────────────────────────────────────────────────────
-export { exportToOTIO } from './engine/otio-export';
-export { importFromOTIO } from './engine/otio-import';
-export type { OTIODocument } from './engine/otio-export';
-export type { OTIOImportOptions } from './engine/otio-import';
-
-// ── EDL Export (CMX 3600) ──────────────────────────────────────────────────
-export { exportToEDL, frameToTimecode, reelName } from './engine/edl-export';
-export type { EDLExportOptions } from './engine/edl-export';
-
-// ── AAF Export ──────────────────────────────────────────────────────────────
-export { exportToAAF } from './engine/aaf-export';
-export type { AAFExportOptions } from './engine/aaf-export';
-
-// ── FCP XML Export ──────────────────────────────────────────────────────────
-export { exportToFCPXML, toFCPTime } from './engine/fcpxml-export';
-export type { FCPXMLExportOptions } from './engine/fcpxml-export';

@@ -402,44 +402,4 @@ describe('Coverage: validators.ts — additional validator paths', () => {
     expect(result.accepted).toBe(true);
   });
 
-  it('REMOVE_BEAT_GRID succeeds', () => {
-    const state = makeState();
-    // First add a beat grid
-    const stateWithBeatGrid = dispatch(
-      state,
-      makeTx('Add Beat', [
-        {
-          type: 'ADD_BEAT_GRID',
-          beatGrid: { bpm: 120, timeSignature: [4, 4], offset: toFrame(0) },
-        },
-      ]),
-    );
-    expect(stateWithBeatGrid.accepted).toBe(true);
-    if (!stateWithBeatGrid.accepted) return;
-
-    // Remove it
-    const result = dispatch(
-      stateWithBeatGrid.nextState,
-      makeTx('Remove Beat', [
-        {
-          type: 'REMOVE_BEAT_GRID',
-        },
-      ]),
-    );
-    expect(result.accepted).toBe(true);
-  });
-
-  it('REMOVE_BEAT_GRID when none exists succeeds', () => {
-    const state = makeState();
-    const result = dispatch(
-      state,
-      makeTx('Remove Beat', [
-        {
-          type: 'REMOVE_BEAT_GRID',
-        },
-      ]),
-    );
-    // Should succeed even if no beat grid exists
-    expect(result.accepted).toBe(true);
-  });
 });
