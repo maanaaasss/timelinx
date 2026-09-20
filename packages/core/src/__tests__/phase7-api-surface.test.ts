@@ -57,11 +57,8 @@ describe('Phase 7 — Public API surface', () => {
   it('serialization sub-path exports are defined', () => {
     expect(typeof Serialization.serializeTimeline).toBe('function');
     expect(typeof Serialization.deserializeTimeline).toBe('function');
-    expect(typeof Serialization.exportToOTIO).toBe('function');
-    expect(typeof Serialization.importFromOTIO).toBe('function');
-    expect(typeof Serialization.exportToEDL).toBe('function');
-    expect(typeof Serialization.exportToAAF).toBe('function');
-    expect(typeof Serialization.exportToFCPXML).toBe('function');
+    expect(typeof Serialization.remapAssetPaths).toBe('function');
+    expect(typeof Serialization.findOfflineAssets).toBe('function');
   });
 
   it('media sub-path exports are defined', () => {

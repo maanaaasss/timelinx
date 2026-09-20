@@ -1,10 +1,10 @@
 /**
- * TIMELINE MODEL — Phase 0 + Phase 3
+ * TIMELINE MODEL — Core
  */
 
 import type { TimelineFrame, FrameRate, Timecode } from './frame';
 import type { Track } from './track';
-import type { Marker, BeatGrid } from './marker';
+import type { Marker } from './marker';
 import type { TrackGroup } from './track-group';
 import type { LinkGroup } from './link-group';
 
@@ -13,8 +13,6 @@ import type { LinkGroup } from './link-group';
 // ---------------------------------------------------------------------------
 
 export type SequenceSettings = {
-  readonly pixelAspectRatio: number;
-  readonly fieldOrder: 'progressive' | 'upper' | 'lower';
   readonly colorSpace: string;
   readonly audioSampleRate: number;
   readonly audioChannelCount: number;
@@ -37,12 +35,9 @@ export type Timeline = {
    * Use this to detect stale references without deep equality checks.
    */
   readonly version: number;
-  // — Phase 3 —
   readonly markers: readonly Marker[];
-  readonly beatGrid: BeatGrid | null;
   readonly inPoint: TimelineFrame | null;
   readonly outPoint: TimelineFrame | null;
-  // — Phase 4 —
   readonly trackGroups?: readonly TrackGroup[];
   readonly linkGroups?: readonly LinkGroup[];
 };
@@ -52,8 +47,6 @@ export type Timeline = {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_SEQUENCE_SETTINGS: SequenceSettings = {
-  pixelAspectRatio: 1,
-  fieldOrder: 'progressive',
   colorSpace: 'sRGB',
   audioSampleRate: 48000,
   audioChannelCount: 2,
@@ -68,7 +61,6 @@ export function createTimeline(params: {
   tracks?: readonly Track[];
   sequenceSettings?: Partial<SequenceSettings>;
   markers?: readonly Marker[];
-  beatGrid?: BeatGrid | null;
   inPoint?: TimelineFrame | null;
   outPoint?: TimelineFrame | null;
   trackGroups?: readonly TrackGroup[];
@@ -84,7 +76,6 @@ export function createTimeline(params: {
     sequenceSettings: { ...DEFAULT_SEQUENCE_SETTINGS, ...params.sequenceSettings },
     version: 0,
     markers: params.markers ?? [],
-    beatGrid: params.beatGrid ?? null,
     inPoint: params.inPoint ?? null,
     outPoint: params.outPoint ?? null,
     ...(params.trackGroups !== undefined && { trackGroups: params.trackGroups }),

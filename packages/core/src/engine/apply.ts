@@ -290,14 +290,6 @@ export function applyOperation(state: TimelineState, op: OperationPrimitive): Ti
       return { ...state, timeline: { ...state.timeline, outPoint: op.frame } };
     }
 
-    case 'ADD_BEAT_GRID': {
-      return { ...state, timeline: { ...state.timeline, beatGrid: op.beatGrid } };
-    }
-
-    case 'REMOVE_BEAT_GRID': {
-      return { ...state, timeline: { ...state.timeline, beatGrid: null } };
-    }
-
     case 'INSERT_GENERATOR': {
       const track = state.timeline.tracks.find((t) => t.id === op.trackId);
       if (!track) return state;

@@ -16,7 +16,7 @@ For the complete, authoritative High-Level Design (HLD) document, please refer t
 5. **Branded Nominals**: Compile-time branded IDs (`ClipId`, `TrackId`, `AssetId`, `TimelineFrame`) prevent domain type errors.
 6. **Subpath Exports**:
    - `@timelinx/core` (`public-api.ts`) — Engine, Dispatcher, Invariants, Tools, History.
-   - `@timelinx/core/serialization` (`serialization.ts`) — JSON, OTIO, EDL, AAF, FCPXML.
+   - `@timelinx/core/serialization` (`serialization.ts`) — Native JSON serialization, version migration, and asset path remapping.
    - `@timelinx/core/media` (`media.ts`) — Subtitle parsers, Marker search, Thumbnail queue, Worker contracts.
    - `@timelinx/core/internal` (`internal.ts`) — Engine internals.
 

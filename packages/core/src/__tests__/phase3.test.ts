@@ -103,10 +103,9 @@ describe('Phase 3 — IDs and factories', () => {
 // ── 2. Timeline/Track defaults ───────────────────────────────────────────────
 
 describe('Phase 3 — createTimeline/createTrack defaults', () => {
-  it('createTimeline without Phase 3 params has markers=[], beatGrid=null, in/out=null', () => {
+  it('createTimeline without Phase 3 params has markers=[], in/out=null', () => {
     const tl = createTimeline({ id: 'tl', name: 'T', fps: 24, duration: toFrame(100) });
     expect(tl.markers).toEqual([]);
-    expect(tl.beatGrid).toBeNull();
     expect(tl.inPoint).toBeNull();
     expect(tl.outPoint).toBeNull();
   });
@@ -296,45 +295,6 @@ describe('Phase 3 — SET_IN_POINT / SET_OUT_POINT', () => {
   });
 });
 
-// ── 7. ADD_BEAT_GRID / REMOVE_BEAT_GRID ─────────────────────────────────────
-
-describe('Phase 3 — ADD_BEAT_GRID / REMOVE_BEAT_GRID', () => {
-  it('ADD_BEAT_GRID sets timeline.beatGrid', () => {
-    const state = makeBaseState();
-    const beatGrid = { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) };
-    const next = applyOperation(state, { type: 'ADD_BEAT_GRID', beatGrid });
-    expect(next.timeline.beatGrid).toEqual(beatGrid);
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('REMOVE_BEAT_GRID sets beatGrid to null', () => {
-    const state = makeBaseState();
-    const beatGrid = { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) };
-    let next = applyOperation(state, { type: 'ADD_BEAT_GRID', beatGrid });
-    next = applyOperation(next, { type: 'REMOVE_BEAT_GRID' });
-    expect(next.timeline.beatGrid).toBeNull();
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('dispatch ADD_BEAT_GRID when one exists returns BEAT_GRID_EXISTS', () => {
-    const state = makeBaseState();
-    const beatGrid = { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) };
-    const tx = makeTx('BG', [
-      { type: 'ADD_BEAT_GRID', beatGrid },
-      { type: 'ADD_BEAT_GRID', beatGrid: { ...beatGrid, bpm: 90 } },
-    ]);
-    const result = dispatch(state, tx);
-    expect(result.accepted).toBe(false);
-    if (!result.accepted) expect(result.reason).toBe('BEAT_GRID_EXISTS');
-  });
-
-  it('REMOVE_BEAT_GRID when already null is idempotent (no error)', () => {
-    const state = makeBaseState();
-    const result = dispatch(state, makeTx('Remove BG', [{ type: 'REMOVE_BEAT_GRID' }]));
-    expect(result.accepted).toBe(true);
-    if (result.accepted) expect(checkInvariants(result.nextState)).toEqual([]);
-  });
-});
 
 // ── 9. INSERT_GENERATOR ─────────────────────────────────────────────────────
 
@@ -685,17 +645,6 @@ describe('Phase 3 — IN_OUT_INVALID', () => {
   });
 });
 
-describe('Phase 3 — BEAT_GRID_INVALID', () => {
-  it('beatGrid.bpm <= 0 violates', () => {
-    const state = makeBaseState();
-    const next = applyOperation(state, {
-      type: 'ADD_BEAT_GRID',
-      beatGrid: { bpm: 0, timeSignature: [4, 4], offset: toFrame(0) },
-    });
-    const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'BEAT_GRID_INVALID')).toBe(true);
-  });
-});
 
 describe('Phase 3 — CAPTION_OUT_OF_BOUNDS', () => {
   it('caption endFrame > timeline.duration violates', () => {
@@ -818,7 +767,7 @@ describe('Phase 3 — dispatch mixed Phase 3 ops', () => {
 // ── 15. Backward compat ─────────────────────────────────────────────────────
 
 describe('Phase 3 — backward compat', () => {
-  it('checkInvariants on state with no markers/captions/beatGrid returns []', () => {
+  it('checkInvariants on state with no markers/captions returns []', () => {
     const state = makeBaseState();
     expect(checkInvariants(state)).toEqual([]);
   });
@@ -989,36 +938,6 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
   });
 });
 
-describe('Phase 3 Step 2 — BeatGrid snap points', () => {
-  it('buildSnapIndex with a beat grid includes beat frames', () => {
-    const state = makeBaseState();
-    const beatGrid = { bpm: 60, timeSignature: [4, 4] as const, offset: toFrame(0) };
-    const next = applyOperation(state, { type: 'ADD_BEAT_GRID', beatGrid });
-    const index = buildSnapIndex(next, toFrame(0));
-    const beatPoints = index.points.filter((p) => p.type === 'BeatGrid');
-    expect(beatPoints.length).toBeGreaterThan(0);
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('buildSnapIndex without a beat grid: beat frames absent', () => {
-    const state = makeBaseState();
-    const index = buildSnapIndex(state, toFrame(0));
-    const beatPoints = index.points.filter((p) => p.type === 'BeatGrid');
-    expect(beatPoints).toHaveLength(0);
-  });
-
-  it('Beat frames do not exceed timeline.duration', () => {
-    const state = makeBaseState();
-    const beatGrid = { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) };
-    const next = applyOperation(state, { type: 'ADD_BEAT_GRID', beatGrid });
-    const index = buildSnapIndex(next, toFrame(0));
-    const dur = next.timeline.duration;
-    for (const p of index.points) {
-      if (p.type === 'BeatGrid') expect(p.frame).toBeLessThan(dur);
-    }
-    expect(checkInvariants(next)).toEqual([]);
-  });
-});
 
 describe('Phase 3 Step 2 — marker search', () => {
   it('findMarkersByColor returns only exact color matches', () => {

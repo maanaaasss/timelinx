@@ -35,8 +35,7 @@ export type SnapPointType =
   | 'Playhead' // Phase 1
   | 'Marker' // Phase 2
   | 'InPoint' // Phase 2
-  | 'OutPoint' // Phase 2
-  | 'BeatGrid'; // Phase 3
+  | 'OutPoint'; // Phase 2
 
 export type SnapPoint = {
   readonly frame: TimelineFrame;
@@ -63,7 +62,6 @@ const PRIORITIES: Record<SnapPointType, number> = {
   ClipStart: 80,
   ClipEnd: 80,
   Playhead: 70,
-  BeatGrid: 50,
 };
 
 // ---------------------------------------------------------------------------
@@ -116,24 +114,6 @@ export function buildSnapIndex(
     sourceId: '__playhead__',
   });
 
-  // 3. BeatGrid (Phase 3) — beat frames when beatGrid is set
-  const beatGrid = state.timeline.beatGrid;
-  const dur = state.timeline.duration;
-  if (beatGrid !== null) {
-    const fps = state.timeline.fps as number;
-    const beatDurationFrames = Math.round((60 / beatGrid.bpm) * fps);
-    let f: TimelineFrame = beatGrid.offset;
-    while (f < dur) {
-      points.push({
-        frame: f,
-        type: 'BeatGrid',
-        priority: PRIORITIES.BeatGrid,
-        trackId: null,
-        sourceId: `__beat_${f}__`,
-      });
-      f = (f + beatDurationFrames) as TimelineFrame;
-    }
-  }
 
   // Sort ascending by frame
   points.sort((a, b) => a.frame - b.frame);

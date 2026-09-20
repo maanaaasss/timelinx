@@ -18,7 +18,7 @@ import type { ClipId, Clip } from './clip';
 import type { TrackId, Track } from './track';
 import type { SequenceSettings } from './timeline';
 import type { TimelineState } from './state';
-import type { MarkerId, Marker, BeatGrid } from './marker';
+import type { MarkerId, Marker } from './marker';
 import type { Generator } from './generator';
 import type { CaptionId, Caption, CaptionStyle } from './caption';
 import type { Effect, EffectId } from './effect';
@@ -72,10 +72,6 @@ export type OperationPrimitive =
   // — Phase 3: In/Out —
   | { type: 'SET_IN_POINT'; frame: TimelineFrame | null }
   | { type: 'SET_OUT_POINT'; frame: TimelineFrame | null }
-  // — Phase 3: Beat grid —
-  | { type: 'ADD_BEAT_GRID'; beatGrid: BeatGrid }
-  | { type: 'REMOVE_BEAT_GRID' }
-  // — Phase 3: Generator —
   | { type: 'INSERT_GENERATOR'; generator: Generator; trackId: TrackId; atFrame: TimelineFrame }
   // — Phase 3: Caption —
   | {
@@ -170,7 +166,6 @@ export type RejectionReason =
   | 'SPEED_INVALID'
   | 'INVARIANT_VIOLATED'
   | 'NOT_FOUND'
-  | 'BEAT_GRID_EXISTS'
   | 'CLIP_NOT_FOUND'
   | 'DUPLICATE_EFFECT_ID'
   | 'EFFECT_NOT_FOUND'
@@ -208,7 +203,6 @@ export type ViolationType =
   | 'SCHEMA_VERSION_MISMATCH'
   | 'MARKER_OUT_OF_BOUNDS'
   | 'IN_OUT_INVALID'
-  | 'BEAT_GRID_INVALID'
   | 'CAPTION_OUT_OF_BOUNDS'
   | 'CAPTION_OVERLAP'
   | 'EFFECT_NOT_FOUND'

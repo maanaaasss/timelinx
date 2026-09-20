@@ -923,31 +923,3 @@ describe('Invariant: track group references', () => {
     expect(violations[0]!.type).toBe('TRACK_GROUP_NOT_FOUND');
   });
 });
-
-// ── BEAT_GRID_INVALID ────────────────────────────────────────────────────────
-
-describe('Invariant: beat grid', () => {
-  it('BeatGrid bpm = 0 → BEAT_GRID_INVALID', () => {
-    let state = makeBaseState();
-    state = apply(state, 'add beat grid', [
-      {
-        type: 'ADD_BEAT_GRID',
-        beatGrid: { bpm: 120, timeSignature: [4, 4], offset: toFrame(0) },
-      },
-    ]);
-    const corrupt = {
-      ...state,
-      timeline: {
-        ...state.timeline,
-        beatGrid: {
-          bpm: 0,
-          timeSignature: [4, 4] as readonly [number, number],
-          offset: toFrame(0),
-        },
-      },
-    };
-    const violations = checkInvariants(corrupt);
-    expect(violations.length).toBeGreaterThan(0);
-    expect(violations[0]!.type).toBe('BEAT_GRID_INVALID');
-  });
-});

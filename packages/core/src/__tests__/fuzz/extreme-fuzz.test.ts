@@ -484,7 +484,6 @@ describe('Extreme Fuzz: invariant checker receives garbage state', () => {
               markers: [],
               inPoint: null,
               outPoint: null,
-              beatGrid: null,
               trackGroups: [],
               linkGroups: [],
             },

@@ -71,10 +71,6 @@ export function validateOperation(state: TimelineState, op: OperationPrimitive):
       return validateSetInPoint(state, op);
     case 'SET_OUT_POINT':
       return validateSetOutPoint(state, op);
-    case 'ADD_BEAT_GRID':
-      return validateAddBeatGrid(state, op);
-    case 'REMOVE_BEAT_GRID':
-      return validateRemoveBeatGrid(state, op);
     case 'INSERT_GENERATOR':
       return validateInsertGenerator(state, op);
     case 'ADD_CAPTION':
@@ -497,32 +493,6 @@ function validateSetOutPoint(
 }
 
 // ---------------------------------------------------------------------------
-// Phase 3: Beat grid validators
-// ---------------------------------------------------------------------------
-
-function validateAddBeatGrid(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'ADD_BEAT_GRID' }>,
-): Rejection | null {
-  if (state.timeline.beatGrid !== null) {
-    return { reason: 'BEAT_GRID_EXISTS', message: `Timeline already has a beat grid.` };
-  }
-  const { beatGrid } = op;
-  if (Number.isNaN(beatGrid.bpm) || beatGrid.bpm <= 0)
-    return { reason: 'OUT_OF_BOUNDS', message: `Beat grid bpm must be > 0.` };
-  if (beatGrid.timeSignature[0] <= 0 || beatGrid.timeSignature[1] <= 0) {
-    return { reason: 'OUT_OF_BOUNDS', message: `Beat grid timeSignature must be positive.` };
-  }
-  return null;
-}
-
-function validateRemoveBeatGrid(
-  _state: TimelineState,
-  _op: Extract<OperationPrimitive, { type: 'REMOVE_BEAT_GRID' }>,
-): Rejection | null {
-  return null;
-}
-
 // ---------------------------------------------------------------------------
 // Phase 3: Generator validator
 // ---------------------------------------------------------------------------

@@ -83,7 +83,7 @@ export class KeyframeTool implements ITool {
   }
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
-    return ['ClipStart', 'ClipEnd', 'Marker', 'BeatGrid'];
+    return ['ClipStart', 'ClipEnd', 'Marker'];
   }
 
   onPointerDown(event: TimelinePointerEvent, ctx: ToolContext): void {
@@ -124,7 +124,6 @@ export class KeyframeTool implements ITool {
         'ClipStart',
         'ClipEnd',
         'Marker',
-        'BeatGrid',
       ]);
       if (snapPoint) targetFrame = snapPoint.frame as TimelineFrame;
     }
@@ -151,7 +150,6 @@ export class KeyframeTool implements ITool {
         'ClipStart',
         'ClipEnd',
         'Marker',
-        'BeatGrid',
       ]);
       if (snapPoint) newFrame = snapPoint.frame as TimelineFrame;
     }
@@ -224,7 +222,6 @@ export class KeyframeTool implements ITool {
         'ClipStart',
         'ClipEnd',
         'Marker',
-        'BeatGrid',
       ]);
       if (snapPoint) newFrame = snapPoint.frame as TimelineFrame;
     }

@@ -31,15 +31,6 @@ import { createTrackGroup, toTrackGroupId } from '../types/track-group';
 import { buildSnapIndex } from '../snap-index';
 
 import { serializeTimeline, deserializeTimeline, remapAssetPaths } from '../engine/serializer';
-import { exportToOTIO } from '../engine/otio-export';
-import { importFromOTIO } from '../engine/otio-import';
-import { exportToEDL } from '../engine/edl-export';
-import { exportToAAF } from '../engine/aaf-export';
-import { exportToFCPXML } from '../engine/fcpxml-export';
-
-import { createProject, toProjectId } from '../types/project';
-import { serializeProject, deserializeProject } from '../engine/project-serializer';
-import { addTimeline, removeTimeline } from '../engine/project-ops';
 
 import type { OperationPrimitive, Transaction } from '../types/operations';
 
@@ -159,14 +150,10 @@ function buildComplexState() {
     { type: 'REGISTER_ASSET', asset: genAsset },
   ]);
 
-  // Timeline metadata: in/out + beat grid
-  state = applyTx(state, 'Set in/out + beat grid', [
+  // Timeline metadata: in/out
+  state = applyTx(state, 'Set in/out', [
     { type: 'SET_IN_POINT', frame: toFrame(30) },
     { type: 'SET_OUT_POINT', frame: toFrame(5370) },
-    {
-      type: 'ADD_BEAT_GRID',
-      beatGrid: { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) },
-    },
   ]);
 
   // Clips (6 total)
@@ -487,150 +474,6 @@ describe('Phase 5 — Round-trip gate', () => {
     const gen = remapped.assetRegistry.get(ids.genAssetId)!;
     expect(gen.kind).toBe('generator');
     expect((gen as any).generatorDef.type).toBe('solid');
-  });
-
-  // OTIO round-trip
-  it('exportToOTIO produces 4 Track children (one per track)', () => {
-    const { state } = buildComplexState();
-    const doc = exportToOTIO(state);
-    expect(doc.tracks.children).toHaveLength(4);
-  });
-
-  it('importFromOTIO(exportToOTIO(state)) gives state with 6 clips total', () => {
-    const { state } = buildComplexState();
-    const round = importFromOTIO(exportToOTIO(state));
-    expect(checkInvariants(round)).toEqual([]);
-    expect(countAllClips(round)).toBe(6);
-  });
-
-  it('OTIO round-trip: clip durations preserved', () => {
-    const { state, ids } = buildComplexState();
-    const round = importFromOTIO(exportToOTIO(state));
-    const clip1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === ids.clip1Id)!;
-    expect((clip1.timelineEnd - clip1.timelineStart) as number).toBe(900);
-  });
-
-  it('OTIO round-trip: gap between clip1 and clip2 produces Gap in export', () => {
-    const { state } = buildComplexState();
-    const doc = exportToOTIO(state);
-    const v1 = doc.tracks.children.find((t) => t.kind === 'Video')!;
-    const gaps = v1.children.filter((c) => (c as any).OTIO_SCHEMA === 'Gap.1');
-    expect(gaps.length).toBeGreaterThan(0);
-    const has100 = gaps.some((g) => (g as any).source_range.duration.value === 100);
-    expect(has100).toBe(true);
-  });
-
-  // EDL
-  it('exportToEDL produces correct event count for videoTrack1 (3 events)', () => {
-    const { state } = buildComplexState();
-    const edl = exportToEDL(state, { trackIndex: 0 });
-    const events = edl.split('\n').filter((l) => /^\d{3}\s+/.test(l));
-    expect(events).toHaveLength(3);
-  });
-
-  it('EDL timecode for clip1 recIn = \"00:00:00:00\"', () => {
-    const { state } = buildComplexState();
-    const edl = exportToEDL(state, { trackIndex: 0 });
-    const line1 = edl.split('\n').find((l) => l.startsWith('001 '))!;
-    expect(line1).toContain('00:00:00:00');
-  });
-
-  it('EDL timecode for clip2 recIn = \"00:00:33:10\" (frame 1000 @30fps)', () => {
-    const { state } = buildComplexState();
-    const edl = exportToEDL(state, { trackIndex: 0 });
-    const line2 = edl.split('\n').find((l) => l.startsWith('002 '))!;
-    expect(line2).toContain('00:00:33:10');
-  });
-
-  // AAF
-  it('exportToAAF contains MasterMob for each of the 6 clips', () => {
-    const { state, ids } = buildComplexState();
-    const xml = exportToAAF(state);
-    const clipIds: ClipId[] = [
-      ids.clip1Id,
-      ids.clip2Id,
-      ids.clip3Id,
-      ids.clip4Id,
-      ids.clip5Id,
-      ids.clip6Id,
-    ];
-    clipIds.forEach((id) => expect(xml).toContain(`mobID="${id}"`));
-  });
-
-  it('CompositionMob has 4 TimelineMobSlots', () => {
-    const { state } = buildComplexState();
-    const xml = exportToAAF(state);
-    const slots = xml.match(/<TimelineMobSlot slotID=/g) ?? [];
-    expect(slots).toHaveLength(4);
-  });
-
-  // FCPXML
-  it('exportToFCPXML contains <asset> for fileAsset1 and fileAsset2', () => {
-    const { state, ids } = buildComplexState();
-    const xml = exportToFCPXML(state);
-    expect(xml).toContain(`<asset id="${ids.fileAsset1Id}"`);
-    expect(xml).toContain(`<asset id="${ids.fileAsset2Id}"`);
-  });
-
-  it('exportToFCPXML contains <effect> for genAsset', () => {
-    const { state, ids } = buildComplexState();
-    const xml = exportToFCPXML(state);
-    expect(xml).toContain(`<effect id="${ids.genAssetId}"`);
-  });
-
-  it('Clip1 offset in FCPXML = \"0/30s\" → \"0s\"', () => {
-    const { state } = buildComplexState();
-    const xml = exportToFCPXML(state);
-    expect(xml).toContain('offset="0s"');
-  });
-
-  // BeatGrid snap
-  it('buildSnapIndex(state) includes frame 15', () => {
-    const { state } = buildComplexState();
-    const idx = buildSnapIndex(state, toFrame(0));
-    const has15 = idx.points.some((p) => p.type === 'BeatGrid' && (p.frame as number) === 15);
-    expect(has15).toBe(true);
-  });
-
-  it('buildSnapIndex(state) includes frame 30', () => {
-    const { state } = buildComplexState();
-    const idx = buildSnapIndex(state, toFrame(0));
-    const has30 = idx.points.some((p) => p.type === 'BeatGrid' && (p.frame as number) === 30);
-    expect(has30).toBe(true);
-  });
-
-  it('No beat frame exceeds durationFrames (5400)', () => {
-    const { state } = buildComplexState();
-    const idx = buildSnapIndex(state, toFrame(0));
-    const beats = idx.points.filter((p) => p.type === 'BeatGrid');
-    expect(beats.every((b) => (b.frame as number) < 5400)).toBe(true);
-  });
-
-  // Project round-trip
-  it('createProject with complexState round-trips via serializeProject → deserializeProject', () => {
-    const { state } = buildComplexState();
-    const p = createProject(toProjectId('proj1'), 'Project', [state]);
-    const raw = serializeProject(p);
-    const restored = deserializeProject(raw);
-    expect(restored.timelines).toHaveLength(1);
-    expect(checkInvariants(restored.timelines[0]!)).toEqual([]);
-  });
-
-  it('Deserialized project has 1 timeline with 6 clips', () => {
-    const { state } = buildComplexState();
-    const p = createProject(toProjectId('proj1'), 'Project', [state]);
-    const restored = deserializeProject(serializeProject(p));
-    expect(countAllClips(restored.timelines[0]!)).toBe(6);
-  });
-
-  it('addTimeline → removeTimeline → timeline count returns to original', () => {
-    const { state } = buildComplexState();
-    const p0 = createProject(toProjectId('proj1'), 'Project', [state]);
-    const extra = makeMinimalTimelineState('extra');
-    const p1 = addTimeline(p0, extra);
-    expect(p1.timelines).toHaveLength(2);
-    const p2 = removeTimeline(p1, extra.timeline.id);
-    expect(p2.timelines).toHaveLength(1);
   });
 });
 

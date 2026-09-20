@@ -21,9 +21,6 @@ import { serializeTimeline, deserializeTimeline } from '../engine/serializer';
 import { migrate } from '../engine/migrator';
 import { SerializationError } from '../engine/serialization-error';
 
-import { createProject, toProjectId } from '../types/project';
-import { serializeProject, deserializeProject } from '../engine/project-serializer';
-
 let txCounter = 0;
 function makeTx(label: string, operations: OperationPrimitive[]): Transaction {
   return { id: `tx-${++txCounter}`, label, timestamp: Date.now(), operations };
@@ -252,24 +249,6 @@ describe('Phase 5 Addendum — Migration', () => {
     expect(() => migrate('string')).toThrow(SerializationError);
   });
 
-  // ─── Project migration ──────────────────────────────────────────────────
-  it('12. createProject stamps CURRENT_SCHEMA_VERSION (2), not hardcoded 1', () => {
-    const p = createProject(toProjectId('p1'), 'P1');
-    expect(p.schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
-    expect(p.schemaVersion).toBe(2);
-  });
-
-  it('13. serializeProject → deserializeProject round-trip works with schemaVersion 2', () => {
-    const state = buildStateWithTracksClipsAndMarkers();
-    const p = createProject(toProjectId('proj'), 'Proj', [state]);
-    const json = serializeProject(p);
-    const parsed = JSON.parse(json);
-    expect(parsed.schemaVersion).toBe(2);
-    const restored = deserializeProject(json);
-    expect(restored.schemaVersion).toBe(2);
-    expect(restored.timelines).toHaveLength(1);
-    expect(checkInvariants(restored.timelines[0]!)).toEqual([]);
-  });
 
   // GATE: full round-trip via v1 migration
   it('14. Full gate: serialize → corrupt schemaVersion to 1 → deserialize → checkInvariants() → 0 violations — GATE', () => {

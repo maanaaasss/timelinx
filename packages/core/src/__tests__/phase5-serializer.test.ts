@@ -113,8 +113,6 @@ function makeRoundTripState() {
     linkedClipId: null,
   };
   state = applyOperation(state, { type: 'ADD_MARKER', marker });
-  const beatGrid = { bpm: 120, timeSignature: [4, 4] as const, offset: toFrame(0) };
-  state = applyOperation(state, { type: 'ADD_BEAT_GRID', beatGrid });
   const effect = createEffect(toEffectId('eff-1'), 'blur', 'preComposite', []);
   state = applyOperation(state, { type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect });
   const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 10);
@@ -148,7 +146,6 @@ describe('Phase 5 — Serializer', () => {
     expect(restored.timeline.id).toBe(state.timeline.id);
     expect(restored.timeline.tracks).toHaveLength(state.timeline.tracks.length);
     expect(restored.timeline.markers).toHaveLength(state.timeline.markers.length);
-    expect(restored.timeline.beatGrid).toEqual(state.timeline.beatGrid);
     expect(restored.assetRegistry.size).toBe(state.assetRegistry.size);
     const c1 = restored.timeline.tracks[0]!.clips[0]!;
     expect(c1.effects).toHaveLength(1);
