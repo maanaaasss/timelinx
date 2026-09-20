@@ -166,9 +166,6 @@ function checkTrack(state: TimelineState, track: Track, violations: InvariantVio
   for (const clip of clips) {
     checkClip(state, track, clip, violations);
   }
-
-  // —— Phase 3: Caption bounds (per track) —————————————————————————————————
-  checkCaptionBounds(state, track, violations);
 }
 
 // ---------------------------------------------------------------------------
@@ -339,37 +336,8 @@ function checkClip(
     });
   }
 
-  // —— Phase 4: Effects (keyframe order, renderStage) ———————————————————
-  checkEffects(clip, violations);
   // —— Phase 4 Step 3: Transition ————————————————————————————————————————
   checkTransitions(clip, state, violations);
-}
-
-function checkEffects(clip: Clip, violations: InvariantViolation[]): void {
-  const effects = clip.effects ?? [];
-  const validStages = ['preComposite', 'postComposite', 'output'] as const;
-  for (const effect of effects) {
-    if (!validStages.includes(effect.renderStage)) {
-      violations.push({
-        type: 'INVALID_RENDER_STAGE',
-        entityId: effect.id,
-        message: `Effect '${effect.id}': renderStage '${effect.renderStage}' is invalid.`,
-      });
-    }
-    const kfs = effect.keyframes;
-    for (let i = 1; i < kfs.length; i++) {
-      const prev = kfs[i - 1]!;
-      const curr = kfs[i]!;
-      if (prev.frame > curr.frame || prev.frame === curr.frame) {
-        violations.push({
-          type: 'KEYFRAME_ORDER_VIOLATION',
-          entityId: effect.id,
-          message: `Effect '${effect.id}': keyframes must be sorted ascending by frame with no duplicates.`,
-        });
-        break;
-      }
-    }
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -462,47 +430,6 @@ function checkInOutPoints(state: TimelineState, violations: InvariantViolation[]
       entityId: 'timeline',
       message: `In point (${inPt}) must be < out point (${outPt}).`,
     });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Phase 3: Caption bounds (per track)
-// ---------------------------------------------------------------------------
-
-function checkCaptionBounds(
-  state: TimelineState,
-  track: Track,
-  violations: InvariantViolation[],
-): void {
-  const dur = state.timeline.duration;
-  const captions = track.captions ?? [];
-  for (const cap of captions) {
-    if (cap.endFrame > dur) {
-      violations.push({
-        type: 'CAPTION_OUT_OF_BOUNDS',
-        entityId: cap.id,
-        message: `Caption '${cap.id}' endFrame (${cap.endFrame}) exceeds timeline duration (${dur}).`,
-      });
-    }
-    if (cap.endFrame <= cap.startFrame) {
-      violations.push({
-        type: 'CAPTION_OUT_OF_BOUNDS',
-        entityId: cap.id,
-        message: `Caption '${cap.id}' endFrame must be > startFrame.`,
-      });
-    }
-  }
-  const byStart = [...captions].sort((a, b) => a.startFrame - b.startFrame);
-  for (let i = 0; i < byStart.length - 1; i++) {
-    const a = byStart[i]!;
-    const b = byStart[i + 1]!;
-    if (a.endFrame > b.startFrame) {
-      violations.push({
-        type: 'CAPTION_OVERLAP',
-        entityId: track.id,
-        message: `Captions '${a.id}' and '${b.id}' overlap on track '${track.id}'.`,
-      });
-    }
   }
 }
 

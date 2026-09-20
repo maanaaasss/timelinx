@@ -4,6 +4,7 @@ import { useTimelineContext } from '../context/timeline-context';
 import { CollapsibleSection } from './collapsible-section';
 import { NumberScrubber } from './number-scrubber';
 import type { ClipId } from '@timelinx/core';
+import { getClipTransform } from '../types/transform';
 
 function TransformIcon() {
   return (
@@ -17,10 +18,9 @@ function TransformIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <polyline points="15 3 21 3 21 9" />
-      <polyline points="9 21 3 21 3 15" />
-      <line x1="21" y1="3" x2="14" y2="10" />
-      <line x1="3" y1="21" x2="10" y2="14" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
     </svg>
   );
 }
@@ -41,8 +41,7 @@ export const InspectorPanel = React.memo(function InspectorPanel({
   const handleTransformCommit = useCallback(
     (property: string, value: number) => {
       if (!clip) return;
-      const currentTransform = clip.transform;
-      if (!currentTransform) return;
+      const currentTransform = getClipTransform(clip);
 
       engine.dispatch({
         id: `set-transform-${Date.now()}`,
@@ -50,13 +49,16 @@ export const InspectorPanel = React.memo(function InspectorPanel({
         timestamp: Date.now(),
         operations: [
           {
-            type: 'SET_CLIP_TRANSFORM',
+            type: 'SET_CLIP_METADATA',
             clipId: clip.id as ClipId,
-            transform: {
-              ...currentTransform,
-              [property]: {
-                ...currentTransform[property as keyof typeof currentTransform],
-                value,
+            metadata: {
+              ...clip.metadata,
+              transform: {
+                ...currentTransform,
+                [property]: {
+                  ...currentTransform[property as keyof typeof currentTransform],
+                  value,
+                },
               },
             },
           },
@@ -100,7 +102,7 @@ export const InspectorPanel = React.memo(function InspectorPanel({
     );
   }
 
-  const transform = clip.transform;
+  const transform = getClipTransform(clip);
 
   return (
     <div className={`inspector-panel${className ? ` ${className}` : ''}`}>

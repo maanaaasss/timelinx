@@ -13,7 +13,6 @@
 import type { TimelineState } from '../types/state';
 import type { OperationPrimitive, RejectionReason } from '../types/operations';
 import type { Clip } from '../types/clip';
-import type { Effect, EffectId } from '../types/effect';
 import { findClipById } from '../systems/queries';
 
 type Rejection = { reason: RejectionReason; message: string };
@@ -73,36 +72,8 @@ export function validateOperation(state: TimelineState, op: OperationPrimitive):
       return validateSetOutPoint(state, op);
     case 'INSERT_GENERATOR':
       return validateInsertGenerator(state, op);
-    case 'ADD_CAPTION':
-      return validateAddCaption(state, op);
-    case 'EDIT_CAPTION':
-      return validateEditCaption(state, op);
-    case 'DELETE_CAPTION':
-      return validateDeleteCaption(state, op);
-
-    case 'ADD_EFFECT':
-      return validateAddEffect(state, op);
-    case 'REMOVE_EFFECT':
-      return validateRemoveEffect(state, op);
-    case 'REORDER_EFFECT':
-      return validateReorderEffect(state, op);
-    case 'SET_EFFECT_ENABLED':
-      return validateSetEffectEnabled(state, op);
-    case 'SET_EFFECT_PARAM':
-      return validateSetEffectParam(state, op);
-    case 'ADD_KEYFRAME':
-      return validateAddKeyframe(state, op);
-    case 'MOVE_KEYFRAME':
-      return validateMoveKeyframe(state, op);
-    case 'DELETE_KEYFRAME':
-      return validateDeleteKeyframe(state, op);
-    case 'SET_KEYFRAME_EASING':
-      return validateSetKeyframeEasing(state, op);
-
-    case 'SET_CLIP_TRANSFORM':
-      return validateSetClipTransform(state, op);
-    case 'SET_AUDIO_PROPERTIES':
-      return validateSetAudioProperties(state, op);
+    case 'SET_CLIP_METADATA':
+      return validateSetClipMetadata(state, op);
     case 'ADD_TRANSITION':
       return validateAddTransition(state, op);
     case 'DELETE_TRANSITION':
@@ -521,289 +492,16 @@ function validateInsertGenerator(
   return null;
 }
 
-// ---------------------------------------------------------------------------
-// Phase 3: Caption validators
-// ---------------------------------------------------------------------------
-
-function validateAddCaption(
+function validateSetClipMetadata(
   state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'ADD_CAPTION' }>,
-): Rejection | null {
-  const track = state.timeline.tracks.find((t) => t.id === op.trackId);
-  if (!track) return { reason: 'OUT_OF_BOUNDS', message: `Track '${op.trackId}' not found.` };
-  if (track.locked) return { reason: 'LOCKED_TRACK', message: `Track '${op.trackId}' is locked.` };
-  const { caption } = op;
-  if (
-    Number.isNaN(caption.startFrame) ||
-    Number.isNaN(caption.endFrame) ||
-    caption.startFrame >= caption.endFrame
-  ) {
-    return { reason: 'OUT_OF_BOUNDS', message: `Caption startFrame must be < endFrame.` };
-  }
-  if (caption.endFrame > state.timeline.duration) {
-    return { reason: 'OUT_OF_BOUNDS', message: `Caption endFrame exceeds timeline duration.` };
-  }
-  if (track.captions.some((c) => c.id === caption.id)) {
-    return { reason: 'OUT_OF_BOUNDS', message: `Caption '${caption.id}' already on track.` };
-  }
-  const overlaps = track.captions.some(
-    (c) => caption.startFrame < c.endFrame && caption.endFrame > c.startFrame,
-  );
-  if (overlaps) {
-    return {
-      reason: 'OVERLAP',
-      message: `Caption overlaps an existing caption on track '${op.trackId}'.`,
-    };
-  }
-  return null;
-}
-
-function validateEditCaption(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'EDIT_CAPTION' }>,
-): Rejection | null {
-  const track = state.timeline.tracks.find((t) => t.id === op.trackId);
-  if (!track) return { reason: 'NOT_FOUND', message: `Track '${op.trackId}' not found.` };
-  const caption = track.captions.find((c) => c.id === op.captionId);
-  if (!caption)
-    return { reason: 'NOT_FOUND', message: `Caption '${op.captionId}' not found on track.` };
-  if (op.startFrame !== undefined && op.endFrame !== undefined) {
-    if (Number.isNaN(op.startFrame) || Number.isNaN(op.endFrame) || op.startFrame >= op.endFrame)
-      return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
-    if (op.endFrame > state.timeline.duration)
-      return { reason: 'OUT_OF_BOUNDS', message: `endFrame exceeds timeline duration.` };
-  } else if (op.startFrame !== undefined) {
-    if (Number.isNaN(op.startFrame) || op.startFrame >= caption.endFrame)
-      return { reason: 'OUT_OF_BOUNDS', message: `startFrame must be < endFrame.` };
-  } else if (op.endFrame !== undefined) {
-    if (Number.isNaN(op.endFrame) || caption.startFrame >= op.endFrame)
-      return { reason: 'OUT_OF_BOUNDS', message: `endFrame must be > startFrame.` };
-    if (op.endFrame > state.timeline.duration)
-      return { reason: 'OUT_OF_BOUNDS', message: `endFrame exceeds timeline duration.` };
-  }
-  return null;
-}
-
-function validateDeleteCaption(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'DELETE_CAPTION' }>,
-): Rejection | null {
-  const track = state.timeline.tracks.find((t) => t.id === op.trackId);
-  if (!track) return { reason: 'NOT_FOUND', message: `Track '${op.trackId}' not found.` };
-  if (!track.captions.some((c) => c.id === op.captionId)) {
-    return { reason: 'NOT_FOUND', message: `Caption '${op.captionId}' not found on track.` };
-  }
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// Phase 4: Effect & Keyframe validators
-// ---------------------------------------------------------------------------
-
-function validateAddEffect(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'ADD_EFFECT' }>,
+  op: Extract<OperationPrimitive, { type: 'SET_CLIP_METADATA' }>,
 ): Rejection | null {
   const clip = findClipById(state, op.clipId);
   if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effects = clip.effects ?? [];
-  if (effects.some((e) => e.id === op.effect.id)) {
-    return {
-      reason: 'DUPLICATE_EFFECT_ID',
-      message: `Effect '${op.effect.id}' already exists on clip '${op.clipId}'.`,
-    };
-  }
-  return null;
-}
-
-function validateRemoveEffect(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'REMOVE_EFFECT' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  return null;
-}
-
-function validateReorderEffect(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'REORDER_EFFECT' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  const effects = clip.effects ?? [];
-  if (op.newIndex < 0 || op.newIndex >= effects.length) {
-    return {
-      reason: 'EFFECT_INDEX_OUT_OF_RANGE',
-      message: `newIndex ${op.newIndex} out of range [0, ${effects.length - 1}].`,
-    };
-  }
-  return null;
-}
-
-function validateSetEffectEnabled(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'SET_EFFECT_ENABLED' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  return null;
-}
-
-function validateSetEffectParam(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'SET_EFFECT_PARAM' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  return null;
-}
-
-function validateAddKeyframe(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'ADD_KEYFRAME' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  if (effect.keyframes.some((k) => k.id === op.keyframe.id)) {
-    return {
-      reason: 'DUPLICATE_KEYFRAME_ID',
-      message: `Keyframe '${op.keyframe.id}' already exists on effect '${op.effectId}'.`,
-    };
-  }
-  if (Number.isNaN(op.keyframe.frame) || op.keyframe.frame < 0) {
-    return {
-      reason: 'INVALID_RANGE',
-      message: `Keyframe frame (${op.keyframe.frame}) must be >= 0.`,
-    };
-  }
-  return null;
-}
-
-function validateMoveKeyframe(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'MOVE_KEYFRAME' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  const kf = effect.keyframes.find((k) => k.id === op.keyframeId);
-  if (!kf)
-    return {
-      reason: 'KEYFRAME_NOT_FOUND',
-      message: `Keyframe '${op.keyframeId}' not found on effect '${op.effectId}'.`,
-    };
-  if (Number.isNaN(op.newFrame) || op.newFrame < 0) {
-    return { reason: 'INVALID_RANGE', message: `newFrame (${op.newFrame}) must be >= 0.` };
-  }
-  return null;
-}
-
-function validateDeleteKeyframe(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'DELETE_KEYFRAME' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  const kf = effect.keyframes.find((k) => k.id === op.keyframeId);
-  if (!kf)
-    return {
-      reason: 'KEYFRAME_NOT_FOUND',
-      message: `Keyframe '${op.keyframeId}' not found on effect '${op.effectId}'.`,
-    };
-  return null;
-}
-
-function validateSetKeyframeEasing(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'SET_KEYFRAME_EASING' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const effect = findEffect(clip, op.effectId);
-  if (!effect)
-    return {
-      reason: 'EFFECT_NOT_FOUND',
-      message: `Effect '${op.effectId}' not found on clip '${op.clipId}'.`,
-    };
-  const kf = effect.keyframes.find((k) => k.id === op.keyframeId);
-  if (!kf)
-    return {
-      reason: 'KEYFRAME_NOT_FOUND',
-      message: `Keyframe '${op.keyframeId}' not found on effect '${op.effectId}'.`,
-    };
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// Phase 4 Step 3: Transform, Audio, Transitions, LinkGroups, TrackGroups
-// ---------------------------------------------------------------------------
-
-function validateSetClipTransform(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'SET_CLIP_TRANSFORM' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  return null;
-}
-
-function validateSetAudioProperties(
-  state: TimelineState,
-  op: Extract<OperationPrimitive, { type: 'SET_AUDIO_PROPERTIES' }>,
-): Rejection | null {
-  const clip = findClipById(state, op.clipId);
-  if (!clip) return { reason: 'CLIP_NOT_FOUND', message: `Clip '${op.clipId}' not found.` };
-  const p = op.properties;
-  if (p.pan !== undefined && typeof p.pan === 'object' && p.pan !== null && 'value' in p.pan) {
-    const v = (p.pan as { value: number }).value;
-    if (v < -1 || v > 1) {
-      return { reason: 'INVALID_RANGE', message: `pan must be in [-1, 1].` };
-    }
-  }
-  if (p.normalizationGain !== undefined && p.normalizationGain < 0) {
-    return { reason: 'INVALID_RANGE', message: `normalizationGain must be >= 0.` };
+  const track = state.timeline.tracks.find((t) => t.clips.some((c) => c.id === op.clipId));
+  if (track?.locked) return { reason: 'LOCKED_TRACK', message: `Track '${track.id}' is locked.` };
+  if (!op.metadata || typeof op.metadata !== 'object' || Array.isArray(op.metadata)) {
+    return { reason: 'INVARIANT_VIOLATED', message: 'Metadata must be an object.' };
   }
   return null;
 }
@@ -986,11 +684,6 @@ function hasOverlapInSortedClips(
     }
   }
   return null;
-}
-
-function findEffect(clip: Clip, effectId: EffectId): Effect | undefined {
-  const effects = clip.effects ?? [];
-  return effects.find((e) => e.id === effectId);
 }
 
 function findMarker(state: TimelineState, markerId: string) {

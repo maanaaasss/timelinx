@@ -29,15 +29,9 @@ describe('Phase 7 — Public API surface', () => {
     expect(typeof Core.toClipId).toBe('function');
     expect(typeof Core.toTrackId).toBe('function');
     expect(typeof Core.toFrame).toBe('function');
-    expect(typeof Core.createEffect).toBe('function');
     expect(typeof Core.createTransition).toBe('function');
     expect(typeof Core.createTrackGroup).toBe('function');
     expect(typeof Core.createLinkGroup).toBe('function');
-
-    // Phase 4
-    expect(typeof Core.DEFAULT_CLIP_TRANSFORM).toBe('object');
-    expect(typeof Core.DEFAULT_AUDIO_PROPERTIES).toBe('object');
-    expect(typeof Core.LINEAR_EASING).toBe('object');
 
     // Phase 6
     expect(typeof Core.PlayheadController).toBe('function');
@@ -62,12 +56,7 @@ describe('Phase 7 — Public API surface', () => {
   });
 
   it('media sub-path exports are defined', () => {
-    expect(typeof Media.parseSRT).toBe('function');
-    expect(typeof Media.parseVTT).toBe('function');
-    expect(typeof Media.subtitleImportToOps).toBe('function');
     expect(typeof Media.findMarkersByColor).toBe('function');
     expect(typeof Media.findMarkersByLabel).toBe('function');
-    expect(typeof Media.ThumbnailCache).toBe('function');
-    expect(typeof Media.ThumbnailQueue).toBe('function');
   });
 });

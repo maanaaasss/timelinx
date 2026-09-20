@@ -159,10 +159,9 @@ export class PlaybackEngine {
       trackId: layer.trackId,
       trackIndex: layer.trackIndex,
       frame: decoded[i]!,
-      transform: layer.transform,
       opacity: layer.opacity,
       blendMode: layer.blendMode,
-      effects: layer.effects,
+      metadata: layer.metadata,
     }));
     const request: CompositeRequest = {
       timelineFrame: resolved.timelineFrame,

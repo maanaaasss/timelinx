@@ -5,13 +5,15 @@
  * Provides GPU-accelerated compositing for timeline playback.
  */
 
-import type {
-  CompositeRequest,
-  CompositeResult,
-  VideoFrameResult,
-  ClipTransform,
-} from '@timelinx/core';
+import type { CompositeRequest, CompositeResult, VideoFrameResult } from '@timelinx/core';
 import type { ClipId, TrackId, TimelineFrame } from '@timelinx/core';
+
+export type ClipTransform = {
+  readonly opacity?: { value?: number } | number;
+  readonly position?: { x?: number; y?: number };
+  readonly scale?: { x?: number; y?: number };
+  readonly rotation?: number;
+};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -227,7 +229,8 @@ export class WebGLCompositorAdapter {
 
     // Draw each layer
     for (const layer of layers) {
-      this.drawLayer(layer.frame, layer.transform, layer.opacity);
+      const transform = (layer.metadata?.transform as ClipTransform | undefined) ?? {};
+      this.drawLayer(layer.frame, transform, layer.opacity);
     }
 
     return {
@@ -275,10 +278,14 @@ export class WebGLCompositorAdapter {
       gl.uniform1i(this.uniformLocations.get('u_texture') ?? null, 0);
 
       // Set uniforms
-      gl.uniform1f(
-        this.uniformLocations.get('u_opacity') ?? null,
-        opacity * transform.opacity.value,
-      );
+      const transformOpacity =
+        typeof transform.opacity === 'object' && transform.opacity !== null
+          ? ((transform.opacity as { value?: number }).value ?? 1)
+          : typeof transform.opacity === 'number'
+            ? transform.opacity
+            : 1;
+
+      gl.uniform1f(this.uniformLocations.get('u_opacity') ?? null, opacity * transformOpacity);
 
       // Set position buffer
       const positionLocation = this.attribLocations.get('a_position') ?? -1;

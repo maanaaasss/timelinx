@@ -17,15 +17,6 @@ import type { Track } from '../types/track';
 import { createGeneratorAsset } from '../types/asset';
 import type { TimelineFrame } from '../types/frame';
 import type { Marker } from '../types/marker';
-import type { Caption } from '../types/caption';
-import type { Effect, EffectParam } from '../types/effect';
-import type { Keyframe } from '../types/keyframe';
-import type { ClipTransform } from '../types/clip-transform';
-import { DEFAULT_CLIP_TRANSFORM } from '../types/clip-transform';
-import type { AudioProperties } from '../types/audio-properties';
-import { DEFAULT_AUDIO_PROPERTIES } from '../types/audio-properties';
-
-import { defaultCaptionStyle } from './subtitle-import';
 
 // ---------------------------------------------------------------------------
 // applyOperation
@@ -317,159 +308,11 @@ export function applyOperation(state: TimelineState, op: OperationPrimitive): Ti
       );
     }
 
-    case 'ADD_CAPTION': {
-      const captionToAdd: Caption = {
-        ...op.caption,
-        style: op.caption.style ?? defaultCaptionStyle,
-      };
-      return updateTrack(state, op.trackId, (track) => {
-        const captions = [...track.captions, captionToAdd].sort(
-          (a, b) => a.startFrame - b.startFrame,
-        );
-        return { ...track, captions };
-      });
-    }
-
-    case 'EDIT_CAPTION': {
-      return updateTrack(state, op.trackId, (track) => {
-        const cap = track.captions.find((c) => c.id === op.captionId);
-        if (!cap) return track;
-        const updated = {
-          ...cap,
-          ...(op.text !== undefined && { text: op.text }),
-          ...(op.language !== undefined && { language: op.language }),
-          ...(op.style !== undefined && { style: { ...cap.style, ...op.style } }),
-          ...(op.burnIn !== undefined && { burnIn: op.burnIn }),
-          ...(op.startFrame !== undefined && { startFrame: op.startFrame }),
-          ...(op.endFrame !== undefined && { endFrame: op.endFrame }),
-        };
-        const captions = track.captions
-          .map((c) => (c.id === op.captionId ? updated : c))
-          .sort((a, b) => a.startFrame - b.startFrame);
-        return { ...track, captions };
-      });
-    }
-
-    case 'DELETE_CAPTION': {
-      return updateTrack(state, op.trackId, (track) => ({
-        ...track,
-        captions: track.captions.filter((c) => c.id !== op.captionId),
+    case 'SET_CLIP_METADATA': {
+      return updateClip(state, op.clipId, (clip) => ({
+        ...clip,
+        metadata: { ...clip.metadata, ...op.metadata },
       }));
-    }
-
-    // — Phase 4: Effect & Keyframe ————————————————————————————————————————
-
-    case 'ADD_EFFECT': {
-      return updateClipEffects(state, op.clipId, (effects) => [...effects, op.effect]);
-    }
-
-    case 'REMOVE_EFFECT': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.filter((e) => e.id !== op.effectId),
-      );
-    }
-
-    case 'REORDER_EFFECT': {
-      return updateClipEffects(state, op.clipId, (effects) => {
-        const idx = effects.findIndex((e) => e.id === op.effectId);
-        if (idx < 0) return effects;
-        const arr = [...effects];
-        const [removed] = arr.splice(idx, 1);
-        if (!removed) return effects;
-        arr.splice(op.newIndex, 0, removed);
-        return arr;
-      });
-    }
-
-    case 'SET_EFFECT_ENABLED': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) => (e.id === op.effectId ? { ...e, enabled: op.enabled } : e)),
-      );
-    }
-
-    case 'SET_EFFECT_PARAM': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) => {
-          if (e.id !== op.effectId) return e;
-          const idx = e.params.findIndex((p) => p.key === op.key);
-          const newParams: EffectParam[] =
-            idx >= 0
-              ? e.params.map((p, i) => (i === idx ? { key: op.key, value: op.value } : p))
-              : [...e.params, { key: op.key, value: op.value }];
-          return { ...e, params: newParams };
-        }),
-      );
-    }
-
-    case 'ADD_KEYFRAME': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) => {
-          if (e.id !== op.effectId) return e;
-          const keyframes = [...e.keyframes, op.keyframe].sort((a, b) => a.frame - b.frame);
-          return { ...e, keyframes };
-        }),
-      );
-    }
-
-    case 'MOVE_KEYFRAME': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) => {
-          if (e.id !== op.effectId) return e;
-          const keyframes = e.keyframes
-            .map((k) => (k.id === op.keyframeId ? ({ ...k, frame: op.newFrame } as Keyframe) : k))
-            .sort((a, b) => a.frame - b.frame);
-          return { ...e, keyframes };
-        }),
-      );
-    }
-
-    case 'DELETE_KEYFRAME': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) =>
-          e.id === op.effectId
-            ? { ...e, keyframes: e.keyframes.filter((k) => k.id !== op.keyframeId) }
-            : e,
-        ),
-      );
-    }
-
-    case 'SET_KEYFRAME_EASING': {
-      return updateClipEffects(state, op.clipId, (effects) =>
-        effects.map((e) => ({
-          ...e,
-          keyframes: e.keyframes.map((k) =>
-            k.id === op.keyframeId ? { ...k, easing: op.easing } : k,
-          ),
-        })),
-      );
-    }
-
-    // — Phase 4 Step 3: Transform, Audio, Transitions, Groups ———————————————
-
-    case 'SET_CLIP_TRANSFORM': {
-      return updateClip(state, op.clipId, (clip) => {
-        const base = clip.transform ?? DEFAULT_CLIP_TRANSFORM;
-        const p = op.transform;
-        const merged: ClipTransform = {
-          positionX: p.positionX ?? base.positionX,
-          positionY: p.positionY ?? base.positionY,
-          scaleX: p.scaleX ?? base.scaleX,
-          scaleY: p.scaleY ?? base.scaleY,
-          rotation: p.rotation ?? base.rotation,
-          opacity: p.opacity ?? base.opacity,
-          anchorX: p.anchorX ?? base.anchorX,
-          anchorY: p.anchorY ?? base.anchorY,
-        };
-        return { ...clip, transform: merged };
-      });
-    }
-
-    case 'SET_AUDIO_PROPERTIES': {
-      return updateClip(state, op.clipId, (clip) => {
-        const base = clip.audio ?? DEFAULT_AUDIO_PROPERTIES;
-        const merged: AudioProperties = { ...base, ...op.properties };
-        return { ...clip, audio: merged };
-      });
     }
 
     case 'ADD_TRANSITION': {
@@ -587,17 +430,6 @@ function sortMarkersByAnchor(
 // ---------------------------------------------------------------------------
 // Internal helpers — keep these private to this file
 // ---------------------------------------------------------------------------
-
-function updateClipEffects(
-  state: TimelineState,
-  clipId: string,
-  fn: (effects: readonly Effect[]) => readonly Effect[],
-): TimelineState {
-  return updateClip(state, clipId, (clip) => ({
-    ...clip,
-    effects: fn(clip.effects ?? []),
-  }));
-}
 
 function updateTrack(
   state: TimelineState,

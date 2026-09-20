@@ -401,5 +401,4 @@ describe('Coverage: validators.ts — additional validator paths', () => {
     );
     expect(result.accepted).toBe(true);
   });
-
 });

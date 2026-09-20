@@ -116,22 +116,7 @@ export {
 } from './tools/provisional';
 export type { ProvisionalManager } from './tools/provisional';
 
-// ── Phase 4: Easing, Keyframes, Effects, Transform, Audio, Transitions, Groups ─
-
-export type { EasingCurve } from './types/easing';
-export { LINEAR_EASING, HOLD_EASING } from './types/easing';
-
-export type { KeyframeId, Keyframe } from './types/keyframe';
-export { toKeyframeId } from './types/keyframe';
-
-export type { EffectId, EffectType, RenderStage, EffectParam, Effect } from './types/effect';
-export { toEffectId, createEffect } from './types/effect';
-
-export type { AnimatableProperty, ClipTransform } from './types/clip-transform';
-export { createAnimatableProperty, DEFAULT_CLIP_TRANSFORM } from './types/clip-transform';
-
-export type { ChannelRouting, AudioProperties } from './types/audio-properties';
-export { DEFAULT_AUDIO_PROPERTIES } from './types/audio-properties';
+// ── Phase 4: Transitions and Groups ────────────────────────────────────────
 
 export type {
   TransitionId,
@@ -148,16 +133,6 @@ export { toTrackGroupId, createTrackGroup } from './types/track-group';
 export type { LinkGroupId, LinkGroup } from './types/link-group';
 export { toLinkGroupId, createLinkGroup } from './types/link-group';
 
-// Caption types and subtitle import
-export type { CaptionId, CaptionStyle, Caption } from './types/caption';
-export { toCaptionId } from './types/caption';
-export {
-  parseSRT,
-  parseVTT,
-  subtitleImportToOps,
-  defaultCaptionStyle,
-} from './engine/subtitle-import';
-
 // Generator types (for INSERT_GENERATOR operations)
 export type { GeneratorId, GeneratorType, Generator } from './types/generator';
 export { toGeneratorId } from './types/generator';
@@ -172,9 +147,8 @@ export { RippleDeleteTool } from './tools/ripple-delete';
 export { RippleInsertTool } from './tools/ripple-insert';
 export { HandTool } from './tools/hand';
 
-// Phase 4 Step 4: Transition and Keyframe tools (register via createRegistry / registerTool)
+// Phase 4 Step 4: Transition tool (register via createRegistry / registerTool)
 export { TransitionTool } from './tools/transition-tool';
-export { KeyframeTool } from './tools/keyframe-tool';
 
 // Phase 7 Step 5: Slide and Zoom tools
 export { SlideTool } from './tools/slide-tool';

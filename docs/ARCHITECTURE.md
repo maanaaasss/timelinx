@@ -28,9 +28,9 @@
 
 ## 1. Executive Summary & Architectural Tenets
 
-`@timelinx/core` is a deterministic, headless, framework-agnostic Non-Linear Editor (NLE) timeline kernel. It serves as the foundational computational core that coordinates video tracks, audio channels, transitions, effects, keyframes, captions, playhead motion, snapping geometry, and interchange formats.
+`@timelinx/core` is a deterministic, headless, framework-agnostic pure 1D Non-Linear Editor (NLE) timeline kernel. It serves as the foundational computational core that coordinates video tracks, audio channels, transitions, playhead motion, snapping geometry, temporal trimming/razoring, and interchange formats.
 
-The core package contains **zero DOM dependencies, zero React imports, and zero native decoding engines**. It delegates rendering, UI layout, audio mixing, and pixel manipulation to higher layers (`@timelinx/react`, `@timelinx/ui`, `@timelinx/media-web`, or custom server rendering pipelines).
+The core package contains **zero DOM dependencies, zero React imports, and zero native decoding engines**. In addition, 2D transforms, effects, keyframes, audio DSP, and subtitles are decoupled from the kernel: clips carry an extensible metadata bag (`clip.metadata?: Readonly<Record<string, unknown>>`) mutated via `SET_CLIP_METADATA`, while host and presentation layers (`@timelinx/ui`, `@timelinx/media-web`) manage 2D compositing, shaders, and caption overlays.
 
 ```
  ┌────────────────────────────────────────────────────────────────────────┐
@@ -52,7 +52,7 @@ The core package contains **zero DOM dependencies, zero React imports, and zero 
  │              ▼                                        ▼                │
  │   ┌───────────────────────┐              ┌─────────────────────────┐   │
  │   │   Indexing & Math     │              │    Interactive Tools    │   │
- │   │  • IntervalTree       │              │  • 12 Built-in Tools    │   │
+ │   │  • IntervalTree       │              │  • 11 Built-in Tools    │   │
  │   │  • SnapIndex (Sorted) │              │  • ToolRegistry         │   │
  │   │  • Frame Resolver     │              │  • Provisional States   │   │
  │   └──────────┬────────────┘              └────────────┬────────────┘   │
@@ -76,7 +76,7 @@ The core package contains **zero DOM dependencies, zero React imports, and zero 
 4. **Defensive All-or-Nothing Atomicity**: A transaction consists of one or more atomic operations. If any operation fails validation, or if the resulting timeline violates any document-level invariant, the transaction is rejected completely, returning the original state untouched with a deterministic error code.
 5. **Nominal Branded Typing**: Entity IDs (`ClipId`, `TrackId`, `AssetId`, `TimelineFrame`, `Timecode`, `ToolId`) are branded strings and numbers. This prevents domain errors (e.g. passing a raw number as a frame count or confusing a track ID with a clip ID) at compile time without runtime wrapper overhead.
 6. **Frame-Accurate Determinism**: Temporal positions are anchored to integer frame counts (`TimelineFrame`). Float-based time math is disallowed internally, eliminating floating-point rounding drift across playback and compound trims.
-7. **Abstract Pipeline Contracts**: The core orchestrates edit logic and time synchronization, but never decodes pixels or samples audio directly. It exposes clean functional interfaces (`VideoDecoder`, `AudioDecoder`, `Compositor`, `ThumbnailProvider`) that host applications implement.
+7. **Abstract Pipeline Contracts**: The core orchestrates edit logic and time synchronization, but never decodes pixels or samples audio directly. It exposes clean functional interfaces (`VideoDecoder`, `AudioDecoder`, `Compositor`) that host applications implement.
 
 ---
 
@@ -88,7 +88,7 @@ The core package contains **zero DOM dependencies, zero React imports, and zero 
 @timelinx/core
 ├── .                    (Root: public-api.ts) -> Types, Dispatcher, Invariants, History, Tools
 ├── /serialization       (serialization.ts)    -> Native JSON serializer, version migration, asset remapping
-├── /media               (media.ts)            -> SRT/VTT parser, Marker search, Thumbnail queue, Worker types
+├── /media               (media.ts)            -> Marker search, FrameRate helpers
 └── /internal            (internal.ts)         -> Low-level shims, test doubles, internals
 ```
 
@@ -127,7 +127,7 @@ graph TD
         subgraph ToolSubsystem["Interactive Tools"]
             REG["ToolRegistry"]
             PROV["ProvisionalManager"]
-            TOOLS["12 Built-in Tools (Razor, Ripple, Slip...)"]
+            TOOLS["11 Built-in Tools (Razor, Ripple, Slip...)"]
         end
 
         subgraph PipelineSubsystem["Media & Pipeline Contracts"]
@@ -190,8 +190,7 @@ TimelineState
 │   │   ├── opacity?: number ([0, 1])
 │   │   ├── blendMode?: string
 │   │   ├── groupId?: TrackGroupId
-│   │   ├── clips: Clip[] (ALWAYS sorted ascending by timelineStart)
-│   │   └── captions: Caption[] (sorted ascending by startFrame)
+│   │   └── clips: Clip[] (ALWAYS sorted ascending by timelineStart)
 │   ├── markers: Marker[] (point or range markers)
 │   ├── inPoint: TimelineFrame | null
 │   ├── outPoint: TimelineFrame | null
@@ -209,22 +208,19 @@ To prevent type confusion, all domain identifiers and frame values use TypeScrip
 ```typescript
 type Brand<K, T> = K & { readonly __brand: T };
 
-export type ClipId        = Brand<string, 'ClipId'>;
-export type TrackId       = Brand<string, 'TrackId'>;
-export type AssetId       = Brand<string, 'AssetId'>;
-export type EffectId      = Brand<string, 'EffectId'>;
-export type KeyframeId    = Brand<string, 'KeyframeId'>;
-export type MarkerId      = Brand<string, 'MarkerId'>;
-export type TransitionId  = Brand<string, 'TransitionId'>;
-export type CaptionId     = Brand<string, 'CaptionId'>;
-export type LinkGroupId   = Brand<string, 'LinkGroupId'>;
-export type TrackGroupId  = Brand<string, 'TrackGroupId'>;
-export type ProjectId     = Brand<string, 'ProjectId'>;
-export type BinId         = Brand<string, 'BinId'>;
-export type GeneratorId   = Brand<string, 'GeneratorId'>;
-export type ToolId        = Brand<string, 'ToolId'>;
+export type ClipId = Brand<string, 'ClipId'>;
+export type TrackId = Brand<string, 'TrackId'>;
+export type AssetId = Brand<string, 'AssetId'>;
+export type MarkerId = Brand<string, 'MarkerId'>;
+export type TransitionId = Brand<string, 'TransitionId'>;
+export type LinkGroupId = Brand<string, 'LinkGroupId'>;
+export type TrackGroupId = Brand<string, 'TrackGroupId'>;
+export type ProjectId = Brand<string, 'ProjectId'>;
+export type BinId = Brand<string, 'BinId'>;
+export type GeneratorId = Brand<string, 'GeneratorId'>;
+export type ToolId = Brand<string, 'ToolId'>;
 export type TimelineFrame = Brand<number, 'TimelineFrame'>;
-export type Timecode      = Brand<string, 'Timecode'>;
+export type Timecode = Brand<string, 'Timecode'>;
 ```
 
 Constructors like `toClipId(str)`, `toTrackId(str)`, and `toFrame(num)` create branded values with zero runtime cost.
@@ -232,6 +228,7 @@ Constructors like `toClipId(str)`, `toTrackId(str)`, and `toFrame(num)` create b
 ### 3.3 Clip Anatomy and Temporal Invariants
 
 Every `Clip` defines two distinct coordinate windows:
+
 1. **Timeline Placement**: `[timelineStart, timelineEnd)` in timeline frames.
 2. **Source Media Viewport**: `[mediaIn, mediaOut)` in asset media frames.
 
@@ -253,6 +250,7 @@ Timeline Track (duration = 1000)
 $$\text{mediaOut} - \text{mediaIn} = \frac{\text{timelineEnd} - \text{timelineStart}}{\text{speed}}$$
 
 For normal playback (`speed = 1.0`):
+
 - $\Delta \text{media} = \Delta \text{timeline}$
 - $\text{mediaIn} \ge 0$
 - $\text{mediaOut} \le \text{asset.intrinsicDuration}$
@@ -262,6 +260,7 @@ For normal playback (`speed = 1.0`):
 ### 3.4 The Asset Registry and Proxy Protection
 
 Media files are registered in `assetRegistry` (`ReadonlyMap<AssetId, Asset>`). Clips reference assets strictly via `clip.assetId`. This design guarantees:
+
 - Modifying or repathing an asset (e.g. switching from raw 4K footage to 720p editing proxy) occurs in $O(1)$ by updating the registry without touching any individual clips.
 - Clips cannot be orphaned: unregistering an asset referenced by any existing clip is rejected by the invariant pipeline (`ASSET_IN_USE`).
 - Runtime immutability: When committed, `assetRegistry` is wrapped in a JavaScript `Proxy` that intercepts and throws `TypeError` on `.set()`, `.delete()`, or `.clear()`, preventing illegal runtime mutations.
@@ -285,7 +284,7 @@ sequenceDiagram
     participant Store as Committed State
 
     Caller->>Dispatcher: dispatch(state, transaction)
-    
+
     loop For each OperationPrimitive in transaction.operations
         Dispatcher->>Validator: validateOperation(rollingState, op)
         alt Validation Fails
@@ -318,6 +317,7 @@ If primitive #2 was validated against the initial state, an insert into the spac
 ### 4.3 Structural Sharing & Frozen Immutability
 
 To prevent reference degradation, `applyOperation` performs fine-grained structural sharing:
+
 - When a clip on Track 2 is moved, Track 1 and Track 3 retain their exact object identity (`track === oldTrack`).
 - When a track is modified, only that track object and its parent tracks array are reallocated.
 - Deep-cloning is explicitly forbidden because React's `useSyncExternalStore` and selector hooks (`useTrack`, `useClip`) rely on reference equality (`Object.is`) to bypass re-rendering unchanged components.
@@ -327,58 +327,47 @@ To prevent reference degradation, `applyOperation` performs fine-grained structu
 
 Operations are discriminated unions adhering to `OperationPrimitive`:
 
-| Category | Primitive Type | Key Payload Fields | Functional Intent |
-| :--- | :--- | :--- | :--- |
-| **Clip** | `INSERT_CLIP` | `clip: Clip, trackId: TrackId` | Adds a new clip to a track |
-| | `DELETE_CLIP` | `clipId: ClipId` | Removes a clip from the timeline |
-| | `MOVE_CLIP` | `clipId, newTimelineStart, targetTrackId?` | Moves clip on/between tracks |
-| | `RESIZE_CLIP` | `clipId, edge: 'start'\|'end', newFrame` | Trims head or tail in timeline space |
-| | `SLICE_CLIP` | `clipId, atFrame` | Splits a clip into two distinct clips |
-| | `SET_MEDIA_BOUNDS` | `clipId, mediaIn, mediaOut` | Adjusts underlying source media window |
-| | `SET_CLIP_SPEED` | `clipId, speed: number` | Changes playback speed multiplier |
-| | `SET_CLIP_ENABLED` | `clipId, enabled: boolean` | Toggles clip active rendering state |
-| | `SET_CLIP_REVERSED`| `clipId, reversed: boolean` | Reverses clip playback direction |
-| | `SET_CLIP_NAME` | `clipId, name: string \| null` | Renames display label |
-| | `SET_CLIP_COLOR` | `clipId, color: string \| null` | Sets UI highlight color |
-| **Track** | `ADD_TRACK` | `track: Track` | Inserts video, audio, or subtitle track |
-| | `DELETE_TRACK` | `trackId: TrackId` | Removes track (must be empty or force) |
-| | `REORDER_TRACK` | `trackId, newIndex: number` | Adjusts track visual/z-order stacking |
-| | `SET_TRACK_HEIGHT` | `trackId, height: number` | Modifies track UI height (clamped 40-200) |
-| | `SET_TRACK_NAME` | `trackId, name: string` | Renames track label |
-| | `SET_TRACK_OPACITY`| `trackId, opacity: number` | Sets composite track opacity ([0, 1]) |
-| | `SET_TRACK_BLEND_MODE`| `trackId, blendMode: string` | Sets track compositing blend mode |
-| **Asset** | `REGISTER_ASSET` | `asset: Asset` | Registers media file or generator |
-| | `UNREGISTER_ASSET`| `assetId: AssetId` | Removes asset (rejected if clips use it) |
-| | `SET_ASSET_STATUS`| `assetId, status: AssetStatus` | Sets online, offline, proxy-only |
-| **Timeline** | `RENAME_TIMELINE` | `name: string` | Renames the timeline sequence |
-| | `SET_TIMELINE_DURATION`| `duration: TimelineFrame` | Adjusts timeline sequence boundary |
-| | `SET_TIMELINE_START_TC`| `startTimecode: Timecode` | Sets SMPTE starting timecode |
-| | `SET_SEQUENCE_SETTINGS`| `settings: Partial<SequenceSettings>` | Sets sample rate, aspect ratio, color |
-| **Markers** | `ADD_MARKER` | `marker: Marker` | Adds point or range marker |
-| | `MOVE_MARKER` | `markerId, newFrame: TimelineFrame` | Moves marker anchor point |
-| | `DELETE_MARKER` | `markerId: MarkerId` | Deletes marker |
-| **In/Out** | `SET_IN_POINT` | `frame: TimelineFrame \| null` | Sets editorial mark-in boundary |
-| | `SET_OUT_POINT` | `frame: TimelineFrame \| null` | Sets editorial mark-out boundary |
-| **Captions** | `ADD_CAPTION` | `caption: Caption, trackId` | Adds timed subtitle/caption segment |
-| | `EDIT_CAPTION` | `captionId, trackId, text?, style?` | Modifies caption text or visual styling |
-| | `DELETE_CAPTION` | `captionId, trackId` | Removes caption segment |
-| **Effects** | `ADD_EFFECT` | `clipId, effect: Effect` | Attaches effect layer to clip |
-| | `REMOVE_EFFECT` | `clipId, effectId: EffectId` | Detaches effect from clip |
-| | `REORDER_EFFECT` | `clipId, effectId, newIndex` | Changes effect processing order |
-| | `SET_EFFECT_ENABLED`| `clipId, effectId, enabled` | Toggles effect active bypass |
-| | `SET_EFFECT_PARAM` | `clipId, effectId, key, value` | Modifies effect parameter value |
-| **Keyframes**| `ADD_KEYFRAME` | `clipId, effectId, keyframe` | Adds parameter keyframe point |
-| | `MOVE_KEYFRAME` | `clipId, effectId, keyframeId, frame`| Shifts keyframe timing |
-| | `DELETE_KEYFRAME` | `clipId, effectId, keyframeId` | Removes parameter keyframe |
-| | `SET_KEYFRAME_EASING`| `clipId, effectId, keyframeId, easing`| Sets Linear, Hold, Bezier, EaseIn/Out |
-| **Transitions**| `ADD_TRANSITION` | `clipId, transition: Transition` | Attaches cut transition (dissolve/wipe) |
-| | `DELETE_TRANSITION`| `clipId` | Removes transition |
-| | `SET_TRANSITION_DURATION`| `clipId, durationFrames` | Modifies transition frame length |
-| | `SET_TRANSITION_ALIGNMENT`| `clipId, alignment` | centerOnCut, startAtCut, endAtCut |
-| **Grouping**| `LINK_CLIPS` | `linkGroup: LinkGroup` | Links multiple clips (A/V sync lock) |
-| | `UNLINK_CLIPS` | `linkGroupId: LinkGroupId` | Dissolves clip link group |
-| | `ADD_TRACK_GROUP` | `trackGroup: TrackGroup` | Organizes tracks into collapsible folders |
-| | `DELETE_TRACK_GROUP`| `trackGroupId: TrackGroupId` | Removes track folder hierarchy |
+| Category        | Primitive Type             | Key Payload Fields                                      | Functional Intent                                               |
+| :-------------- | :------------------------- | :------------------------------------------------------ | :-------------------------------------------------------------- |
+| **Clip**        | `INSERT_CLIP`              | `clip: Clip, trackId: TrackId`                          | Adds a new clip to a track                                      |
+|                 | `DELETE_CLIP`              | `clipId: ClipId`                                        | Removes a clip from the timeline                                |
+|                 | `MOVE_CLIP`                | `clipId, newTimelineStart, targetTrackId?`              | Moves clip on/between tracks                                    |
+|                 | `RESIZE_CLIP`              | `clipId, edge: 'start'\|'end', newFrame`                | Trims head or tail in timeline space                            |
+|                 | `SLICE_CLIP`               | `clipId, atFrame`                                       | Splits a clip into two distinct clips                           |
+|                 | `SET_MEDIA_BOUNDS`         | `clipId, mediaIn, mediaOut`                             | Adjusts underlying source media window                          |
+|                 | `SET_CLIP_SPEED`           | `clipId, speed: number`                                 | Changes playback speed multiplier                               |
+|                 | `SET_CLIP_ENABLED`         | `clipId, enabled: boolean`                              | Toggles clip active rendering state                             |
+|                 | `SET_CLIP_REVERSED`        | `clipId, reversed: boolean`                             | Reverses clip playback direction                                |
+|                 | `SET_CLIP_NAME`            | `clipId, name: string \| null`                          | Renames display label                                           |
+|                 | `SET_CLIP_COLOR`           | `clipId, color: string \| null`                         | Sets UI highlight color                                         |
+| **Track**       | `ADD_TRACK`                | `track: Track`                                          | Inserts video, audio, or subtitle track                         |
+|                 | `DELETE_TRACK`             | `trackId: TrackId`                                      | Removes track (must be empty or force)                          |
+|                 | `REORDER_TRACK`            | `trackId, newIndex: number`                             | Adjusts track visual/z-order stacking                           |
+|                 | `SET_TRACK_HEIGHT`         | `trackId, height: number`                               | Modifies track UI height (clamped 40-200)                       |
+|                 | `SET_TRACK_NAME`           | `trackId, name: string`                                 | Renames track label                                             |
+|                 | `SET_TRACK_OPACITY`        | `trackId, opacity: number`                              | Sets composite track opacity ([0, 1])                           |
+|                 | `SET_TRACK_BLEND_MODE`     | `trackId, blendMode: string`                            | Sets track compositing blend mode                               |
+| **Asset**       | `REGISTER_ASSET`           | `asset: Asset`                                          | Registers media file or generator                               |
+|                 | `UNREGISTER_ASSET`         | `assetId: AssetId`                                      | Removes asset (rejected if clips use it)                        |
+|                 | `SET_ASSET_STATUS`         | `assetId, status: AssetStatus`                          | Sets online, offline, proxy-only                                |
+| **Timeline**    | `RENAME_TIMELINE`          | `name: string`                                          | Renames the timeline sequence                                   |
+|                 | `SET_TIMELINE_DURATION`    | `duration: TimelineFrame`                               | Adjusts timeline sequence boundary                              |
+|                 | `SET_TIMELINE_START_TC`    | `startTimecode: Timecode`                               | Sets SMPTE starting timecode                                    |
+|                 | `SET_SEQUENCE_SETTINGS`    | `settings: Partial<SequenceSettings>`                   | Sets sample rate, aspect ratio, color                           |
+| **Markers**     | `ADD_MARKER`               | `marker: Marker`                                        | Adds point or range marker                                      |
+|                 | `MOVE_MARKER`              | `markerId, newFrame: TimelineFrame`                     | Moves marker anchor point                                       |
+|                 | `DELETE_MARKER`            | `markerId: MarkerId`                                    | Deletes marker                                                  |
+| **In/Out**      | `SET_IN_POINT`             | `frame: TimelineFrame \| null`                          | Sets editorial mark-in boundary                                 |
+|                 | `SET_OUT_POINT`            | `frame: TimelineFrame \| null`                          | Sets editorial mark-out boundary                                |
+| **Metadata**    | `SET_CLIP_METADATA`        | `clipId, metadata: Record<string, unknown> \| Function` | Sets or updates user/UI metadata (transforms, effects, styling) |
+| **Transitions** | `ADD_TRANSITION`           | `clipId, transition: Transition`                        | Attaches cut transition (dissolve/wipe)                         |
+|                 | `DELETE_TRANSITION`        | `clipId`                                                | Removes transition                                              |
+|                 | `SET_TRANSITION_DURATION`  | `clipId, durationFrames`                                | Modifies transition frame length                                |
+|                 | `SET_TRANSITION_ALIGNMENT` | `clipId, alignment`                                     | centerOnCut, startAtCut, endAtCut                               |
+| **Grouping**    | `LINK_CLIPS`               | `linkGroup: LinkGroup`                                  | Links multiple clips (A/V sync lock)                            |
+|                 | `UNLINK_CLIPS`             | `linkGroupId: LinkGroupId`                              | Dissolves clip link group                                       |
+|                 | `ADD_TRACK_GROUP`          | `trackGroup: TrackGroup`                                | Organizes tracks into collapsible folders                       |
+|                 | `DELETE_TRACK_GROUP`       | `trackGroupId: TrackGroupId`                            | Removes track folder hierarchy                                  |
 
 ---
 
@@ -400,7 +389,7 @@ flowchart LR
     S10 --> S11[11. Captions & Groups]
 ```
 
-### The 17 Invariant Checks in Execution Order
+### The 15 Invariant Checks in Execution Order
 
 1. **Schema Version Check**: `state.schemaVersion === CURRENT_SCHEMA_VERSION`. Early exits on failure to prevent evaluating incompatible future or legacy schemas.
 2. **Global Duplicate ID Detection**: Verifies that no two tracks, clips, markers, or assets share the same identifier anywhere in the project.
@@ -419,9 +408,7 @@ flowchart LR
 12. **Speed Validity**: `clip.speed > 0` and finite.
 13. **Marker Frame Bounds**: Point markers must satisfy $0 \le \text{frame} < \text{duration}$. Range markers must satisfy $0 \le \text{frameStart} < \text{frameEnd} \le \text{duration}$.
 14. **In/Out Point Consistency**: If defined, $0 \le \text{inPoint} < \text{outPoint} \le \text{duration}$.
-15. **Caption Track Constraints**: Captions must not overlap and must satisfy $0 \le \text{startFrame} < \text{endFrame} \le \text{duration}$.
-16. **Keyframe Ordering & Render Stages**: Effect keyframes must be sorted ascending by frame without duplicates. Effect render stages must be `'preComposite'`, `'postComposite'`, or `'output'`.
-17. **Link & Track Group Integrity**: Link groups must contain $\ge 2$ valid clips. No clip may belong to multiple link groups. Track groups must reference extant tracks. Track opacity must be within $[0, 1]$.
+15. **Link & Track Group Integrity**: Link groups must contain $\ge 2$ valid clips. No clip may belong to multiple link groups. Track groups must reference extant tracks. Track opacity must be within $[0, 1]$.
 
 ---
 
@@ -431,11 +418,11 @@ flowchart LR
 
 Time is expressed across three distinct representations depending on the system layer:
 
-| Type | Structure | Primary Use | Properties |
-| :--- | :--- | :--- | :--- |
-| `TimelineFrame` | `number & { __brand: 'TimelineFrame' }` | Internal Engine & Invariants | Integer, 0-indexed, absolute frame count |
-| `Timecode` | `string & { __brand: 'Timecode' }` | UI Display & EDLs | SMPTE standard format (`HH:MM:SS:FF` or `HH:MM:SS;FF`) |
-| `RationalTime` | `{ value: number; rate: FrameRate }` | OTIO & Ingest/Export | Precise fraction representing non-integer frame bases |
+| Type            | Structure                               | Primary Use                  | Properties                                             |
+| :-------------- | :-------------------------------------- | :--------------------------- | :----------------------------------------------------- |
+| `TimelineFrame` | `number & { __brand: 'TimelineFrame' }` | Internal Engine & Invariants | Integer, 0-indexed, absolute frame count               |
+| `Timecode`      | `string & { __brand: 'Timecode' }`      | UI Display & EDLs            | SMPTE standard format (`HH:MM:SS:FF` or `HH:MM:SS;FF`) |
+| `RationalTime`  | `{ value: number; rate: FrameRate }`    | OTIO & Ingest/Export         | Precise fraction representing non-integer frame bases  |
 
 Supported frame rates (`FrameRate`): `23.976`, `24`, `25`, `29.97`, `30`, `50`, `59.94`, `60`. Drop-frame timecode math (`isDropFrame`) adheres strictly to SMPTE standards, dropping timecode numbers 00 and 01 at the start of every minute except minutes 00, 10, 20, 30, 40, 50 at 29.97 fps.
 
@@ -467,7 +454,7 @@ At each playhead position, the frame resolver computes which clips are visible, 
 
 $$\text{mediaFrame} = \text{clip.mediaIn} + (t - \text{clip.timelineStart})$$
 
-It produces a `ResolvedCompositeRequest` containing ordered visual layers (`ResolvedLayer[]`) sorted by track index (z-order), including opacity, blend modes, clip transforms, and active effects.
+It produces a `ResolvedCompositeRequest` containing ordered visual layers (`ResolvedLayer[]`) sorted by track index (z-order), including opacity, blend modes, and clip metadata.
 
 ### 6.4 Virtual Windowing (`virtual-window.ts`)
 
@@ -487,11 +474,11 @@ flowchart TD
         WIN -- Yes --> LWW[Last-Write-Wins: Replace Present]
         WIN -- No --> PUSH[Push to Past Stack]
         COMP -- No --> PUSH
-        
+
         PUSH --> LIMIT{Past.length > maxSize?}
         LIMIT -- Yes --> EVICT[Evict Oldest Entry]
         LIMIT -- No --> READY[Ready]
-        
+
         PUSH --> WARN{Capacity >= 80%?}
         WARN -- Yes --> SOFT[softLimitWarning = true]
         WARN -- No --> NORMAL[softLimitWarning = false]
@@ -523,12 +510,14 @@ High-frequency interactive gestures (such as dragging a clip, scrubbing a slider
 The `TransactionCompressor` implements a **Last-Write-Wins (LWW)** policy over a configurable sliding time window (default `300ms`). When consecutive operations of the same compressible type target the same entity within the window, the previous present state is updated in place rather than pushing a new history entry:
 
 **Compressible Operations**:
-- `MOVE_CLIP`, `SET_CLIP_TRANSFORM`, `SET_AUDIO_PROPERTIES`, `SET_EFFECT_PARAM`
-- `MOVE_KEYFRAME`, `SET_TRANSITION_DURATION`, `MOVE_MARKER`, `SET_IN_POINT`, `SET_OUT_POINT`, `SET_TRACK_OPACITY`
+
+- `MOVE_CLIP`, `SET_CLIP_METADATA`
+- `SET_TRANSITION_DURATION`, `MOVE_MARKER`, `SET_IN_POINT`, `SET_OUT_POINT`, `SET_TRACK_OPACITY`
 
 ### 7.3 Checkpoints and Stack Serialization
 
 `HistoryStack` supports enterprise production requirements:
+
 - **Named Checkpoints**: `saveCheckpoint(name)`, `restoreCheckpoint(name)`, and `clearCheckpoint(name)` allow branching, auto-save states, and quick reverts without losing the linear undo stack.
 - **Serialization**: `serialize()` and `HistoryStack.deserialize(json)` preserve the full past, present, future, and checkpoints across page reloads or local persistence.
 
@@ -558,6 +547,7 @@ interface ITool {
 ```
 
 #### Strict Contract Rules:
+
 1. `onPointerMove` **NEVER** calls `dispatch()`. It mutates zero engine state. It returns a `ProvisionalState` (ghost state) for rendering preview feedback.
 2. `onPointerUp` constructs and returns a single atomic `Transaction` or `null`. It never mutates internal state.
 3. `onCancel` must cleanly abort any pending drag state without side effects (e.g. if the user presses `Escape`).
@@ -565,6 +555,7 @@ interface ITool {
 ### 8.2 Provisional (Ghost) State Architecture
 
 While dragging a clip or trimming an edge, 60fps rendering of ghost boxes is required. Directly dispatching transactions during drag would cause:
+
 1. Continuous execution of the full invariant pipeline on every mouse move.
 2. Excessive garbage collection from state allocations.
 3. History stack pollution with intermediate drag coordinates.
@@ -588,7 +579,7 @@ Pointer Move (60Hz) ──────► onPointerMove() ──────► 
 Pointer Up (Release) ────► onPointerUp()   ──────► Transaction ──► dispatch() ──► nextState
 ```
 
-### 8.3 The 12 Built-in Editing Tools
+### 8.3 The 11 Built-in Editing Tools
 
 ```
                EDITING TOOLS
@@ -596,7 +587,7 @@ Pointer Up (Release) ────► onPointerUp()   ──────► Trans
 │  Selection (V)  │  Razor (C)   │  Ripple Trim (T)      │
 │  Roll Trim (R)  │  Slip (S)    │  Slide (Y)            │
 │  Ripple Delete  │  Ripple Ins  │  Transition Tool      │
-│  Keyframe Tool  │  Hand (H)    │  Zoom Tool            │
+│  Hand (H)       │  Zoom Tool   │                       │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -611,9 +602,8 @@ Pointer Up (Release) ────► onPointerUp()   ──────► Trans
 7. **RippleDeleteTool (`rippleDelete`)**: Deletes selected clips and automatically closes gaps by shifting subsequent clips leftward.
 8. **RippleInsertTool (`rippleInsert`)**: Splits existing clips at the insert point and shifts downstream content forward to accommodate new footage.
 9. **TransitionTool (`transition`)**: Adds or adjusts audio/video transitions (cross-dissolves, wipes) centered on, starting at, or ending at clip cuts.
-10. **KeyframeTool (`keyframe`)**: Direct manipulation of automation envelopes and parameter keyframe diamonds.
-11. **HandTool (`hand` / `H`)**: Pans the timeline canvas horizontally and vertically without triggering clip selection or moves.
-12. **ZoomTool (`zoom`)**: Zooms in/out centered on the click point or drags a rectangular zoom box.
+10. **HandTool (`hand` / `H`)**: Pans the timeline canvas horizontally and vertically without triggering clip selection or moves.
+11. **ZoomTool (`zoom`)**: Zooms in/out centered on the click point or drags a rectangular zoom box.
 
 ---
 
@@ -634,18 +624,20 @@ type SnapPoint = {
 ```
 
 #### Strict Priority Table:
-| Snap Type | Priority Weight | Alignment Source |
-| :--- | :---: | :--- |
-| **Marker** | **100** | Point markers and range marker boundaries |
-| **InPoint** | **90** | Timeline editorial mark-in frame |
-| **OutPoint** | **90** | Timeline editorial mark-out frame |
-| **ClipStart** | **80** | In-point head of any clip across any track |
-| **ClipEnd** | **80** | Out-point tail of any clip across any track |
-| **Playhead** | **70** | Current active playback playhead position |
+
+| Snap Type     | Priority Weight | Alignment Source                            |
+| :------------ | :-------------: | :------------------------------------------ |
+| **Marker**    |     **100**     | Point markers and range marker boundaries   |
+| **InPoint**   |     **90**      | Timeline editorial mark-in frame            |
+| **OutPoint**  |     **90**      | Timeline editorial mark-out frame           |
+| **ClipStart** |     **80**      | In-point head of any clip across any track  |
+| **ClipEnd**   |     **80**      | Out-point tail of any clip across any track |
+| **Playhead**  |     **70**      | Current active playback playhead position   |
 
 ### 9.2 Binary Search Nearest Resolution
 
 When dragging an entity, `nearest(snapIndex, targetFrame, toleranceFrames, excludeSourceIds, allowedTypes)` finds the closest snap target:
+
 1. Performs a binary search ($O(\log N)$) to locate the nearest points within the frame tolerance window $[t - \delta, t + \delta]$.
 2. Filters out candidate points matching `excludeSourceIds` (e.g. ignoring a clip's own original bounds during drag).
 3. Evaluates priority: If a Marker (priority 100) and a Clip Boundary (priority 80) fall within the same distance, the Marker wins.
@@ -654,6 +646,7 @@ When dragging an entity, `nearest(snapIndex, targetFrame, toleranceFrames, exclu
 ### 9.3 Asynchronous Index Maintenance (`SnapIndexManager`)
 
 Rebuilding the snap index across thousands of clips on every keystroke or frame render would waste CPU cycles. `SnapIndexManager` schedules index rebuilds via `queueMicrotask`:
+
 - Rebuilds occur after accepted transactions commit.
 - Never runs during active pointer moves (uses cached snapshot during gestures).
 
@@ -680,7 +673,7 @@ Rebuilding the snap index across thousands of clips on every keystroke or frame 
  ┌────────────────────────────────────────────────────────────────────────┐
  │                       HOST PIPELINE IMPLEMENTATION                     │
  │   VideoDecoder (WebCodecs)   │  Compositor (WebGL/WebGPU/Canvas2D)     │
- │   AudioDecoder (WebAudio)    │  ThumbnailProvider                      │
+ │   AudioDecoder (WebAudio)    │                                         │
  └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -689,15 +682,15 @@ Rebuilding the snap index across thousands of clips on every keystroke or frame 
 The host application supplies implementations of four core asynchronous functions:
 
 ```typescript
-type VideoDecoder       = (req: VideoFrameRequest) => Promise<VideoFrameResult>;
-type AudioDecoder       = (req: AudioChunkRequest) => Promise<AudioChunkResult>;
-type Compositor         = (req: CompositeRequest) => Promise<CompositeResult>;
-type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
+type VideoDecoder = (req: VideoFrameRequest) => Promise<VideoFrameResult>;
+type AudioDecoder = (req: AudioChunkRequest) => Promise<AudioChunkResult>;
+type Compositor = (req: CompositeRequest) => Promise<CompositeResult>;
 ```
 
 ### 10.2 PlayheadController & Jog-Shuttle State
 
 `PlayheadController` manages playhead frame position, frame-dropping telemetry, and transport controls:
+
 - **J/K/L Shuttle Support**:
   - `L`: Shuttle forward ($1\times \to 2\times \to 4\times \to 8\times$).
   - `J`: Shuttle backward ($-1\times \to -2\times \to -4\times \to -8\times$).
@@ -707,11 +700,6 @@ type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
   - `browserClock`: Uses `performance.now()` and `requestAnimationFrame`.
   - `nodeClock`: Uses `process.hrtime.bigint()` for headless test/render environments.
   - `createTestClock`: Fully deterministic manual tick advancement for unit testing.
-
-### 10.3 Thumbnail Cache & Priority Queue
-
-- `ThumbnailCache`: LRU cache with memory size clamping for decoded preview thumbnails.
-- `ThumbnailQueue`: Prioritizes thumbnail generation requests: visible viewport clips receive `high` priority; offscreen scroll targets receive `low` priority.
 
 ---
 
@@ -724,11 +712,10 @@ type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
                             │   TimelineState   │
                             └─────────┬─────────┘
                                       │
-           ┌──────────────────────────┴──────────────────────────┐
-           ▼                                                     ▼
-      Native JSON                                         SRT / WebVTT
-      Serializer & Migrations                             Subtitle Parsers
-      (v1 → v2 Forward Migration)                         (media.ts)
+                                      ▼
+                                 Native JSON
+                          Serializer & Migrations
+                        (v1 → v2 Forward Migration)
 ```
 
 ### 11.1 Native JSON & Schema Migrations (`migrator.ts`)
@@ -739,11 +726,7 @@ type ThumbnailProvider  = (req: ThumbnailRequest) => Promise<ThumbnailResult>;
   $$\text{v1} \xrightarrow{\text{migrateV1ToV2}} \text{v2} \xrightarrow{\text{validate}} \text{TimelineState}$$
   Future schema downgrades are detected and rejected to prevent silent data corruption.
 
-### 11.2 Subtitle Parsers (`media.ts`)
-
-- Pure regex-based parsers for SubRip (`.srt`) and WebVTT (`.vtt`) subtitles, converting cue markers into `ADD_CAPTION` primitives with zero external runtime dependencies.
-
-### 11.3 Asset Relinking & Offline Detection
+### 11.2 Asset Relinking & Offline Detection
 
 - `remapAssetPaths(state, callback)`: Batch updates file paths when assets are moved to new storage volumes.
 - `findOfflineAssets(state)`: Scans the project and returns a list of assets whose status is `'offline'` or `'missing'`.
@@ -767,9 +750,8 @@ class TimelineEngine {
 // React hook selector pattern:
 export function useTrack(trackId: TrackId): Track | undefined {
   const engine = useEngine();
-  return useSyncExternalStore(
-    engine.subscribe,
-    () => engine.getState().timeline.tracks.find(t => t.id === trackId)
+  return useSyncExternalStore(engine.subscribe, () =>
+    engine.getState().timeline.tracks.find((t) => t.id === trackId),
   );
 }
 ```
@@ -791,16 +773,16 @@ Workers run the pure math algorithms; the main thread receives the computed peak
 
 ### 13.1 Algorithmic Complexity Guarantees
 
-| Operation / Query | Algorithm / Implementation | Computational Complexity | Notes |
-| :--- | :--- | :---: | :--- |
-| **Clip Lookup by ID** | `findClipById(state, id)` | $O(N_{\text{tracks}} \cdot N_{\text{clips}})$ | Fast path uses cached `TrackIndex` |
-| **Visible Clips at Frame** | Centered `IntervalTree` | $O(\log N + K)$ | $K$ = active visible layers |
-| **Nearest Snap Search** | Binary search over `SnapIndex` | $O(\log M)$ | $M$ = total project snap points |
-| **Track Overlap Check** | Adjacent pair sweep on sorted array | $O(C)$ | $C$ = clips on track (already sorted) |
-| **Full Invariant Check** | `checkInvariants(state)` | $O(N_{\text{total clips}})$ | Single linear validation pass |
-| **Transaction Dispatch** | Rolling validation + apply + invariants | $O(P \cdot C + N_{\text{clips}})$ | $P$ = primitives in batch |
-| **Viewport Culling** | `getVisibleClips` binary search | $O(\log C + V)$ | $V$ = visible clips in viewport |
-| **Undo / Redo** | Reference rotation on `HistoryStack` | $O(1)$ | Zero state re-allocation |
+| Operation / Query          | Algorithm / Implementation              |           Computational Complexity            | Notes                                 |
+| :------------------------- | :-------------------------------------- | :-------------------------------------------: | :------------------------------------ |
+| **Clip Lookup by ID**      | `findClipById(state, id)`               | $O(N_{\text{tracks}} \cdot N_{\text{clips}})$ | Fast path uses cached `TrackIndex`    |
+| **Visible Clips at Frame** | Centered `IntervalTree`                 |                $O(\log N + K)$                | $K$ = active visible layers           |
+| **Nearest Snap Search**    | Binary search over `SnapIndex`          |                  $O(\log M)$                  | $M$ = total project snap points       |
+| **Track Overlap Check**    | Adjacent pair sweep on sorted array     |                    $O(C)$                     | $C$ = clips on track (already sorted) |
+| **Full Invariant Check**   | `checkInvariants(state)`                |          $O(N_{\text{total clips}})$          | Single linear validation pass         |
+| **Transaction Dispatch**   | Rolling validation + apply + invariants |       $O(P \cdot C + N_{\text{clips}})$       | $P$ = primitives in batch             |
+| **Viewport Culling**       | `getVisibleClips` binary search         |                $O(\log C + V)$                | $V$ = visible clips in viewport       |
+| **Undo / Redo**            | Reference rotation on `HistoryStack`    |                    $O(1)$                     | Zero state re-allocation              |
 
 ### 13.2 Memory Management & Garbage Collection
 

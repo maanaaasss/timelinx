@@ -47,4 +47,3 @@ export type Marker =
       readonly linkedClipId: ClipId | null;
       readonly clipId?: ClipId;
     };
-

@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { useEngine, useSelectedClipIds, usePlayheadFrame, useClip } from '@timelinx/react';
-import { toKeyframeId, LINEAR_EASING } from '@timelinx/core';
+import { useSelectedClipIds, usePlayheadFrame, useClip } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { CollapsibleSection } from './collapsible-section';
-import type { ClipId, Effect, Keyframe, KeyframeId, EffectId } from '@timelinx/core';
+import type { ClipId } from '@timelinx/core';
+import type { Effect, Keyframe } from '../types/effects';
 
 function KeyframesIcon() {
   return (
@@ -39,51 +39,64 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
   const clip = useClip(selectedClipId ?? '');
 
-  const effects: readonly Effect[] = clip?.effects ?? [];
+  const effects: readonly Effect[] =
+    (clip?.metadata?.effects as readonly Effect[] | undefined) ?? [];
   const selectedEffect = effects[selectedEffectIdx] ?? null;
   const keyframes: readonly Keyframe[] = selectedEffect?.keyframes ?? [];
 
   const handleAddKeyframe = useCallback(() => {
-    if (!selectedClipId || !selectedEffect) return;
+    if (!selectedClipId || !selectedEffect || !clip) return;
     const keyframe: Keyframe = {
-      id: toKeyframeId(`kf-${Date.now()}`),
+      id: `kf-${Date.now()}`,
       frame: playheadFrame,
       value: 1.0,
-      easing: LINEAR_EASING,
+      easing: 'linear',
     };
+    const nextEffects = effects.map((e) =>
+      e.id === selectedEffect.id ? { ...e, keyframes: [...(e.keyframes ?? []), keyframe] } : e,
+    );
     engine.dispatch({
       id: `add-keyframe-${Date.now()}`,
       label: 'Add keyframe',
       timestamp: Date.now(),
       operations: [
         {
-          type: 'ADD_KEYFRAME',
+          type: 'SET_CLIP_METADATA',
           clipId: selectedClipId as ClipId,
-          effectId: selectedEffect.id,
-          keyframe,
+          metadata: {
+            ...clip.metadata,
+            effects: nextEffects,
+          },
         },
       ],
     });
-  }, [engine, selectedClipId, selectedEffect, playheadFrame]);
+  }, [engine, selectedClipId, selectedEffect, playheadFrame, clip, effects]);
 
   const handleDeleteKeyframe = useCallback(
     (keyframeId: string) => {
-      if (!selectedClipId || !selectedEffect) return;
+      if (!selectedClipId || !selectedEffect || !clip) return;
+      const nextEffects = effects.map((e) =>
+        e.id === selectedEffect.id
+          ? { ...e, keyframes: (e.keyframes ?? []).filter((kf) => kf.id !== keyframeId) }
+          : e,
+      );
       engine.dispatch({
         id: `delete-keyframe-${Date.now()}`,
         label: 'Delete keyframe',
         timestamp: Date.now(),
         operations: [
           {
-            type: 'DELETE_KEYFRAME',
+            type: 'SET_CLIP_METADATA',
             clipId: selectedClipId as ClipId,
-            effectId: selectedEffect.id,
-            keyframeId: keyframeId as KeyframeId,
+            metadata: {
+              ...clip.metadata,
+              effects: nextEffects,
+            },
           },
         ],
       });
     },
-    [engine, selectedClipId, selectedEffect],
+    [engine, selectedClipId, selectedEffect, clip, effects],
   );
 
   if (!selectedClipId) {
@@ -155,7 +168,11 @@ export const KeyframesPanel = React.memo(function KeyframesPanel({
                   <div className="keyframe-info">
                     <span className="keyframe-frame">f{String(kf.frame)}</span>
                     <span className="keyframe-value">{kf.value.toFixed(2)}</span>
-                    <span className="keyframe-easing">{kf.easing.kind}</span>
+                    <span className="keyframe-easing">
+                      {typeof kf.easing === 'string'
+                        ? kf.easing
+                        : ((kf.easing as any)?.kind ?? 'linear')}
+                    </span>
                   </div>
                   <button
                     className="keyframe-delete-btn"

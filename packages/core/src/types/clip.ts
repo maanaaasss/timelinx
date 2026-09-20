@@ -8,10 +8,6 @@
 import type { TimelineFrame } from './frame';
 import type { AssetId } from './asset';
 import type { TrackId } from './track';
-import type { Effect } from './effect';
-import type { ClipTransform } from './clip-transform';
-import { DEFAULT_CLIP_TRANSFORM } from './clip-transform';
-import type { AudioProperties } from './audio-properties';
 import type { Transition } from './transition';
 
 // ---------------------------------------------------------------------------
@@ -58,11 +54,7 @@ export type Clip = {
   readonly reversed: boolean;
   readonly name: string | null;
   readonly color: string | null;
-  readonly metadata: Record<string, string>;
-  // — Phase 4 —
-  readonly effects?: readonly Effect[];
-  readonly transform?: ClipTransform;
-  readonly audio?: AudioProperties;
+  readonly metadata?: Readonly<Record<string, unknown>>;
   readonly transition?: Transition;
 };
 
@@ -83,10 +75,7 @@ export function createClip(params: {
   reversed?: boolean;
   name?: string | null;
   color?: string | null;
-  metadata?: Record<string, string>;
-  effects?: readonly Effect[];
-  transform?: ClipTransform;
-  audio?: AudioProperties;
+  metadata?: Record<string, unknown>;
   transition?: Transition;
 }): Clip {
   return {
@@ -102,10 +91,7 @@ export function createClip(params: {
     reversed: params.reversed ?? false,
     name: params.name ?? null,
     color: params.color ?? null,
-    metadata: params.metadata ?? {},
-    ...(params.effects !== undefined && { effects: params.effects }),
-    transform: params.transform ?? DEFAULT_CLIP_TRANSFORM,
-    ...(params.audio !== undefined && { audio: params.audio }),
+    ...(params.metadata !== undefined && { metadata: params.metadata }),
     ...(params.transition !== undefined && { transition: params.transition }),
   };
 }

@@ -11,18 +11,11 @@ import { useTimelineContext } from '../context/timeline-context';
 import { useMediaAssets } from '../context/media-assets-context';
 import { PreviewOverlay } from './preview-overlay';
 import type { TimelineEngine } from '@timelinx/react';
-import type {
-  TimelineState,
-  Clip,
-  Track,
-  ClipTransform,
-  Effect,
-  Asset,
-  GeneratorAsset,
-  FileAsset,
-} from '@timelinx/core';
+import type { TimelineState, Clip, Track, Asset, GeneratorAsset, FileAsset } from '@timelinx/core';
 import { resolveFrame, toFrame } from '@timelinx/core';
 import type { ResolvedLayer } from '@timelinx/core';
+import { type ClipTransform, DEFAULT_CLIP_TRANSFORM } from '../types/transform';
+import type { Effect } from '../types/effects';
 
 // Canvas logical resolution — coordinate space for all draw calls
 const CANVAS_W = 1920;
@@ -391,14 +384,17 @@ function renderLayer(
   if (!asset) return;
 
   // Build filter from effects
-  const filterStr = buildFilterString(layer.effects);
+  const effects = (layer.metadata?.effects as readonly Effect[] | undefined) ?? [];
+  const filterStr = buildFilterString(effects);
 
   // Save context state
   ctx.save();
 
   // Set global alpha from track opacity * clip transform opacity
+  const transform =
+    (layer.metadata?.transform as ClipTransform | undefined) ?? DEFAULT_CLIP_TRANSFORM;
   const trackOpacity = layer.opacity;
-  const transformOpacity = layer.transform.opacity.value;
+  const transformOpacity = transform.opacity.value;
   ctx.globalAlpha = Math.max(0, Math.min(1, trackOpacity * transformOpacity));
 
   // Apply filter
@@ -408,11 +404,11 @@ function renderLayer(
 
   // Apply transform
   ctx.save();
-  applyTransform(ctx, layer.transform, canvasW, canvasH);
+  applyTransform(ctx, transform, canvasW, canvasH);
 
   // Diagnostic: log transform values for first few frames
   if (import.meta.env.DEV && _debugFrameCount !== undefined && _debugFrameCount <= 3) {
-    const t = layer.transform;
+    const t = transform;
     console.log(
       '[COMPOSITOR-DEBUG] clip:',
       layer.clipId,

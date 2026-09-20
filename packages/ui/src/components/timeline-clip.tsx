@@ -1,5 +1,6 @@
 import React from 'react';
-import type { Clip, Effect } from '@timelinx/core';
+import type { Clip } from '@timelinx/core';
+import type { Effect } from '../types/effects';
 import { IconVideo, IconMusic, IconSubtitle } from './icons';
 import { frameToTimecode } from '../shared/time';
 import { getEffectColor } from '../shared/effect-colors';
@@ -62,7 +63,8 @@ export const TimelineClip = React.memo(function TimelineClip({
   const showMeta = width > 140;
   const showIcon = width > 50;
 
-  const effects: readonly Effect[] = clip.effects ?? [];
+  const effects: readonly Effect[] =
+    (clip.metadata?.effects as readonly Effect[] | undefined) ?? [];
   const effectCount = effects.length;
   const mainHeight = effectCount > 0 ? height - effectCount * EFFECT_ROW_HEIGHT - 2 : height;
 

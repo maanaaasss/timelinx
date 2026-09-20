@@ -18,13 +18,8 @@ import { createAsset, createGeneratorAsset, toAssetId, type AssetId } from '../t
 import { toGeneratorId } from '../types/generator';
 import { toFrame, toTimecode } from '../types/frame';
 
-import { createEffect, toEffectId } from '../types/effect';
-import { toKeyframeId } from '../types/keyframe';
-import { LINEAR_EASING } from '../types/easing';
 import { createTransition, toTransitionId } from '../types/transition';
-import { createAnimatableProperty } from '../types/clip-transform';
 import { toMarkerId } from '../types/marker';
-import { toCaptionId } from '../types/caption';
 import { createLinkGroup, toLinkGroupId } from '../types/link-group';
 import { createTrackGroup, toTrackGroupId } from '../types/track-group';
 
@@ -228,22 +223,12 @@ function buildComplexState() {
     { type: 'INSERT_CLIP', clip: clip6, trackId: audioTrack2Id },
   ]);
 
-  // Effect + keyframes on clip1
-  const effectId = toEffectId('effect1');
-  const effect = createEffect(effectId, 'blur', 'preComposite', [{ key: 'radius', value: 5 }]);
-  state = applyTx(state, 'Add effect', [{ type: 'ADD_EFFECT', clipId: clip1Id, effect }]);
-  state = applyTx(state, 'Add keyframes', [
+  // Metadata on clip1
+  state = applyTx(state, 'Set clip1 metadata', [
     {
-      type: 'ADD_KEYFRAME',
+      type: 'SET_CLIP_METADATA',
       clipId: clip1Id,
-      effectId,
-      keyframe: { id: toKeyframeId('kf1'), frame: toFrame(0), value: 0, easing: LINEAR_EASING },
-    },
-    {
-      type: 'ADD_KEYFRAME',
-      clipId: clip1Id,
-      effectId,
-      keyframe: { id: toKeyframeId('kf2'), frame: toFrame(899), value: 10, easing: LINEAR_EASING },
+      metadata: { customField: 'test-value' },
     },
   ]);
 
@@ -252,31 +237,7 @@ function buildComplexState() {
     {
       type: 'ADD_TRANSITION',
       clipId: clip1Id,
-      transition: createTransition(
-        toTransitionId('tr1'),
-        'dissolve',
-        15,
-        'centerOnCut',
-        LINEAR_EASING,
-      ),
-    },
-  ]);
-
-  // Clip transform on clip2: opacity.value = 0.8
-  state = applyTx(state, 'Set clip2 opacity', [
-    {
-      type: 'SET_CLIP_TRANSFORM',
-      clipId: clip2Id,
-      transform: { opacity: createAnimatableProperty(0.8) },
-    },
-  ]);
-
-  // Audio properties on clip5: gain = -3, mute false
-  state = applyTx(state, 'Set clip5 audio', [
-    {
-      type: 'SET_AUDIO_PROPERTIES',
-      clipId: clip5Id,
-      properties: { gain: createAnimatableProperty(-3), mute: false },
+      transition: createTransition(toTransitionId('tr1'), 'dissolve', 15, 'centerOnCut', 'linear'),
     },
   ]);
 
@@ -338,22 +299,6 @@ function buildComplexState() {
     },
   ]);
 
-  // Caption on audioTrack1
-  state = applyTx(state, 'Add caption', [
-    {
-      type: 'ADD_CAPTION',
-      trackId: audioTrack1Id,
-      caption: {
-        id: toCaptionId('cap1'),
-        text: 'Hello world',
-        startFrame: toFrame(0),
-        endFrame: toFrame(90),
-        language: 'en-US',
-        burnIn: false,
-      },
-    },
-  ]);
-
   return {
     state,
     ids: {
@@ -404,15 +349,12 @@ describe('Phase 5 — Round-trip gate', () => {
     expect(round.timeline.markers).toHaveLength(3);
   });
 
-  it('effect on clip1 preserved (keyframes intact)', () => {
+  it('metadata on clip1 preserved', () => {
     const { state, ids } = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
     const clip1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === ids.clip1Id)!;
-    expect(clip1.effects).toBeDefined();
-    expect(clip1.effects![0]!.effectType).toBe('blur');
-    expect(clip1.effects![0]!.keyframes).toHaveLength(2);
-    expect(clip1.effects![0]!.keyframes[0]!.frame).toBe(0);
-    expect(clip1.effects![0]!.keyframes[1]!.frame).toBe(899);
+    expect(clip1.metadata).toBeDefined();
+    expect(clip1.metadata!.customField).toBe('test-value');
   });
 
   it('transition on clip1 preserved', () => {
@@ -438,14 +380,6 @@ describe('Phase 5 — Round-trip gate', () => {
     const groups = round.timeline.trackGroups ?? [];
     expect(groups).toHaveLength(1);
     expect(groups[0]!.trackIds).toEqual([ids.videoTrack1Id, ids.audioTrack1Id]);
-  });
-
-  it('Caption on audioTrack1 preserved', () => {
-    const { state, ids } = buildComplexState();
-    const round = deserializeTimeline(serializeTimeline(state));
-    const t = round.timeline.tracks.find((x) => x.id === ids.audioTrack1Id)!;
-    expect(t.captions).toHaveLength(1);
-    expect(t.captions[0]!.text).toBe('Hello world');
   });
 
   it('serialize → deserialize → serialize produces identical JSON strings (idempotent)', () => {

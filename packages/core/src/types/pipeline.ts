@@ -10,8 +10,6 @@ import type { ClipId } from './clip';
 import type { TrackId } from './track';
 import type { TimelineFrame } from './frame';
 import type { PlaybackQuality } from './playhead';
-import type { ClipTransform } from './clip-transform';
-import type { Effect } from './effect';
 
 // ---------------------------------------------------------------------------
 // Decode contract
@@ -58,10 +56,9 @@ export type CompositeLayer = {
   readonly trackId: TrackId;
   readonly trackIndex: number;
   readonly frame: VideoFrameResult;
-  readonly transform: ClipTransform;
   readonly opacity: number;
   readonly blendMode: string;
-  readonly effects: readonly Effect[];
+  readonly metadata?: Readonly<Record<string, unknown>> | undefined;
 };
 
 /** Layer spec from resolveFrame (no decoded frame yet). */
@@ -70,10 +67,9 @@ export type ResolvedLayer = {
   readonly trackId: TrackId;
   readonly trackIndex: number;
   readonly mediaFrame: TimelineFrame;
-  readonly transform: ClipTransform;
   readonly opacity: number;
   readonly blendMode: string;
-  readonly effects: readonly Effect[];
+  readonly metadata?: Readonly<Record<string, unknown>> | undefined;
 };
 
 export type CompositeRequest = {

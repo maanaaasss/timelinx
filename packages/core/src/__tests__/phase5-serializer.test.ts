@@ -22,7 +22,6 @@ import { createTrack, toTrackId } from '../types/track';
 import { createClip, toClipId } from '../types/clip';
 import { createAsset, createGeneratorAsset, toAssetId } from '../types/asset';
 import { toGeneratorId } from '../types/generator';
-import { createEffect, toEffectId } from '../types/effect';
 import { createTransition, toTransitionId } from '../types/transition';
 import { toFrame, toTimecode } from '../types/frame';
 import { toMarkerId } from '../types/marker';
@@ -113,8 +112,11 @@ function makeRoundTripState() {
     linkedClipId: null,
   };
   state = applyOperation(state, { type: 'ADD_MARKER', marker });
-  const effect = createEffect(toEffectId('eff-1'), 'blur', 'preComposite', []);
-  state = applyOperation(state, { type: 'ADD_EFFECT', clipId: toClipId('clip-1'), effect });
+  state = applyOperation(state, {
+    type: 'SET_CLIP_METADATA',
+    clipId: toClipId('clip-1'),
+    metadata: { testMeta: 123 },
+  });
   const trans = createTransition(toTransitionId('tr-1'), 'dissolve', 10);
   state = applyOperation(state, {
     type: 'ADD_TRANSITION',
@@ -148,7 +150,7 @@ describe('Phase 5 — Serializer', () => {
     expect(restored.timeline.markers).toHaveLength(state.timeline.markers.length);
     expect(restored.assetRegistry.size).toBe(state.assetRegistry.size);
     const c1 = restored.timeline.tracks[0]!.clips[0]!;
-    expect(c1.effects).toHaveLength(1);
+    expect(c1.metadata).toEqual({ testMeta: 123 });
     expect(c1.transition).toBeDefined();
   });
 

@@ -468,7 +468,6 @@ function EditorInner({
         metaKey: e.metaKey,
         clipId: clipId as ClipId | null,
         trackId: trackId as TrackId | null,
-        captionId: null,
         edge,
       };
     },

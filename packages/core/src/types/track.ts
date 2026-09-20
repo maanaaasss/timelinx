@@ -6,7 +6,6 @@
  */
 
 import type { Clip } from './clip';
-import type { Caption } from './caption';
 import type { TrackGroupId } from './track-group';
 
 // ---------------------------------------------------------------------------
@@ -36,8 +35,6 @@ export type Track = {
   readonly height: number;
   /** Always sorted ascending by timelineStart — invariant enforced by checkInvariants. */
   readonly clips: readonly Clip[];
-  /** Phase 3: captions on this track (e.g. subtitle/title). */
-  readonly captions: readonly Caption[];
   // — Phase 4 —
   readonly blendMode?: string;
   readonly opacity?: number; // 0–1, default 1
@@ -53,7 +50,6 @@ export function createTrack(params: {
   name: string;
   type: TrackType;
   clips?: readonly Clip[];
-  captions?: readonly Caption[];
   locked?: boolean;
   muted?: boolean;
   solo?: boolean;
@@ -67,7 +63,6 @@ export function createTrack(params: {
     name: params.name,
     type: params.type,
     clips: params.clips ?? [],
-    captions: params.captions ?? [],
     locked: params.locked ?? false,
     muted: params.muted ?? false,
     solo: params.solo ?? false,

@@ -19,11 +19,7 @@ import { createTrack, toTrackId } from '../../types/track';
 import { createClip, toClipId } from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode } from '../../types/frame';
-import { createEffect, toEffectId } from '../../types/effect';
-import { toKeyframeId } from '../../types/keyframe';
-import { LINEAR_EASING } from '../../types/easing';
 import { toMarkerId } from '../../types/marker';
-import { toCaptionId } from '../../types/caption';
 import type { TimelineState } from '../../types/state';
 import type { Transaction, OperationPrimitive } from '../../types/operations';
 
@@ -146,19 +142,12 @@ describe('Locked track enforcement — operations that must reject', () => {
     ]);
   });
 
-  it('ADD_CAPTION is rejected on locked track', () => {
+  it('SET_CLIP_METADATA is rejected on locked track', () => {
     rejectsWithLockedTrack(state, [
       {
-        type: 'ADD_CAPTION',
-        trackId: toTrackId('track-1'),
-        caption: {
-          id: toCaptionId('cap-1'),
-          text: 'Test',
-          startFrame: toFrame(0),
-          endFrame: toFrame(60),
-          language: 'en',
-          burnIn: false,
-        },
+        type: 'SET_CLIP_METADATA',
+        clipId: toClipId('clip-1'),
+        metadata: { key: 'value' },
       },
     ]);
   });

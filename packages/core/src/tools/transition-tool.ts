@@ -22,7 +22,6 @@ import type { ClipId, Clip } from '../types/clip';
 import type { TimelineState } from '../types/state';
 import type { Transaction } from '../types/operations';
 import { createTransition, toTransitionId } from '../types/transition';
-import { LINEAR_EASING } from '../types/easing';
 import { applyOperation } from '../engine/apply';
 import { findClipById } from '../systems/queries';
 
@@ -125,7 +124,7 @@ export class TransitionTool implements ITool {
       'dissolve',
       durationFrames,
       'centerOnCut',
-      LINEAR_EASING,
+      'linear',
     );
 
     let nextState: TimelineState;
@@ -202,7 +201,7 @@ export class TransitionTool implements ITool {
       'dissolve',
       durationFrames,
       'centerOnCut',
-      LINEAR_EASING,
+      'linear',
     );
     return {
       id: txId(),

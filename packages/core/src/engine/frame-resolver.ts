@@ -13,7 +13,6 @@ import type { Track } from '../types/track';
 import type { PlaybackQuality } from '../types/playhead';
 import type { ResolvedCompositeRequest, ResolvedLayer } from '../types/pipeline';
 import type { Marker } from '../types/marker';
-import { DEFAULT_CLIP_TRANSFORM } from '../types/clip-transform';
 import type { TrackIndex } from './track-index';
 import { findClipWithTrack } from '../systems/queries';
 
@@ -64,7 +63,7 @@ export function getClipsAtFrame(
 
 /**
  * Resolves the composite request for a timeline frame: which layers are
- * visible and their transform/opacity/blend/effects. Does not decode.
+ * visible and their opacity/blend/metadata. Does not decode.
  * Pass optional index for O(log n + k) clip lookup.
  */
 export function resolveFrame(
@@ -80,10 +79,9 @@ export function resolveFrame(
     trackId: track.id,
     trackIndex,
     mediaFrame: mediaFrameForClip(clip, timelineFrame),
-    transform: clip.transform ?? DEFAULT_CLIP_TRANSFORM,
     opacity: track.opacity ?? 1,
     blendMode: track.blendMode ?? 'normal',
-    effects: clip.effects ?? [],
+    metadata: clip.metadata,
   }));
   return {
     timelineFrame,

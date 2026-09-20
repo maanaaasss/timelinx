@@ -21,12 +21,8 @@ import { createTrack, toTrackId } from '../../types/track';
 import { createClip, toClipId } from '../../types/clip';
 import { createAsset, createGeneratorAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode } from '../../types/frame';
-import { createEffect, toEffectId } from '../../types/effect';
-import { toKeyframeId } from '../../types/keyframe';
-import { LINEAR_EASING } from '../../types/easing';
 import { createTransition, toTransitionId } from '../../types/transition';
 import { toMarkerId } from '../../types/marker';
-import { createAnimatableProperty } from '../../types/clip-transform';
 import type { TimelineState } from '../../types/state';
 import type { Transaction, OperationPrimitive } from '../../types/operations';
 
@@ -155,23 +151,12 @@ function buildComplexState(): TimelineState {
     { type: 'INSERT_CLIP', clip: c4, trackId: a1 },
   ]);
 
-  // Effect + keyframes on c1
-  const effect = createEffect(toEffectId('e1'), 'blur', 'preComposite', [
-    { key: 'radius', value: 5 },
-  ]);
-  state = applyTx(state, 'Add effect', [{ type: 'ADD_EFFECT', clipId: toClipId('c1'), effect }]);
-  state = applyTx(state, 'Add keyframes', [
+  // Metadata on c1
+  state = applyTx(state, 'Set metadata', [
     {
-      type: 'ADD_KEYFRAME',
+      type: 'SET_CLIP_METADATA',
       clipId: toClipId('c1'),
-      effectId: toEffectId('e1'),
-      keyframe: { id: toKeyframeId('kf1'), frame: toFrame(0), value: 0, easing: LINEAR_EASING },
-    },
-    {
-      type: 'ADD_KEYFRAME',
-      clipId: toClipId('c1'),
-      effectId: toEffectId('e1'),
-      keyframe: { id: toKeyframeId('kf2'), frame: toFrame(899), value: 10, easing: LINEAR_EASING },
+      metadata: { testKey: 'testVal' },
     },
   ]);
 
@@ -180,13 +165,7 @@ function buildComplexState(): TimelineState {
     {
       type: 'ADD_TRANSITION',
       clipId: toClipId('c1'),
-      transition: createTransition(
-        toTransitionId('tr1'),
-        'dissolve',
-        15,
-        'centerOnCut',
-        LINEAR_EASING,
-      ),
+      transition: createTransition(toTransitionId('tr1'), 'dissolve', 15, 'centerOnCut', 'linear'),
     },
   ]);
 
@@ -250,14 +229,12 @@ describe('Serialization: JSON round-trip', () => {
     expect(round.timeline.markers).toHaveLength(2);
   });
 
-  it('effect keyframes preserved', () => {
+  it('clip metadata preserved', () => {
     const state = buildComplexState();
     const round = deserializeTimeline(serializeTimeline(state));
     const c1 = round.timeline.tracks.flatMap((t) => t.clips).find((c) => c.id === 'c1')!;
-    expect(c1.effects).toBeDefined();
-    expect(c1.effects![0]!.keyframes).toHaveLength(2);
-    expect(c1.effects![0]!.keyframes[0]!.frame).toBe(0);
-    expect(c1.effects![0]!.keyframes[1]!.frame).toBe(899);
+    expect(c1.metadata).toBeDefined();
+    expect(c1.metadata!.testKey).toBe('testVal');
   });
 
   it('transition preserved', () => {

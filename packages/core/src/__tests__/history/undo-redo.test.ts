@@ -27,9 +27,6 @@ import { createTrack, toTrackId } from '../../types/track';
 import { createClip, toClipId } from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode } from '../../types/frame';
-import { createEffect, toEffectId } from '../../types/effect';
-import { toKeyframeId } from '../../types/keyframe';
-import { LINEAR_EASING } from '../../types/easing';
 import { toMarkerId } from '../../types/marker';
 import { DEFAULT_COMPRESSION_POLICY } from '../../types/compression';
 import type { TimelineState } from '../../types/state';
@@ -276,21 +273,21 @@ describe('Undo/Redo Round-Trip — per operation', () => {
     expect(getCurrentState(h).timeline.outPoint).toBeNull();
   });
 
-  it('ADD_EFFECT: undo removes the effect', () => {
+  it('SET_CLIP_METADATA: undo restores previous metadata', () => {
     const original = makeBaseState();
-    const withEffect = dispatchAndAssert(original, [
+    const withMeta = dispatchAndAssert(original, [
       {
-        type: 'ADD_EFFECT',
+        type: 'SET_CLIP_METADATA',
         clipId: toClipId('clip-1'),
-        effect: createEffect(toEffectId('e1'), 'blur', 'preComposite', []),
+        metadata: { custom: 'value' },
       },
     ]);
-    expect(withEffect.timeline.tracks[0]!.clips[0]!.effects).toHaveLength(1);
+    expect(withMeta.timeline.tracks[0]!.clips[0]!.metadata).toEqual({ custom: 'value' });
 
     let h = createHistory(original);
-    h = pushHistory(h, withEffect);
+    h = pushHistory(h, withMeta);
     h = undo(h);
-    expect(getCurrentState(h).timeline.tracks[0]!.clips[0]!.effects).toBeUndefined();
+    expect(getCurrentState(h).timeline.tracks[0]!.clips[0]!.metadata).toBeUndefined();
   });
 });
 

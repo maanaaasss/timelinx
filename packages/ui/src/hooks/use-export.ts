@@ -141,7 +141,8 @@ export function computeAudioSchedule(
     const timelineStartSec = (clip.timelineStart as number) / fps;
     const mediaInSec = ((clip.mediaIn ?? 0) as number) / fps;
     const clipDurationSec = ((clip.timelineEnd as number) - (clip.timelineStart as number)) / fps;
-    const gainDb = clip.audio?.gain?.value ?? 0;
+    const gainDb =
+      (clip.metadata?.audio as any)?.gain?.value ?? (clip as any).audio?.gain?.value ?? 0;
     const gainLinear = Math.pow(10, gainDb / 20);
 
     return {
@@ -204,9 +205,6 @@ export function getExportDurationFrames(state: TimelineState): number {
   for (const track of state.timeline.tracks) {
     for (const clip of track.clips) {
       contentEnd = Math.max(contentEnd, clip.timelineEnd as number);
-    }
-    for (const caption of track.captions) {
-      contentEnd = Math.max(contentEnd, caption.endFrame as number);
     }
   }
 
