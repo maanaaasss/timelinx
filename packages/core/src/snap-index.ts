@@ -114,7 +114,6 @@ export function buildSnapIndex(
     sourceId: '__playhead__',
   });
 
-
   // Sort ascending by frame
   points.sort((a, b) => a.frame - b.frame);
 

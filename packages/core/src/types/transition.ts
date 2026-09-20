@@ -4,9 +4,6 @@
  * Outgoing transition between clips (dissolve, wipe, etc.).
  */
 
-import type { EasingCurve } from './easing';
-import { LINEAR_EASING } from './easing';
-
 export type TransitionId = string & { readonly __brand: 'TransitionId' };
 export function toTransitionId(s: string): TransitionId {
   return s as TransitionId;
@@ -30,7 +27,7 @@ export type Transition = {
   readonly type: TransitionType;
   readonly durationFrames: number;
   readonly alignment: TransitionAlignment;
-  readonly easing: EasingCurve;
+  readonly easing?: string;
   readonly params: readonly TransitionParam[];
 };
 
@@ -39,7 +36,7 @@ export function createTransition(
   type: TransitionType,
   durationFrames: number,
   alignment: TransitionAlignment = 'centerOnCut',
-  easing: EasingCurve = LINEAR_EASING,
+  easing: string = 'linear',
   params: readonly TransitionParam[] = [],
 ): Transition {
   return { id, type, durationFrames, alignment, easing, params };

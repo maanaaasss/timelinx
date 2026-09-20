@@ -11,16 +11,40 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import {
-  useEngine,
-  useAllTracks,
-  useFps,
-  usePlayheadFrame,
-  useTrackCaptions,
-} from '@timelinx/react';
-import { toCaptionId, defaultCaptionStyle } from '@timelinx/core';
+import { useAllTracks, useFps, usePlayheadFrame } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
-import type { CaptionId, TrackId, Caption, TimelineFrame } from '@timelinx/core';
+import type { TrackId, Generator } from '@timelinx/core';
+import { toFrame, toGeneratorId } from '@timelinx/core';
+
+export type CaptionStyle = {
+  fontFamily: string;
+  fontSize: number;
+  color: string;
+  backgroundColor: string;
+  hAlign: 'left' | 'center' | 'right';
+  vAlign: 'top' | 'middle' | 'bottom';
+};
+
+export type Caption = {
+  id: string;
+  text: string;
+  startFrame: number;
+  endFrame: number;
+  language: string;
+  style: CaptionStyle;
+  burnIn: boolean;
+};
+
+export type CaptionId = string;
+
+export const defaultCaptionStyle: CaptionStyle = {
+  fontFamily: 'sans-serif',
+  fontSize: 16,
+  color: '#ffffff',
+  backgroundColor: 'rgba(0,0,0,0.8)',
+  hAlign: 'center',
+  vAlign: 'bottom',
+};
 
 export interface CaptionsPanelProps {
   className?: string;
@@ -38,14 +62,24 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: Ca
   const [editText, setEditText] = useState<string | null>(null);
 
   const activeTrackId = selectedTrackId ?? tracks[0]?.id ?? null;
-  const captionsFromHook = useTrackCaptions(engine, activeTrackId ?? '');
+  const activeTrack = tracks.find((t) => t.id === activeTrackId);
+  const textClips =
+    activeTrack?.clips.filter(
+      (c) => (c.metadata as any)?.type === 'text' || c.name?.startsWith('Caption'),
+    ) ?? [];
 
-  const captions: { caption: Caption; trackId: string }[] = [];
-  if (activeTrackId) {
-    for (const c of captionsFromHook) {
-      captions.push({ caption: c, trackId: activeTrackId });
-    }
-  }
+  const captions: { caption: Caption; trackId: string }[] = textClips.map((c) => ({
+    trackId: activeTrackId ?? '',
+    caption: {
+      id: c.id,
+      text: c.name || 'Caption',
+      startFrame: c.timelineStart as number,
+      endFrame: c.timelineEnd as number,
+      language: 'en-US',
+      style: defaultCaptionStyle,
+      burnIn: false,
+    },
+  }));
 
   const selectedCaption = selectedCaptionId
     ? captions.find((c) => c.caption.id === selectedCaptionId)
@@ -53,18 +87,14 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: Ca
 
   const handleAddCaption = useCallback(() => {
     if (!activeTrackId) return;
-    const duration = fps * 2;
-    let startFrame = playheadFrame;
-    let endFrame = (startFrame + duration) as TimelineFrame;
-
-    const overlapping = captionsFromHook.some(
-      (c) => startFrame < (c.endFrame as number) && endFrame > (c.startFrame as number),
-    );
-    if (overlapping && captionsFromHook.length > 0) {
-      const lastEnd = Math.max(...captionsFromHook.map((c) => c.endFrame as number));
-      startFrame = lastEnd as TimelineFrame;
-      endFrame = (lastEnd + duration) as TimelineFrame;
-    }
+    const duration = Math.round(fps * 2);
+    const generator: Generator = {
+      id: toGeneratorId(`gen-caption-${Date.now()}`),
+      type: 'text',
+      params: { text: 'New caption' },
+      duration: toFrame(duration),
+      name: 'New caption',
+    };
 
     engine.dispatch({
       id: `add-caption-${Date.now()}`,
@@ -72,33 +102,25 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: Ca
       timestamp: Date.now(),
       operations: [
         {
-          type: 'ADD_CAPTION',
+          type: 'INSERT_GENERATOR',
+          generator,
           trackId: activeTrackId as TrackId,
-          caption: {
-            id: toCaptionId(`cap-${Date.now()}`) as CaptionId,
-            text: 'New caption',
-            startFrame: startFrame as TimelineFrame,
-            endFrame: endFrame as TimelineFrame,
-            language: 'en-US',
-            style: defaultCaptionStyle,
-            burnIn: false,
-          },
+          atFrame: toFrame(playheadFrame),
         },
       ],
     });
-  }, [engine, activeTrackId, playheadFrame, fps, captionsFromHook]);
+  }, [engine, activeTrackId, playheadFrame, fps]);
 
   const handleDeleteCaption = useCallback(
-    (captionId: string, trackId: string) => {
+    (captionId: string) => {
       engine.dispatch({
         id: `delete-caption-${Date.now()}`,
         label: 'Delete caption',
         timestamp: Date.now(),
         operations: [
           {
-            type: 'DELETE_CAPTION',
-            captionId: captionId as CaptionId,
-            trackId: trackId as TrackId,
+            type: 'DELETE_CLIP',
+            clipId: captionId as any,
           },
         ],
       });
@@ -115,10 +137,9 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: Ca
       timestamp: Date.now(),
       operations: [
         {
-          type: 'EDIT_CAPTION',
-          captionId: selectedCaption.caption.id as CaptionId,
-          trackId: selectedCaption.trackId as TrackId,
-          text: editText,
+          type: 'SET_CLIP_METADATA',
+          clipId: selectedCaption.caption.id as any,
+          metadata: { text: editText },
         },
       ],
     });
@@ -195,7 +216,7 @@ export const CaptionsPanel = React.memo(function CaptionsPanel({ className }: Ca
                     title="Delete caption"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteCaption(caption.id, trackId);
+                      handleDeleteCaption(caption.id);
                     }}
                   >
                     ×

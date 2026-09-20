@@ -25,7 +25,6 @@ import type {
 import { toToolId, type ToolId, type SnapPointType } from './types';
 import type { ClipId, Clip } from '../types/clip';
 import type { TrackId } from '../types/track';
-import type { CaptionId, Caption } from '../types/caption';
 import type { TimelineFrame } from '../types/frame';
 import type { Transaction } from '../types/operations';
 import type { TimelineState } from '../types/state';
@@ -43,7 +42,7 @@ const MIN_DURATION_FRAMES = 1;
 // Internal types
 // ---------------------------------------------------------------------------
 
-type DragMode = 'idle' | 'drag-clip' | 'drag-caption' | 'rubber-band';
+type DragMode = 'idle' | 'drag-clip' | 'rubber-band';
 
 type TrimEdge = 'start' | 'end';
 
@@ -153,39 +152,6 @@ function validSingleClipStart(
   return best as TimelineFrame;
 }
 
-function validCaptionStart(
-  state: TimelineState,
-  otherCaptions: readonly Caption[],
-  requestedStart: TimelineFrame,
-  duration: TimelineFrame,
-): TimelineFrame {
-  const maxStart = Math.max(0, state.timeline.duration - duration) as TimelineFrame;
-  const requested = Math.max(0, Math.min(requestedStart, maxStart)) as TimelineFrame;
-
-  // Check for overlaps with other captions
-  const sorted = [...otherCaptions].sort((a, b) => a.startFrame - b.startFrame);
-  const candidates = new Set<number>([requested, 0, maxStart]);
-  for (const candidate of sorted) {
-    candidates.add(Math.max(0, Math.min(candidate.startFrame - duration, maxStart)));
-    candidates.add(Math.max(0, Math.min(candidate.endFrame, maxStart)));
-  }
-
-  let best = requestedStart as number;
-  let bestDistance = Number.POSITIVE_INFINITY;
-  for (const candidate of candidates) {
-    const end = candidate + duration;
-    const overlaps = sorted.some(
-      (existing) => candidate < existing.endFrame && end > existing.startFrame,
-    );
-    const distance = Math.abs(candidate - requested);
-    if (!overlaps && distance < bestDistance) {
-      best = candidate;
-      bestDistance = distance;
-    }
-  }
-  return best as TimelineFrame;
-}
-
 let _txSeq = 0;
 function txId(): string {
   return `selection-tx-${++_txSeq}`;
@@ -201,7 +167,6 @@ export class SelectionTool implements ITool {
 
   // ── Selection state ────────────────────────────────────────────────────
   private readonly selected: Set<ClipId> = new Set();
-  private readonly selectedCaptions: Set<CaptionId> = new Set();
 
   // ── Per-gesture tracking ───────────────────────────────────────────────
   private mode: DragMode = 'idle';
@@ -216,12 +181,6 @@ export class SelectionTool implements ITool {
 
   // near-edge trim (click-based, not drag mode)
   private pendingTrimEdge: TrimEdge | null = null;
-
-  // drag-caption mode
-  private dragCaptionId: CaptionId | null = null;
-  private dragCaptionTrackId: TrackId | null = null;
-  private dragCaptionOrigStart: TimelineFrame | null = null;
-  private dragCaptionOrigEnd: TimelineFrame | null = null;
 
   // rubber-band mode
   private rubberBandStartFrame: TimelineFrame | null = null;
@@ -240,18 +199,12 @@ export class SelectionTool implements ITool {
 
   clearSelection(): void {
     this.selected.clear();
-    this.selectedCaptions.clear();
-  }
-
-  getCaptionSelection(): ReadonlySet<CaptionId> {
-    return this.selectedCaptions;
   }
 
   // ── ITool: getCursor ────────────────────────────────────────────────────
 
   getCursor(_ctx: ToolContext): string {
     if (this.mode === 'drag-clip') return 'grabbing';
-    if (this.mode === 'drag-caption') return 'grabbing';
     if (this.mode === 'rubber-band') return 'crosshair';
     if (this.lastHitEdge !== null) return 'ew-resize';
     if (this._lastHoveredClipId !== null) return 'grab';
@@ -262,10 +215,6 @@ export class SelectionTool implements ITool {
 
   getSnapCandidateTypes(): readonly SnapPointType[] {
     return ['ClipStart', 'ClipEnd', 'Playhead'];
-  }
-
-  supportsCaptions(): boolean {
-    return true;
   }
 
   // ── ITool: onPointerDown ────────────────────────────────────────────────
@@ -302,36 +251,6 @@ export class SelectionTool implements ITool {
           });
         }
       }
-    } else if (event.captionId !== null && event.trackId !== null) {
-      // Caption drag — find the caption on the track
-      const track = ctx.state.timeline.tracks.find((t) => t.id === event.trackId);
-      const caption = track?.captions.find((c) => c.id === event.captionId);
-      if (!caption) {
-        return;
-      }
-
-      // Handle caption selection
-      if (event.shiftKey) {
-        if (this.selectedCaptions.has(event.captionId)) {
-          this.selectedCaptions.delete(event.captionId);
-        } else {
-          this.selectedCaptions.add(event.captionId);
-        }
-      } else {
-        if (!this.selectedCaptions.has(event.captionId)) {
-          this.selectedCaptions.clear();
-          this.selectedCaptions.add(event.captionId);
-        }
-      }
-
-      this.mode = 'drag-caption';
-      this.dragStartX = event.x;
-      this.dragStartY = event.y;
-      this.dragStartFrame = event.frame;
-      this.dragCaptionId = event.captionId;
-      this.dragCaptionTrackId = event.trackId;
-      this.dragCaptionOrigStart = caption.startFrame;
-      this.dragCaptionOrigEnd = caption.endFrame;
     } else {
       this.mode = 'rubber-band';
       this.dragStartX = event.x;
@@ -366,66 +285,6 @@ export class SelectionTool implements ITool {
           startY: this.rubberBandStartY,
           endY: event.y,
         },
-        isProvisional: true,
-      };
-    }
-
-    // ── MODE 5: caption drag (with provisional ghost) ───────────────────
-    if (this.mode === 'drag-caption') {
-      if (
-        this.dragStartX === null ||
-        this.dragCaptionId === null ||
-        this.dragCaptionTrackId === null
-      )
-        return null;
-      const dxPx = Math.abs(event.x - this.dragStartX);
-      if (dxPx < DRAG_THRESHOLD_PX) return null;
-
-      const origStart = this.dragCaptionOrigStart;
-      const origEnd = this.dragCaptionOrigEnd;
-      if (origStart === null || origEnd === null) return null;
-
-      const frameDelta = (event.frame - this.dragStartFrame!) as TimelineFrame;
-      const duration = (origEnd - origStart) as TimelineFrame;
-
-      // Snap caption start to nearby snap points
-      const rawTarget = (origStart + frameDelta) as TimelineFrame;
-      const snappedStart = ctx.snap(
-        rawTarget,
-        [this.dragCaptionId],
-        ['ClipStart', 'ClipEnd', 'Playhead'],
-      );
-
-      // Collision avoidance: find non-overlapping position
-      const track = ctx.state.timeline.tracks.find((t) => t.id === this.dragCaptionTrackId);
-      const otherCaptions = track?.captions.filter((c) => c.id !== this.dragCaptionId) ?? [];
-      const clampedStart = validCaptionStart(ctx.state, otherCaptions, snappedStart, duration);
-
-      const newEnd = (clampedStart + duration) as TimelineFrame;
-
-      // Create ghost caption at preview position
-      const origCaption = track?.captions.find((c) => c.id === this.dragCaptionId);
-      const ghostCaption: Caption = {
-        id: this.dragCaptionId,
-        text: origCaption?.text ?? '',
-        startFrame: clampedStart,
-        endFrame: newEnd,
-        language: origCaption?.language ?? 'en-US',
-        style: origCaption?.style ?? {
-          fontFamily: 'Arial',
-          fontSize: 14,
-          color: '#fff',
-          backgroundColor: '#000',
-          hAlign: 'center',
-          vAlign: 'bottom',
-        },
-        burnIn: origCaption?.burnIn ?? false,
-        _trackId: this.dragCaptionTrackId,
-      };
-
-      return {
-        clips: [],
-        captions: [ghostCaption],
         isProvisional: true,
       };
     }
@@ -514,10 +373,6 @@ export class SelectionTool implements ITool {
     const savedRbStartFrame = this.rubberBandStartFrame;
     const savedSelected = new Set(this.selected);
     const savedPendingTrimEdge = this.pendingTrimEdge;
-    const savedCaptionId = this.dragCaptionId;
-    const savedCaptionTrackId = this.dragCaptionTrackId;
-    const savedCaptionOrigStart = this.dragCaptionOrigStart;
-    const savedCaptionOrigEnd = this.dragCaptionOrigEnd;
 
     this._resetDragState();
 
@@ -541,52 +396,6 @@ export class SelectionTool implements ITool {
         }
       }
       return null;
-    }
-
-    // ── MODE 5: caption drag complete ────────────────────────────────────
-    if (previousMode === 'drag-caption') {
-      if (savedCaptionId === null || savedCaptionTrackId === null) return null;
-      if (savedCaptionOrigStart === null || savedCaptionOrigEnd === null) return null;
-
-      const dxPx = savedDragStartX !== null ? Math.abs(event.x - savedDragStartX) : 0;
-      if (dxPx < DRAG_THRESHOLD_PX) return null; // click, not drag
-
-      const frameDelta = (event.frame - (savedDragStartFrame ?? event.frame)) as TimelineFrame;
-      const rawTarget = (savedCaptionOrigStart + frameDelta) as TimelineFrame;
-
-      // Snap caption start to nearby snap points
-      const snappedStart = ctx.snap(
-        rawTarget,
-        [savedCaptionId],
-        ['ClipStart', 'ClipEnd', 'Playhead'],
-      );
-
-      // Collision avoidance: find non-overlapping position
-      const track = ctx.state.timeline.tracks.find((t) => t.id === savedCaptionTrackId);
-      const otherCaptions = track?.captions.filter((c) => c.id !== savedCaptionId) ?? [];
-      const duration = (savedCaptionOrigEnd - savedCaptionOrigStart) as TimelineFrame;
-      const clampedStart = validCaptionStart(ctx.state, otherCaptions, snappedStart, duration);
-      const clampedEnd = (clampedStart + duration) as TimelineFrame;
-
-      if (clampedStart === savedCaptionOrigStart) {
-        return null; // no movement
-      }
-
-      const captionTx = {
-        id: txId(),
-        label: 'Move Caption' as const,
-        timestamp: Date.now(),
-        operations: [
-          {
-            type: 'EDIT_CAPTION' as const,
-            captionId: savedCaptionId,
-            trackId: savedCaptionTrackId,
-            startFrame: clampedStart,
-            endFrame: clampedEnd,
-          },
-        ],
-      };
-      return captionTx;
     }
 
     if (previousMode !== 'drag-clip') return null;
@@ -807,7 +616,6 @@ export class SelectionTool implements ITool {
     this.lastClientX = null;
     this.lastHitEdge = null;
     this._lastHoveredClipId = null;
-    this.selectedCaptions.clear();
   }
 
   // ── Private helpers ─────────────────────────────────────────────────────
@@ -820,10 +628,6 @@ export class SelectionTool implements ITool {
     this.isMultiDrag = false;
     this.originalPositions.clear();
     this.pendingTrimEdge = null;
-    this.dragCaptionId = null;
-    this.dragCaptionTrackId = null;
-    this.dragCaptionOrigStart = null;
-    this.dragCaptionOrigEnd = null;
     this.rubberBandStartFrame = null;
     this.rubberBandStartY = null;
   }

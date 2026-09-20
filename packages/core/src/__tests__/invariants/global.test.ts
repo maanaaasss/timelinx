@@ -17,11 +17,7 @@ import { createTrack, toTrackId } from '../../types/track';
 import { createClip, toClipId } from '../../types/clip';
 import { createAsset, toAssetId } from '../../types/asset';
 import { toFrame, toTimecode } from '../../types/frame';
-import { createEffect, toEffectId } from '../../types/effect';
-import { toKeyframeId } from '../../types/keyframe';
-import { LINEAR_EASING } from '../../types/easing';
 import { toMarkerId } from '../../types/marker';
-import { toCaptionId } from '../../types/caption';
 import { toTrackGroupId } from '../../types/track-group';
 import type { TimelineState } from '../../types/state';
 import type { Transaction, OperationPrimitive } from '../../types/operations';
@@ -562,79 +558,6 @@ describe('Invariant: marker bounds', () => {
   });
 });
 
-// ── EFFECTS and KEYFRAMES ────────────────────────────────────────────────────
-
-describe('Invariant: effects and keyframes', () => {
-  it('valid effect with sorted keyframes passes', () => {
-    let state = makeBaseState();
-    state = apply(state, 'add effect', [
-      {
-        type: 'ADD_EFFECT',
-        clipId: toClipId('clip-1'),
-        effect: createEffect(toEffectId('e1'), 'blur', 'preComposite', [{ key: 'r', value: 5 }]),
-      },
-    ]);
-    state = apply(state, 'add keyframes', [
-      {
-        type: 'ADD_KEYFRAME',
-        clipId: toClipId('clip-1'),
-        effectId: toEffectId('e1'),
-        keyframe: { id: toKeyframeId('kf1'), frame: toFrame(0), value: 0, easing: LINEAR_EASING },
-      },
-      {
-        type: 'ADD_KEYFRAME',
-        clipId: toClipId('clip-1'),
-        effectId: toEffectId('e1'),
-        keyframe: {
-          id: toKeyframeId('kf2'),
-          frame: toFrame(100),
-          value: 10,
-          easing: LINEAR_EASING,
-        },
-      },
-    ]);
-    expect(checkInvariants(state)).toEqual([]);
-  });
-
-  it('keyframe order violation detected with duplicate frames', () => {
-    const state = makeBaseState();
-    const clip = state.timeline.tracks[0]!.clips[0]!;
-    const effect = createEffect(toEffectId('e1'), 'blur', 'preComposite', []);
-    const badEffect = {
-      ...effect,
-      keyframes: [
-        { id: toKeyframeId('kf1'), frame: toFrame(50), value: 0, easing: LINEAR_EASING },
-        { id: toKeyframeId('kf2'), frame: toFrame(50), value: 10, easing: LINEAR_EASING }, // duplicate frame
-      ],
-    };
-    const badClip = { ...clip, effects: [badEffect] };
-    const tracks = state.timeline.tracks.map((t) =>
-      t.id === 'track-1' ? { ...t, clips: [badClip] } : t,
-    );
-    const badState = { ...state, timeline: { ...state.timeline, tracks } };
-    expect(checkInvariants(badState).some((v) => v.type === 'KEYFRAME_ORDER_VIOLATION')).toBe(true);
-  });
-
-  it('invalid render stage is detected', () => {
-    const state = makeBaseState();
-    const clip = state.timeline.tracks[0]!.clips[0]!;
-    const badEffect = {
-      id: toEffectId('e-bad'),
-      effectType: 'blur',
-      renderStage: 'INVALID_STAGE',
-      enabled: true,
-      params: [],
-      keyframes: [],
-    };
-    const badClip = { ...clip, effects: [badEffect as any] };
-    const tracks = state.timeline.tracks.map((t) =>
-      t.id === 'track-1' ? { ...t, clips: [badClip] } : t,
-    );
-    const badState = { ...state, timeline: { ...state.timeline, tracks } };
-    expect(checkInvariants(badState).some((v) => v.type === 'INVALID_RENDER_STAGE')).toBe(true);
-  });
-});
-
 // ── SCHEMA_VERSION_MISMATCH ──────────────────────────────────────────────────
 
 describe('Invariant: schema version', () => {
@@ -682,64 +605,6 @@ describe('Invariant: schema version', () => {
     const violations = checkInvariants(badState);
     // Should only have schema mismatch, not overlap
     expect(violations).toHaveLength(1);
-  });
-});
-
-// ── CAPTION_OUT_OF_BOUNDS ────────────────────────────────────────────────────
-
-describe('Invariant: caption bounds', () => {
-  it('valid caption passes', () => {
-    const state = apply(makeBaseState(), 'add caption', [
-      {
-        type: 'ADD_CAPTION',
-        trackId: toTrackId('track-1'),
-        caption: {
-          id: toCaptionId('cap1'),
-          text: 'Hello',
-          startFrame: toFrame(0),
-          endFrame: toFrame(60),
-          language: 'en',
-          burnIn: false,
-        },
-      },
-    ]);
-    expect(checkInvariants(state)).toEqual([]);
-  });
-
-  it('caption endFrame > timeline duration is detected', () => {
-    const state = makeBaseState(); // duration = 3000
-    const badCaption = {
-      id: toCaptionId('cap-bad'),
-      text: 'Bad',
-      startFrame: toFrame(0),
-      endFrame: toFrame(3100),
-      language: 'en',
-      burnIn: false,
-    };
-    const badTrack = { ...state.timeline.tracks[0]!, captions: [badCaption] };
-    const badState = {
-      ...state,
-      timeline: { ...state.timeline, tracks: [badTrack] },
-    };
-    expect(checkInvariants(badState).some((v) => v.type === 'CAPTION_OUT_OF_BOUNDS')).toBe(true);
-  });
-
-  it('caption endFrame <= startFrame is detected', () => {
-    const state = makeBaseState();
-    const badCaption = {
-      id: toCaptionId('cap-bad2'),
-      text: 'Bad',
-      startFrame: toFrame(100),
-      endFrame: toFrame(100),
-      language: 'en',
-      burnIn: false,
-    };
-    const badTrack = { ...state.timeline.tracks[0]!, captions: [badCaption] };
-    const badState = {
-      ...state,
-      timeline: { ...state.timeline, tracks: [badTrack] },
-    };
-    expect(checkInvariants(badState).some((v) => v.type === 'CAPTION_OUT_OF_BOUNDS')).toBe(true);
   });
 });
 

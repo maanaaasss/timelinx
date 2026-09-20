@@ -20,12 +20,6 @@ import type { SequenceSettings } from './timeline';
 import type { TimelineState } from './state';
 import type { MarkerId, Marker } from './marker';
 import type { Generator } from './generator';
-import type { CaptionId, Caption, CaptionStyle } from './caption';
-import type { Effect, EffectId } from './effect';
-import type { Keyframe, KeyframeId } from './keyframe';
-import type { EasingCurve } from './easing';
-import type { ClipTransform } from './clip-transform';
-import type { AudioProperties } from './audio-properties';
 import type { Transition, TransitionAlignment } from './transition';
 import type { LinkGroup, LinkGroupId } from './link-group';
 import type { TrackGroup, TrackGroupId } from './track-group';
@@ -47,6 +41,7 @@ export type OperationPrimitive =
   | { type: 'SET_CLIP_SPEED'; clipId: ClipId; speed: number }
   | { type: 'SET_CLIP_COLOR'; clipId: ClipId; color: string | null }
   | { type: 'SET_CLIP_NAME'; clipId: ClipId; name: string | null }
+  | { type: 'SET_CLIP_METADATA'; clipId: ClipId; metadata: Record<string, unknown> }
   // — Track operations —
   | { type: 'ADD_TRACK'; track: Track }
   | { type: 'DELETE_TRACK'; trackId: TrackId }
@@ -73,55 +68,7 @@ export type OperationPrimitive =
   | { type: 'SET_IN_POINT'; frame: TimelineFrame | null }
   | { type: 'SET_OUT_POINT'; frame: TimelineFrame | null }
   | { type: 'INSERT_GENERATOR'; generator: Generator; trackId: TrackId; atFrame: TimelineFrame }
-  // — Phase 3: Caption —
-  | {
-      type: 'ADD_CAPTION';
-      caption: Omit<Caption, 'style'> & { style?: CaptionStyle };
-      trackId: TrackId;
-    }
-  | {
-      type: 'EDIT_CAPTION';
-      captionId: CaptionId;
-      trackId: TrackId;
-      text?: string;
-      language?: string;
-      style?: Partial<CaptionStyle>;
-      burnIn?: boolean;
-      startFrame?: TimelineFrame;
-      endFrame?: TimelineFrame;
-    }
-  | { type: 'DELETE_CAPTION'; captionId: CaptionId; trackId: TrackId }
-  // — Phase 4: Effect & Keyframe —
-  | { type: 'ADD_EFFECT'; clipId: ClipId; effect: Effect }
-  | { type: 'REMOVE_EFFECT'; clipId: ClipId; effectId: EffectId }
-  | { type: 'REORDER_EFFECT'; clipId: ClipId; effectId: EffectId; newIndex: number }
-  | { type: 'SET_EFFECT_ENABLED'; clipId: ClipId; effectId: EffectId; enabled: boolean }
-  | {
-      type: 'SET_EFFECT_PARAM';
-      clipId: ClipId;
-      effectId: EffectId;
-      key: string;
-      value: number | string | boolean;
-    }
-  | { type: 'ADD_KEYFRAME'; clipId: ClipId; effectId: EffectId; keyframe: Keyframe }
-  | {
-      type: 'MOVE_KEYFRAME';
-      clipId: ClipId;
-      effectId: EffectId;
-      keyframeId: KeyframeId;
-      newFrame: TimelineFrame;
-    }
-  | { type: 'DELETE_KEYFRAME'; clipId: ClipId; effectId: EffectId; keyframeId: KeyframeId }
-  | {
-      type: 'SET_KEYFRAME_EASING';
-      clipId: ClipId;
-      effectId: EffectId;
-      keyframeId: KeyframeId;
-      easing: EasingCurve;
-    }
-  // — Phase 4 Step 3: Transform, Audio, Transitions, Groups —
-  | { type: 'SET_CLIP_TRANSFORM'; clipId: ClipId; transform: Partial<ClipTransform> }
-  | { type: 'SET_AUDIO_PROPERTIES'; clipId: ClipId; properties: Partial<AudioProperties> }
+  // — Phase 4: Transitions & Groups —
   | { type: 'ADD_TRANSITION'; clipId: ClipId; transition: Transition }
   | { type: 'DELETE_TRANSITION'; clipId: ClipId }
   | { type: 'SET_TRANSITION_DURATION'; clipId: ClipId; durationFrames: number }
@@ -167,11 +114,6 @@ export type RejectionReason =
   | 'INVARIANT_VIOLATED'
   | 'NOT_FOUND'
   | 'CLIP_NOT_FOUND'
-  | 'DUPLICATE_EFFECT_ID'
-  | 'EFFECT_NOT_FOUND'
-  | 'EFFECT_INDEX_OUT_OF_RANGE'
-  | 'KEYFRAME_NOT_FOUND'
-  | 'DUPLICATE_KEYFRAME_ID'
   | 'INVALID_RANGE'
   | 'TRANSITION_NOT_FOUND'
   | 'LINK_GROUP_NOT_FOUND'
@@ -203,13 +145,6 @@ export type ViolationType =
   | 'SCHEMA_VERSION_MISMATCH'
   | 'MARKER_OUT_OF_BOUNDS'
   | 'IN_OUT_INVALID'
-  | 'CAPTION_OUT_OF_BOUNDS'
-  | 'CAPTION_OVERLAP'
-  | 'EFFECT_NOT_FOUND'
-  | 'KEYFRAME_NOT_FOUND'
-  | 'KEYFRAME_ORDER_VIOLATION'
-  | 'EFFECT_INDEX_OUT_OF_RANGE'
-  | 'INVALID_RENDER_STAGE'
   | 'TRACK_GROUP_NOT_FOUND'
   | 'INVALID_OPACITY'
   | 'INVALID_RANGE'

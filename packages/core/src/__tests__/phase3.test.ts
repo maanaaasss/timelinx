@@ -17,11 +17,9 @@ import { createAsset, createGeneratorAsset, toAssetId } from '../types/asset';
 import { toFrame, frameRate, toTimecode } from '../types/frame';
 import { toMarkerId } from '../types/marker';
 import { toGeneratorId } from '../types/generator';
-import { toCaptionId } from '../types/caption';
 import type { OperationPrimitive, Transaction } from '../types/operations';
 import { buildSnapIndex } from '../snap-index';
 import { findMarkersByColor, findMarkersByLabel } from '../engine/marker-search';
-import { defaultCaptionStyle as defaultCaptionStyleFromCore } from '../engine/subtitle-import';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -61,22 +59,12 @@ function makeBaseState() {
   return createTimelineState({ timeline, assetRegistry: new Map([[asset.id, asset]]) });
 }
 
-const defaultCaptionStyle = {
-  fontFamily: 'Arial',
-  fontSize: 24,
-  color: '#fff',
-  backgroundColor: '#000',
-  hAlign: 'center' as const,
-  vAlign: 'bottom' as const,
-};
-
 // ── 1. Branded IDs and factories ─────────────────────────────────────────────
 
 describe('Phase 3 — IDs and factories', () => {
-  it('toMarkerId, toGeneratorId, toCaptionId return branded ids', () => {
+  it('toMarkerId, toGeneratorId return branded ids', () => {
     expect(toMarkerId('m1')).toBe('m1');
     expect(toGeneratorId('g1')).toBe('g1');
-    expect(toCaptionId('c1')).toBe('c1');
   });
 
   it('createGeneratorAsset produces GeneratorAsset with kind "generator"', () => {
@@ -108,11 +96,6 @@ describe('Phase 3 — createTimeline/createTrack defaults', () => {
     expect(tl.markers).toEqual([]);
     expect(tl.inPoint).toBeNull();
     expect(tl.outPoint).toBeNull();
-  });
-
-  it('createTrack without captions has captions=[]', () => {
-    const track = createTrack({ id: 't1', name: 'V1', type: 'video' });
-    expect(track.captions).toEqual([]);
   });
 });
 
@@ -295,7 +278,6 @@ describe('Phase 3 — SET_IN_POINT / SET_OUT_POINT', () => {
   });
 });
 
-
 // ── 9. INSERT_GENERATOR ─────────────────────────────────────────────────────
 
 describe('Phase 3 — INSERT_GENERATOR', () => {
@@ -353,229 +335,7 @@ describe('Phase 3 — INSERT_GENERATOR', () => {
   });
 });
 
-// ── 10. ADD_CAPTION ─────────────────────────────────────────────────────────
-
-describe('Phase 3 — ADD_CAPTION', () => {
-  it('adds caption to track.captions', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('cap-1'),
-      text: 'Hello',
-      startFrame: toFrame(0),
-      endFrame: toFrame(100),
-      language: 'en-US',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    const next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    const track = next.timeline.tracks[0]!;
-    expect(track.captions).toHaveLength(1);
-    expect(track.captions[0]!.text).toBe('Hello');
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('ADD_CAPTION without style uses defaultCaptionStyle', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('cap-1'),
-      text: 'Hello',
-      startFrame: toFrame(0),
-      endFrame: toFrame(100),
-      language: 'en-US',
-      burnIn: false,
-    };
-    const next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    expect(next.timeline.tracks[0]!.captions[0]!.style).toEqual(defaultCaptionStyleFromCore);
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('ADD_CAPTION sorts captions by startFrame', () => {
-    const state = makeBaseState();
-    const c1 = {
-      id: toCaptionId('cap-1'),
-      text: 'First',
-      startFrame: toFrame(100),
-      endFrame: toFrame(200),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    const c2 = {
-      id: toCaptionId('cap-2'),
-      text: 'Second',
-      startFrame: toFrame(0),
-      endFrame: toFrame(50),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption: c1,
-      trackId: toTrackId('track-1'),
-    });
-    next = applyOperation(next, {
-      type: 'ADD_CAPTION',
-      caption: c2,
-      trackId: toTrackId('track-1'),
-    });
-    const captions = next.timeline.tracks[0]!.captions;
-    expect(captions[0]!.startFrame).toBe(0);
-    expect(captions[1]!.startFrame).toBe(100);
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('ADD_CAPTION with overlapping caption is rejected by validator', () => {
-    const state = makeBaseState();
-    const c1 = {
-      id: toCaptionId('cap-1'),
-      text: 'A',
-      startFrame: toFrame(0),
-      endFrame: toFrame(100),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption: c1,
-      trackId: toTrackId('track-1'),
-    });
-    const c2 = {
-      id: toCaptionId('cap-2'),
-      text: 'B',
-      startFrame: toFrame(50),
-      endFrame: toFrame(150),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    const result = dispatch(
-      next,
-      makeTx('Add overlapping', [
-        { type: 'ADD_CAPTION', caption: c2, trackId: toTrackId('track-1') },
-      ]),
-    );
-    expect(result.accepted).toBe(false);
-    if (!result.accepted) expect(result.reason).toBe('OVERLAP');
-  });
-});
-
-// ── 11. EDIT_CAPTION (with trackId) ─────────────────────────────────────────
-
-describe('Phase 3 — EDIT_CAPTION', () => {
-  it('updates caption on specified track by trackId', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('cap-1'),
-      text: 'Hi',
-      startFrame: toFrame(0),
-      endFrame: toFrame(50),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    next = applyOperation(next, {
-      type: 'EDIT_CAPTION',
-      captionId: toCaptionId('cap-1'),
-      trackId: toTrackId('track-1'),
-      text: 'Updated',
-    });
-    expect(next.timeline.tracks[0]!.captions[0]!.text).toBe('Updated');
-    expect(checkInvariants(next)).toEqual([]);
-  });
-
-  it('dispatch EDIT_CAPTION with captionId not on track returns NOT_FOUND', () => {
-    const state = makeBaseState();
-    const result = dispatch(
-      state,
-      makeTx('Edit', [
-        {
-          type: 'EDIT_CAPTION',
-          captionId: toCaptionId('nope'),
-          trackId: toTrackId('track-1'),
-          text: 'x',
-        },
-      ]),
-    );
-    expect(result.accepted).toBe(false);
-    if (!result.accepted) expect(result.reason).toBe('NOT_FOUND');
-  });
-
-  it('EDIT_CAPTION supports partial updates for language and burnIn', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('cap-1'),
-      text: 'Hi',
-      startFrame: toFrame(0),
-      endFrame: toFrame(50),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    next = applyOperation(next, {
-      type: 'EDIT_CAPTION',
-      captionId: toCaptionId('cap-1'),
-      trackId: toTrackId('track-1'),
-      language: 'fr-FR',
-      burnIn: true,
-    });
-    const cap = next.timeline.tracks[0]!.captions[0]!;
-    expect(cap.language).toBe('fr-FR');
-    expect(cap.burnIn).toBe(true);
-    expect(cap.text).toBe('Hi');
-    expect(checkInvariants(next)).toEqual([]);
-  });
-});
-
-// ── 12. DELETE_CAPTION (with trackId) ───────────────────────────────────────
-
-describe('Phase 3 — DELETE_CAPTION', () => {
-  it('removes caption from specified track', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('cap-1'),
-      text: 'x',
-      startFrame: toFrame(0),
-      endFrame: toFrame(50),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    next = applyOperation(next, {
-      type: 'DELETE_CAPTION',
-      captionId: toCaptionId('cap-1'),
-      trackId: toTrackId('track-1'),
-    });
-    expect(next.timeline.tracks[0]!.captions).toHaveLength(0);
-    expect(checkInvariants(next)).toEqual([]);
-  });
-});
-
-// ── 13. Invariants (4 new) ──────────────────────────────────────────────────
+// ── 13. Invariants ──────────────────────────────────────────────────────────
 
 describe('Phase 3 — MARKER_OUT_OF_BOUNDS', () => {
   it('point marker frame > timeline.duration violates', () => {
@@ -642,65 +402,6 @@ describe('Phase 3 — IN_OUT_INVALID', () => {
     const next = applyOperation(state, { type: 'SET_OUT_POINT', frame: toFrame(2000) });
     const violations = checkInvariants(next);
     expect(violations.some((v) => v.type === 'IN_OUT_INVALID')).toBe(true);
-  });
-});
-
-
-describe('Phase 3 — CAPTION_OUT_OF_BOUNDS', () => {
-  it('caption endFrame > timeline.duration violates', () => {
-    const state = makeBaseState();
-    const caption = {
-      id: toCaptionId('c1'),
-      text: 'x',
-      startFrame: toFrame(0),
-      endFrame: toFrame(2000),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    const next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption,
-      trackId: toTrackId('track-1'),
-    });
-    const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'CAPTION_OUT_OF_BOUNDS')).toBe(true);
-  });
-});
-
-describe('Phase 3 — CAPTION_OVERLAP', () => {
-  it('overlapping captions on same track violate invariant', () => {
-    const state = makeBaseState();
-    const c1 = {
-      id: toCaptionId('cap-1'),
-      text: 'A',
-      startFrame: toFrame(0),
-      endFrame: toFrame(100),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    const c2 = {
-      id: toCaptionId('cap-2'),
-      text: 'B',
-      startFrame: toFrame(50),
-      endFrame: toFrame(150),
-      language: 'en',
-      style: defaultCaptionStyle,
-      burnIn: false,
-    };
-    let next = applyOperation(state, {
-      type: 'ADD_CAPTION',
-      caption: c1,
-      trackId: toTrackId('track-1'),
-    });
-    next = applyOperation(next, {
-      type: 'ADD_CAPTION',
-      caption: c2,
-      trackId: toTrackId('track-1'),
-    });
-    const violations = checkInvariants(next);
-    expect(violations.some((v) => v.type === 'CAPTION_OVERLAP')).toBe(true);
   });
 });
 
@@ -937,7 +638,6 @@ describe('Phase 3 Step 2 — clip-linked markers', () => {
     expect(checkInvariants(next)).toEqual([]);
   });
 });
-
 
 describe('Phase 3 Step 2 — marker search', () => {
   it('findMarkersByColor returns only exact color matches', () => {

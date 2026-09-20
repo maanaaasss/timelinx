@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useAllTracks, useSelectedClipIds } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
-import type { Clip, ClipTransform, ClipId } from '@timelinx/core';
+import type { Clip, ClipId } from '@timelinx/core';
+import { type ClipTransform, getClipTransform } from '../types/transform';
 
 // Canvas logical resolution — must match canvas-compositor.tsx
 const CANVAS_W = 1920;
@@ -71,7 +72,7 @@ function screenToCanvasScale(screenPixels: number, containerRect: DOMRect): numb
  * Position is relative to canvas center (CANVAS_W/2, CANVAS_H/2).
  */
 function getClipBounds(clip: Clip): ClipBounds {
-  const transform = clip.transform!;
+  const transform = getClipTransform(clip);
 
   const px = transform.positionX.value;
   const py = transform.positionY.value;
@@ -376,7 +377,7 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
     const bounds: ClipBounds[] = [];
     for (const track of tracks) {
       for (const clip of track.clips) {
-        if (clip.transform && (clip.id as string) !== selectedClipId) {
+        if ((clip.id as string) !== selectedClipId) {
           bounds.push(getClipBounds(clip));
         }
       }
@@ -389,9 +390,7 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
     const bounds: ClipBounds[] = [];
     for (const track of tracks) {
       for (const clip of track.clips) {
-        if (clip.transform) {
-          bounds.push(getClipBounds(clip));
-        }
+        bounds.push(getClipBounds(clip));
       }
     }
     return bounds;
@@ -401,16 +400,20 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
   const selectedBounds = useMemo(() => {
     if (!selectedClip) return null;
     if (draftPos && isDragging) {
+      const currentTransform = getClipTransform(selectedClip);
       // Create a modified clip with draft position for bounds calculation
-      const modifiedClip = {
+      const modifiedClip: Clip = {
         ...selectedClip,
-        transform: {
-          ...selectedClip.transform!,
-          positionX: { ...selectedClip.transform!.positionX, value: draftPos.x },
-          positionY: { ...selectedClip.transform!.positionY, value: draftPos.y },
+        metadata: {
+          ...selectedClip.metadata,
+          transform: {
+            ...currentTransform,
+            positionX: { ...currentTransform.positionX, value: draftPos.x },
+            positionY: { ...currentTransform.positionY, value: draftPos.y },
+          },
         },
       };
-      return getClipBounds(modifiedClip as Clip);
+      return getClipBounds(modifiedClip);
     }
     return getClipBounds(selectedClip);
   }, [selectedClip, draftPos, isDragging]);
@@ -465,17 +468,18 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
       containerRectRef.current = rect;
 
       setIsDragging(true);
+      const currentTransform = getClipTransform(selectedClip);
       dragStartRef.current = {
         screenX: e.clientX,
         screenY: e.clientY,
         pos: {
-          x: selectedClip.transform!.positionX.value,
-          y: selectedClip.transform!.positionY.value,
+          x: currentTransform.positionX.value,
+          y: currentTransform.positionY.value,
         },
       };
       draftPosRef.current = {
-        x: selectedClip.transform!.positionX.value,
-        y: selectedClip.transform!.positionY.value,
+        x: currentTransform.positionX.value,
+        y: currentTransform.positionY.value,
       };
       setDraftPos(draftPosRef.current);
 
@@ -522,19 +526,22 @@ export const PreviewOverlay = React.memo(function PreviewOverlay({
       e.currentTarget.releasePointerCapture(e.pointerId);
 
       // Commit: dispatch once with final values
-      const currentTransform = selectedClip.transform!;
+      const currentTransform = getClipTransform(selectedClip);
       engine.dispatch({
         id: `move-clip-${Date.now()}`,
         label: 'Move clip',
         timestamp: Date.now(),
         operations: [
           {
-            type: 'SET_CLIP_TRANSFORM',
+            type: 'SET_CLIP_METADATA',
             clipId: selectedClip.id as ClipId,
-            transform: {
-              ...currentTransform,
-              positionX: { ...currentTransform.positionX, value: draftPosRef.current.x },
-              positionY: { ...currentTransform.positionY, value: draftPosRef.current.y },
+            metadata: {
+              ...selectedClip.metadata,
+              transform: {
+                ...currentTransform,
+                positionX: { ...currentTransform.positionX, value: draftPosRef.current.x },
+                positionY: { ...currentTransform.positionY, value: draftPosRef.current.y },
+              },
             },
           },
         ],

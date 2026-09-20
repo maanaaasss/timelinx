@@ -634,12 +634,11 @@ describe('Phase R Step 1 — Playback integration', () => {
 // ── Error handling consistency (onError called in all tool paths) ──────────
 
 describe('Error handling — onError called consistently', () => {
-  it('24. onError called when caption gesture tool throws onPointerDown', () => {
+  it('24. onError called when tool throws onPointerDown', () => {
     const onError = vi.fn();
     const throwingTool = makeTool('throwing', {
-      supportsCaptions: () => true,
       onPointerDown: () => {
-        throw new Error('caption tool error');
+        throw new Error('tool error');
       },
     });
     const engine = new TimelineEngine({
@@ -648,37 +647,29 @@ describe('Error handling — onError called consistently', () => {
       defaultToolId: 'throwing',
       onError,
     });
-    const captionEvent: TimelinePointerEvent = {
-      ...makePointerEvent(),
-      captionId: 'cap-1' as any,
-    };
-    engine.handlePointerDown(captionEvent, noModifiers);
+    engine.handlePointerDown(makePointerEvent(), noModifiers);
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
     expect(onError.mock.calls[0]![1]).toBe('onPointerDown');
   });
 
-  it('25. onError called when selectionTool throws during caption fallback', () => {
+  it('25. onError called when tool throws onPointerUp', () => {
     const onError = vi.fn();
-    const throwingSelection = makeTool('selection', {
-      onPointerDown: () => {
-        throw new Error('selection caption error');
+    const throwingTool = makeTool('throwing', {
+      onPointerUp: () => {
+        throw new Error('tool error');
       },
     });
     const engine = new TimelineEngine({
       initialState: makeState(),
-      tools: [NoOpTool, throwingSelection],
-      defaultToolId: 'noop',
+      tools: [NoOpTool, throwingTool],
+      defaultToolId: 'throwing',
       onError,
     });
-    const captionEvent: TimelinePointerEvent = {
-      ...makePointerEvent(),
-      captionId: 'cap-1' as any,
-    };
-    engine.handlePointerDown(captionEvent, noModifiers);
+    engine.handlePointerUp(makePointerEvent(), noModifiers);
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0]![0]).toBeInstanceOf(Error);
-    expect(onError.mock.calls[0]![1]).toBe('onPointerDown');
+    expect(onError.mock.calls[0]![1]).toBe('onPointerUp');
   });
 
   it('26. onError callback error logs original error context', () => {

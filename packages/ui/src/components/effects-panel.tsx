@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { useEngine, useSelectedClipIds, useClipEffects } from '@timelinx/react';
-import { createEffect, toEffectId } from '@timelinx/core';
+import { useSelectedClipIds, useClipEffects, useClip } from '@timelinx/react';
 import { useTimelineContext } from '../context/timeline-context';
 import { CollapsibleSection } from './collapsible-section';
 import { getEffectColor } from '../shared/effect-colors';
-import type { ClipId, EffectId } from '@timelinx/core';
+import type { ClipId } from '@timelinx/core';
+import { createEffect, type Effect } from '../types/effects';
 
 function EffectsIcon() {
   return (
@@ -45,60 +45,78 @@ export const EffectsPanel = React.memo(function EffectsPanel({ className }: Effe
   const [addMenuOpen, setAddMenuOpen] = useState(false);
 
   const selectedClipId = selectedClipIds.size === 1 ? Array.from(selectedClipIds)[0] : null;
-  const effects = useClipEffects(engine, selectedClipId ?? '');
+  const clip = useClip(selectedClipId ?? '');
+  const effects = useClipEffects(engine, selectedClipId ?? '') as readonly Effect[];
 
   const handleAddEffect = useCallback(
     (effectType: string) => {
-      if (!selectedClipId) return;
-      const effect = createEffect(toEffectId(`effect-${Date.now()}`), effectType, 'preComposite');
+      if (!selectedClipId || !clip) return;
+      const effect = createEffect(`effect-${Date.now()}`, effectType, 'preComposite');
+      const nextEffects = [...effects, effect];
       engine.dispatch({
         id: `add-effect-${Date.now()}`,
         label: `Add ${effectType} effect`,
         timestamp: Date.now(),
-        operations: [{ type: 'ADD_EFFECT', clipId: selectedClipId as ClipId, effect }],
+        operations: [
+          {
+            type: 'SET_CLIP_METADATA',
+            clipId: selectedClipId as ClipId,
+            metadata: {
+              ...clip.metadata,
+              effects: nextEffects,
+            },
+          },
+        ],
       });
       setAddMenuOpen(false);
     },
-    [engine, selectedClipId],
+    [engine, selectedClipId, clip, effects],
   );
 
   const handleRemoveEffect = useCallback(
     (effectId: string) => {
-      if (!selectedClipId) return;
+      if (!selectedClipId || !clip) return;
+      const nextEffects = effects.filter((e) => e.id !== effectId);
       engine.dispatch({
         id: `remove-effect-${Date.now()}`,
         label: 'Remove effect',
         timestamp: Date.now(),
         operations: [
           {
-            type: 'REMOVE_EFFECT',
+            type: 'SET_CLIP_METADATA',
             clipId: selectedClipId as ClipId,
-            effectId: effectId as EffectId,
+            metadata: {
+              ...clip.metadata,
+              effects: nextEffects,
+            },
           },
         ],
       });
     },
-    [engine, selectedClipId],
+    [engine, selectedClipId, clip, effects],
   );
 
   const handleToggleEffect = useCallback(
     (effectId: string, enabled: boolean) => {
-      if (!selectedClipId) return;
+      if (!selectedClipId || !clip) return;
+      const nextEffects = effects.map((e) => (e.id === effectId ? { ...e, enabled } : e));
       engine.dispatch({
         id: `toggle-effect-${Date.now()}`,
         label: `${enabled ? 'Enable' : 'Disable'} effect`,
         timestamp: Date.now(),
         operations: [
           {
-            type: 'SET_EFFECT_ENABLED',
+            type: 'SET_CLIP_METADATA',
             clipId: selectedClipId as ClipId,
-            effectId: effectId as EffectId,
-            enabled,
+            metadata: {
+              ...clip.metadata,
+              effects: nextEffects,
+            },
           },
         ],
       });
     },
-    [engine, selectedClipId],
+    [engine, selectedClipId, clip, effects],
   );
 
   if (!selectedClipId) {
@@ -166,7 +184,7 @@ export const EffectsPanel = React.memo(function EffectsPanel({ className }: Effe
                     </div>
                     <div className="effect-info">
                       <span className="effect-name">{effectMeta?.label ?? effect.effectType}</span>
-                      <span className="effect-meta">{effect.renderStage}</span>
+                      <span className="effect-meta">{effect.renderStage ?? effect.stage}</span>
                     </div>
                     <div className="effect-actions">
                       <button

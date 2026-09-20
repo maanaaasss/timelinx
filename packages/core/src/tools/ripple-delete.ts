@@ -38,7 +38,6 @@ import type { TrackId } from '../types/track';
 import type { TimelineFrame } from '../types/frame';
 import type { OperationPrimitive, Transaction } from '../types/operations';
 import type { TimelineState } from '../types/state';
-import type { CaptionId } from '../types/caption';
 import { findClipById } from '../systems/queries';
 
 let _txSeq = 0;
@@ -93,10 +92,6 @@ export class RippleDeleteTool implements ITool {
    */
   private pendingClipId: ClipId | null = null;
 
-  /** Caption targeted at onPointerDown. Read and cleared at onPointerUp. */
-  private pendingCaptionId: CaptionId | null = null;
-  private pendingCaptionTrackId: TrackId | null = null;
-
   // ── Cursor-staging var ────────────────────────────────────────────────────
   /** Staged by onPointerMove — getCursor() has no event parameter. */
   private isHoveringClip: boolean = false;
@@ -114,18 +109,9 @@ export class RippleDeleteTool implements ITool {
     return []; // no drag, no snap
   }
 
-  supportsCaptions(): boolean {
-    return true;
-  }
-
   // ── ITool: onPointerDown ──────────────────────────────────────────────────
 
   onPointerDown(event: TimelinePointerEvent, _ctx: ToolContext): void {
-    if (event.captionId !== null && event.trackId !== null) {
-      this.pendingCaptionId = event.captionId as CaptionId;
-      this.pendingCaptionTrackId = event.trackId as TrackId;
-      return;
-    }
     if (event.clipId === null) return; // clicked empty space
     this.pendingClipId = event.clipId;
   }
@@ -133,7 +119,7 @@ export class RippleDeleteTool implements ITool {
   // ── ITool: onPointerMove ──────────────────────────────────────────────────
 
   onPointerMove(event: TimelinePointerEvent, _ctx: ToolContext): ProvisionalState | null {
-    this.isHoveringClip = event.clipId !== null || event.captionId !== null;
+    this.isHoveringClip = event.clipId !== null;
     return null; // no ghost — delete is instantaneous, no preview needed
   }
 
@@ -142,39 +128,7 @@ export class RippleDeleteTool implements ITool {
   onPointerUp(_event: TimelinePointerEvent, ctx: ToolContext): Transaction | null {
     // Capture-before-reset pattern
     const clipId = this.pendingClipId;
-    const captionId = this.pendingCaptionId;
-    const captionTrackId = this.pendingCaptionTrackId;
     this._resetState();
-
-    // ── Caption ripple-delete path ────────────────────────────────────────
-    if (captionId !== null && captionTrackId !== null) {
-      const track = ctx.state.timeline.tracks.find((t) => t.id === captionTrackId);
-      const caption = track?.captions.find((c) => c.id === captionId);
-      if (!caption) return null;
-
-      const deletedDuration = (caption.endFrame - caption.startFrame) as number;
-
-      // Captions strictly to the right: startFrame >= caption.endFrame
-      const rightCaptions = (track?.captions ?? [])
-        .filter((c) => c.startFrame >= caption.endFrame)
-        .sort((a, b) => a.startFrame - b.startFrame); // left-to-right — -delta rule
-
-      return {
-        id: txId(),
-        label: 'Ripple Delete Caption',
-        timestamp: Date.now(),
-        operations: [
-          { type: 'DELETE_CAPTION', captionId: caption.id, trackId: captionTrackId },
-          ...rightCaptions.map((c) => ({
-            type: 'EDIT_CAPTION' as const,
-            captionId: c.id,
-            trackId: captionTrackId,
-            startFrame: (c.startFrame - deletedDuration) as TimelineFrame,
-            endFrame: (c.endFrame - deletedDuration) as TimelineFrame,
-          })),
-        ],
-      };
-    }
 
     // ── Clip ripple-delete path (original) ───────────────────────────────
     if (!clipId) return null; // empty-space click
@@ -205,8 +159,6 @@ export class RippleDeleteTool implements ITool {
   /** Reset ALL instance state. Every variable must appear here. */
   onCancel(): void {
     this.pendingClipId = null;
-    this.pendingCaptionId = null;
-    this.pendingCaptionTrackId = null;
     this.isHoveringClip = false;
   }
 
@@ -214,8 +166,6 @@ export class RippleDeleteTool implements ITool {
 
   private _resetState(): void {
     this.pendingClipId = null;
-    this.pendingCaptionId = null;
-    this.pendingCaptionTrackId = null;
     // isHoveringClip intentionally NOT reset — it is a cursor-staging var, not click state
   }
 }

@@ -125,12 +125,10 @@ describe('Phase 6 — Pipeline', () => {
     expect(layer3At50!.mediaFrame).toBe(toFrame(150));
   });
 
-  it('6. Layer transform defaults to DEFAULT_CLIP_TRANSFORM when clip has no transform', () => {
+  it('6. Layer passes clip metadata', () => {
     const req = resolveFrame(state, toFrame(0), 'full', DIMS);
     const layer = req.layers[0]!;
-    expect(layer.transform).toBeDefined();
-    expect(layer.transform.opacity.value).toBe(1);
-    expect(layer.transform.scaleX.value).toBe(1);
+    expect(layer.metadata).toBeUndefined();
   });
 
   it('7. Layer blendMode defaults to "normal"', () => {

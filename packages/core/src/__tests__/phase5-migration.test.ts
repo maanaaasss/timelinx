@@ -249,7 +249,6 @@ describe('Phase 5 Addendum — Migration', () => {
     expect(() => migrate('string')).toThrow(SerializationError);
   });
 
-
   // GATE: full round-trip via v1 migration
   it('14. Full gate: serialize → corrupt schemaVersion to 1 → deserialize → checkInvariants() → 0 violations — GATE', () => {
     const state = buildStateWithTracksClipsAndMarkers();

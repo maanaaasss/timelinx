@@ -33,7 +33,13 @@ const trackTypeIcon: Record<string, typeof Video> = {
 const HEADER_ICON_SIZE = 11;
 const HEADER_BTN_ICON_SIZE = 11;
 
-export function TrackHeader({ track, engine, isSelected, height, onHeightChange }: TrackHeaderProps) {
+export function TrackHeader({
+  track,
+  engine,
+  isSelected,
+  height,
+  onHeightChange,
+}: TrackHeaderProps) {
   const TypeIcon = trackTypeIcon[track.type] ?? Video;
   const resizeRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
@@ -64,7 +70,10 @@ export function TrackHeader({ track, engine, isSelected, height, onHeightChange 
     (e: React.PointerEvent) => {
       if (!resizeRef.current || !onHeightChange) return;
       const delta = e.clientY - resizeRef.current.startY;
-      const next = Math.min(MAX_TRACK_HEIGHT, Math.max(MIN_TRACK_HEIGHT, resizeRef.current.startHeight + delta));
+      const next = Math.min(
+        MAX_TRACK_HEIGHT,
+        Math.max(MIN_TRACK_HEIGHT, resizeRef.current.startHeight + delta),
+      );
       onHeightChange(track.id, next);
     },
     [onHeightChange, track.id],

@@ -14,10 +14,7 @@ export type CompressionPolicy =
 
 export type CompressibleOpType =
   | 'MOVE_CLIP'
-  | 'SET_CLIP_TRANSFORM'
-  | 'SET_AUDIO_PROPERTIES'
-  | 'SET_EFFECT_PARAM'
-  | 'MOVE_KEYFRAME'
+  | 'SET_CLIP_METADATA'
   | 'SET_TRANSITION_DURATION'
   | 'MOVE_MARKER'
   | 'SET_IN_POINT'
@@ -26,10 +23,7 @@ export type CompressibleOpType =
 
 const COMPRESSIBLE_OP_TYPES: ReadonlySet<CompressibleOpType> = new Set([
   'MOVE_CLIP',
-  'SET_CLIP_TRANSFORM',
-  'SET_AUDIO_PROPERTIES',
-  'SET_EFFECT_PARAM',
-  'MOVE_KEYFRAME',
+  'SET_CLIP_METADATA',
   'SET_TRANSITION_DURATION',
   'MOVE_MARKER',
   'SET_IN_POINT',

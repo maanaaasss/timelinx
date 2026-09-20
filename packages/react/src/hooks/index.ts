@@ -11,9 +11,10 @@ import type { EngineSnapshot } from '../types/engine-snapshot';
 import type { Timeline, Track, Clip } from '@timelinx/core';
 import type { TrackId, ClipId } from '@timelinx/core';
 import type { TimelineFrame, ProvisionalState, StateChange } from '@timelinx/core';
-import type { Effect } from '@timelinx/core';
 import type { Transition } from '@timelinx/core';
-import type { Caption } from '@timelinx/core';
+
+export type Effect = unknown;
+export type Caption = unknown;
 
 type Marker = Timeline['markers'][number];
 
@@ -268,7 +269,7 @@ export function useClipEffects(engine: TimelineEngine, clipId: ClipId | string):
   if (!id) return EMPTY_EFFECTS;
   for (const track of tracks) {
     const clip = track.clips.find((c) => c.id === id);
-    if (clip) return clip.effects ?? EMPTY_EFFECTS;
+    if (clip) return (clip.metadata?.effects as readonly Effect[]) ?? EMPTY_EFFECTS;
   }
   return EMPTY_EFFECTS;
 }
@@ -296,14 +297,10 @@ export function useClipTransition(
 // ---------------------------------------------------------------------------
 
 export function useTrackCaptions(
-  engine: TimelineEngine,
-  trackId: TrackId | string,
+  _engine: TimelineEngine,
+  _trackId: TrackId | string,
 ): readonly Caption[] {
-  const id = typeof trackId === 'string' ? trackId : (trackId as string);
-  const tracks = useAllTracks(engine);
-  if (!id) return EMPTY_CAPTIONS;
-  const track = tracks.find((t) => t.id === id);
-  return track?.captions ?? EMPTY_CAPTIONS;
+  return EMPTY_CAPTIONS;
 }
 
 // ---------------------------------------------------------------------------

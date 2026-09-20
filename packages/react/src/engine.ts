@@ -37,7 +37,6 @@ import {
   RippleInsertTool,
   HandTool,
   TransitionTool,
-  KeyframeTool,
   createZoomTool,
   toFrame,
   toToolId,
@@ -113,8 +112,6 @@ export class TimelineEngine {
   /** Selection state (set of clip IDs). */
   private _selectedClipIds: ReadonlySet<string> = new Set();
   private _selectedCaptionIds: ReadonlySet<string> = new Set();
-  /** Tool currently handling a caption gesture (click/drag on caption). */
-  private _captionGestureTool: ITool | null = null;
 
   constructor(options: TimelineEngineOptions) {
     this.options = options;
@@ -143,7 +140,6 @@ export class TimelineEngine {
       new RippleInsertTool(),
       new HandTool(),
       new TransitionTool(),
-      new KeyframeTool(),
       createZoomTool({
         onZoomChange: options.onZoomChange ?? (() => {}),
         initialPixelsPerFrame: ppf,
@@ -301,82 +297,24 @@ export class TimelineEngine {
       ).getSelection();
       this._selectedClipIds = new Set(toolSelection);
     }
-    // Caption selection is always maintained by SelectionTool
-    const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
-    const captionTool = selectionTool ?? tool;
-    if (
-      typeof (captionTool as ITool & { getCaptionSelection?: () => ReadonlySet<string> })
-        .getCaptionSelection === 'function'
-    ) {
-      const captionSelection = (
-        captionTool as ITool & { getCaptionSelection: () => ReadonlySet<string> }
-      ).getCaptionSelection();
-      this._selectedCaptionIds = new Set(captionSelection);
-    }
   }
 
   handlePointerDown(event: TimelinePointerEvent, modifiers: Modifiers): void {
     const activeTool = getActiveTool(this.toolRegistry);
     const ctx = this.buildToolContext(modifiers);
 
-    if (event.captionId != null) {
-      // Gesture tool: active tool if it supports captions, else SelectionTool
-      if (typeof activeTool.supportsCaptions === 'function' && activeTool.supportsCaptions()) {
-        this._captionGestureTool = activeTool;
-        try {
-          activeTool.onPointerDown(event, ctx);
-        } catch (err) {
-          try {
-            this.options.onError?.(err, 'onPointerDown');
-          } catch (callbackErr) {
-            console.error(
-              '[TimelineEngine] onError callback threw during onPointerDown',
-              callbackErr,
-              {
-                originalError: err,
-              },
-            );
-          }
-        }
-      } else {
-        const selectionTool = this.toolRegistry.tools.get(toToolId('selection'));
-        this._captionGestureTool = selectionTool ?? activeTool;
-        if (selectionTool) {
-          try {
-            selectionTool.onPointerDown(event, ctx);
-          } catch (err) {
-            try {
-              this.options.onError?.(err, 'onPointerDown');
-            } catch (callbackErr) {
-              console.error(
-                '[TimelineEngine] onError callback threw during onPointerDown',
-                callbackErr,
-                {
-                  originalError: err,
-                },
-              );
-            }
-          }
-        }
-      }
-    } else {
-      this._captionGestureTool = null;
+    try {
+      activeTool.onPointerDown(event, ctx);
+    } catch (err) {
       try {
-        activeTool.onPointerDown(event, ctx);
-      } catch (err) {
-        try {
-          this.options.onError?.(err, 'onPointerDown');
-        } catch (callbackErr) {
-          console.error(
-            '[TimelineEngine] onError callback threw during onPointerDown',
-            callbackErr,
-            {
-              originalError: err,
-            },
-          );
-        }
+        this.options.onError?.(err, 'onPointerDown');
+      } catch (callbackErr) {
+        console.error('[TimelineEngine] onError callback threw during onPointerDown', callbackErr, {
+          originalError: err,
+        });
       }
     }
+
     this._syncSelectionFromTool();
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);
     this.notify();
@@ -384,7 +322,7 @@ export class TimelineEngine {
 
   handlePointerMove(event: TimelinePointerEvent, modifiers: Modifiers): void {
     const ctx = this.buildToolContext(modifiers);
-    const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+    const tool = getActiveTool(this.toolRegistry);
     let provisional: ReturnType<ITool['onPointerMove']> = null;
     try {
       provisional = tool.onPointerMove(event, ctx);
@@ -415,7 +353,7 @@ export class TimelineEngine {
       this.notifyProvisional();
     } else {
       // Idle hover — only check cursor, skip full rebuild if cursor unchanged
-      const hoverTool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+      const hoverTool = getActiveTool(this.toolRegistry);
       const newCursor = hoverTool?.getCursor(ctx) ?? 'default';
       if (newCursor !== this.snapshot.cursor) {
         // Cursor changed (e.g., moved from clip body to edge) — need to notify
@@ -429,7 +367,7 @@ export class TimelineEngine {
   handlePointerUp(event: TimelinePointerEvent, modifiers: Modifiers): void {
     this.provisional = clearProvisional(this.provisional);
     const ctx = this.buildToolContext(modifiers);
-    const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+    const tool = getActiveTool(this.toolRegistry);
     let tx: Transaction | null = null;
     try {
       tx = tool.onPointerUp(event, ctx);
@@ -442,7 +380,6 @@ export class TimelineEngine {
         });
       }
     }
-    this._captionGestureTool = null;
     this._syncSelectionFromTool();
     if (tx !== null) {
       this.dispatch(tx);
@@ -455,7 +392,7 @@ export class TimelineEngine {
   /** Option Y: cursor left timeline mid-drag — cancel tool gesture and clear provisional. */
   handlePointerLeave(_event: TimelinePointerEvent): void {
     try {
-      const tool = this._captionGestureTool ?? getActiveTool(this.toolRegistry);
+      const tool = getActiveTool(this.toolRegistry);
       tool.onCancel();
     } catch (err) {
       try {
@@ -466,7 +403,6 @@ export class TimelineEngine {
         });
       }
     }
-    this._captionGestureTool = null;
     this._syncSelectionFromTool();
     this.provisional = clearProvisional(this.provisional);
     this.rebuildSnapshot(EMPTY_STATE_CHANGE);

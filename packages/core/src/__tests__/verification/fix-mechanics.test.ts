@@ -115,23 +115,15 @@ describe('VERIFICATION: Object.freeze depth (Item #10)', () => {
     expect(typeof registry.has).toBe('function');
   });
 
-  it('clips effects array is NOT frozen (one level deep only)', () => {
+  it('clip metadata object is NOT deeply frozen (shallow freeze only)', () => {
     const state = makeBaseState();
-    // Add an effect to the clip
     const result = dispatch(
       state,
       tx([
         {
-          type: 'ADD_EFFECT',
+          type: 'SET_CLIP_METADATA',
           clipId: 'clip-1',
-          effect: {
-            id: 'effect-1',
-            effectType: 'blur',
-            renderStage: 'preComposite',
-            enabled: true,
-            params: [],
-            keyframes: [],
-          },
+          metadata: { nested: { prop: 1 } },
         },
       ]),
     );
@@ -139,10 +131,8 @@ describe('VERIFICATION: Object.freeze depth (Item #10)', () => {
     if (!result.accepted) throw new Error('Rejected');
 
     const clip = result.nextState.timeline.tracks[0]!.clips[0]!;
-    // The clip itself is frozen
     expect(Object.isFrozen(clip)).toBe(true);
-    // But the effects array inside is NOT frozen (one level deep)
-    expect(Object.isFrozen(clip.effects)).toBe(false);
+    expect(Object.isFrozen(clip.metadata)).toBe(false);
   });
 });
 
