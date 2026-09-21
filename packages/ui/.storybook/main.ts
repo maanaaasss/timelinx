@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import path from 'node:path';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
@@ -11,10 +12,8 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@timelinx/core':
-        '/Users/manas/Documents/Manas/Projects/timeline/packages/core/dist/index.js',
-      '@timelinx/react':
-        '/Users/manas/Documents/Manas/Projects/timeline/packages/react/dist/index.js',
+      '@timelinx/core': path.resolve(process.cwd(), '../core/src/index.ts'),
+      '@timelinx/react': path.resolve(process.cwd(), '../react/src/index.ts'),
     };
     return config;
   },
