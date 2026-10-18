@@ -15,6 +15,11 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData',
         'src/__tests__/**',
+        // Pure type-declaration files — zero runtime statements, coverage irrelevant
+        'src/types/operations.ts',
+        'src/types/pipeline.ts',
+        'src/types/playhead.ts',
+        'src/types/grouping.ts',
       ],
       thresholds: {
         lines: 85,

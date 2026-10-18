@@ -235,3 +235,50 @@ describe('TransitionTool — capture-before-reset', () => {
     expect(tx2).toBeNull();
   });
 });
+
+describe('TransitionTool — onPointerDown edge=right fast path (line 89-96)', () => {
+  it('uses event.edge path when edge=right and clipId set, bypassing pixel detection', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    // x=0 is far from any clip edge, so pixel detection would find nothing.
+    // But edge='right' + clipId should register the drag via the fast path.
+    tool.onPointerDown(makeEv({ x: 0, edge: 'right', clipId: CLIP_A_ID }), ctx);
+
+    // A subsequent pointerMove should return a provisional (drag is active)
+    const provisional = tool.onPointerMove(makeEv({ x: 50 }), ctx);
+    expect(provisional).not.toBeNull();
+    expect(provisional!.isProvisional).toBe(true);
+  });
+
+  it('falls through to pixel detection when edge is not right', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    // edge='left' should NOT trigger the fast path
+    tool.onPointerDown(makeEv({ x: 0, edge: 'left', clipId: CLIP_A_ID }), ctx);
+
+    // Without being near a right edge pixel, no drag should be registered
+    const provisional = tool.onPointerMove(makeEv({ x: 50 }), ctx);
+    expect(provisional).toBeNull();
+  });
+});
+
+describe('TransitionTool — getCursor and getSnapCandidateTypes (lines 77-81)', () => {
+  it('getCursor always returns "ew-resize"', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+    expect(tool.getCursor(ctx)).toBe('ew-resize');
+  });
+
+  it('getSnapCandidateTypes includes ClipStart, ClipEnd, Marker', () => {
+    const tool = new TransitionTool();
+    const types = tool.getSnapCandidateTypes();
+    expect(types).toContain('ClipStart');
+    expect(types).toContain('ClipEnd');
+    expect(types).toContain('Marker');
+  });
+});

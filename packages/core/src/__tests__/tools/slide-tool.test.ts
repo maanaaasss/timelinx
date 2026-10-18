@@ -294,3 +294,51 @@ describe('SlideTool — capture-before-reset: draggingClipId null after onPointe
     expect(prov).toBeNull();
   });
 });
+
+describe('SlideTool — getCursor while dragging (line 78)', () => {
+  it('returns "ew-resize" after pointerDown on a clip, "grab" otherwise', () => {
+    const tool = new SlideTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+    expect(tool.getCursor(ctx)).toBe('grab');
+    tool.onPointerDown(makeEv({ clipId: CLIP2_ID, x: 3000, frame: 300 }), ctx);
+    expect(tool.getCursor(ctx)).toBe('ew-resize');
+  });
+});
+
+describe('SlideTool — onPointerMove returns null when clip removed from state (line 183)', () => {
+  it('returns null when the dragged clip no longer exists in ctx.state', () => {
+    const tool = new SlideTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+    tool.onPointerDown(makeEv({ clipId: CLIP2_ID, x: 3000, frame: 300 }), ctx);
+
+    // Build a state that has no clips at all
+    const emptyTrack = createTrack({ id: 'track-1', name: 'V1', type: 'video', clips: [] });
+    const timeline = createTimeline({
+      id: 'tl',
+      name: 'Empty',
+      fps: frameRate(30),
+      duration: toFrame(9000),
+      startTimecode: toTimecode('00:00:00:00'),
+      tracks: [emptyTrack],
+    });
+    const asset = createAsset({
+      id: 'asset-1',
+      name: 'Test',
+      mediaType: 'video',
+      filePath: '/media/test.mp4',
+      intrinsicDuration: toFrame(2000),
+      nativeFps: 30,
+      sourceTimecodeOffset: toFrame(0),
+      status: 'online',
+    });
+    const emptyState = createTimelineState({
+      timeline,
+      assetRegistry: new Map([[ASSET_ID, asset]]),
+    });
+    const prov = tool.onPointerMove(makeEv({ clipId: CLIP2_ID, x: 2500 }), makeCtx(emptyState));
+    expect(prov).toBeNull();
+  });
+});
+
