@@ -1,5 +1,14 @@
+# Workspace members are listed explicitly rather than as `apps/*` plus an
+# `!apps/editor` negation. Dependabot does not honor `!` negation patterns:
+# it matched `apps/*`, treated apps/editor as a workspace member, and updated
+# apps/editor/package.json without apps/editor/pnpm-lock.yaml. That left the
+# two out of sync, so the Editor CI job failed with ERR_PNPM_OUTDATED_LOCKFILE
+# on every Dependabot PR touching an editor dependency.
+#
+# apps/editor is intentionally excluded — it is installed standalone with
+# `--ignore-workspace` and resolves @timelinx/* from the npm registry.
+# It is managed by its own Dependabot entry (directory: /apps/editor).
 packages:
   - 'packages/*'
-  - 'apps/*'
-  - '!apps/editor'
+  - 'apps/docs'
   - '!archive/*'
