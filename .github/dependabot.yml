@@ -37,3 +37,35 @@ updates:
           - 'patch'
         patterns:
           - '*'
+
+  # apps/editor sits outside the pnpm workspace and keeps its own
+  # lockfile, so it needs its own update entry. Previously only the root
+  # config above reached it: it rewrote apps/editor/package.json but never
+  # apps/editor/pnpm-lock.yaml, leaving the pair inconsistent and failing
+  # the Editor CI job (pnpm --dir apps/editor install --frozen-lockfile)
+  # with ERR_PNPM_OUTDATED_LOCKFILE on every relevant Dependabot PR.
+  - package-ecosystem: 'npm'
+    directory: '/apps/editor'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
+    groups:
+      timelinx-editor-dev:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+        patterns:
+          - '*'
+      timelinx-editor-runtime:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
+        patterns:
+          - '*'
