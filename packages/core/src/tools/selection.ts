@@ -429,8 +429,8 @@ export class SelectionTool implements ITool {
           const track = ctx.state.timeline.tracks.find((t) => t.id === clip.trackId);
           if (!track) return null;
 
-          let leftClip: typeof clip | null = null;
-          let rightClip: typeof clip | null = null;
+          let leftClip: typeof clip | null;
+          let rightClip: typeof clip | null;
 
           if (savedPendingTrimEdge === 'end') {
             // Trimming end of this clip → find clip whose start matches this clip's end
