@@ -296,7 +296,7 @@ describe('withTimeout idempotency (via extractAudioMetadata)', () => {
     const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:late-url');
 
-    let capturedAudio: HTMLAudioElement | null = null;
+    let capturedAudio: HTMLAudioElement | null;
     const { getElement, restore } = captureNextElement<HTMLAudioElement>('audio');
 
     const file = makeFile('late.mp3', 'audio/mpeg');
