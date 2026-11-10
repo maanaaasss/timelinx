@@ -69,7 +69,7 @@ export class WebAudioWaveformAdapter {
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Failed to create AudioContext: ${message}`);
+        throw new Error(`Failed to create AudioContext: ${message}`, { cause: error });
       }
     }
     if (this.audioContext.state === 'suspended') {
