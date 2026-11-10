@@ -473,3 +473,46 @@ describe('Phase 6 — Keyboard (jogLevelToRate edge cases, lines 20/26/34)', () 
     engine.destroy();
   });
 });
+
+describe('Phase 6 — Keyboard (matchBinding modifier gating)', () => {
+  it('a binding demanding meta does not match an event without meta', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyZ', action: 'jog-stop', meta: true }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ'))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { meta: true }))).toBe(true);
+  });
+
+  it('a binding demanding ctrl does not match an event without ctrl', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyY', action: 'jog-stop', ctrl: true }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyY'))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyY', { ctrl: true }))).toBe(true);
+  });
+
+  it('a non-repeat binding rejects a repeated keydown but accepts the first', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyM', action: 'jog-stop', repeat: false }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyM', { repeat: true }))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyM'))).toBe(true);
+  });
+});
+
+describe('Phase 6 — Keyboard (binding specificity sort)', () => {
+  it('picks the modifier-qualified binding when a plain one also matches', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [
+        { code: 'KeyZ', action: 'jog-stop' },
+        { code: 'KeyZ', action: 'step-forward', meta: true },
+        { code: 'KeyZ', action: 'step-backward', ctrl: true },
+      ],
+    });
+    // Two bindings match each event, so handleKeyDown's sort comparator runs
+    // bindingSpecificity over the meta/ctrl-qualified entries.
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { meta: true }))).toBe(true);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { ctrl: true }))).toBe(true);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ'))).toBe(true);
+  });
+});
