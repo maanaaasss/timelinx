@@ -425,3 +425,94 @@ describe('Phase 6 — Keyboard (mark-in / mark-out callbacks)', () => {
     engine.destroy();
   });
 });
+
+describe('Phase 6 — Keyboard (jogLevelToRate edge cases, lines 20/26/34)', () => {
+  it('J pressed 3 times → rate -4.0 (case -3 branch)', () => {
+    const { clock } = createTestClock();
+    const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
+    const handler = new KeyboardHandler(engine);
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    expect(engine.getState().playbackRate).toBe(-4.0);
+    engine.destroy();
+  });
+
+  it('K after play → rate 0.0, not playing (case 0 branch via stop)', () => {
+    const { clock } = createTestClock();
+    const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
+    const handler = new KeyboardHandler(engine);
+    handler.handleKeyDown(makeKeyEvent('KeyL')); // level 1 → rate 1.0
+    handler.handleKeyDown(makeKeyEvent('KeyK')); // reset → level 0 → rate 0.0
+    // After K the engine should be paused
+    expect(engine.getState().isPlaying).toBe(false);
+    engine.destroy();
+  });
+
+  it('L pressed 4 times → saturates at rate 4.0 (default branch ≥4)', () => {
+    const { clock } = createTestClock();
+    const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
+    const handler = new KeyboardHandler(engine);
+    handler.handleKeyDown(makeKeyEvent('KeyL'));
+    handler.handleKeyDown(makeKeyEvent('KeyL'));
+    handler.handleKeyDown(makeKeyEvent('KeyL'));
+    handler.handleKeyDown(makeKeyEvent('KeyL')); // level 4 → default: return 4.0
+    expect(engine.getState().playbackRate).toBe(4.0);
+    engine.destroy();
+  });
+
+  it('J pressed 4 times → saturates at rate -4.0 (default branch ≤-4)', () => {
+    const { clock } = createTestClock();
+    const engine = new PlaybackEngine(state, mockPipeline, DIMS, clock);
+    const handler = new KeyboardHandler(engine);
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    handler.handleKeyDown(makeKeyEvent('KeyJ'));
+    handler.handleKeyDown(makeKeyEvent('KeyJ')); // level -4 → default: return -4.0
+    expect(engine.getState().playbackRate).toBe(-4.0);
+    engine.destroy();
+  });
+});
+
+describe('Phase 6 — Keyboard (matchBinding modifier gating)', () => {
+  it('a binding demanding meta does not match an event without meta', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyZ', action: 'jog-stop', meta: true }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ'))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { meta: true }))).toBe(true);
+  });
+
+  it('a binding demanding ctrl does not match an event without ctrl', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyY', action: 'jog-stop', ctrl: true }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyY'))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyY', { ctrl: true }))).toBe(true);
+  });
+
+  it('a non-repeat binding rejects a repeated keydown but accepts the first', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [{ code: 'KeyM', action: 'jog-stop', repeat: false }],
+    });
+    expect(handler.handleKeyDown(makeKeyEvent('KeyM', { repeat: true }))).toBe(false);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyM'))).toBe(true);
+  });
+});
+
+describe('Phase 6 — Keyboard (binding specificity sort)', () => {
+  it('picks the modifier-qualified binding when a plain one also matches', () => {
+    const handler = new KeyboardHandler(null, {
+      bindings: [
+        { code: 'KeyZ', action: 'jog-stop' },
+        { code: 'KeyZ', action: 'step-forward', meta: true },
+        { code: 'KeyZ', action: 'step-backward', ctrl: true },
+      ],
+    });
+    // Two bindings match each event, so handleKeyDown's sort comparator runs
+    // bindingSpecificity over the meta/ctrl-qualified entries.
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { meta: true }))).toBe(true);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ', { ctrl: true }))).toBe(true);
+    expect(handler.handleKeyDown(makeKeyEvent('KeyZ'))).toBe(true);
+  });
+});

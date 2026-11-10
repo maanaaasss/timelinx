@@ -559,3 +559,78 @@ describe('Undo/Redo Round-Trip — invariant preservation', () => {
     expect(checkInvariants(getCurrentState(h))).toEqual([]);
   });
 });
+
+// ── HistoryStack empty-state guards ─────────────────────────────────────────
+
+describe('HistoryStack — empty-state guards', () => {
+  it('undo, redo, and getCurrentState return null before anything is pushed', () => {
+    const stack = new HistoryStack();
+    expect(stack.undo()).toBeNull();
+    expect(stack.redo()).toBeNull();
+    expect(stack.getCurrentState()).toBeNull();
+  });
+
+  it('the first push onto an empty stack becomes the current state', () => {
+    const stack = new HistoryStack();
+    const state = makeBaseState();
+    stack.push({ state, transaction: makeTx([]) });
+    expect(stack.getCurrentState()).toBe(state);
+    // A single-entry stack has nothing before it, so undo still refuses.
+    expect(stack.undo()).toBeNull();
+  });
+
+  it('restoreCheckpoint returns null for an unknown checkpoint name', () => {
+    const stack = new HistoryStack();
+    expect(stack.restoreCheckpoint('does-not-exist')).toBeNull();
+  });
+});
+
+describe('HistoryStack — limit overflow, stale checkpoints, deserialize guards', () => {
+  it('push trims the oldest entry once the configured limit is exceeded', () => {
+    const stack = new HistoryStack(2);
+    const state = makeBaseState();
+    stack.push({ state, transaction: makeTx([]) });
+    stack.push({ state, transaction: makeTx([]) });
+    stack.push({ state, transaction: makeTx([]) }); // 3 > limit 2 → oldest shifted off
+    expect(stack.getCurrentState()).toBe(state);
+    expect(stack.canUndo()).toBe(true);
+    expect(stack.undo()).toBe(state);
+  });
+
+  it('restoreCheckpoint returns null when saved before any entry exists', () => {
+    const stack = new HistoryStack();
+    // undoIndex is -1 on a fresh stack, so the checkpoint indexes below the array.
+    stack.saveCheckpoint('nothing-yet');
+    expect(stack.restoreCheckpoint('nothing-yet')).toBeNull();
+  });
+
+  it('deserialize rejects a payload with no version field', () => {
+    expect(() => HistoryStack.deserialize('{"undoIndex":0,"entries":[]}')).toThrow(
+      'Invalid history structure',
+    );
+  });
+
+  it('deserialize rejects an unknown version', () => {
+    expect(() => HistoryStack.deserialize('{"version":2,"undoIndex":0,"entries":[]}')).toThrow(
+      'Unknown history version',
+    );
+  });
+
+  it('deserialize rejects a non-array entries field', () => {
+    expect(() => HistoryStack.deserialize('{"version":1,"undoIndex":0,"entries":{}}')).toThrow(
+      'Missing entries',
+    );
+  });
+
+  it('deserialize rejects an entry whose state is not a serialized string', () => {
+    const raw = '{"version":1,"undoIndex":0,"entries":[{"state":123,"transaction":{}}]}';
+    expect(() => HistoryStack.deserialize(raw)).toThrow('Invalid entry');
+  });
+
+  it('deserialize with zero entries leaves the stack empty (undoIndex -1)', () => {
+    const stack = HistoryStack.deserialize('{"version":1,"undoIndex":5,"entries":[]}');
+    expect(stack.getCurrentState()).toBeNull();
+    expect(stack.undo()).toBeNull();
+    expect(stack.redo()).toBeNull();
+  });
+});

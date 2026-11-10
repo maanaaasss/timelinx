@@ -235,3 +235,87 @@ describe('TransitionTool — capture-before-reset', () => {
     expect(tx2).toBeNull();
   });
 });
+
+describe('TransitionTool — onPointerDown edge=right fast path (line 89-96)', () => {
+  it('uses event.edge path when edge=right and clipId set, bypassing pixel detection', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    // x=0 is far from any clip edge, so pixel detection would find nothing.
+    // But edge='right' + clipId should register the drag via the fast path.
+    tool.onPointerDown(makeEv({ x: 0, edge: 'right', clipId: CLIP_A_ID }), ctx);
+
+    // A subsequent pointerMove should return a provisional (drag is active)
+    const provisional = tool.onPointerMove(makeEv({ x: 50 }), ctx);
+    expect(provisional).not.toBeNull();
+    expect(provisional!.isProvisional).toBe(true);
+  });
+
+  it('falls through to pixel detection when edge is not right', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    // edge='left' should NOT trigger the fast path
+    tool.onPointerDown(makeEv({ x: 0, edge: 'left', clipId: CLIP_A_ID }), ctx);
+
+    // Without being near a right edge pixel, no drag should be registered
+    const provisional = tool.onPointerMove(makeEv({ x: 50 }), ctx);
+    expect(provisional).toBeNull();
+  });
+});
+
+describe('TransitionTool — getCursor and getSnapCandidateTypes (lines 77-81)', () => {
+  it('getCursor always returns "ew-resize"', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+    expect(tool.getCursor(ctx)).toBe('ew-resize');
+  });
+
+  it('getSnapCandidateTypes includes ClipStart, ClipEnd, Marker', () => {
+    const tool = new TransitionTool();
+    const types = tool.getSnapCandidateTypes();
+    expect(types).toContain('ClipStart');
+    expect(types).toContain('ClipEnd');
+    expect(types).toContain('Marker');
+  });
+});
+
+describe('TransitionTool — onKeyDown returns null (line 221)', () => {
+  it('onKeyDown always returns null', () => {
+    const tool = new TransitionTool();
+    const state = makeState();
+    const ctx = makeCtx(state);
+    const keyEv = {
+      key: 'Escape',
+      code: 'Escape',
+      shiftKey: false,
+      altKey: false,
+      metaKey: false,
+      ctrlKey: false,
+    };
+    expect(tool.onKeyDown(keyEv, ctx)).toBeNull();
+  });
+});
+
+describe('TransitionTool — onPointerMove existing transition path (line 132)', () => {
+  it('onPointerMove uses SET_TRANSITION_DURATION when clip already has a transition', () => {
+    const tool = new TransitionTool();
+    const trans = createTransition(toTransitionId('tr-existing'), 'dissolve', 10);
+    let state = makeState();
+    state = applyOperation(state, { type: 'ADD_TRANSITION', clipId: CLIP_A_ID, transition: trans });
+    const ctx = makeCtx(state);
+
+    const rightEdgeX = 100 * PIXELS_PER_FRAME;
+    // Start drag from right edge
+    tool.onPointerDown(makeEv({ x: rightEdgeX }), ctx);
+    // Move: clip already has transition → should go through line 132 branch
+    const prov = tool.onPointerMove(makeEv({ x: rightEdgeX + 50 }), ctx);
+    expect(prov).not.toBeNull();
+    expect(prov!.clips[0]!.transition).toBeDefined();
+    // duration should reflect 5-frame delta (50px / 10ppf)
+    expect(prov!.clips[0]!.transition!.durationFrames).toBe(5);
+  });
+});
