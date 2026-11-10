@@ -1,0 +1,20 @@
+# Makes apps/editor a self-contained pnpm project.
+#
+# Without this file, running `pnpm install` from apps/editor walks up to the
+# repository root (because the root pnpm-workspace.yaml exists) and resolves
+# against the root project. apps/editor is deliberately excluded from the root
+# workspace, so its own pnpm-lock.yaml is never rewritten — the manifest gets
+# bumped while the lockfile stays put, and every subsequent
+# `pnpm --dir apps/editor install --frozen-lockfile` (the Editor CI job) fails
+# with ERR_PNPM_OUTDATED_LOCKFILE.
+#
+# That is exactly what happened to every Dependabot PR touching an editor
+# dependency. Declaring the directory as its own workspace root stops pnpm
+# here, so apps/editor/package.json and apps/editor/pnpm-lock.yaml are updated
+# together.
+#
+# The Editor CI job passes --ignore-workspace and is unaffected; so is the
+# root workspace, which lists members explicitly and does not include this
+# directory.
+packages:
+  - '.'
