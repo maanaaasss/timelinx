@@ -573,3 +573,169 @@ describe('SelectionTool — no React imports (structural)', () => {
     expect(tool.shortcutKey).toBe('v');
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alt-key roll-trim coverage (lines 427-471 of selection.ts)
+//
+// Fixture for these tests: two ADJACENT clips so the roll can find a neighbour.
+//   clip-left  [0, 100)
+//   clip-right [100, 200)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function makeAdjacentState(): TimelineState {
+  const asset = createAsset({
+    id: 'asset-1',
+    name: 'Test Asset',
+    mediaType: 'video',
+    filePath: '/media/test.mp4',
+    intrinsicDuration: toFrame(600),
+    nativeFps: 30,
+    sourceTimecodeOffset: toFrame(0),
+    status: 'online',
+  });
+
+  const clipLeft = createClip({
+    id: 'clip-left',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(0),
+    timelineEnd: toFrame(100),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(100),
+  });
+
+  const clipRight = createClip({
+    id: 'clip-right',
+    assetId: 'asset-1',
+    trackId: 'track-1',
+    timelineStart: toFrame(100),
+    timelineEnd: toFrame(200),
+    mediaIn: toFrame(0),
+    mediaOut: toFrame(100),
+  });
+
+  const track = createTrack({
+    id: 'track-1',
+    name: 'V1',
+    type: 'video',
+    clips: [clipLeft, clipRight],
+  });
+
+  const timeline = createTimeline({
+    id: 'tl',
+    name: 'Roll Trim Test',
+    fps: frameRate(30),
+    duration: toFrame(9000),
+    startTimecode: toTimecode('00:00:00:00'),
+    tracks: [track],
+  });
+
+  return createTimelineState({
+    timeline,
+    assetRegistry: new Map([[ASSET_ID, asset]]),
+  });
+}
+
+describe('SelectionTool — Alt-key roll-trim: END edge with adjacent right clip (lines 435-463)', () => {
+  it('Alt+click near END edge produces Roll Trim resizing both clips', () => {
+    const tool = new SelectionTool();
+    const state = makeAdjacentState();
+    const ctx = makeCtx(state);
+    const LEFT_ID = toClipId('clip-left');
+    const RIGHT_ID = toClipId('clip-right');
+
+    // clip-left ends at frame 100 = px 1000. Click within EDGE_HIT_ZONE_PX=8px
+    const endEdgePx = 100 * 10; // 1000
+    tool.onPointerDown(makeEv({ clipId: LEFT_ID, x: endEdgePx - 4 }), ctx);
+
+    // Alt held, tiny movement (< DRAG_THRESHOLD_PX=4) → click-trim path
+    const tx = tool.onPointerUp(
+      makeEv({ clipId: LEFT_ID, x: endEdgePx - 3, altKey: true, frame: toFrame(90) }),
+      ctx,
+    );
+
+    expect(tx).not.toBeNull();
+    expect(tx!.label).toBe('Roll Trim');
+    // Should resize clip-left AND clip-right (the adjacent pair)
+    const resizeOps = tx!.operations.filter((op) => op.type === 'RESIZE_CLIP');
+    expect(resizeOps.length).toBeGreaterThanOrEqual(2);
+    const clipIds = resizeOps.map((op) => (op.type === 'RESIZE_CLIP' ? op.clipId : null));
+    expect(clipIds).toContain(LEFT_ID);
+    expect(clipIds).toContain(RIGHT_ID);
+  });
+
+  it('Alt+click near END edge with NO adjacent clip produces single-clip Roll Trim (line 454 false branch)', () => {
+    const tool = new SelectionTool();
+    // Use the standard fixture: clip-a [0,100) then gap then clip-b [200,300)
+    // Clicking the END edge of clip-a: no clip starts at 100, so rightClip=null
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    const endEdgePx = 100 * 10; // 1000
+    tool.onPointerDown(makeEv({ clipId: CLIP_A_ID, x: endEdgePx - 4 }), ctx);
+
+    const tx = tool.onPointerUp(
+      makeEv({ clipId: CLIP_A_ID, x: endEdgePx - 3, altKey: true, frame: toFrame(90) }),
+      ctx,
+    );
+
+    expect(tx).not.toBeNull();
+    expect(tx!.label).toBe('Roll Trim');
+    // Only one RESIZE_CLIP (just the target clip, no adjacent found)
+    const resizeOps = tx!.operations.filter((op) => op.type === 'RESIZE_CLIP');
+    expect(resizeOps).toHaveLength(1);
+  });
+});
+
+describe('SelectionTool — Alt-key roll-trim: START edge with adjacent left clip (lines 441-446)', () => {
+  it('Alt+click near START edge produces Roll Trim resizing both clips', () => {
+    const tool = new SelectionTool();
+    const state = makeAdjacentState();
+    const ctx = makeCtx(state);
+    const LEFT_ID = toClipId('clip-left');
+    const RIGHT_ID = toClipId('clip-right');
+
+    // clip-right starts at frame 100 = px 1000. Click within EDGE_HIT_ZONE_PX=8px of start
+    const startEdgePx = 100 * 10; // 1000
+    tool.onPointerDown(makeEv({ clipId: RIGHT_ID, x: startEdgePx + 4 }), ctx);
+
+    const tx = tool.onPointerUp(
+      makeEv({ clipId: RIGHT_ID, x: startEdgePx + 3, altKey: true, frame: toFrame(110) }),
+      ctx,
+    );
+
+    expect(tx).not.toBeNull();
+    expect(tx!.label).toBe('Roll Trim');
+    const resizeOps = tx!.operations.filter((op) => op.type === 'RESIZE_CLIP');
+    expect(resizeOps.length).toBeGreaterThanOrEqual(2);
+    const clipIds = resizeOps.map((op) => (op.type === 'RESIZE_CLIP' ? op.clipId : null));
+    expect(clipIds).toContain(LEFT_ID);
+    expect(clipIds).toContain(RIGHT_ID);
+  });
+});
+
+describe('SelectionTool — START-edge ripple trim downstream collection (lines 488-496)', () => {
+  it('click near START edge produces Ripple Trim shifting upstream clips', () => {
+    const tool = new SelectionTool();
+    // Fixture: clip-a [0,100) then clip-b [200,300)
+    // Trimming the START of clip-b — clips to the left with timelineEnd <= clip-b.start
+    // should be collected (clip-a.timelineEnd=100 <= 200, so clip-a shifts)
+    const state = makeState();
+    const ctx = makeCtx(state);
+
+    const startEdgePx = 200 * 10; // clip-b starts at frame 200
+    tool.onPointerDown(makeEv({ clipId: CLIP_B_ID, x: startEdgePx + 4 }), ctx);
+
+    const tx = tool.onPointerUp(
+      makeEv({ clipId: CLIP_B_ID, x: startEdgePx + 3, frame: toFrame(210) }),
+      ctx,
+    );
+
+    expect(tx).not.toBeNull();
+    expect(tx!.label).toBe('Ripple Trim');
+    // Should have a RESIZE_CLIP for clip-b
+    const resizes = tx!.operations.filter((op) => op.type === 'RESIZE_CLIP');
+    expect(resizes.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
