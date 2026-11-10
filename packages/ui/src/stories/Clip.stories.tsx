@@ -1,11 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useMemo } from 'react';
 import { Clip } from '../components/timeline/clip';
-import { TrackBody } from '../components/timeline/track-body';
-import { TrackHeader } from '../components/timeline/track-header';
-import { TrackRow } from '../components/timeline/track-row';
 import { TimelineProvider } from '../context/timeline-context';
 import { createMockEngine } from './helpers/mock-engine';
+import { createClip, toFrame, toTrackId, toClipId, toAssetId } from '@timelinx/core';
 
 function ProviderDecorator({ children }: { children: React.ReactNode }) {
   const engine = useMemo(() => createMockEngine(), []);
@@ -36,16 +34,17 @@ const meta: Meta<typeof Clip> = {
 export default meta;
 type Story = StoryObj<typeof Clip>;
 
-const sampleClip = {
-  id: 'clip-1',
-  trackId: 'v1',
+const sampleClip = createClip({
+  id: toClipId('clip-intro'),
+  assetId: toAssetId('asset-v1'),
+  trackId: toTrackId('v1'),
   name: 'Sample Clip',
-  timelineStart: 100,
-  timelineEnd: 600,
-  mediaIn: 0,
-  mediaOut: 500,
-  type: 'video' as const,
-};
+  timelineStart: toFrame(100),
+  timelineEnd: toFrame(600),
+  mediaIn: toFrame(0),
+  mediaOut: toFrame(500),
+  type: 'video',
+});
 
 export const VideoClip: Story = {
   render: () => {
@@ -61,15 +60,17 @@ export const VideoClip: Story = {
 export const AudioClip: Story = {
   render: () => {
     const engine = useEngine();
+    const audioClip = createClip({
+      ...sampleClip,
+      id: toClipId('clip-music'),
+      assetId: toAssetId('asset-a1'),
+      name: 'Audio Clip',
+      trackId: toTrackId('a1'),
+      type: 'audio',
+    });
     return (
       <div style={{ position: 'relative', width: '100%', height: '48px' }}>
-        <Clip
-          clip={{ ...sampleClip, id: 'clip-audio', name: 'Audio Clip', trackId: 'a1' }}
-          clipType="audio"
-          ppf={10}
-          engine={engine}
-          isSelected={false}
-        />
+        <Clip clip={audioClip} clipType="audio" ppf={10} engine={engine} isSelected={false} />
       </div>
     );
   },
@@ -89,15 +90,16 @@ export const Selected: Story = {
 export const TextClip: Story = {
   render: () => {
     const engine = useEngine();
+    const textClip = createClip({
+      ...sampleClip,
+      id: toClipId('clip-broll-1'),
+      name: 'Title Card',
+      trackId: toTrackId('v2'),
+      type: 'text',
+    });
     return (
       <div style={{ position: 'relative', width: '100%', height: '48px' }}>
-        <Clip
-          clip={{ ...sampleClip, id: 'clip-text', name: 'Title Card', trackId: 'v2' }}
-          clipType="text"
-          ppf={10}
-          engine={engine}
-          isSelected={false}
-        />
+        <Clip clip={textClip} clipType="text" ppf={10} engine={engine} isSelected={false} />
       </div>
     );
   },
