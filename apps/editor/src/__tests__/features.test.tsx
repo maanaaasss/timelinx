@@ -1650,10 +1650,15 @@ describe('Editor — Feature Verification', () => {
         const [localValue, setLocalValue] = React.useState(String(opacity));
         const [committed, setCommitted] = React.useState(opacity);
 
-        React.useEffect(() => {
+        // Re-sync when the engine's value changes. Done during render (React's
+        // "adjusting state when a prop changes" pattern) rather than in an
+        // effect, which would set state synchronously after commit.
+        const [prevOpacity, setPrevOpacity] = React.useState(opacity);
+        if (prevOpacity !== opacity) {
+          setPrevOpacity(opacity);
           setLocalValue(String(opacity));
           setCommitted(opacity);
-        }, [opacity]);
+        }
 
         return (
           <div>

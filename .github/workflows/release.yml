@@ -95,9 +95,9 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          title: 'chore: version packages'
-          commit: 'chore: version packages'
-          publish: pnpm changeset publish
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-title: 'chore: version packages'
+          commit-message: 'chore: version packages'
+          publish-script: pnpm changeset publish
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

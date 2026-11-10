@@ -34,12 +34,11 @@ export function CaptionsPanel() {
   const activeTrackId = selectedTrackId ?? tracks[0]?.id ?? null;
   const captionsFromHook = useTrackCaptions(engine, activeTrackId ?? '');
 
-  const captions: { caption: Caption; trackId: string }[] = [];
-  if (activeTrackId) {
-    for (const c of captionsFromHook) {
-      captions.push({ caption: c, trackId: activeTrackId });
-    }
-  }
+  // Built functionally (no push-into-a-fresh-array) so the compiler can prove
+  // the entries — and therefore `selectedCaption` below — are immutable.
+  const captions: { caption: Caption; trackId: string }[] = activeTrackId
+    ? captionsFromHook.map((c) => ({ caption: c, trackId: activeTrackId }))
+    : [];
 
   const selectedCaption = selectedCaptionId
     ? captions.find((c) => c.caption.id === selectedCaptionId)
@@ -101,8 +100,16 @@ export function CaptionsPanel() {
     [engine, selectedCaptionId],
   );
 
+  // The caption lookup happens inside the callback rather than being captured
+  // as a dep: React Compiler will not preserve a manual memo over a value read
+  // out of a render-built array ("may be modified later"). selectedCaptionId,
+  // activeTrackId and captionsFromHook are all acceptable deps — handleAddCaption
+  // above already uses them — and the resolved payload is identical, since
+  // `trackId` on a caption entry is always `activeTrackId`.
   const handleSaveText = useCallback(() => {
-    if (!selectedCaption || editText === null) return;
+    if (!selectedCaptionId || editText === null || !activeTrackId) return;
+    const found = captionsFromHook.find((c) => c.id === selectedCaptionId);
+    if (!found) return;
     engine.dispatch({
       id: `edit-caption-${Date.now()}`,
       label: 'Edit caption text',
@@ -110,14 +117,14 @@ export function CaptionsPanel() {
       operations: [
         {
           type: 'EDIT_CAPTION',
-          captionId: selectedCaption.caption.id as CaptionId,
-          trackId: selectedCaption.trackId as TrackId,
+          captionId: found.id as CaptionId,
+          trackId: activeTrackId as TrackId,
           text: editText,
         },
       ],
     });
     setEditText(null);
-  }, [engine, selectedCaption, editText]);
+  }, [engine, selectedCaptionId, editText, activeTrackId, captionsFromHook]);
 
   const formatFrame = (frame: number) => {
     const totalSeconds = frame / fps;

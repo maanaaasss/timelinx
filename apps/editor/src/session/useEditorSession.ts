@@ -1,4 +1,4 @@
-import { useCallback, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useState, useSyncExternalStore } from 'react';
 import type { TimelineEngine } from '@timelinx/react';
 import { useMediaAssets } from '@timelinx/ui';
 import { EditorSession } from './EditorSession';
@@ -30,26 +30,28 @@ export interface EditorSessionApi {
  * Must be called inside a `MediaAssetsProvider` so the session can revoke blob
  * URLs through `removeImportedAsset` when a project is replaced or the app
  * unmounts. The session is created exactly once and disposed on unmount.
+ *
+ * The session is held in state rather than a ref. Reading and writing
+ * `ref.current` while rendering is what react-hooks/refs rejects, and the
+ * lazy initializer gives the same create-once semantics without it. The old
+ * "recreate when the session was disposed" render pass is gone: nothing in
+ * the app disposes a session this hook owns — `dispose` is only ever called by
+ * direct owners of an `EditorSession` (see `editor-session.test.ts`).
  */
-
 export function useEditorSession(): EditorSessionApi {
-  const mediaAssets = useMediaAssets();
+  // `removeImportedAsset` is a zero-dependency useCallback inside the provider
+  // (it only touches the provider's own refs), so its identity never changes.
+  // Capturing it directly lets the session be built without routing the latest
+  // context through `ref.current` — which the render path must not touch.
+  const { removeImportedAsset } = useMediaAssets();
 
-  // Keep the latest media-assets context reachable from the session's revoke
-  // callback without recreating the session.
-  const mediaAssetsRef = useRef(mediaAssets);
-  mediaAssetsRef.current = mediaAssets;
-
-  const sessionRef = useRef<EditorSession<TimelineEngine> | null>(null);
-  if (sessionRef.current === null || sessionRef.current.isDisposed) {
-    sessionRef.current = new EditorSession<TimelineEngine>({
-      createEngine: createDemoEngine,
-      revokeAsset: (assetId) => {
-        mediaAssetsRef.current.removeImportedAsset(assetId);
-      },
-    });
-  }
-  const session = sessionRef.current;
+  const [session] = useState<EditorSession<TimelineEngine>>(
+    () =>
+      new EditorSession<TimelineEngine>({
+        createEngine: createDemoEngine,
+        revokeAsset: removeImportedAsset,
+      }),
+  );
 
   // Re-render on dirty / generation changes. The snapshot is a value-comparable
   // string so useSyncExternalStore's Object.is check is stable.
@@ -60,52 +62,28 @@ export function useEditorSession(): EditorSessionApi {
   );
 
   const replaceEngine = useCallback(
-    (factory?: () => TimelineEngine) => {
-      const s = sessionRef.current;
-      if (!s || s.isDisposed) {
-        sessionRef.current = new EditorSession<TimelineEngine>({
-          createEngine: factory ?? createDemoEngine,
-          revokeAsset: (assetId) => {
-            mediaAssetsRef.current.removeImportedAsset(assetId);
-          },
-        });
-        return sessionRef.current.getEngine();
-      }
-      return s.replaceEngine(factory);
-    },
-    [],
+    (factory?: () => TimelineEngine) => session.replaceEngine(factory),
+    [session],
   );
 
-  const newProject = useCallback(() => {
-    const s = sessionRef.current;
-    if (!s || s.isDisposed) {
-      sessionRef.current = new EditorSession<TimelineEngine>({
-        createEngine: createEditorEngine,
-        revokeAsset: (assetId) => {
-          mediaAssetsRef.current.removeImportedAsset(assetId);
-        },
-      });
-      return;
-    }
-    s.replaceEngine(createEditorEngine);
-  }, []);
+  const newProject = useCallback(() => session.replaceEngine(createEditorEngine), [session]);
 
   const markSaved = useCallback(() => {
-    sessionRef.current?.markSaved();
-  }, []);
+    session.markSaved();
+  }, [session]);
 
   const registerImportedAsset = useCallback(
     (assetId: string) => {
-      sessionRef.current?.registerImportedAsset(assetId);
+      session.registerImportedAsset(assetId);
     },
-    [],
+    [session],
   );
 
   const releaseImportedAsset = useCallback(
     (assetId: string) => {
-      sessionRef.current?.releaseImportedAsset(assetId);
+      session.releaseImportedAsset(assetId);
     },
-    [],
+    [session],
   );
 
   return {
